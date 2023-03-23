@@ -1,0 +1,24 @@
+name: Build the python package
+
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
+  release:
+    types: [released, prereleased]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install build dependencies
+        run: pip install "pydjinni[publish]"
+      - name: Build dist
+        run: python -m build
+
