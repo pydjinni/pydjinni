@@ -37,7 +37,7 @@
     opacity: 1;
 }
 
-.md-typeset code, .md-typeset table:not([class]), .md-dialog {
+.md-typeset code, .md-typeset table:not([class]), .md-dialog, .md-version__list {
     border-radius: var(--border-radius);
 }
 
