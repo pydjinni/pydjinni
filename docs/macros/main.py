@@ -13,6 +13,8 @@ def render_config_schema_table(element, indent: int):
         for key, value in element["properties"].items():
             if value.get("type") == "object":
                 result += f"\n{'#' * indent} {key}\n\n"
+                if value.get("description"):
+                    result += f"\n{value['description']}\n\n"
                 result += render_config_schema_table(value, indent+1)
             if value.get("type") != "object":
                 if first_value:

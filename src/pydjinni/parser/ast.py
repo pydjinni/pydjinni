@@ -6,11 +6,17 @@ from pathlib import Path
 
 @dataclass
 class Metadata:
+    """
+    Location metadata of a type. Gives the character location in the parsed input file
+    """
     position: int
     position_end: int
 
 @dataclass(kw_only=True)
 class Type:
+    """
+    Public type interface that defines all the required information for the code generator
+    """
     @dataclass
     class CppType:
         typename: CppTypename
@@ -30,6 +36,7 @@ class Type:
 
     @dataclass
     class JavaType:
+        """Java type information"""
         typename: JavaPrimitive
         boxed: JavaClass
         reference: bool
@@ -54,7 +61,6 @@ class Type:
             description="A comment describing the type"
         )
     )
-    _metadata: Metadata = None
 
     cpp: CppType = None
     objc: ObjcType = None
@@ -62,9 +68,16 @@ class Type:
     java: JavaType = None
     jni: JniType = None
 
+@dataclass
+class InternalType(Type):
+    """
+    Type that has been parsed from an IDL file.
+    The location information in the file is stored in the Metadata field
+    """
+    metadata: Metadata
 
 @dataclass
-class Enum(Type):
+class Enum(InternalType):
     @dataclass
     class Item:
         name: str
@@ -73,8 +86,9 @@ class Enum(Type):
     items: list[Item]
 
 
+
 @dataclass
-class Flags(Type):
+class Flags(InternalType):
     @dataclass
     class Flag:
         name: str
@@ -84,8 +98,7 @@ class Flags(Type):
 
     flags: list[Flag]
 
-
-@dataclass
+@dataclass(kw_only=True)
 class TypeReference:
     metadata: Metadata
     name: str
@@ -93,7 +106,7 @@ class TypeReference:
 
 
 @dataclass
-class Interface(Type):
+class Interface(InternalType):
 
     @dataclass
     class Method:
@@ -112,7 +125,7 @@ class Interface(Type):
 
 
 @dataclass
-class Record(Type):
+class Record(InternalType):
 
     @dataclass
     class Field:

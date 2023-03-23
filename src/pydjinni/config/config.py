@@ -74,6 +74,9 @@ class Config:
     class Generate:
         @dataclass
         class Java:
+            """
+            Java configuration options
+            """
             class ClassAccessModifier(str, Enum):
                 public = 'public'
                 package = 'package'

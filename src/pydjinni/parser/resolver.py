@@ -1,6 +1,6 @@
 import yaml
 from logging import Logger
-from pydjinni.parser.ast import TypeReference, Type
+from pydjinni.parser.ast import TypeReference, Type, InternalType
 from dataclasses import dataclass
 from pathlib import Path
 import pydantic
@@ -17,7 +17,7 @@ class Resolver:
     @dataclass
     class DuplicateTypeException(Exception):
         """Exception raised when the given pydjinni type is already defined"""
-        datatype: Type
+        datatype: InternalType
 
     def __init__(self, logger: Logger):
         self.logger = logger
