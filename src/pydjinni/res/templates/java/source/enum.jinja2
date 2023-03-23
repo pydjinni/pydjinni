@@ -1,0 +1,17 @@
+{% extends "base.jinja2" %}
+
+{% block content %}
+
+package {{ package }};
+
+{{ comment }}
+public enum {{ type }} {
+    /** enum option comment */
+{% for value in values %}
+    {{ value.comment }}
+    {{ value.key }},
+{% endfor %}
+    ;
+}
+
+{% endblock %}

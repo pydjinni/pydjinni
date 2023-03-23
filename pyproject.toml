@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools==65.5.0", "setuptools_scm[toml]==7.0.5"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pydjinni"
+authors = [
+    {name = "jothepro", email = "pydjinni@jothe.pro"},
+]
+dynamic = ["version"]
+license = { file = "LICENSE" }
+description = "An opinionated Djinni reimplementation written in Python."
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10"
+]
+keywords = ["djinni"]
+dependencies = [
+    "click>=8.1,<9",
+    "arpeggio>=2,<3",
+    "Jinja2>=3.1,<4",
+    "mistletoe>=0.9,<1",
+    "pydantic>=1.10,<2",
+    "rich>=12.6,<13"
+]
+
+[tool.setuptools_scm]
+
+[project.optional-dependencies]
+dev = [
+    "pytest"
+]
+publish = [
+    "twine==4.0.1",
+    "build==0.9.0"
+]
+doc = [
+    "mkdocs-material==8.5.10",
+    "mkdocs-click==0.8.0",
+    "mike==1.1.2",
+    "jsonref==1.0.1",
+    "mkdocs-macros-plugin==0.7.0",
+    "mkdocs-gen-files==0.4.0"
+]
+
+[project.urls]
+Repository = "https://github.com/jothepro/pydjinni"
+Homepage = "https://jothepro.github.io/pydjinni"
+
+[project.scripts]
+pydjinni = "pydjinni.__main__:main"

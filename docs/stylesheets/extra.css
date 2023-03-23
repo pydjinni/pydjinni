@@ -1,0 +1,126 @@
+:root {
+    --border-radius: 0.45rem;
+}
+
+.md-typeset__table {
+  width: 100%;
+}
+
+.md-typeset__table table:not([class]) {
+  display: table
+}
+
+.md-header--shadow {
+    box-shadow: inset 0 -1px 0 var(--md-typeset-table-color);
+}
+
+.md-tabs {
+    background: none;
+    border-bottom: none !important;
+}
+
+.md-header {
+    background-color: var(--md-default-bg-color);
+}
+
+.md-header__button.md-icon svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.md-header__button.md-icon {
+    border-radius: 100%;
+}
+
+.md-header__button.md-icon:hover {
+    background: var(--md-accent-fg-color--transparent);
+    opacity: 1;
+}
+
+.md-typeset code, .md-typeset table:not([class]), .md-dialog {
+    border-radius: var(--border-radius);
+}
+
+.md-typeset .md-button :is(.emojione,.twemoji,.gemoji) {
+    height: 1.4em;
+}
+
+.md-typeset .md-button {
+    border-radius: var(--border-radius);
+    padding: .425em 1.2em;
+}
+
+.md-header__button.md-logo img {
+    height: 1.7rem !important;
+    border-radius: 100%;
+    transition: box-shadow .12s ease-in;
+}
+
+.md-header__button.md-logo:hover {
+    opacity: 1;
+
+}
+
+.md-header__button.md-logo:hover img {
+    box-shadow: 0 0 0 0.18rem var(--md-accent-fg-color--transparent);
+}
+
+.md-top {
+    border: 1px solid var(--md-typeset-table-color);
+}
+
+.md-header__button.md-logo {
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-right: 0;
+    margin-right: 0;
+}
+
+@media screen and (min-width: 60em) {
+    .md-search__form {
+        height: 1.64rem;
+        border-radius: 0.8rem;
+        background-color: var(--md-default-bg-color) !important;
+        border: 1px solid var(--md-typeset-table-color);
+    }
+
+    [data-md-toggle=search]:checked~.md-header .md-search__form {
+        border-radius: 0.8rem;
+    }
+
+    .md-search__input {
+        font-size: 0.68rem;
+    }
+
+    .md-search__icon, .md-search__icon svg {
+        width: 1.05rem;
+        height: 1.05rem;
+    }
+
+    .md-search__output {
+        border-radius: var(--border-radius) !important;
+        top: 2.1rem;
+    }
+
+    .md-header__source a {
+        margin: 0.3rem;
+        border-radius: var(--border-radius);
+    }
+
+    .md-header__source a .md-source__icon.md-icon {
+        height: 1.8rem;
+    }
+
+    .md-header__source a .md-source__icon.md-icon svg {
+        margin-top: 0.3rem;
+    }
+
+    .md-header__source a.md-source:hover {
+        background: var(--md-accent-fg-color--transparent);
+        opacity: 1;
+    }
+
+
+}

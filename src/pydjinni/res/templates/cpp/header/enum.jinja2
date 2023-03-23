@@ -1,0 +1,22 @@
+{% extends "base.jinja2" %}
+
+#include <functional>
+
+{{ comment }}
+enum class {{ type }} : int {
+{% for value in values %}
+    {{ value.comment }}
+    {{ value.key }},
+{% endfor %}
+};
+
+namespace std {
+
+template <>
+struct hash<::{{ type }}> {
+    size_t operator()(::{{ type }} type) const {
+        return std::hash<int>()(static_cast<int>(type));
+    }
+};
+
+}  // namespace std
