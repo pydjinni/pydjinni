@@ -24,7 +24,7 @@ dependencies = [
     "arpeggio>=2,<3",
     "Jinja2>=3.1,<4",
     "mistletoe>=0.9,<1",
-    "pydantic>=1.10,<2",
+    "pydantic==2.0a1",
     "rich>=12.6,<13"
 ]
 

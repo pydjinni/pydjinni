@@ -1,4 +1,7 @@
+from pathlib import Path
+
 import arpeggio
+import pydantic
 from arpeggio.cleanpeg import ParserPEG
 from arpeggio import visit_parse_tree
 from logging import Logger
@@ -8,6 +11,11 @@ from arpeggio import PTNodeVisitor
 from .ast import *
 from .resolver import Resolver
 from rich.pretty import pretty_repr
+
+from ..generator.cpp import CppType
+from ..generator.java import JavaType, JniType
+from ..generator.objc import ObjcType, ObjCppType
+
 
 def unpack(list_input: []):
     return list_input[0] if list_input else None
@@ -33,35 +41,37 @@ class IdlParser:
             return datatype
 
         def visit_enum(self, node, children):
+            name = unpack(children.identifier)
             return Enum(
-                name=unpack(children.identifier),
+                name=name,
                 metadata=Metadata(
                     position=node.position,
                     position_end=node.position_end
                 ),
                 comment=unpack(children.comment),
-                cpp=None,
-                java=None,
-                jni=None,
-                objc=None,
-                objcpp=None,
+                cpp=CppType.from_name(name),
+                java=JavaType.from_name(name),
+                jni=JniType.from_name(name),
+                objc=ObjcType.from_name(name),
+                objcpp=ObjCppType.from_name(name),
                 items=children.item
             )
 
         def visit_flags(self, node, children):
             begin = node.position if node[0].rule_name != "comment" else node[1].position
+            name = unpack(children.identifier)
             return Flags(
-                name=unpack(children.identifier),
+                name=name,
                 metadata=Metadata(
                     position=begin,
                     position_end=node.position_end
                 ),
                 comment=unpack(children.comment),
-                cpp=None,
-                java=None,
-                jni=None,
-                objc=None,
-                objcpp=None,
+                cpp=CppType.from_name(name),
+                java=JavaType.from_name(name),
+                jni=JniType.from_name(name),
+                objc=ObjcType.from_name(name),
+                objcpp=ObjCppType.from_name(name),
                 flags=children.flag
             )
 
@@ -74,34 +84,36 @@ class IdlParser:
             )
 
         def visit_interface(self, node, children):
+            name = unpack(children.identifier)
             return Interface(
-                name=unpack(children.identifier),
+                name=name,
                 metadata=Metadata(
                     position=node.position,
                     position_end=node.position_end
                 ),
                 comment=unpack(children.comment),
-                cpp=None,
-                java=None,
-                jni=None,
-                objc=None,
-                objcpp=None,
+                cpp=CppType.from_name(name),
+                java=JavaType.from_name(name),
+                jni=JniType.from_name(name),
+                objc=ObjcType.from_name(name),
+                objcpp=ObjCppType.from_name(name),
                 methods=children.method
             )
 
         def visit_record(self, node, children):
+            name = unpack(children.identifier)
             return Record(
-                name=unpack(children.identifier),
+                name=name,
                 metadata=Metadata(
                     position=node.position,
                     position_end=node.position_end
                 ),
                 comment=unpack(children.comment),
-                cpp=None,
-                java=None,
-                jni=None,
-                objc=None,
-                objcpp=None,
+                cpp=CppType.from_name(name),
+                java=JavaType.from_name(name),
+                jni=JniType.from_name(name),
+                objc=ObjcType.from_name(name),
+                objcpp=ObjCppType.from_name(name),
                 fields=children.field
             )
 
@@ -171,5 +183,7 @@ class IdlParser:
             raise ParsingException(f"Error parsing IDL file '{idl}': Type '{e.datatype.name}' at position ({line}, {col}) already exists => '{context}' ")
         except arpeggio.NoMatch as e:
             raise ParsingException(f"Error parsing IDL file '{idl}': {e}")
+        except pydantic.ValidationError as e:
+            raise ParsingException(f"Error: {e}")
 
 

@@ -30,10 +30,10 @@ class Resolver:
             for type_dict in types_dict:
                 if type_dict is not None:
                     self.logger.debug(pretty_repr(type_dict))
-                    types_type = Type.__pydantic_model__.parse_obj(type_dict)
+                    types_type = Type.parse_obj(type_dict)
                     self.logger.debug(pretty_repr(types_type))
                     self.register(types_type)
-        except pydantic.error_wrappers.ValidationError as e:
+        except pydantic.ValidationError as e:
             raise ParsingException(e)
 
     def register(self, datatype: Type):

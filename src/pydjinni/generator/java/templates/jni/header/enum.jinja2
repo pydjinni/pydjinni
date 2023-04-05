@@ -1,0 +1,28 @@
+{% extends "base.jinja2" %}
+
+{% block content %}
+
+{% for include in includes %}
+#include "{{ include }}"
+{% endfor %}
+
+namespace {{ namespace }} {
+
+class {{ type }} final : ::djinni::JniEnum {
+public:
+    using CppType = ::{{ cpp_type }};
+    using JniType = jobject;
+
+    using Boxed = {{ type }};
+
+    static CppType toCpp(JNIEnv* jniEnv, JniType j) { return static_cast<CppType>(::djinni::JniClass<{{ type }}>::get().ordinal(jniEnv, j)); }
+    static ::djinni::LocalRef<JniType> fromCpp(JNIEnv* jniEnv, CppType c) { return ::djinni::JniClass<{{ type }}>::get().create(jniEnv, static_cast<jint>(c)); }
+
+private:
+    {{ type }}() : JniEnum("{{ type_path }}") {}
+    friend ::djinni::JniClass<{{ type }}>;
+};
+
+}  // namespace {{ namespace }}
+
+{% endblock %}

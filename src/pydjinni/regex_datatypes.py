@@ -1,61 +1,54 @@
 import re
+from typing import Any
+
+from pydantic_core import core_schema
+
+
+
 
 class CustomRegexType(str):
-    pattern = ".*"
-    examples = []
-    error_message = "..."
+    pattern: str
+    error_message: str
+    examples: list[str] = None
 
     @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def __modify_schema__(cls, field_schema):
+    def __pydantic_modify_json_schema__(cls, field_schema: dict[str, Any]) -> dict[str, Any]:
         field_schema.update(pattern=cls.pattern)
-        if len(cls.examples) > 0:
+        if cls.examples is not None:
             field_schema.update(examples=cls.examples)
-            
+        return field_schema
+
     @classmethod
-    def validate(cls, v):
-        if not isinstance(v, str):
+    def __get_pydantic_core_schema__(
+            cls, **_kwargs: Any
+    ) -> core_schema.AfterValidatorFunctionSchema:
+        return core_schema.general_after_validator_function(
+            cls.validate,
+            core_schema.str_schema(
+                pattern=cls.pattern
+            ),
+        )
+
+    @classmethod
+    def validate(cls, value, _: core_schema.ValidationInfo):
+        if not isinstance(value, str):
             raise TypeError('string required')
         regex = re.compile(cls.pattern)
-        m = regex.fullmatch(v)
+        m = regex.fullmatch(value)
         if not m:
-            raise ValueError(f"'{v}' {cls.error_message}")
-        return cls(v)
+            raise ValueError(f"'{value}' {cls.error_message}")
+        return value
 
     def __repr__(self):
         return f'{type(self).__name__}({super().__repr__()})'
 
 class CppNamespace(CustomRegexType):
-    pattern = r"^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))+[a-zA-Z][a-zA-Z0-9_]*$"
-    examples = ["test::namespace", "::other::test::namespace"]
-    error_message = "is not a valid C++ namespace"
+    pattern=r"^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))+[a-zA-Z][a-zA-Z0-9_]*$"
+    examples=["test::namespace", "::other::test::namespace"]
+    error_message="is not a valid C++ namespace"
+
 
 class CppTypename(CustomRegexType):
     pattern = r"^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))*[a-zA-Z][a-zA-Z0-9_]*$"
     examples = ["test::namespace", "::other::test::namespace"]
     error_message = "is not a valid C++ typename"
-
-class JavaPackage(CustomRegexType):
-    pattern = r"^[a-z][a-z0-9_]*([.][a-z0-9_]+)+[0-9a-z_]$"
-    examples = ["my.package.name", "other.package.name"]
-    error_message = "is not a valid Java package identifier"
-
-class JavaClass(CustomRegexType):
-    pattern = r"^([a-z][a-z0-9_]*([.][a-z0-9_]+)+[0-9a-z_][.])?[a-zA-Z][a-zA-Z0-9_]*$"
-    error_message = "is not a valid Java class name"
-
-class JavaPrimitive(CustomRegexType):
-    pattern = r"^[a-z]*$"
-    error_message = "is not a valid Java primitive type name"
-
-class JavaAnnotation(CustomRegexType):
-    pattern = r"^@([a-z][a-z0-9_]*(([.][a-z0-9_]+)+[0-9a-z_])?[.])?[a-zA-Z][a-zA-Z0-9_]*$"
-    error_message = "is not a valid Java annotation"
-
-class JniTypeSignature(CustomRegexType):
-    pattern = r"^(\((\[?[ZBCSIJFD]|(L([a-z][a-z0-9]*\/)*[A-Z][a-zA-Z0-9]*);)*\))?(\[?[ZBCSIJFD]|(L([a-z][a-z0-9]*\/)*[A-Z][a-zA-Z0-9]*);)?$"
-    examples = ["(ILjava/lang/String;[I)J"]
-    error_message = "is not a valid JNI type signature"

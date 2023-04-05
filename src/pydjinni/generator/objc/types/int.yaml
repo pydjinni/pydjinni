@@ -1,0 +1,21 @@
+---
+name: i8
+objc:
+  typename: int8_t
+  boxed: NSNumber
+  header: "<cstdint>"
+  pointer: false
+objcpp:
+  translator: "::pydjinni::translators::objc::I8"
+  header: pydjinni/translators/objc/int.hpp
+---
+name: i16
+objc:
+  typename: int16_t
+  boxed: NSNumber
+  header: "<cstdint>"
+  pointer: false
+objcpp:
+  translator: "::pydjinni::translators::objc::I16"
+  header: pydjinni/translators/objc/int.hpp
+---

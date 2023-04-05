@@ -1,0 +1,25 @@
+---
+name: i8
+java:
+  typename: byte
+  boxed: Byte
+  reference: false
+  generic: false
+jni:
+  translator: "::pydjinni::translators::jni::I8"
+  header: pydjinni/translators/jni/int.hpp
+  typename: jobject
+  type_signature: "B"
+---
+name: i16
+java:
+  typename: short
+  boxed: Short
+  reference: false
+  generic: false
+jni:
+  translator: "::pydjinni::translators::jni::I16"
+  header: pydjinni/translators/jni/int.hpp
+  typename: jobject
+  type_signature: "S"
+---

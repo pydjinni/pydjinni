@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from pydjinni.config.config import Config
 import jsonref
@@ -11,6 +12,8 @@ def render_config_schema_table(element, indent: int):
     result = ""
     if "properties" in element:
         for key, value in element["properties"].items():
+            if value.get("allOf") and len(value["allOf"]) == 1:
+                value = value["allOf"][0]
             if value.get("type") == "object":
                 result += f"\n{'#' * indent} {key}\n\n"
                 if value.get("description"):
@@ -62,7 +65,7 @@ def render_config_schema_table(element, indent: int):
                         result += "**Examples:<br>**"
                         for example in examples:
                             result += f"- `{example}`<br>"
-                if "default" in value:
+                if "default" in value and value["default"] is not None:
                     default = value['default']
                     result += "**Default:** "
                     if isinstance(default, dict):
@@ -85,19 +88,19 @@ def define_env(env):
 
     @env.macro
     def config_schema_table(header_indent: int = 3):
-        json_schema = Config.__pydantic_model__.schema_json()
+        json_schema = json.dumps(Config.model_json_schema())
         schema = jsonref.loads(json_schema)
         return render_config_schema_table(schema, header_indent)
 
     @env.macro
     def config_schema_definition(definition: str):
-        json_schema = Config.__pydantic_model__.schema_json()
-        definition = jsonref.loads(json_schema)['definitions'][definition]
+        json_schema = json.dumps(Config.model_json_schema())
+        definition = jsonref.loads(json_schema)['$defs'][definition]
         return render_config_schema_table(definition, 3)
 
     @env.macro
     def type_schema_table(header_indent: int = 3):
-        json_schema = Type.__pydantic_model__.schema_json()
+        json_schema = json.dumps(Type.model_json_schema())
         schema = jsonref.loads(json_schema)
         return render_config_schema_table(schema, header_indent)
 

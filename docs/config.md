@@ -12,6 +12,3 @@
 
 {{ config_schema_definition("OutPaths") }}
 
-### IdentifierStyle
-
-{{ config_schema_definition("IdentifierStyle") }}

@@ -1,74 +1,24 @@
-from pydantic.dataclasses import dataclass
-import dataclasses
-from pydjinni.regex_datatypes import CppTypename, JavaClass, JavaPrimitive, JniTypeSignature
-from pathlib import Path
+from pydantic import BaseModel
+from pydjinni.generator.cpp import cpp_target
+from pydjinni.generator.java import java_target
+from pydjinni.generator.objc import objc_target
+from pydjinni.parser.type_factory import TypeFactory
 
 
-@dataclass
-class Metadata:
+class Metadata(BaseModel):
     """
     Location metadata of a type. Gives the character location in the parsed input file
     """
     position: int
     position_end: int
 
-@dataclass(kw_only=True)
-class Type:
-    """
-    Public type interface that defines all the required information for the code generator
-    """
-    @dataclass
-    class CppType:
-        typename: CppTypename
-        header: Path
 
-    @dataclass
-    class ObjcType:
-        typename: str
-        boxed: str
-        header: Path
-        pointer: bool
+Type = TypeFactory() \
+        .add_target(cpp_target) \
+        .add_target(java_target) \
+        .add_target(objc_target) \
+        .build()
 
-    @dataclass
-    class ObjCppType:
-        translator: CppTypename
-        header: Path
-
-    @dataclass
-    class JavaType:
-        """Java type information"""
-        typename: JavaPrimitive
-        boxed: JavaClass
-        reference: bool
-        generic: bool
-
-    @dataclass
-    class JniType:
-        translator: CppTypename
-        header: Path
-        typename: str
-        type_signature: JniTypeSignature
-
-    name: str = dataclasses.field(
-        default=None,
-        metadata=dict(
-            description="The name of the type in the interface definition"
-        )
-    )
-    comment: str = dataclasses.field(
-        default=None,
-        metadata=dict(
-            description="A comment describing the type"
-        )
-    )
-
-    cpp: CppType = None
-    objc: ObjcType = None
-    objcpp: ObjCppType = None
-    java: JavaType = None
-    jni: JniType = None
-
-@dataclass
 class InternalType(Type):
     """
     Type that has been parsed from an IDL file.
@@ -76,10 +26,10 @@ class InternalType(Type):
     """
     metadata: Metadata
 
-@dataclass
+
 class Enum(InternalType):
-    @dataclass
-    class Item:
+
+    class Item(BaseModel):
         name: str
         comment: str | None
 
@@ -87,10 +37,10 @@ class Enum(InternalType):
 
 
 
-@dataclass
+
 class Flags(InternalType):
-    @dataclass
-    class Flag:
+
+    class Flag(BaseModel):
         name: str
         comment: str | None
         all: bool
@@ -98,20 +48,19 @@ class Flags(InternalType):
 
     flags: list[Flag]
 
-@dataclass(kw_only=True)
-class TypeReference:
+
+class TypeReference(BaseModel):
     metadata: Metadata
     name: str
     type: Type | None = None
 
 
-@dataclass
+
 class Interface(InternalType):
 
-    @dataclass
-    class Method:
-        @dataclass
-        class Parameter:
+    class Method(BaseModel):
+
+        class Parameter(BaseModel):
             name: str
             type_reference: TypeReference
 
@@ -124,11 +73,10 @@ class Interface(InternalType):
     methods: list[Method]
 
 
-@dataclass
+
 class Record(InternalType):
 
-    @dataclass
-    class Field:
+    class Field(BaseModel):
         name: str
         comment: str | None
         type_reference: TypeReference
