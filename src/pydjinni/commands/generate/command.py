@@ -47,8 +47,7 @@ def generate(ctx, logger: Logger, config: Path, option, interactive, idl: Path):
         options=option,
         option_group="generate",
         logger=logger)
-    resolver = Resolver(logger)
-    resolver.load(TYPES_DIR / "int.yaml")
+    resolver = Resolver(logger).register_targets([cpp_target, java_target, objc_target])
     ast = IdlParser(logger, resolver).parse(idl)
 
 

@@ -69,6 +69,7 @@ nav:
       - Configuration: config.md
       - CLI: cli.md
       - IDL: idl.md
+      - Types: types.md
       - External Types: external_types.md
   - Contribute:
       - Development: development.md

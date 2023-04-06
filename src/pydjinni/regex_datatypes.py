@@ -4,8 +4,6 @@ from typing import Any
 from pydantic_core import core_schema
 
 
-
-
 class CustomRegexType(str):
     pattern: str
     error_message: str
@@ -41,14 +39,3 @@ class CustomRegexType(str):
 
     def __repr__(self):
         return f'{type(self).__name__}({super().__repr__()})'
-
-class CppNamespace(CustomRegexType):
-    pattern=r"^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))+[a-zA-Z][a-zA-Z0-9_]*$"
-    examples=["test::namespace", "::other::test::namespace"]
-    error_message="is not a valid C++ namespace"
-
-
-class CppTypename(CustomRegexType):
-    pattern = r"^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))*[a-zA-Z][a-zA-Z0-9_]*$"
-    examples = ["test::namespace", "::other::test::namespace"]
-    error_message = "is not a valid C++ typename"

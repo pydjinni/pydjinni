@@ -1,5 +1,11 @@
+from __future__ import annotations
+
+from typing import Any
+
 import yaml
 from logging import Logger
+
+from pydjinni.generator.generator import Target
 from pydjinni.parser.ast import TypeReference, Type, InternalType
 from dataclasses import dataclass
 from pathlib import Path
@@ -46,6 +52,19 @@ class Resolver:
     def register_all(self, datatypes: list[Type]):
         for datatype in datatypes:
             self.register(datatype)
+
+    def register_targets(self, targets: list[Target]) -> Resolver:
+        generators: dict[str, dict[str, Any]] = {}
+        for target in targets:
+            for generator in target.generators:
+                for key, datatype in generator.types.items():
+                    if key not in generators:
+                        generators[key] = {}
+                    generators[key][generator.key] = datatype
+
+        for key, generator in generators.items():
+            self.registry[key] = Type(name=key, **generator)
+        return self
 
     def resolve(self, type_reference: TypeReference):
         self.logger.debug(f"looking up type '{type_reference.name}'")

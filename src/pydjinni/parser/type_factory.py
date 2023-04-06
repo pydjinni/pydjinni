@@ -24,13 +24,13 @@ class TypeFactory:
         return self
 
     def build(self):
-        field_kwargs = {_generator.key: (_generator.type_config, None) for _generator in self._generators}
+        field_kwargs = {_generator.key: (_generator.type_config, None) for _generator in self._generators if _generator.type_config is not None}
         return create_model(
             "Type",
             name=(str,Field(
                 description="The name of the type in the interface definition"
             )),
-            comment=(str,FieldInfo(
+            comment=(str | None, Field(
                 default=None,
                 description="A comment describing the type"
             )),

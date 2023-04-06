@@ -1,5 +1,6 @@
 from abc import abstractmethod, ABC
 from pathlib import Path
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -30,7 +31,7 @@ class BaseType(BaseModel):
 
 
 class Generator:
-    def __init__(self, key: str, config, identifier, reserved_keywords: list[str], type_config, types = None):
+    def __init__(self, key: str, config, identifier, reserved_keywords: list[str], type_config = None, types: dict[str, Any] = None):
         self.key = key
         self.config = config
         self.identifier = identifier

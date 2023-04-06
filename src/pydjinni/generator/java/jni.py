@@ -1,17 +1,19 @@
 from pydantic import Field
 
 from pydjinni.generator.generator import BaseConfig, BaseType
-from pydjinni.regex_datatypes import CppTypename, CppNamespace
 from pathlib import Path
 
 class JniConfig(BaseConfig):
-    namespace: CppNamespace = Field(
+    namespace: str = Field(
         default=None,
+        pattern=r"^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))+[a-zA-Z][a-zA-Z0-9_]*$",
         description="The namespace name to use for generated JNI C++ classes"
     )
 
 class JniType(BaseType):
-    translator: CppTypename
+    translator: str = Field(
+        pattern=r"^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))*[a-zA-Z][a-zA-Z0-9_]*$"
+    )
     header: Path
     typename: str = 'jobject'
     type_signature: str = Field(

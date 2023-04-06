@@ -1,17 +1,19 @@
 from pydantic import BaseModel, Field
 
 from pydjinni.generator.generator import BaseConfig
-from pydjinni.regex_datatypes import CppTypename, CppNamespace
 from pathlib import Path
 
 class ObjCppConfig(BaseConfig):
-    namespace: CppNamespace = Field(
+    namespace: str = Field(
         default=None,
+        pattern=r"^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))+[a-zA-Z][a-zA-Z0-9_]*$",
         description="The namespace name to use for generated Objective-C++ classes"
     )
 
 class ObjCppType(BaseModel):
-    translator: CppTypename
+    translator: str = Field(
+        pattern=r"^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))*[a-zA-Z][a-zA-Z0-9_]*$"
+    )
     header: Path
 
     @classmethod

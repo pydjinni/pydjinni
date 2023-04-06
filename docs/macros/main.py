@@ -4,7 +4,12 @@ from pydjinni.config.config import Config
 import jsonref
 from mkdocs_click._docs import make_command_docs
 from mkdocs_click._extension import load_command
+
+from pydjinni.generator.cpp import cpp_target
+from pydjinni.generator.java import java_target
+from pydjinni.generator.objc import objc_target
 from pydjinni.parser.ast import Type
+from pydjinni.parser.resolver import Resolver
 
 
 def render_config_schema_table(element, indent: int):
@@ -116,3 +121,21 @@ def define_env(env):
         )
         return '\n'.join(output)
 
+    @env.macro
+    def internal_types():
+        output = ""
+        resolver = Resolver(None).register_targets([cpp_target, java_target, objc_target])
+        for _, target in resolver.registry.items():
+            info = target.model_dump()
+            output += f"\n## {info['name']}\n\n"
+            if info['comment'] is not None:
+                output += info['comment']
+
+            output += f"| Target | Type | Boxed |\n"
+            output += f"| ------ | ---- | ----- |\n"
+            for key, item in info.items():
+                if key not in ['name', 'comment']:
+                    output += f"| {key} | `{item.get('typename') or ' '}` | `{item.get('boxed') or ' '}` |\n"
+
+
+        return output

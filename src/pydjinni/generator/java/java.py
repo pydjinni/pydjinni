@@ -1,24 +1,8 @@
 from pydantic import Field
 from pydjinni.generator.generator import NoHeaderBaseConfig, BaseType
-from pydjinni.regex_datatypes import CustomRegexType
 from enum import Enum
 
-class JavaPackage(CustomRegexType):
-    pattern = r"^[a-z][a-z0-9_]*([.][a-z0-9_]+)+[0-9a-z_]$"
-    examples = ["my.package.name", "other.package.name"]
-    error_message = "is not a valid Java package identifier"
-
-class JavaClass(CustomRegexType):
-    pattern = r"^([a-z][a-z0-9_]*([.][a-z0-9_]+)+[0-9a-z_][.])?[a-zA-Z][a-zA-Z0-9_]*$"
-    error_message = "is not a valid Java class name"
-
-class JavaPrimitive(CustomRegexType):
-    pattern = r"^[a-z]*$"
-    error_message = "is not a valid Java primitive type name"
-
-class JavaAnnotation(CustomRegexType):
-    pattern = r"^@([a-z][a-z0-9_]*(([.][a-z0-9_]+)+[0-9a-z_])?[.])?[a-zA-Z][a-zA-Z0-9_]*$"
-    error_message = "is not a valid Java annotation"
+java_class_regex = r"^([a-z][a-z0-9_]*([.][a-z0-9_]+)+[0-9a-z_][.])?[a-zA-Z][a-zA-Z0-9_]*$"
 
 class JavaConfig(NoHeaderBaseConfig):
     """
@@ -28,8 +12,10 @@ class JavaConfig(NoHeaderBaseConfig):
         public = 'public'
         package = 'package'
 
-    package: JavaPackage | None = Field(
+    package: str = Field(
         default=None,
+        pattern=r"^[a-z][a-z0-9_]*([.][a-z0-9_]+)+[0-9a-z_]$",
+        examples=["my.package.name", "other.package.name"],
         description="The package name to use for generated Java classes"
     )
     interfaces: bool = Field(
@@ -40,12 +26,14 @@ class JavaConfig(NoHeaderBaseConfig):
         default=ClassAccessModifier.public,
         description="The access modifier to use for generated Java classes",
     )
-    cpp_exception: JavaClass = Field(
+    cpp_exception: str = Field(
         default="java.lang.RuntimeException",
+        pattern=java_class_regex,
         description="The type for translated C++ exceptions in Java",
     )
-    annotation: JavaAnnotation = Field(
+    annotation: str = Field(
         default=None,
+        pattern=r"^@([a-z][a-z0-9_]*(([.][a-z0-9_]+)+[0-9a-z_])?[.])?[a-zA-Z][a-zA-Z0-9_]*$",
         description="Java annotation to place on all generated Java classes",
         examples=["@Foo"]
     )
@@ -56,8 +44,12 @@ class JavaConfig(NoHeaderBaseConfig):
 
 class JavaType(BaseType):
     """Java type information"""
-    typename: JavaPrimitive
-    boxed: JavaClass
+    typename: str = Field(
+        pattern=r"^[a-z]*$"
+    )
+    boxed: str = Field(
+        pattern=java_class_regex
+    )
     reference: bool = True
     generic: bool = False
 
