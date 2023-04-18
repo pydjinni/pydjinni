@@ -12,25 +12,25 @@ from .ast import *
 from .resolver import Resolver
 from rich.pretty import pretty_repr
 
-from ..generator.cpp import CppType
-from ..generator.java import JavaType, JniType
-from ..generator.objc import ObjcType, ObjCppType
-
+from pydjinni.generator.marshal import Marshal
 
 def unpack(list_input: []):
     return list_input[0] if list_input else None
 
 
 class IdlParser:
-    def __init__(self, logger: Logger, resolver: Resolver):
+    def __init__(self, logger: Logger, resolver: Resolver, marshals: list[Marshal]):
         self.logger = logger
         self.parser = ParserPEG(IDL_GRAMMAR_PATH.read_text(), root_rule_name="idl")
         self.resolver = resolver
+        self.marshals = marshals
+
     class Visitor(PTNodeVisitor):
-        def __init__(self, logger: Logger, resolver: Resolver, **kwargs):
+        def __init__(self, logger: Logger, resolver: Resolver, marshals: list[Marshal], **kwargs):
             super().__init__(**kwargs)
             self.logger = logger
             self.resolver = resolver
+            self.marshals = marshals
 
         def visit_idl(self, node, children):
             return children[0:]
@@ -40,38 +40,21 @@ class IdlParser:
             self.resolver.register(datatype)
             return datatype
 
+        def second_type(self, children):
+            for marshal in self.marshals:
+                marshal.marshal_type(children)
+
         def visit_enum(self, node, children):
-            name = unpack(children.identifier)
             return Enum(
-                name=name,
-                metadata=Metadata(
-                    position=node.position,
-                    position_end=node.position_end
-                ),
+                name=unpack(children.identifier),
                 comment=unpack(children.comment),
-                cpp=CppType.from_name(name),
-                java=JavaType.from_name(name),
-                jni=JniType.from_name(name),
-                objc=ObjcType.from_name(name),
-                objcpp=ObjCppType.from_name(name),
                 items=children.item
             )
 
         def visit_flags(self, node, children):
-            begin = node.position if node[0].rule_name != "comment" else node[1].position
-            name = unpack(children.identifier)
             return Flags(
-                name=name,
-                metadata=Metadata(
-                    position=begin,
-                    position_end=node.position_end
-                ),
+                name=unpack(children.identifier),
                 comment=unpack(children.comment),
-                cpp=CppType.from_name(name),
-                java=JavaType.from_name(name),
-                jni=JniType.from_name(name),
-                objc=ObjcType.from_name(name),
-                objcpp=ObjCppType.from_name(name),
                 flags=children.flag
             )
 
@@ -83,50 +66,30 @@ class IdlParser:
                 none=len(node) == 4 and node[2] == 'none'
             )
 
+        def second_flag(self, children):
+            for marshal in self.marshals:
+                marshal.marshal_field(children)
+
         def visit_interface(self, node, children):
             name = unpack(children.identifier)
             return Interface(
                 name=name,
-                metadata=Metadata(
-                    position=node.position,
-                    position_end=node.position_end
-                ),
                 comment=unpack(children.comment),
-                cpp=CppType.from_name(name),
-                java=JavaType.from_name(name),
-                jni=JniType.from_name(name),
-                objc=ObjcType.from_name(name),
-                objcpp=ObjCppType.from_name(name),
                 methods=children.method
             )
 
         def visit_record(self, node, children):
-            name = unpack(children.identifier)
             return Record(
-                name=name,
-                metadata=Metadata(
-                    position=node.position,
-                    position_end=node.position_end
-                ),
+                name=unpack(children.identifier),
                 comment=unpack(children.comment),
-                cpp=CppType.from_name(name),
-                java=JavaType.from_name(name),
-                jni=JniType.from_name(name),
-                objc=ObjcType.from_name(name),
-                objcpp=ObjCppType.from_name(name),
                 fields=children.field
             )
 
         def visit_identifier(self, node, children):
-            return node.value
+            return Identifier(node.value)
 
         def visit_datatype(self, node, children):
-            return TypeReference(
-                metadata=Metadata(
-                    position=node.position,
-                    position_end=node.position_end
-                ),
-                name=node.value)
+            return TypeReference(name=node.value)
 
         def second_datatype(self, children):
             self.resolver.resolve(children)
@@ -137,27 +100,43 @@ class IdlParser:
                 comment=None
             )
 
+        def second_item(self, children):
+            for marshal in self.marshals:
+                marshal.marshal_field(children)
+
         def visit_method(self, node, children):
             return Interface.Method(
                 name=unpack(children.identifier),
                 comment=unpack(children.comment),
                 parameters=children.parameter,
-                return_type_reference=unpack(children.datatype),
+                return_type_ref=unpack(children.datatype),
                 static=node[0] == 'static'
             )
+
+        def second_method(self, children):
+            for marshal in self.marshals:
+                marshal.marshal_field(children)
 
         def visit_parameter(self, node, children):
             return Interface.Method.Parameter(
                 name=unpack(children.identifier),
-                type_reference=unpack(children.datatype)
+                type_ref=unpack(children.datatype)
             )
+
+        def second_parameter(self, children):
+            for marshal in self.marshals:
+                marshal.marshal_field(children)
 
         def visit_field(self, node, children):
             return Record.Field(
                 name=unpack(children.identifier),
                 comment=unpack(children.comment),
-                type_reference=unpack(children.datatype)
+                type_ref=unpack(children.datatype)
             )
+
+        def second_field(self, children):
+            for marshal in self.marshals:
+                marshal.marshal_field(children)
 
         def visit_comment(self, node, children):
             return '\n'.join(children)
@@ -167,7 +146,7 @@ class IdlParser:
             self.logger.debug(f"parsing the idl {idl.absolute()}:")
             parse_tree = self.parser.parse(idl.read_text())
             self.logger.debug(parse_tree.tree_str())
-            ast = visit_parse_tree(parse_tree, IdlParser.Visitor(self.logger, self.resolver))
+            ast = visit_parse_tree(parse_tree, IdlParser.Visitor(self.logger, self.resolver, self.marshals))
             self.logger.debug(f"resulting ast:")
             self.logger.debug(pretty_repr(ast))
             return ast
@@ -176,14 +155,14 @@ class IdlParser:
         except Resolver.TypeResolvingException as e:
             line, col = self.parser.pos_to_linecol(e.type_reference.metadata.position)
             context = self.parser.context(position=e.type_reference.metadata.position)
-            raise ParsingException(f"Error parsing IDL file '{idl}': Unknown type '{e.type_reference.name}' at position ({line}, {col}) => '{context}' ")
+            raise ParsingException(
+                f"Error parsing IDL file '{idl}': Unknown type '{e.type_reference.name}' at position ({line}, {col}) => '{context}' ")
         except Resolver.DuplicateTypeException as e:
             line, col = self.parser.pos_to_linecol(e.datatype.metadata.position)
             context = self.parser.context(position=e.datatype.metadata.position)
-            raise ParsingException(f"Error parsing IDL file '{idl}': Type '{e.datatype.name}' at position ({line}, {col}) already exists => '{context}' ")
+            raise ParsingException(
+                f"Error parsing IDL file '{idl}': Type '{e.datatype.name}' at position ({line}, {col}) already exists => '{context}' ")
         except arpeggio.NoMatch as e:
             raise ParsingException(f"Error parsing IDL file '{idl}': {e}")
         except pydantic.ValidationError as e:
             raise ParsingException(f"Error: {e}")
-
-

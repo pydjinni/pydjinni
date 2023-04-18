@@ -1,0 +1,75 @@
+from abc import ABC, abstractmethod
+from logging import Logger
+from pathlib import Path
+from typing import TypeVar, Generic, get_args
+
+from pydantic import BaseModel
+
+from pydjinni.config.config_model_factory import ConfigModelFactory
+from pydjinni.config.types import OutPaths
+from pydjinni.generator.external_types import ExternalTypes, ExternalTypeDef, ExternalTypesFactory
+from pydjinni.parser.base_models import BaseType, BaseField
+from pydjinni.parser.type_model_factory import TypeModelFactory
+
+ConfigModel = TypeVar("ConfigModel", bound=BaseModel)
+
+
+class Marshal(ABC, Generic[ConfigModel, ExternalTypeDef]):
+    """
+    Abstract class for defining a Marshal class. The purpose of marshalling is to transform a given input to the
+    required, use-case specific output, based on domain specific knowledge and the configuration by the user.
+
+    Methods defined in the Marshal are supposed to be called from the Jinja template that renders the output.
+    """
+
+    def __init_subclass__(cls, types: ExternalTypes[ExternalTypeDef]) -> None:
+        cls._config_model, cls._external_type_def = get_args(cls.__orig_bases__[0])
+        cls.types = types
+
+    config: ConfigModel
+
+    def __init__(
+            self,
+            key: str,
+            config_factory: ConfigModelFactory,
+            external_type_model_factory: TypeModelFactory,
+            logger: Logger
+    ):
+        self._logger = logger
+        self.key = key
+        config_factory.add_generator_config(key, self._config_model)
+        external_type_model_factory.add_field(key, self._external_type_def)
+
+    def register_external_types(self, external_types_factory: ExternalTypesFactory):
+        external_types_factory.register(self.key, self.types)
+
+    def configure(self, config: ConfigModel):
+        self.config = getattr(config, self.key)
+
+    def header_path(self) -> Path:
+        """
+        :return: the path where generated header files should be written.
+        """
+        out = self.config.out
+        if type(out) is OutPaths:
+            return out.header
+        else:
+            return out
+
+    def source_path(self) -> Path:
+        """
+        :return: the path where generated source files should be written
+        """
+        out = self.config.out
+        if type(out) is OutPaths:
+            return out.source
+        else:
+            return out
+
+    @abstractmethod
+    def marshal_type(self, type_def: BaseType):
+        raise NotImplementedError
+
+    @abstractmethod
+    def marshal_field(self, field_def: BaseField):
+        raise NotImplementedError

@@ -1,0 +1,17 @@
+{% extends "base.jinja2" %}
+
+{% block content %}
+
+package {{ config.package }};
+
+{{ type.java.comment }}
+public enum {{ type.java.boxed }} {
+    /** enum option comment */
+{% for item in type.java.items %}
+    {{ item.comment }}
+    {{ item.name }},
+{% endfor %}
+    ;
+}
+
+{% endblock %}

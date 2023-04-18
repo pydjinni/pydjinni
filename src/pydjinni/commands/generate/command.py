@@ -1,22 +1,11 @@
 import click
-import yaml
 
-from pydjinni.context import pass_logger, GenerateContext
+from pydjinni.context import pass_logger
 from pydjinni.defs import DEFAULT_CONFIG_PATH
-from pydjinni.parser.parser import IdlParser
-from pydjinni.parser.resolver import Resolver
 from pathlib import Path
 from .java.command import java
 from logging import Logger
-from pydjinni.generator.java import java_target
-from pydjinni.generator.objc import objc_target
-from pydjinni.generator.cpp import cpp_target
-from pydjinni.config.config_factory import ConfigFactory
-from pydjinni.parser.type_factory import TypeFactory
-from rich.pretty import pretty_repr
 
-from pydjinni.defs import TYPES_DIR
-from ...config.config import load_config
 
 
 @click.group()
@@ -41,20 +30,6 @@ def generate(ctx, logger: Logger, config: Path, option, interactive, idl: Path):
         click.echo("IDL file cannot be found")
     logger.info("generating language bindings")
 
-
-    configuration = load_config(
-        path=config,
-        options=option,
-        option_group="generate",
-        logger=logger)
-    resolver = Resolver(logger).register_targets([cpp_target, java_target, objc_target])
-    ast = IdlParser(logger, resolver).parse(idl)
-
-
-    ctx.obj = GenerateContext(
-        config=configuration,
-        ast=ast,
-        interactive=interactive)
 
 
 generate.add_command(java)

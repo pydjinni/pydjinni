@@ -22,6 +22,7 @@ class OutPaths:
 
 class IdentifierStyle(BaseModel):
     class Case(str, Enum):
+        none = 'none'
         camel = 'camelCase'
         pascal = 'PascalCase'
         snake = 'snake_case'

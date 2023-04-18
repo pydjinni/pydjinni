@@ -1,6 +1,9 @@
 import sys
+from pathlib import Path
 
 import click
+
+from pydjinni.api.api import API
 from .commands.init.command import init
 from .commands.generate.command import generate
 from .commands.package.command import package
@@ -11,6 +14,12 @@ import logging
 from rich.logging import RichHandler
 
 logger = logging.getLogger(__name__)
+
+logging.basicConfig(
+        level="DEBUG",
+        format="%(message)s",
+        handlers=[RichHandler(show_time=False, show_path=False)]
+    )
 
 def main():
     try:
@@ -39,6 +48,14 @@ cli.add_command(init)
 cli.add_command(generate)
 cli.add_command(package)
 cli.add_command(server)
+
+
+def main():
+    pydjinni = API(logger)
+    config = pydjinni.load_config()
+    ast = pydjinni.parse(config, Path("test.djinni"))
+    pydjinni.generate(pydjinni.generation_targets["cpp"], ast)
+    print("foo")
 
 if __name__ == "__main__":
     main()
