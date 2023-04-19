@@ -8,6 +8,7 @@ class FileWriter:
     """
     def __init__(self):
         self._generated_files: list[str] = []
+        self._list_out_files_path: Path | None = None
 
     def write(self, filename: Path, content: str, append: bool = True):
         filename.parent.mkdir(parents=True, exist_ok=True)

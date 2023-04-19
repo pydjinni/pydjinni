@@ -36,11 +36,14 @@ theme:
     - navigation.top
 plugins:
   - search
+  - mkdocstrings
   - macros:
       module_name: docs/macros/main
   - gen-files:
       scripts:
         - docs/gen-files/schemas.py
+watch:
+  - src/pydjinni/api.py
 markdown_extensions:
   - mkdocs-click
   - attr_list
@@ -68,6 +71,7 @@ nav:
   - Reference:
       - Configuration: config.md
       - CLI: cli.md
+      - API: api.md
       - IDL: idl.md
       - Types: types.md
       - External Types: external_types.md

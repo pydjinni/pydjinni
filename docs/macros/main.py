@@ -1,15 +1,11 @@
 import json
+import logging
 from pathlib import Path
-from pydjinni.config.config import Config
 import jsonref
 from mkdocs_click._docs import make_command_docs
 from mkdocs_click._extension import load_command
 
-from pydjinni.generator.cpp import cpp_target
-from pydjinni.generator.java import java_target
-from pydjinni.generator.objc import objc_target
-from pydjinni.parser.ast import Type
-from pydjinni.parser.resolver import Resolver
+from pydjinni.api import API
 
 
 def render_config_schema_table(element, indent: int):
@@ -23,7 +19,7 @@ def render_config_schema_table(element, indent: int):
                 result += f"\n{'#' * indent} {key}\n\n"
                 if value.get("description"):
                     result += f"\n{value['description']}\n\n"
-                result += render_config_schema_table(value, indent+1)
+                result += render_config_schema_table(value, indent + 1)
             if value.get("type") != "object":
                 if first_value:
                     result += f"| Name | Type | Description |\n"
@@ -44,24 +40,13 @@ def render_config_schema_table(element, indent: int):
                         else:
                             result += f"[{type['title']}](#{type['title'].lower()})"
                     result += " |"
-                elif value.get("allOf"):
-                    for val in value["allOf"]:
-                        if val.get("enum"):
-                            result += f"| `{key}` | enum("
-
-                            first = True
-                            for enum_val in val["enum"]:
-                                if first:
-                                    first = False
-                                else:
-                                    result += " | "
-                                result += f"`{enum_val}`"
-                            result += ") |"
                 else:
-                    result += f"| `{key}` | {value['type']} | "
+                    result += f"| `{key}` | {value.get('type')} | "
 
                 if "description" in value:
                     result += f"{value['description']}<br>"
+                if "enum" in value:
+                    result += f"one of `{'`, `'.join(value['enum'])}`<br>"
                 if "examples" in value:
                     examples = value["examples"]
                     if len(examples) == 1:
@@ -83,8 +68,12 @@ def render_config_schema_table(element, indent: int):
 
     return result
 
+
 def define_env(env):
     "Hook function"
+
+    logger = logging.getLogger(__name__)
+    api = API(logger)
 
     @env.macro
     def idl_grammar(path: str):
@@ -93,19 +82,19 @@ def define_env(env):
 
     @env.macro
     def config_schema_table(header_indent: int = 3):
-        json_schema = json.dumps(Config.model_json_schema())
+        json_schema = json.dumps(api.configuration_model.model_json_schema())
         schema = jsonref.loads(json_schema)
         return render_config_schema_table(schema, header_indent)
 
     @env.macro
     def config_schema_definition(definition: str):
-        json_schema = json.dumps(Config.model_json_schema())
+        json_schema = json.dumps(api.configuration_model.model_json_schema())
         definition = jsonref.loads(json_schema)['$defs'][definition]
         return render_config_schema_table(definition, 3)
 
     @env.macro
     def type_schema_table(header_indent: int = 3):
-        json_schema = json.dumps(Type.model_json_schema())
+        json_schema = json.dumps(api.external_type_model.model_json_schema())
         schema = jsonref.loads(json_schema)
         return render_config_schema_table(schema, header_indent)
 
@@ -124,18 +113,13 @@ def define_env(env):
     @env.macro
     def internal_types():
         output = ""
-        resolver = Resolver(None).register_targets([cpp_target, java_target, objc_target])
-        for _, target in resolver.registry.items():
-            info = target.model_dump()
-            output += f"\n## {info['name']}\n\n"
-            if info['comment'] is not None:
-                output += info['comment']
-
-            output += f"| Target | Type | Boxed |\n"
-            output += f"| ------ | ---- | ----- |\n"
-            for key, item in info.items():
-                if key not in ['name', 'comment']:
-                    output += f"| {key} | `{item.get('typename') or ' '}` | `{item.get('boxed') or ' '}` |\n"
-
-
+        for type_def in api.internal_types:
+            output += f"\n## {type_def.name}\n"
+            output += "| Target | Typename | Boxed |\n"
+            output += "|--------|----------|-------|\n"
+            for target in api.generation_targets:
+                target_type = getattr(type_def, target)
+                typename = f"`{target_type.typename}`"
+                boxed_typename = f"`{target_type.boxed}`" if 'boxed' in target_type.model_fields_set else ''
+                output += f"| {target} | {typename} | {boxed_typename} |\n"
         return output

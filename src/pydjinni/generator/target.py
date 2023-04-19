@@ -1,9 +1,8 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from logging import Logger
-from typing import TypeVarTuple, Generic, get_args
 
 from pydjinni.config.config_model_factory import ConfigModelFactory
-from pydjinni.file_writer import FileWriter
+from pydjinni.generator.file_writer import FileWriter
 from .generator import Generator
 from .marshal import Marshal
 from pydjinni.parser.ast import Enum, Flags, Record, Interface

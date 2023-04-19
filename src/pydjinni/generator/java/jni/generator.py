@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from pydjinni.parser.ast import Enum, Flags, Record, Interface
 from pydjinni.parser.base_models import BaseType
 from .marshal import JniMarshal
@@ -10,14 +8,14 @@ class JniGenerator(Generator, key="jni", marshal=JniMarshal):
     def write_header(self, template: str, type_def: BaseType):
         self.write(
             file=type_def.jni.header,
-            template=Path(template),
+            template=template,
             type_def=type_def
         )
 
     def write_source(self, template: str, type_def: BaseType):
         self.write(
             file=type_def.jni.source,
-            template=Path(template),
+            template=template,
             type_def=type_def
         )
 

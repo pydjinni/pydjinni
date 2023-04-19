@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from pathlib import Path
 
@@ -29,4 +29,7 @@ class IdentifierStyle(BaseModel):
         kebab = 'kebab-case'
         train = 'TRAIN_CASE'
     style: Case
-    prefix: str = None
+    prefix: str = Field(
+        default=None,
+        description="Prefix that is added to the beginning of the identifier"
+    )

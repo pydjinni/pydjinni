@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pydantic import create_model, BaseModel
 
+from pydjinni.generator.generate_config import GenerateBaseConfig
+
 
 class ConfigModelFactory:
     """
@@ -17,6 +19,9 @@ class ConfigModelFactory:
     def build(self):
         return create_model(
             "Config",
+            __config__={
+                'extra': 'forbid'
+            },
             generate=(self._create_generate_config_model(), None)
         )
 
@@ -24,5 +29,6 @@ class ConfigModelFactory:
         field_kwargs ={key: (config_model, None) for key, config_model in self._generator_config_models.items()}
         return create_model(
             "Generate",
+            __base__=GenerateBaseConfig,
             **field_kwargs
         )

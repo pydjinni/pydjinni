@@ -1,11 +1,10 @@
-import sys
 from abc import ABC, abstractmethod
 from logging import Logger
 from pathlib import Path
 from jinja2 import Environment, PackageLoader
 
 from pydjinni.config.config_model_factory import ConfigModelFactory
-from pydjinni.file_writer import FileWriter
+from pydjinni.generator.file_writer import FileWriter
 from pydjinni.parser.ast import Flags, Enum, Record, Interface, BaseType
 from .marshal import Marshal
 from ..parser.type_model_factory import TypeModelFactory

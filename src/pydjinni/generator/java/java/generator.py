@@ -11,7 +11,7 @@ class JavaGenerator(Generator, key="java", marshal=JavaMarshal):
     def write_source(self, template: str, type_def: BaseType):
         self.write(
             file=type_def.java.source,
-            template=Path(template),
+            template=template,
             type_def=type_def
         )
 
