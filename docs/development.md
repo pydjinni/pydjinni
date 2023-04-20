@@ -10,10 +10,23 @@ pip install -e .
 
 When running the `pydjinni` command, it will always execute the latest code in the local repository.
 
+## Execute tests
+
+To execute the tests, first make sure that the required dependencies are installed:
+```shell
+pip install "pydjinni[dev]"
+```
+
+The tests can then be executed with `pytest`:
+
+```shell
+pytest
+```
+
 ## Build documentation
 
 ```shell
 pip install -e .
-pip install pydjinni[doc]
+pip install "pydjinni[doc]"
 python -m mkdocs serve
 ```

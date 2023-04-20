@@ -77,3 +77,4 @@ nav:
       - External Types: external_types.md
   - Contribute:
       - Development: development.md
+      - Plugins: plugins.md
