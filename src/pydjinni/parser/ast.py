@@ -1,6 +1,6 @@
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from pydjinni.parser.base_models import BaseType, BaseField
 from pydjinni.parser.identifier import Identifier
@@ -25,7 +25,11 @@ class Flags(BaseType):
 
 class TypeReference(BaseModel):
     name: Identifier
-    type_def: BaseType = None
+    position: int
+    type_def: BaseType = Field(
+        default=None,
+        repr=False
+    )
 
 
 class Interface(BaseType):

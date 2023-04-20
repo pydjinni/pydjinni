@@ -1,10 +1,7 @@
-from pathlib import Path
-
-from pydjinni.parser.base_models import BaseType
-from .marshal import CppMarshal
-
 from pydjinni.generator.generator import Generator
 from pydjinni.parser.ast import Interface, Record, Flags, Enum
+from pydjinni.parser.base_models import BaseType
+from .marshal import CppMarshal
 
 
 class CppGenerator(Generator, key="cpp", marshal=CppMarshal):

@@ -1,8 +1,4 @@
-from pydjinni.cli.cli import cli
-
-
-def main():
-    cli(auto_envvar_prefix='PYDJINNI')
+from pydjinni.cli.cli import main
 
 if __name__ == "__main__":
     main()

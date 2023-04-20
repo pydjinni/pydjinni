@@ -1,13 +1,14 @@
 from abc import ABC, abstractmethod
-from logging import Logger
 from pathlib import Path
+
 from jinja2 import Environment, PackageLoader
 
 from pydjinni.config.config_model_factory import ConfigModelFactory
+from pydjinni.exceptions import ConfigurationException
 from pydjinni.generator.file_writer import FileWriter
 from pydjinni.parser.ast import Flags, Enum, Record, Interface, BaseType
+from pydjinni.parser.type_model_factory import TypeModelFactory
 from .marshal import Marshal
-from ..parser.type_model_factory import TypeModelFactory
 
 
 class Generator(ABC):
@@ -24,10 +25,8 @@ class Generator(ABC):
             self,
             file_writer: FileWriter,
             config_factory: ConfigModelFactory,
-            external_type_model_factory: TypeModelFactory,
-            logger: Logger):
+            external_type_model_factory: TypeModelFactory):
         self._file_writer = file_writer
-        self._logger = logger
         module = '.'.join(self.__module__.split('.')[:-1])
         self._jinja_env = Environment(
             loader=PackageLoader(module, "templates")
@@ -35,8 +34,7 @@ class Generator(ABC):
         self.marshal = self._marshal_type(
             key=self.key,
             config_factory=config_factory,
-            external_type_model_factory=external_type_model_factory,
-            logger=logger
+            external_type_model_factory=external_type_model_factory
         )
 
     def write(self, file: Path, template: str, type_def: BaseType):
@@ -60,3 +58,17 @@ class Generator(ABC):
     @abstractmethod
     def generate_interface(self, type_def: Interface):
         raise NotImplementedError
+
+    def generate(self, type_def: BaseType):
+        if self.marshal.config:
+            match type_def:
+                case Enum():
+                    self.generate_enum(type_def)
+                case Flags():
+                    self.generate_flags(type_def)
+                case Record():
+                    self.generate_record(type_def)
+                case Interface():
+                    self.generate_interface(type_def)
+        else:
+            raise ConfigurationException(f"Missing configuration for 'generator.{self.key}'!")

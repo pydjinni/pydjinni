@@ -1,10 +1,6 @@
-from pathlib import Path
 from typing import TypeVar, Generic
 
 import click
-from logging import Logger
-
-from pydantic import BaseModel
 
 from pydjinni.api import API
 
@@ -12,10 +8,9 @@ ContextType = TypeVar("ContextType")
 
 
 class Context(Generic[ContextType]):
-    def __init__(self, api: API, context: ContextType, logger: Logger):
+    def __init__(self, api: API, context: ContextType):
         self.api = api
         self.context = context
-        self.logger = logger
 
 
 class CliContext(Context[API.ConfiguredContext]):

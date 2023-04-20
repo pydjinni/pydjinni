@@ -1,25 +1,31 @@
 from __future__ import annotations
 
-from collections import defaultdict
-from logging import Logger
+from importlib.metadata import entry_points, EntryPoint
 from pathlib import Path
 
 import pydantic
 import yaml
 from pydantic import BaseModel
-from importlib.metadata import entry_points, EntryPoint
 
 from pydjinni.config.config_model_factory import ConfigModelFactory
-from pydjinni.generator.generate_config import GenerateBaseConfig
-from pydjinni.exceptions import ParsingException
-from pydjinni.generator.file_writer import FileWriter
+from pydjinni.exceptions import FileNotFoundException, ConfigurationException
 from pydjinni.generator.external_types import ExternalTypesFactory
+from pydjinni.generator.file_writer import FileWriter
+from pydjinni.generator.generate_config import GenerateBaseConfig
 from pydjinni.generator.marshal import Marshal
 from pydjinni.generator.target import Target
+from pydjinni.parser.base_models import BaseType, BaseExternalType
 from pydjinni.parser.parser import IdlParser
 from pydjinni.parser.resolver import Resolver
 from pydjinni.parser.type_model_factory import TypeModelFactory
-from pydjinni.parser.base_models import BaseType, BaseExternalType
+
+
+def combine_into(d: dict, combined: dict) -> None:
+    for k, v in d.items():
+        if isinstance(v, dict):
+            combine_into(v, combined.setdefault(k, {}))
+        else:
+            combined[k] = v
 
 
 class API:
@@ -29,7 +35,7 @@ class API:
     ```python
     from pydjinni import API
 
-    API().configure().parse("test.djinni").generate("cpp").generate("java")
+    API().configure("pydjinni.yaml").parse("test.djinni").generate("cpp").generate("java").write_out_files()
     ```
 
     is equivalent to running the CLI command:
@@ -39,11 +45,10 @@ class API:
     ```
     """
 
-    def __init__(self, logger: Logger):
+    def __init__(self):
         self._file_writer = FileWriter()
         self._config_factory = ConfigModelFactory()
         self._external_type_model_factory = TypeModelFactory(BaseExternalType)
-        self._logger = logger
         # initializing plugins
         generator_plugins = entry_points(group='pydjinni.generator')
         self._generate_targets = [self._init_generator_plugin(plugin) for plugin in generator_plugins]
@@ -95,66 +100,68 @@ class API:
                 marshal.register_external_types(self._external_types_factory)
         return self._external_types_factory.build()
 
-
     def _init_generator_plugin(self, plugin: EntryPoint) -> Target:
         target_type: type[Target] = plugin.load()
         return target_type(
             file_writer=self._file_writer,
             config_factory=self._config_factory,
             external_type_model_factory=self._external_type_model_factory,
-            logger=self._logger
         )
 
-    def configure(self, path: Path = Path("pydjinni.yaml"), options: tuple[str] = ()) -> ConfiguredContext:
+    def configure(self, path: Path | str = None, options: dict = None) -> ConfiguredContext:
         """
         Parses the configuration input.
 
+        Args:
+            path: the path to a configuration file.
+            options: a dict with additional configuration parameters.
+
         Returns:
             configured API context
+
+        Raises:
+            ConfigurationException: if parsing the configuration has failed
         """
 
-        def _parse_option(option: str) -> dict:
-            key_list, value = option.split('=', 1)
-            keys = key_list.split('.')
-            result = defaultdict()
-            d = result
-            for subkey in keys[:-1]:
-                d = d.setdefault(subkey, {})
-            d[keys[-1]] = value
-            return result
-
-        def _combine_into(d: dict, combined: dict) -> None:
-            for k, v in d.items():
-                if isinstance(v, dict):
-                    _combine_into(v, combined.setdefault(k, {}))
-                else:
-                    combined[k] = v
-
+        if options is None:
+            options = dict()
+        if isinstance(path, str):
+            path = Path(path)
+        if not path and not options:
+            raise ConfigurationException("Provide either a config file or a list of configuration options!")
         try:
-            config_dict = yaml.safe_load(path.read_text())
-            for option in options:
-                _combine_into(_parse_option(option), config_dict)
+            config_dict = yaml.safe_load(path.read_text()) if path is not None else dict()
+            combine_into(options, config_dict)
             config = self._configuration_model.parse_obj(config_dict)
             return API.ConfiguredContext(
-                logger=self._logger,
                 config=config,
                 external_types_model=self.external_type_model,
                 generate_targets=self.generation_targets,
                 file_writer=self._file_writer
             )
-        except pydantic.ValidationError as e:
-            raise ParsingException(e)
+        except (pydantic.ValidationError, yaml.YAMLError) as e:
+            raise ConfigurationException(str(e))
+        except FileNotFoundError:
+            raise FileNotFoundException(path)
 
     class ConfiguredContext:
-        def __init__(self, logger: Logger, config: BaseModel, external_types_model: type[BaseModel], generate_targets: dict[str, Target], file_writer: FileWriter):
-            self._logger = logger
+        def __init__(self, config: BaseModel, external_types_model: type[BaseModel],
+                     generate_targets: dict[str, Target], file_writer: FileWriter):
             self._config = config
             self._external_types_factory = ExternalTypesFactory(external_types_model)
             self._generate_targets = generate_targets
-            self._resolver = Resolver(logger=self._logger)
+            self._resolver = Resolver()
             self._file_writer = file_writer
 
-        def parse(self, idl: Path) -> GenerateContext:
+        @property
+        def config(self) -> BaseModel:
+            """
+            Returns:
+                The configuration model instance that is used for further processing
+            """
+            return self._config
+
+        def parse(self, idl: Path | str) -> GenerateContext:
             """
             Parses the given IDL into an Abstract Syntax tree. Does not generate any file output.
             Args:
@@ -162,7 +169,15 @@ class API:
 
             Returns:
                 context that can be used to generate output
+            Raises:
+                FileNotFoundException            : When the given idl file does not exist.
+                IdlParser.ParsingException       : When the input could not be parsed.
+                IdlParser.TypeResolvingException : When a referenced type cannot be found.
+                IdlParser.DuplicateTypeException : When a type is re-declared.
+                IdlParser.MarshalException       : When an error happened during marshalling.
             """
+            if isinstance(idl, str):
+                idl = Path(idl)
             generate_config: GenerateBaseConfig = self._config.generate
             if generate_config is not None:
                 # only marshals that are configured are passed to the parser
@@ -182,7 +197,6 @@ class API:
                 self._resolver.register_external(external_type_def)
 
             parser = IdlParser(
-                logger=self._logger,
                 resolver=self._resolver,
                 marshals=marshals
             )
@@ -197,11 +211,20 @@ class API:
             )
 
         class GenerateContext:
-            def __init__(self, generate_targets: dict[str, Target], file_writer: FileWriter, ast: list[BaseType], config: GenerateBaseConfig):
+            def __init__(self, generate_targets: dict[str, Target], file_writer: FileWriter, ast: list[BaseType],
+                         config: GenerateBaseConfig):
                 self._generate_targets = generate_targets
                 self._file_writer = file_writer
                 self._ast = ast
                 self._config = config
+
+            @property
+            def ast(self) -> list[BaseType]:
+                """
+                Returns:
+                    Abstract syntax tree (AST) that was generated by the parser.
+                """
+                return self._ast
 
             def generate(self, target_name: str) -> API.ConfiguredContext.GenerateContext:
                 """
@@ -224,6 +247,6 @@ class API:
                 Returns:
                     the same context.
                 """
-                if self._config.list_out_files is not None:
+                if self._config and self._config.list_out_files:
                     self._file_writer.write_generated_files(self._config.list_out_files)
                 return self

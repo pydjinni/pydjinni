@@ -10,9 +10,11 @@ class BaseExternalType(BaseModel):
 
 class BaseType(BaseModel, extra='allow'):
     name: Identifier
+    position: int
     comment: str | None = None
 
 
 class BaseField(BaseModel, extra='allow'):
     name: Identifier
+    position: int
     comment: str | None = None

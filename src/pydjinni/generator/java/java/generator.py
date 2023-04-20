@@ -1,9 +1,7 @@
-from pathlib import Path
-
+from pydjinni.generator.generator import Generator
 from pydjinni.parser.ast import Enum, Flags, Record, Interface
 from pydjinni.parser.base_models import BaseType
 from .marshal import JavaMarshal
-from pydjinni.generator.generator import Generator
 
 
 class JavaGenerator(Generator, key="java", marshal=JavaMarshal):

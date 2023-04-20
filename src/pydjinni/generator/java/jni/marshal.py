@@ -1,9 +1,9 @@
-from .config import JniConfig
-from .external_types import external_types
-from .type import JniField, JniType, JniExternalType
 from pydjinni.generator.marshal import Marshal
 from pydjinni.parser.ast import Enum, Flags, Interface, Record
 from pydjinni.parser.base_models import BaseType, BaseField
+from .config import JniConfig
+from .external_types import external_types
+from .type import JniField, JniType, JniExternalType
 
 
 class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):

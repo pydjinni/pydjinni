@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from pydjinni.parser.base_models import BaseType, BaseField
-from .config import CppConfig
 from pydjinni.generator.marshal import Marshal
 from pydjinni.parser.ast import Interface, Record, Enum, Flags
+from pydjinni.parser.base_models import BaseType, BaseField
+from .config import CppConfig
 from .external_types import external_types
 from .type import CppExternalType, CppType, CppField
 

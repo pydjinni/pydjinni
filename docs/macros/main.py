@@ -1,11 +1,14 @@
 import json
 import logging
+from collections import OrderedDict
 from pathlib import Path
+
 import jsonref
 from mkdocs_click._docs import make_command_docs
 from mkdocs_click._extension import load_command
 
 from pydjinni.api import API
+from pydjinni.exceptions import return_codes
 
 
 def render_config_schema_table(element, indent: int):
@@ -73,7 +76,7 @@ def define_env(env):
     "Hook function"
 
     logger = logging.getLogger(__name__)
-    api = API(logger)
+    api = API()
 
     @env.macro
     def idl_grammar(path: str):
@@ -100,7 +103,7 @@ def define_env(env):
 
     @env.macro
     def cli_commands():
-        command_obj = load_command("pydjinni.__main__", "cli")
+        command_obj = load_command("pydjinni.cli.cli", "cli")
 
         output = make_command_docs(
             prog_name="pydjinni",
@@ -114,12 +117,21 @@ def define_env(env):
     def internal_types():
         output = ""
         for type_def in api.internal_types:
-            output += f"\n## {type_def.name}\n"
-            output += "| Target | Typename | Boxed |\n"
-            output += "|--------|----------|-------|\n"
+            output += f"\n## {type_def.name}\n" \
+                      "| Target | Typename | Boxed |\n" \
+                      "|--------|----------|-------|\n"
             for target in api.generation_targets:
                 target_type = getattr(type_def, target)
                 typename = f"`{target_type.typename}`"
                 boxed_typename = f"`{target_type.boxed}`" if 'boxed' in target_type.model_fields_set else ''
                 output += f"| {target} | {typename} | {boxed_typename} |\n"
+        return output
+
+    @env.macro
+    def return_code_list():
+        sorted_return_codes = OrderedDict(sorted(return_codes.items()))
+        output = "| Code | Description |\n" \
+                 "|------|-------------|\n"
+        for code, description in sorted_return_codes.items():
+            output += f"| {code} | {description} |\n"
         return output

@@ -1,9 +1,7 @@
-from pathlib import Path
-
+from pydjinni.generator.marshal import Marshal
 from pydjinni.parser.ast import Enum, Record, Interface, Flags
 from pydjinni.parser.base_models import BaseType, BaseField
 from .config import JavaConfig
-from pydjinni.generator.marshal import Marshal
 from .external_types import external_types
 from .type import JavaType, JavaField, JavaExternalType
 
