@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: '3.10'
       - name: Install build dependencies
-        run: pip install . .[publish, dev]
+        run: pip install . .[publish] .[dev]
       - name: Run unit tests
         run: pytest
       - name: Build dist
