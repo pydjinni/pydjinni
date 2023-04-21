@@ -5,7 +5,7 @@ from pydantic import create_model, BaseModel
 from pydjinni.generator.generate_config import GenerateBaseConfig
 
 
-class ConfigModelFactory:
+class ConfigModelBuilder:
     """
     Generates the final config schema from all loaded plugins
     """

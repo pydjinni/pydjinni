@@ -7,9 +7,9 @@ import pydantic
 import yaml
 from pydantic import BaseModel
 
-from pydjinni.config.config_model_factory import ConfigModelFactory
+from pydjinni.config.config_model_builder import ConfigModelBuilder
 from pydjinni.exceptions import FileNotFoundException, ConfigurationException
-from pydjinni.generator.external_types import ExternalTypesFactory
+from pydjinni.generator.external_types import ExternalTypesBuilder
 from pydjinni.generator.file_writer import FileWriter
 from pydjinni.generator.generate_config import GenerateBaseConfig
 from pydjinni.generator.marshal import Marshal
@@ -17,7 +17,7 @@ from pydjinni.generator.target import Target
 from pydjinni.parser.base_models import BaseType, BaseExternalType
 from pydjinni.parser.parser import IdlParser
 from pydjinni.parser.resolver import Resolver
-from pydjinni.parser.type_model_factory import TypeModelFactory
+from pydjinni.parser.type_model_builder import TypeModelBuilder
 
 
 def combine_into(d: dict, combined: dict) -> None:
@@ -47,16 +47,16 @@ class API:
 
     def __init__(self):
         self._file_writer = FileWriter()
-        self._config_factory = ConfigModelFactory()
-        self._external_type_model_factory = TypeModelFactory(BaseExternalType)
+        self._config_model_builder = ConfigModelBuilder()
+        self._external_type_model_builder = TypeModelBuilder(BaseExternalType)
         # initializing plugins
         generator_plugins = entry_points(group='pydjinni.generator')
         self._generate_targets = [self._init_generator_plugin(plugin) for plugin in generator_plugins]
 
         # generate models
-        self._configuration_model = self._config_factory.build()
-        self._external_type_model = self._external_type_model_factory.build()
-        self._external_types_factory = ExternalTypesFactory(self._external_type_model)
+        self._configuration_model = self._config_model_builder.build()
+        self._external_type_model = self._external_type_model_builder.build()
+        self._external_types_builder = ExternalTypesBuilder(self._external_type_model)
 
     @property
     def configuration_model(self) -> type[BaseModel]:
@@ -69,7 +69,7 @@ class API:
         return self._configuration_model
 
     @property
-    def external_type_model(self) -> type[BaseModel]:
+    def external_type_model(self) -> type[BaseExternalType]:
         """
         The type model is assembled dynamically depending on the loaded plugins.
 
@@ -97,15 +97,15 @@ class API:
         """
         for target in self._generate_targets:
             for marshal in target.marshals:
-                marshal.register_external_types(self._external_types_factory)
-        return self._external_types_factory.build()
+                marshal.register_external_types(self._external_types_builder)
+        return self._external_types_builder.build()
 
     def _init_generator_plugin(self, plugin: EntryPoint) -> Target:
         target_type: type[Target] = plugin.load()
         return target_type(
             file_writer=self._file_writer,
-            config_factory=self._config_factory,
-            external_type_model_factory=self._external_type_model_factory,
+            config_model_builder=self._config_model_builder,
+            external_type_model_builder=self._external_type_model_builder,
         )
 
     def configure(self, path: Path | str = None, options: dict = None) -> ConfiguredContext:
@@ -132,7 +132,7 @@ class API:
         try:
             config_dict = yaml.safe_load(path.read_text()) if path is not None else dict()
             combine_into(options, config_dict)
-            config = self._configuration_model.parse_obj(config_dict)
+            config = self._configuration_model.model_validate(config_dict)
             return API.ConfiguredContext(
                 config=config,
                 external_types_model=self.external_type_model,
@@ -145,12 +145,12 @@ class API:
             raise FileNotFoundException(path)
 
     class ConfiguredContext:
-        def __init__(self, config: BaseModel, external_types_model: type[BaseModel],
+        def __init__(self, config: BaseModel, external_types_model: type[BaseExternalType],
                      generate_targets: dict[str, Target], file_writer: FileWriter):
             self._config = config
-            self._external_types_factory = ExternalTypesFactory(external_types_model)
+            self._external_types_builder = ExternalTypesBuilder(external_types_model)
             self._generate_targets = generate_targets
-            self._resolver = Resolver()
+            self._resolver = Resolver(external_types_model)
             self._file_writer = file_writer
 
         @property
@@ -190,10 +190,10 @@ class API:
                     marshals += target.marshals
 
             for marshal in marshals:
-                marshal.register_external_types(self._external_types_factory)
+                marshal.register_external_types(self._external_types_builder)
                 marshal.configure(generate_config)
 
-            for external_type_def in self._external_types_factory.build():
+            for external_type_def in self._external_types_builder.build():
                 self._resolver.register_external(external_type_def)
 
             parser = IdlParser(

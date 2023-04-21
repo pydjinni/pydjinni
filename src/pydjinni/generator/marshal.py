@@ -5,12 +5,12 @@ from typing import TypeVar, Generic, get_args
 import pydantic
 from pydantic import BaseModel
 
-from pydjinni.config.config_model_factory import ConfigModelFactory
+from pydjinni.config.config_model_builder import ConfigModelBuilder
 from pydjinni.config.types import OutPaths
 from pydjinni.exceptions import ConfigurationException
-from pydjinni.generator.external_types import ExternalTypes, ExternalTypeDef, ExternalTypesFactory
+from pydjinni.generator.external_types import ExternalTypes, ExternalTypeDef, ExternalTypesBuilder
 from pydjinni.parser.base_models import BaseType, BaseField
-from pydjinni.parser.type_model_factory import TypeModelFactory
+from pydjinni.parser.type_model_builder import TypeModelBuilder
 
 ConfigModel = TypeVar("ConfigModel", bound=BaseModel)
 
@@ -35,15 +35,15 @@ class Marshal(ABC, Generic[ConfigModel, ExternalTypeDef]):
     def __init__(
             self,
             key: str,
-            config_factory: ConfigModelFactory,
-            external_type_model_factory: TypeModelFactory
+            config_model_builder: ConfigModelBuilder,
+            external_type_model_builder: TypeModelBuilder
     ):
         self.config: ConfigModel | None = None
         self.key = key
-        config_factory.add_generator_config(key, self._config_model)
-        external_type_model_factory.add_field(key, self._external_type_def)
+        config_model_builder.add_generator_config(key, self._config_model)
+        external_type_model_builder.add_field(key, self._external_type_def)
 
-    def register_external_types(self, external_types_factory: ExternalTypesFactory):
+    def register_external_types(self, external_types_factory: ExternalTypesBuilder):
         external_types_factory.register(self.key, self.types)
 
     def configure(self, config: ConfigModel):

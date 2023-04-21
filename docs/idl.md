@@ -5,4 +5,4 @@ the host language.
 
 ## PEG grammar
 
-{{ idl_grammar("src/pydjinni/res/grammar/idl.cleanpeg") }}
+{{ idl_grammar("src/pydjinni/parser/grammar/idl.cleanpeg") }}

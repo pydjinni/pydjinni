@@ -1,6 +1,7 @@
 from pydantic import create_model, BaseModel
 
-class TypeModelFactory:
+
+class TypeModelBuilder:
     """
     Create the BaseModel for (external) type validation from all loaded generator modules
     """

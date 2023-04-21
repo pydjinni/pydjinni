@@ -1,21 +1,21 @@
 from pydantic import BaseModel
 
-from pydjinni.config.config_model_factory import ConfigModelFactory
+from pydjinni.config.config_model_builder import ConfigModelBuilder
 
 
 def test_add_generator_config():
     # GIVEN a ConfigModelFactory
-    factory = ConfigModelFactory()
+    builder = ConfigModelBuilder()
 
     # AND GIVEN a pydantic model
     class GeneratorConfig(BaseModel):
         foo: int = 1
 
     # WHEN adding a generator model
-    factory.add_generator_config("name", GeneratorConfig)
+    builder.add_generator_config("name", GeneratorConfig)
 
     # AND WHEN building the config model
-    config_model = factory.build()
+    config_model = builder.build()
 
     # THEN the config model should contain a 'generate' field
     assert 'generate' in config_model.model_fields

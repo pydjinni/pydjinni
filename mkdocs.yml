@@ -34,6 +34,9 @@ theme:
     - navigation.tabs
     - navigation.tracking
     - navigation.top
+    - navigation.footer
+    - content.action.edit
+    - content.code.copy
 plugins:
   - search
   - mkdocstrings
@@ -75,6 +78,6 @@ nav:
       - IDL: idl.md
       - Types: types.md
       - External Types: external_types.md
-  - Contribute:
-      - Development: development.md
+  - Development:
+      - Setup: dev_setup.md
       - Plugins: plugins.md

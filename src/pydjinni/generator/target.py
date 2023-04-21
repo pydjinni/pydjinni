@@ -1,9 +1,9 @@
 from abc import ABC
 
-from pydjinni.config.config_model_factory import ConfigModelFactory
+from pydjinni.config.config_model_builder import ConfigModelBuilder
 from pydjinni.generator.file_writer import FileWriter
 from pydjinni.parser.base_models import BaseType
-from pydjinni.parser.type_model_factory import TypeModelFactory
+from pydjinni.parser.type_model_builder import TypeModelBuilder
 from .generator import Generator
 from .marshal import Marshal
 
@@ -21,12 +21,12 @@ class Target(ABC):
     def __init__(
             self,
             file_writer: FileWriter,
-            config_factory: ConfigModelFactory,
-            external_type_model_factory: TypeModelFactory):
+            config_model_builder: ConfigModelBuilder,
+            external_type_model_builder: TypeModelBuilder):
         self.generator_instances = [generator(
             file_writer=file_writer,
-            config_factory=config_factory,
-            external_type_model_factory=external_type_model_factory
+            config_model_builder=config_model_builder,
+            external_type_model_builder=external_type_model_builder
         ) for generator in self._generator_types]
 
     def generate(self, type_def: BaseType):

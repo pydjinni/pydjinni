@@ -13,7 +13,9 @@ class Identifier(str):
     def convert(self, style: IdentifierStyle | IdentifierStyle.Case):
         identifier_style: IdentifierStyle = style if type(
             style) is IdentifierStyle else IdentifierStyle(style=style.value)
-        tokens = self.split('_')
+
+        tokens = [self] if identifier_style.style == IdentifierStyle.Case.none else self.split('_')
+
         match identifier_style.style:
             case IdentifierStyle.Case.train | IdentifierStyle.Case.snake:
                 link = '_'
@@ -22,14 +24,16 @@ class Identifier(str):
             case _:
                 link = ''
 
-        converted_tokens = [self._convert_token(tokens[0], identifier_style.style, first=True)]
-        converted_tokens += [self._convert_token(token, identifier_style.style) for token in tokens[1:]]
+        converted_tokens = [Identifier._convert_token(tokens[0], identifier_style.style, first=True)]
+        converted_tokens += [Identifier._convert_token(token, identifier_style.style) for token in tokens[1:]]
 
+        output = link.join(converted_tokens)
         if identifier_style.prefix is not None:
-            converted_tokens.insert(0, style.prefix)
-        return link.join(converted_tokens)
+            output = f"{style.prefix}{output}"
+        return output
 
-    def _convert_token(self, token: str, style: IdentifierStyle.Case, first: bool = False) -> str:
+    @staticmethod
+    def _convert_token(token: str, style: IdentifierStyle.Case, first: bool = False) -> str:
         match (style, first):
             case (IdentifierStyle.Case.camel, True) | (IdentifierStyle.Case.snake, True | False) | (IdentifierStyle.Case.kebab, True | False):
                 return token.lower()

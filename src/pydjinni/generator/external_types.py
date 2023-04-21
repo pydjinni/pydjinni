@@ -10,7 +10,7 @@ class ExternalTypes(BaseModel, Generic[ExternalTypeDef]):
     i16: ExternalTypeDef
 
 
-class ExternalTypesFactory:
+class ExternalTypesBuilder:
     def __init__(self, external_base_type: type[BaseModel]):
         self._external_base_type = external_base_type
         self._external_types: dict[str, ExternalTypes] = {}

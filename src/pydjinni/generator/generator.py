@@ -3,11 +3,11 @@ from pathlib import Path
 
 from jinja2 import Environment, PackageLoader
 
-from pydjinni.config.config_model_factory import ConfigModelFactory
+from pydjinni.config.config_model_builder import ConfigModelBuilder
 from pydjinni.exceptions import ConfigurationException
 from pydjinni.generator.file_writer import FileWriter
 from pydjinni.parser.ast import Flags, Enum, Record, Interface, BaseType
-from pydjinni.parser.type_model_factory import TypeModelFactory
+from pydjinni.parser.type_model_builder import TypeModelBuilder
 from .marshal import Marshal
 
 
@@ -24,8 +24,8 @@ class Generator(ABC):
     def __init__(
             self,
             file_writer: FileWriter,
-            config_factory: ConfigModelFactory,
-            external_type_model_factory: TypeModelFactory):
+            config_model_builder: ConfigModelBuilder,
+            external_type_model_builder: TypeModelBuilder):
         self._file_writer = file_writer
         module = '.'.join(self.__module__.split('.')[:-1])
         self._jinja_env = Environment(
@@ -33,8 +33,8 @@ class Generator(ABC):
         )
         self.marshal = self._marshal_type(
             key=self.key,
-            config_factory=config_factory,
-            external_type_model_factory=external_type_model_factory
+            config_model_builder=config_model_builder,
+            external_type_model_builder=external_type_model_builder
         )
 
     def write(self, file: Path, template: str, type_def: BaseType):

@@ -1,7 +1,6 @@
 from pathlib import Path
 
 import arpeggio
-import pydantic
 from arpeggio import PTNodeVisitor
 from arpeggio import visit_parse_tree
 from arpeggio.cleanpeg import ParserPEG
@@ -191,7 +190,7 @@ class IdlParser:
         except Resolver.TypeResolvingException as e:
             line, col = self.parser.pos_to_linecol(e.position)
             context = self.parser.context(position=e.position)
-            raise IdlParser.ParsingException(idl, e.position, f"Unknown type '{e.type_reference.name}' at position ({line}, {col}) => '{context}' ")
+            raise IdlParser.TypeResolvingException(idl, e.position, f"Unknown type '{e.type_reference.name}' at position ({line}, {col}) => '{context}' ")
         except Resolver.DuplicateTypeException as e:
             line, col = self.parser.pos_to_linecol(e.position)
             context = self.parser.context(position=e.position)
