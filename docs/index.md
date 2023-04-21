@@ -106,7 +106,7 @@ go = 'pydjinni-go.generator.go:GoTarget'
 
 ## Extendable
 
-Pydjinni is modular, additonal capabilities can be added through custom modules.
+Pydjinni is modular, additional capabilities can be added through custom modules.
 
 That way for example support for an additional host language can be added without having to maintain a fork or contributing 
 to the project.
