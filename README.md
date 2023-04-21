@@ -1,4 +1,4 @@
-<center>
+<div align="center">
 
 <img src="docs/assets/logo.png" width="60" height="60" alt="logo">
 
@@ -11,7 +11,7 @@
 
 An opinionated Djinni reimplementation written in Python.
 
-</center>
+</div>
 
 
 
