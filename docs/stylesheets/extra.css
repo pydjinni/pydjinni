@@ -2,6 +2,16 @@
     --border-radius: 0.45rem;
 }
 
+@media screen {
+    [data-md-color-scheme=slate] {
+        --md-default-bg-color: var(--md-footer-bg-color--dark)
+    }
+}
+
+.md-typeset h1, .md-typeset h2 {
+    font-weight: 600;
+}
+
 .md-typeset__table {
   width: 100%;
 }
@@ -48,6 +58,7 @@
 .md-typeset .md-button {
     border-radius: var(--border-radius);
     padding: .425em 1.2em;
+    border-width: .06rem;
 }
 
 .md-header__button.md-logo img {
@@ -122,5 +133,40 @@
         opacity: 1;
     }
 
+    .left {
+        float: left;
+        min-width: 35%;
+        margin-right: 2em;
+    }
 
+    .clear {
+        float: left;
+        width: 100%;
+        display: block;
+        height: 2em;
+    }
+
+    .md-typeset h1.hero-title {
+        font-size:2.8em;
+    }
+}
+
+.md-typeset h1.hero-title {
+    background-color: #9473FF;
+    background-image: url("https://unsplash.com/photos/33xSu0EWgP4/download?ixid=MnwxMjA3fDB8MXxzZWFyY2h8NzB8fGNvbG9yZnVsJTIwYmx1cnJlZHxkZXwwfHx8fDE2ODIwMzQ5NDU&force=true&w=640");
+    background-repeat: repeat;
+    background-size: 2500px 2500px;
+    background-clip:text;
+    -webkit-background-clip:text;
+    animation: animate 60s ease-in-out infinite;
+    color: transparent;
+}
+
+@keyframes animate {
+    0%, 100% {
+        background-position: top left;
+    }
+    50% {
+        background-position: bottom right;
+    }
 }

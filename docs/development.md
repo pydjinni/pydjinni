@@ -14,7 +14,7 @@ When running the `pydjinni` command, it will always execute the latest code in t
 
 To execute the tests, first make sure that the required dependencies are installed:
 ```shell
-pip install "pydjinni[dev]"
+pip install .[dev]
 ```
 
 The tests can then be executed with `pytest`:
@@ -27,6 +27,6 @@ pytest
 
 ```shell
 pip install -e .
-pip install "pydjinni[doc]"
+pip install .[doc]
 python -m mkdocs serve
 ```
