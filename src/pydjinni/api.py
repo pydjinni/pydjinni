@@ -186,6 +186,7 @@ class API:
                 generate_targets = []
             marshals: list[Marshal] = []
             for key, target in self._generate_targets.items():
+                target.input_file(idl)
                 if key in generate_targets:
                     marshals += target.marshals
 
@@ -236,8 +237,7 @@ class API:
                     the same context. Generation commands can be chained.
                 """
                 target = self._generate_targets[target_name]
-                for type_def in self._ast:
-                    target.generate(type_def)
+                target.generate(self._ast)
                 return self
 
             def write_out_files(self) -> API.ConfiguredContext.GenerateContext:

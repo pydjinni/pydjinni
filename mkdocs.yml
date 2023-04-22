@@ -4,6 +4,7 @@ edit_uri: edit/main/docs/
 copyright: Copyright &copy; 2023 jothepro
 theme:
   name: material
+  favicon: assets/logo.png
   logo: assets/logo.png
   font:
     text: Open Sans

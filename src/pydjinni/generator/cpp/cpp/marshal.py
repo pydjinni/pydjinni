@@ -25,8 +25,8 @@ class CppMarshal(Marshal[CppConfig, CppExternalType], types=external_types):
     def marshal_type(self, type_def: BaseType):
         type_def.cpp = CppType(
             typename=type_def.name.convert(self.config.identifier.type),
-            header=self.header_path() / f"{type_def.name.convert(self.config.identifier.file)}.{self.config.header_extension}",
-            source=self.source_path() / f"{type_def.name.convert(self.config.identifier.file)}.{self.config.source_extension}",
+            header=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.header_extension}"),
+            source=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.source_extension}"),
             includes=self.includes(type_def)
         )
 

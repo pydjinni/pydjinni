@@ -1,7 +1,9 @@
+import inspect
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import NoReturn
 
-from jinja2 import Environment, PackageLoader
+from jinja2 import Environment, PackageLoader, FileSystemLoader
 
 from pydjinni.config.config_model_builder import ConfigModelBuilder
 from pydjinni.exceptions import ConfigurationException
@@ -27,9 +29,10 @@ class Generator(ABC):
             config_model_builder: ConfigModelBuilder,
             external_type_model_builder: TypeModelBuilder):
         self._file_writer = file_writer
-        module = '.'.join(self.__module__.split('.')[:-1])
+        self._input_file = None
+        self._generator_directory = Path(inspect.getfile(self.__class__)).parent
         self._jinja_env = Environment(
-            loader=PackageLoader(module, "templates")
+            loader=FileSystemLoader(self._generator_directory / "templates")
         )
         self.marshal = self._marshal_type(
             key=self.key,
@@ -37,10 +40,26 @@ class Generator(ABC):
             external_type_model_builder=external_type_model_builder
         )
 
-    def write(self, file: Path, template: str, type_def: BaseType):
+    def input_file(self, path: Path):
+        """Sets the input file that is currently being processed."""
+        self._input_file = path
+
+    def write(self, file: Path, template: str, **kwargs):
+        """
+        Renders a Jinja2 template with the provided arguments.
+
+        Args:
+            file: the filename of the file that should be rendered
+            template: the template file to be used for rendering
+            **kwargs: any other args are directly passed to the jinja template
+        """
         self._file_writer.write(
             filename=file,
-            content=self._jinja_env.get_template(template).render(type_def=type_def, config=self.marshal.config)
+            content=self._jinja_env.get_template(template).render(
+                config=self.marshal.config,
+                input_file=self._input_file,
+                **kwargs
+            )
         )
 
     @abstractmethod
@@ -59,16 +78,40 @@ class Generator(ABC):
     def generate_interface(self, type_def: Interface):
         raise NotImplementedError
 
-    def generate(self, type_def: BaseType):
+    def generate_support_lib(self):
+        """
+        Copies support lib files if they exist. Fails silently if no files can be found in the expected directories.
+        """
+        self._file_writer.copy_directory(
+            source_dir=self._generator_directory / "support_lib" / "include",
+            target_dir=self.marshal.header_path()
+        )
+        self._file_writer.copy_directory(
+            source_dir=self._generator_directory / "support_lib" / "src",
+            target_dir=self.marshal.header_path()
+        )
+        root = Path(__file__).parent
+        self._file_writer.copy_directory(
+            source_dir=root / "support_lib" / "include",
+            target_dir=self.marshal.header_path()
+        )
+        self._file_writer.copy_directory(
+            source_dir=root / "support_lib" / "src",
+            target_dir=self.marshal.source_path()
+        )
+
+    def generate(self, ast: list[BaseType]):
         if self.marshal.config:
-            match type_def:
-                case Enum():
-                    self.generate_enum(type_def)
-                case Flags():
-                    self.generate_flags(type_def)
-                case Record():
-                    self.generate_record(type_def)
-                case Interface():
-                    self.generate_interface(type_def)
+            self.generate_support_lib()
+            for type_def in ast:
+                match type_def:
+                    case Enum():
+                        self.generate_enum(type_def)
+                    case Flags():
+                        self.generate_flags(type_def)
+                    case Record():
+                        self.generate_record(type_def)
+                    case Interface():
+                        self.generate_interface(type_def)
         else:
             raise ConfigurationException(f"Missing configuration for 'generator.{self.key}'!")

@@ -25,6 +25,10 @@ class ObjcConfig(BaseModel):
     )
     header_extension: str = Field(
         default="h",
-        description="The filename extension for Objective-C header files"
+        description="The filename extension for Objective-C header files."
+    )
+    swift_bridging_header: Path = Field(
+        default=None,
+        description="The name of the Objective-C Bridging Header required for using the interface from Swift."
     )
     identifier: ObjcIdentifierStyle = ObjcIdentifierStyle()

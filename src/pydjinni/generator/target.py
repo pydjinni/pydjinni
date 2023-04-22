@@ -1,4 +1,5 @@
 from abc import ABC
+from pathlib import Path
 
 from pydjinni.config.config_model_builder import ConfigModelBuilder
 from pydjinni.generator.file_writer import FileWriter
@@ -29,9 +30,13 @@ class Target(ABC):
             external_type_model_builder=external_type_model_builder
         ) for generator in self._generator_types]
 
-    def generate(self, type_def: BaseType):
+    def input_file(self, path: Path):
         for generator_instance in self.generator_instances:
-            generator_instance.generate(type_def)
+            generator_instance.input_file(path)
+
+    def generate(self, ast: list[BaseType]):
+        for generator_instance in self.generator_instances:
+            generator_instance.generate(ast)
 
     @property
     def marshals(self) -> list[Marshal]:

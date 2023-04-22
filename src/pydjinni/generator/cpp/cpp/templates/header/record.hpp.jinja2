@@ -1,6 +1,8 @@
 {% include "base.jinja2" %}
 
-{% for include in type_def.cpp.includes %}
+#pragma once
+
+{% for include in type_def.cpp.includes -%}
 #include {{ include }}
 {% endfor %}
 
@@ -11,7 +13,7 @@ struct {{ type_def.cpp.typename }} final {
     {% endfor %}
 
     {{ type_def.cpp.typename }}(
-        {% for field in type_def.fields %}
+        {% for field in type_def.fields -%}
             {{ field.cpp.typename }} {{ field.cpp.name }}_{{ ", " if not loop.last }}
         {% endfor %})
     :{% for field in type_def.fields %}
@@ -21,7 +23,7 @@ struct {{ type_def.cpp.typename }} final {
 
     {% if config.default_record_constructor %}
         {{ type_def.cpp.typename }}()
-        :{% for field in type_def.fields %}
+        :{% for field in type_def.fields -%}
             {{ ", " if not loop.first }} {{ field.cpp.name }}()
         {% endfor %}
         {}

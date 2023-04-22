@@ -8,14 +8,14 @@ class CppGenerator(Generator, key="cpp", marshal=CppMarshal):
 
     def write_header(self, template: str, type_def: BaseType):
         self.write(
-            file=type_def.cpp.header,
+            file=self.marshal.header_path() / type_def.cpp.header,
             template=template,
             type_def=type_def
         )
 
     def write_source(self, template: str, type_def: BaseType):
         self.write(
-            file=type_def.cpp.source,
+            file=self.marshal.source_path() / type_def.cpp.source,
             template=template,
             type_def=type_def
         )

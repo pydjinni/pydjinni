@@ -1,0 +1,5 @@
+prune tests
+prune docs
+global-include *.cleanpeg
+global-include support_lib/**/*
+global-exclude CMakeLists.txt

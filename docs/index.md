@@ -12,8 +12,8 @@ hide:
 PyDjinni is a tool for generating cross-language type declarations and interface bindings.<br>
 Heavily inspired by the original [Djinni by Dropbox](https://github.com/dropbox/djinni), it's designed to connect C++ with either Java, Objective-C, Rust or C#.
 
-[:material-rocket-launch-outline: Get Started](installation.md){ .md-button .md-button--primary }
-[:octicons-comment-discussion-16: Discuss](https://github.com/pydjinni/pydjinni/discussions){ .md-button }
+[:material-rocket-launch-outline: Get Started](installation.md){ .md-button .md-button--primary }&nbsp;
+[:octicons-comment-discussion-16: Discuss](https://github.com/pydjinni/pydjinni/discussions){ .md-button }&nbsp;
 [:simple-github: Contribute](https://github.com/pydjinni/pydjinni){ .md-button }
 
 
@@ -29,9 +29,9 @@ Heavily inspired by the original [Djinni by Dropbox](https://github.com/dropbox/
 <hr>
 <br>
 
-<div class="left">
 
-```
+
+```{ .text .left }
 person = record {
     id: i16;
     name: str;
@@ -46,7 +46,7 @@ database = interface +c {
 }
 ```
 
-</div>
+
 
 ## Easy Interface Definition
 
@@ -60,9 +60,8 @@ Datatypes are automatically converted, and interface calls are forwarded across 
 <br>
 <br>
 
-<div class="left">
 
-```yaml
+```{ .yaml .left }
 generate:
   list_out_files: generated-files.txt
   cpp:
@@ -76,7 +75,6 @@ generate:
     out: out/jni
 ```
 
-</div>
 
 ## Flexible Configuration
 
@@ -90,9 +88,8 @@ Optionally, options can also be passed to the command line interface directly, l
 <br>
 <br>
 
-<div class="left">
 
-```toml
+```{ .toml .left }
 [project]
 name = "pydjinni-go"
 description = "Plugin to add Go support"
@@ -102,7 +99,6 @@ description = "Plugin to add Go support"
 go = 'pydjinni-go.generator.go:GoTarget'
 ```
 
-</div>
 
 ## Extendable
 
@@ -115,9 +111,8 @@ to the project.
 <br>
 <br>
 
-<div class="left">
 
-```python
+```{ .python .left }
 from pydjinni import API
 
 API() \
@@ -127,8 +122,6 @@ API() \
     .generate("java") \
     .write_out_files()
 ```
-
-</div>
 
 ## Python API
 

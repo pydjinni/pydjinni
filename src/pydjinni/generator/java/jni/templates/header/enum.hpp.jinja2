@@ -1,10 +1,12 @@
-{% extends "base.jinja2" %}
+{% include "base.jinja2" %}
 
-{% block content %}
+#pragma once
 
-{% for include in type_def.jni.includes %}
+#include "djinni/jni/djinni_support.hpp"
+
+{% for include in type_def.jni.includes -%}
 #include "{{ include }}"
-{% endfor %}
+{% endfor -%}
 
 namespace {{ type_def.jni.namespace }} {
 
@@ -23,5 +25,3 @@ private:
 };
 
 }  // namespace {{ type_def.jni.namespace }}
-
-{% endblock %}

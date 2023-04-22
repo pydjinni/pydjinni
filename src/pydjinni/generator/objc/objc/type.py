@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class ObjcExternalType(BaseModel):
-    typename: str
+    typename: str = None
     boxed: str
     header: Path
     pointer: bool = True

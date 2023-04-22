@@ -1,0 +1,12 @@
+{% include "base.jinja2" %}
+
+package {{ config.package }};
+
+{{ type_def.java.comment }}
+public enum {{ type_def.java.boxed }} {
+{% for item in type_def.items -%}
+    {{ item.java.comment }}
+    {{ item.java.name }},
+{% endfor %}
+    ;
+}

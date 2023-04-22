@@ -84,7 +84,7 @@ class Marshal(ABC, Generic[ConfigModel, ExternalTypeDef]):
                     case BaseType():
                         self.marshal_type(input_def)
                     case BaseField():
-                        self.marshal_type(input_def)
+                        self.marshal_field(input_def)
             except pydantic.ValidationError as e:
                 raise Marshal.MarshalException(input_def, str(e))
         else:
