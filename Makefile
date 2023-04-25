@@ -13,7 +13,7 @@ pytest:
 	pytest
 
 test_support_lib: cmake_build
-	ctest --test-dir cmake-build
+	ctest --test-dir cmake-build --output-on-failure
 
 test: pytest test_support_lib
 

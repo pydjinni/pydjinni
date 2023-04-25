@@ -37,7 +37,7 @@ jobs:
       - name: Build
         run: cmake --build build
       - name: Run Unit-Tests
-        run: ctest --test-dir build
+        run: ctest --test-dir build --output-on-failure
   test_docs:
     name: Test-build documentation
     runs-on: ubuntu-latest
