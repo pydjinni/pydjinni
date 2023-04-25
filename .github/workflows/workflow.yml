@@ -93,12 +93,12 @@ jobs:
         if: github.event.release.draft
         run: twine upload -r testpypi -p ${{ env.TWINE_TESTPYPI_PASSWORD }} --disable-progress-bar dist/*
       - name: Publish package to PyPi
-        if: ! github.event.release.draft
+        if: ${{ !github.event.release.draft }}
         run: twine upload --disable-progress-bar dist/*
   publish_docs:
     runs-on: ubuntu-latest
     needs: [publish]
-    if: github.event_name == 'release' && ! github.event.release.draft && ! github.event.release.prerelease
+    if: ${{ github.event_name == 'release' && !github.event.release.draft && !github.event.release.prerelease }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
