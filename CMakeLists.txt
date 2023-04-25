@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.6.0)
 
 project(PyDjinniSupportLib C CXX)
 
+option(DJINNI_JNI "Build for Java/JNI interop" OFF)
+option(DJINNI_OBJC "Build for Objective-C interop" OFF)
+
 Include(FetchContent)
 
 FetchContent_Declare(

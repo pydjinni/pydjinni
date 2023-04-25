@@ -10,8 +10,13 @@ target_include_directories(common_support_lib PUBLIC support_lib/include)
 
 add_library(support_lib::common ALIAS common_support_lib)
 
+if(DJINNI_JNI)
 add_subdirectory(java/jni)
+endif()
+
+if(DJINNI_OBJC)
 add_subdirectory(objc/objcpp)
+endif()
 
 add_executable(common_support_lib_tests
     support_lib/tests/test.cpp
