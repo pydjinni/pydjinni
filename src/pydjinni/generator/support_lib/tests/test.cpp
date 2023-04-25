@@ -4,7 +4,7 @@ SCENARIO("this is a test test") {
     GIVEN("a test") {
         WHEN("testing") {
             THEN("foo") {
-                REQUIRE("foo" == "foo");
+                REQUIRE(true);
             }
         }
     }
