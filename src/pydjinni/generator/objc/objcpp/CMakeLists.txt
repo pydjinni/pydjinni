@@ -8,4 +8,6 @@ add_library(objc_support_lib
 
 target_include_directories(objc_support_lib PUBLIC support_lib/include)
 
-target_link_libraries(objc_support_lib PUBLIC common_support_lib)
+target_link_libraries(objc_support_lib PUBLIC support_lib::common)
+
+add_library(support_lib::objc ALIAS objc_support_lib)

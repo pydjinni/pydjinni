@@ -133,8 +133,7 @@ dmypy.json
 
 # CLion
 
-cmake-build-debug/
-cmake-build-release/
+cmake-build*/
 
 # Pydjinni testing resources
 

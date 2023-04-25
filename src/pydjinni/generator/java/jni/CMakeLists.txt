@@ -8,4 +8,6 @@ add_library(jni_support_lib
 
 target_include_directories(jni_support_lib PUBLIC support_lib/include)
 
-target_link_libraries(jni_support_lib PUBLIC common_support_lib)
+target_link_libraries(jni_support_lib PUBLIC support_lib::common)
+
+add_library(support_lib::jni ALIAS jni_support_lib)

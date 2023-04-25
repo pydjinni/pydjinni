@@ -84,16 +84,16 @@ class Generator(ABC):
         """
         self._file_writer.copy_directory(
             source_dir=self._generator_directory / "support_lib" / "include",
-            target_dir=self.marshal.header_path()
+            target_dir=self.marshal.source_path()
         )
         self._file_writer.copy_directory(
             source_dir=self._generator_directory / "support_lib" / "src",
-            target_dir=self.marshal.header_path()
+            target_dir=self.marshal.source_path()
         )
         root = Path(__file__).parent
         self._file_writer.copy_directory(
             source_dir=root / "support_lib" / "include",
-            target_dir=self.marshal.header_path()
+            target_dir=self.marshal.source_path()
         )
         self._file_writer.copy_directory(
             source_dir=root / "support_lib" / "src",
