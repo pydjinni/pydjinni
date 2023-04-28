@@ -18,7 +18,9 @@ class CliContext(Context[API.ConfiguredContext]):
 
 
 class GenerateContext(Context[API.ConfiguredContext.GenerateContext]):
-    pass
+    def __init__(self, api: API, context: ContextType, clean: bool):
+        super().__init__(api, context)
+        self.clean = clean
 
 
 pass_cli_context = click.make_pass_decorator(CliContext)

@@ -31,22 +31,26 @@ Heavily inspired by the original [Djinni by Dropbox](https://github.com/dropbox/
 
 
 
-```{ .text .left }
-person = record {
+```{ .djinni .text .left }
+# comment
+person = record { # (1)!
     id: i16;
     name: str;
     age: i16;
 }
 
 
-database = interface +c {
+database = interface +c { # (2)!
     add(person: person): bool;
     remove(person: person): bool;
     get_persons(): list<person>;
 }
 ```
 
-
+1. This defines a custom datatype that can be used to transmit complex datastructures
+   from the host language to C++ und vice-versa.
+2. This Interface defines a class with methods that will be implemented in C++ and can
+   be called from the host language.
 
 ## Easy Interface Definition
 

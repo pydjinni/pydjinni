@@ -1,0 +1,20 @@
+{% extends "main.html" %}
+
+
+<!-- Content -->
+{% block content %}
+    {% if "material/tags" in config.plugins %}
+      {% include "partials/tags.html" %}
+    {% endif %}
+    {% include "partials/actions.html" %}
+    {{ page.content }}
+    {% if page.meta and (
+      page.meta.git_revision_date_localized or
+      page.meta.revision_date
+    ) %}
+      {% include "partials/source-file.html" %}
+    {% endif %}
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.1/full/pyodide.js"></script>
+    <script src="{{ 'assets/scripts/demo.js' | url }}"></script>
+{% endblock %}
+

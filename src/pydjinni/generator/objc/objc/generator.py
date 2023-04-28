@@ -4,13 +4,7 @@ from pydjinni.parser.base_models import BaseType
 from .marshal import ObjcMarshal
 
 
-class ObjcGenerator(Generator, key="objc", marshal=ObjcMarshal):
-    def write_header(self, template: str, type_def: BaseType):
-        self.write(
-            file=self.marshal.header_path() / type_def.objc.header,
-            template=template,
-            type_def=type_def
-        )
+class ObjcGenerator(Generator, key="objc", marshal=ObjcMarshal, writes_header=True):
 
     def generate_enum(self, type_def: Enum):
         pass
@@ -27,7 +21,11 @@ class ObjcGenerator(Generator, key="objc", marshal=ObjcMarshal):
     def generate_bridging_header(self, ast: list[BaseType]):
         if self.marshal.config.swift_bridging_header:
             path = self.marshal.header_path() / self.marshal.config.swift_bridging_header
-            self.write(path, "header/bridging_header.h.jinja2", ast=ast)
+            self.write_header(
+                template="header/bridging_header.h.jinja2",
+                path=path,
+                ast=ast
+            )
 
     def generate(self, ast: list[BaseType]):
         super().generate(ast)

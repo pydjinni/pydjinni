@@ -7,6 +7,7 @@ from arpeggio.cleanpeg import ParserPEG
 
 from pydjinni.defs import IDL_GRAMMAR_PATH
 from pydjinni.exceptions import FileNotFoundException, ApplicationException
+from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.generator.marshal import Marshal
 from .ast import *
 from .resolver import Resolver
@@ -17,10 +18,11 @@ def unpack(list_input: []):
 
 
 class IdlParser:
-    def __init__(self, resolver: Resolver, marshals: list[Marshal]):
+    def __init__(self, resolver: Resolver, marshals: list[Marshal], file_reader: FileReaderWriter):
         self.parser = ParserPEG(IDL_GRAMMAR_PATH.read_text(), root_rule_name="idl")
         self.resolver = resolver
         self.marshals = marshals
+        self.file_reader = file_reader
 
     class ParsingException(ApplicationException, code=150):
         """IDL Parsing error"""
@@ -182,7 +184,7 @@ class IdlParser:
             IdlParser.MarshalException       : When an error happened during marshalling.
         """
         try:
-            parse_tree = self.parser.parse(idl.read_text())
+            parse_tree = self.parser.parse(self.file_reader.read_idl(idl))
             ast = visit_parse_tree(parse_tree, IdlParser.Visitor(self.resolver, self.marshals))
             return ast
         except FileNotFoundError as e:

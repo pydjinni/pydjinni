@@ -2,9 +2,10 @@
 
 PyDjinni can be configured in three different ways:
 
-1. The preferred way is to provide a YAML file in the provided Schema, that holds all the configuration information.
+1. The preferred way is to provide a configuration file in the provided Schema, that holds all the configuration information.
    If the file is named `pydjinni.yaml`, it is picked up automatically. With the parameter `--config` a custom filename
-   can be specified.
+   can be specified. The type of the file is determined by the filename extension.
+   <br>Supported extensions are: `.yaml`, `.yml`, `.json`, `.toml`
    <br>**Example**: `pydjinni --config=custom_filename.yaml generate input.djinni cpp`
 2. The CLI also provides the `--option` parameter, that allows to set one or more configuration keys.
    If a key is already specified in the configuration file, it will be overridden by this parameter.

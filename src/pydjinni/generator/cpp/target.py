@@ -4,5 +4,5 @@ from pydjinni.generator.target import Target
 
 class CppTarget(Target, key="cpp", generators=[CppGenerator]):
     """
-    Generate C++ interfaces
+    Generate C++ interfaces.
     """

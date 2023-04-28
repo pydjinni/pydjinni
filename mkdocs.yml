@@ -38,7 +38,9 @@ theme:
     - navigation.footer
     - content.action.edit
     - content.code.copy
+    - content.code.annotate
 plugins:
+  - tags
   - search
   - mkdocstrings
   - macros:
@@ -51,21 +53,27 @@ watch:
 markdown_extensions:
   - mkdocs-click
   - attr_list
+  - md_in_html
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  - admonition
+  - pymdownx.details
   - toc:
       permalink: true
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.tabbed:
+      alternate_style: true
 extra:
   version:
     provider: mike
 extra_css:
   - stylesheets/extra.css
+  - stylesheets/demo.css
 nav:
   - Home: index.md
   - Getting started:
@@ -73,12 +81,18 @@ nav:
       - Usage: usage.md
       - Migration: migration.md
   - Reference:
-      - Configuration: config.md
       - CLI: cli.md
       - API: api.md
       - IDL: idl.md
+      - Configuration: config.md
       - Types: types.md
       - External Types: external_types.md
+      - Processed Files: processed_files.md
+      - CMake: cmake.md
+      - Pygments: pygments.md
+  - Demo: demo.md
   - Development:
       - Setup: dev_setup.md
+      - Architecture: architecture.md
       - Plugins: plugins.md
+

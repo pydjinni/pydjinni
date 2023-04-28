@@ -2,7 +2,8 @@ from abc import ABC
 from pathlib import Path
 
 from pydjinni.config.config_model_builder import ConfigModelBuilder
-from pydjinni.generator.file_writer import FileWriter
+from pydjinni.file.file_reader_writer import FileReaderWriter
+from pydjinni.file.processed_files_model_builder import ProcessedFilesModelBuilder
 from pydjinni.parser.base_models import BaseType
 from pydjinni.parser.type_model_builder import TypeModelBuilder
 from .generator import Generator
@@ -21,21 +22,25 @@ class Target(ABC):
 
     def __init__(
             self,
-            file_writer: FileWriter,
+            file_reader_writer: FileReaderWriter,
             config_model_builder: ConfigModelBuilder,
-            external_type_model_builder: TypeModelBuilder):
+            external_type_model_builder: TypeModelBuilder,
+            processed_files_model_builder: ProcessedFilesModelBuilder):
         self.generator_instances = [generator(
-            file_writer=file_writer,
+            file_writer=file_reader_writer,
             config_model_builder=config_model_builder,
-            external_type_model_builder=external_type_model_builder
+            external_type_model_builder=external_type_model_builder,
+            processed_files_model_builder=processed_files_model_builder
         ) for generator in self._generator_types]
 
     def input_file(self, path: Path):
         for generator_instance in self.generator_instances:
             generator_instance.input_file(path)
 
-    def generate(self, ast: list[BaseType]):
+    def generate(self, ast: list[BaseType], clean: bool = False):
         for generator_instance in self.generator_instances:
+            if clean:
+                generator_instance.clean()
             generator_instance.generate(ast)
 
     @property

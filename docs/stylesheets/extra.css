@@ -4,7 +4,7 @@
 
 @media screen {
     [data-md-color-scheme=slate] {
-        --md-default-bg-color: var(--md-footer-bg-color--dark)
+        --md-default-bg-color: var(--md-footer-bg-color--dark);
     }
     [data-md-color-scheme=default] {
         --md-typeset-a-color: #4051b5;
@@ -172,4 +172,9 @@
     50% {
         background-position: bottom right;
     }
+}
+
+
+[data-md-color-scheme=slate] .invert-in-dark-mode {
+    filter: invert(0.9) hue-rotate(180deg);
 }

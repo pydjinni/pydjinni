@@ -55,7 +55,7 @@ class GenerateCli(click.MultiCommand):
         @pass_generate_context
         def command(generate_context: GenerateContext):
             logger.info(f"Generating files for target '{name}'")
-            generate_context.context.generate(name).write_out_files()
+            generate_context.context.generate(name, clean=generate_context.clean).write_processed_files()
 
         return None if target is None else command
 
@@ -66,7 +66,9 @@ class GenerateCli(click.MultiCommand):
 @click.option('--option', '-o', multiple=True, type=str,
               help="overwrite or extend options from the generate config. Example: `-o java.out:java_out`")
 @click.option('--config', '-c', default=DEFAULT_CONFIG_PATH, type=Path,
-              help="path to the config file. Set to `None` if no config should be parsed")
+              help="path to the config file. Set to `None` if no config should be parsed. "
+                   "File format is determined based on the file extension. "
+                   "Supported extensions: `.yaml`, `.yml`, `.json`, `.toml`")
 @click.option("--log-level", "-l", default="info",
               type=click.Choice(["debug", "info", "warn", "error"]),
               help="log level")
@@ -118,8 +120,13 @@ def cli(ctx, log_level, config, option):
 @cli.command(cls=GenerateCli, chain=True, invoke_without_command=True)
 @pass_cli_context
 @click.pass_context
+@click.option(
+    '--clean',
+    is_flag=True,
+    help="If enabled, deletes all specified out directories before generating output. "
+         "Caution: This deletes the entire folders, including all files that are inside it!")
 @click.argument('idl', type=Path)
-def generate(ctx, cli_context: CliContext, idl: Path):
+def generate(ctx, cli_context: CliContext, idl: Path, clean: bool):
     """
     generate glue-code from the provided IDL file.
 
@@ -131,5 +138,6 @@ def generate(ctx, cli_context: CliContext, idl: Path):
     logger.debug(pretty_repr(context.ast))
     ctx.obj = GenerateContext(
         api=cli_context.api,
-        context=context
+        context=context,
+        clean=clean
     )

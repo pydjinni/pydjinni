@@ -4,7 +4,14 @@ from pydjinni.parser.base_models import BaseType
 from .marshal import ObjcppMarshal
 
 
-class ObjcppGenerator(Generator, key="objcpp", marshal=ObjcppMarshal):
+class ObjcppGenerator(
+    Generator,
+    key="objcpp",
+    marshal=ObjcppMarshal,
+    writes_header=True,
+    writes_source=True,
+    support_lib_commons=True
+):
     def generate_enum(self, type_def: Enum):
         pass
 

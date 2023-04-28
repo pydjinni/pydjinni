@@ -1,7 +1,10 @@
+import json
 import uuid
 from pathlib import Path
 
 import pytest
+import tomli_w
+import yaml
 
 from pydjinni import API
 from pydjinni.exceptions import ConfigurationException, FileNotFoundException
@@ -18,13 +21,13 @@ def given(tmp_path: Path, config: dict, input_idl: str) -> tuple[API.ConfiguredC
 
 
 def test_API_generate(tmp_path: Path):
-    list_out_files = tmp_path / 'generated-files.txt'
+    list_processed_files = tmp_path / 'processed-files.yaml'
     cpp_out = tmp_path / 'out'
     api, input_file = given(
         tmp_path=tmp_path,
         config={
             'generate': {
-                'list_out_files': list_out_files,
+                'list_processed_files': list_processed_files,
                 'cpp': {
                     'out': cpp_out,
                     'identifier': {
@@ -41,14 +44,19 @@ def test_API_generate(tmp_path: Path):
     )
 
     # WHEN parsing the IDL input and generating some output
-    api.parse(input_file).generate("cpp").write_out_files()
+    api.parse(input_file).generate("cpp").write_processed_files()
 
     # THEN the expected output files should have been generated
     expected_header = cpp_out / 'foo.hpp'
     assert expected_header.exists()
 
-    # THEN 'generated-files.txt' should contain the generated file
-    assert str(expected_header) in list_out_files.read_text()
+    processed_files = yaml.safe_load(list_processed_files.read_text())
+
+    # THEN 'processed-files.yaml' should contain the generated file
+    assert str(expected_header) in processed_files['generated']['cpp']['header']
+
+    # THEN 'processed-files.yaml' should contain the parsed IDL file
+    assert str(input_file) in processed_files['parsed']['idl']
 
 
 def test_API_no_config():
@@ -91,6 +99,36 @@ def test_API_invalid_config_dict(tmp_path):
         )
 
 
+config_file_content = {
+        'generate': {
+            'cpp': {
+                'out': 'cpp_out'
+            }
+        }
+    }
+
+
+@pytest.mark.parametrize("filename,content", [
+    ("pydjinni.yaml", yaml.dump(config_file_content)),
+    ("pydjinni.yml", yaml.dump(config_file_content)),
+    ("pydjinni.json", json.dumps(config_file_content)),
+    ("pydjinni.toml", tomli_w.dumps(config_file_content))
+])
+def test_API_config_file(tmp_path, filename, content):
+    # GIVEN an API instance
+    api = API()
+
+    # AND GIVEN a YAML config file
+    config_file = tmp_path / filename
+    config_file.write_text(content)
+
+    # WHEN configuring the API
+    context = api.configure(config_file)
+
+    # THEN the context should be configured
+    assert context.config.generate.cpp.out == Path("cpp_out")
+
+
 def test_API_invalid_config_file(tmp_path):
     # GIVEN an API instance
     api = API()
@@ -105,7 +143,17 @@ def test_API_invalid_config_file(tmp_path):
         api.configure(config_file)
 
 
-def test_API_missing_config(tmp_path):
+def test_API_invalid_config_file_extension():
+    # GIVEN an API instance
+    api = API()
+
+    # WHEN configuring the API with a config file with unknown file extension
+    # THEN a ConfigurationException should be raised
+    with pytest.raises(ConfigurationException):
+        api.configure("config.txt")
+
+
+def test_API_missing_config_file(tmp_path):
     # GIVEN an API instance
     api = API()
 
@@ -116,3 +164,5 @@ def test_API_missing_config(tmp_path):
     # THEN a FileNotFoundException should be raised
     with pytest.raises(FileNotFoundException):
         api.configure(path=nonexistent_path)
+
+

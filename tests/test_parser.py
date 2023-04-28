@@ -6,6 +6,8 @@ from unittest.mock import MagicMock
 import pytest
 
 from pydjinni.exceptions import FileNotFoundException
+from pydjinni.file.file_reader_writer import FileReaderWriter
+from pydjinni.file.processed_files_model_builder import ProcessedFiles
 from pydjinni.generator.marshal import Marshal
 from pydjinni.parser.ast import Record, Enum, Flags, Interface, TypeReference
 from pydjinni.parser.base_models import BaseType, BaseField
@@ -24,12 +26,15 @@ def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, Path, MagicMock, M
     Returns:
         instance of the Parser and the Path where the temporary IDL file can be found.
     """
+    reader = FileReaderWriter()
+    reader.setup(ProcessedFiles)
     resolver_mock = MagicMock(spec=Resolver)
     marshal_mock = MagicMock(spec=Marshal)
     # GIVEN a Parser instance
     parser = IdlParser(
         resolver=resolver_mock,
-        marshals=[marshal_mock]
+        marshals=[marshal_mock],
+        file_reader=reader
     )
 
     # AND GIVEN an input file

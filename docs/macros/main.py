@@ -102,6 +102,12 @@ def define_env(env):
         return render_config_schema_table(schema, header_indent)
 
     @env.macro
+    def processed_files_schema_table(header_indent: int = 3):
+        json_schema = json.dumps(api.processed_files_model.model_json_schema())
+        schema = jsonref.loads(json_schema)
+        return render_config_schema_table(schema, header_indent)
+
+    @env.macro
     def cli_commands():
         command_obj = load_command("pydjinni.cli.cli", "cli")
 
@@ -135,3 +141,7 @@ def define_env(env):
         for code, description in sorted_return_codes.items():
             output += f"| {code} | {description} |\n"
         return output
+
+    @env.macro
+    def supported_targets():
+        return "|".join(list(API().generation_targets.keys()))

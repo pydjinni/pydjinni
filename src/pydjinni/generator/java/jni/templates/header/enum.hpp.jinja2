@@ -8,7 +8,7 @@
 #include "{{ include }}"
 {% endfor -%}
 
-namespace {{ type_def.jni.namespace }} {
+namespace {{ config.namespace }} {
 
 class {{ type_def.jni.translator }} final : ::djinni::JniEnum {
 public:
@@ -24,4 +24,4 @@ private:
     friend ::djinni::JniClass<Type>;
 };
 
-}  // namespace {{ type_def.jni.namespace }}
+}  // namespace {{ config.namespace }}
