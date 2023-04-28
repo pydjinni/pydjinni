@@ -1,26 +1,79 @@
 #demo {
-    margin-top: -55px;
+    margin-top: -35px;
+}
+
+#demo .tabbed-set {
+    margin: 0;
 }
 
 textarea {
-    background: var(--md-code-bg-color);
+    background: transparent;
     border-radius: var(--border-radius);
-    border: 2px solid transparent;
     min-width: 100%;
     outline: none;
-    padding: 10px;
     resize: none;
-    font-family: monospace, serif;
-    font-size: .8em;
-    color: var(--md-code-fg-color);
+    color: transparent;
+    caret-color: var(--md-accent-fg-color);
+    caret-shape: bar;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
 }
+
+textarea[disabled] {
+    color: rgba(0,0,0,0.2);
+}
+
 textarea:focus {
     border: 2px solid var(--md-accent-fg-color);
 }
 
-.generated_listing code {
+.generated_listing {
+    border-radius: var(--border-radius);
+}
+
+.generated_listing code, .md-typeset .rich_text, textarea {
     display: block;
     padding: 10px;
+    font-size: .85em;
+    line-height: 1.6;
+    font-feature-settings: "kern";
+    font-family: var(--md-code-font-family);
+    border: 2px solid transparent;
+    overflow-y: auto;
+}
+
+.generated_listing code {
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    margin-bottom: 10px;
+}
+
+.md-typeset .rich_text, textarea {
+    height: 300px;
+    overflow: auto;
+}
+
+
+.md-typeset .rich_text .highlight pre, .generated_listing code pre {
+    margin: 0;
+    line-height: 1.6;
+}
+
+.rich_editor {
+    position: relative;
+    display: block;
+}
+
+.generated_listing .filename {
+    background: var(--md-default-bg-color);
+    z-index: 5;
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+    border: 1px solid var(--md-default-fg-color--lightest);
+    padding: 6px 10px;
+    font-size: .85em;
+    font-feature-settings: "kern";
+    font-family: var(--md-code-font-family);
 }
 
 #demo_output {
@@ -31,16 +84,20 @@ textarea:focus {
     background: var(--md-footer-bg-color);
     margin-bottom: 25px;
     color: var(--md-footer-fg-color);
-    font-family: monospace, serif;
+    font-size: .85em;
+    font-feature-settings: "kern";
+    font-family: var(--md-code-font-family);
 }
 
 @media screen and (min-width: 960px) {
     .demo-left {
-        flex-basis: 40%;
+        width: 40%;
+        min-width: 40%;
+        max-width: 40%;
     }
 
     .demo-right {
-        flex-basis: 60%;
+        flex-grow: 1;
     }
 
     #demo {
@@ -48,9 +105,17 @@ textarea:focus {
         gap: 18px;
     }
 
-    textarea, .generated_listing {
+    textarea, .generated_listing, .md-typeset .rich_text {
         display: block;
-        height: calc(100vh - 320px);
+        height: calc(100vh - 345px);
+        overflow-wrap: normal;
+        white-space: pre;
         overflow: auto;
+        overscroll-behavior: none;
+    }
+
+    .generated_listing .filename {
+        position: sticky;
+        top: 0;
     }
 }

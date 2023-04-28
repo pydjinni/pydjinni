@@ -11,11 +11,16 @@ hide:
 
 === "IDL"
 
-    <textarea rows=20 id="idl_input" name="idl_input" placeholder="Define your PyDjinni interface here..." ></textarea>
-
+    <span class=rich_editor>
+        <code id="rich_idl_input" class="rich_text"></code>
+        <textarea disabled id="idl_input" name="idl_input" placeholder="Define your PyDjinni interface here..." spellcheck="false"></textarea>
+    </span>
 === "Config"
 
-    <textarea rows=20 id="config_input" name="config_input"></textarea>
+    <span class=rich_editor>
+        <code id="rich_config_input" class="rich_text"></code>
+        <textarea disabled id="config_input" name="config_input" spellcheck="false"></textarea>
+    </span>
 
 </div>
 
