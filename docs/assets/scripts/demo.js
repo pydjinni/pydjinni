@@ -1,30 +1,59 @@
 var pyodideReadyPromise = pyodideReadyPromise || null
-var demo_output;
-var demo_input;
-var demo_config;
+/** @type {Element} */
+var demoOutputElement;
+/** @type {Element} */
+var idlInputElement
+/** @type {Element} */;
+var configInputElement;
 
+/**
+ * Appends an error message to the output in the 'output console' element
+ * @param {string} message
+ */
 function reportError(message) {
-    demo_output.innerHTML += "<br>❌ " + message;
+    demoOutputElement.innerHTML += "<br>❌ " + message;
 }
 
+/**
+ * Prints a success status in the 'output console' element (used to report generation success).
+ * @param {string} message
+ */
 function reportSuccess(message) {
-    demo_output.innerHTML = `✅ ${message}`
+    demoOutputElement.innerHTML = `✅ ${message}`
 }
 
+/**
+ * Prints a status message in the 'output console' element
+ * @param message
+ */
+function reportStatus(message) {
+    demoOutputElement.innerHTML = `💬 ${message}`
+}
+
+/**
+ * prints a list of all currently installed packages in the 'output console' element.
+ * @param micropip
+ * @returns {Promise<void>}
+ */
 async function reportInstalledPackages(micropip) {
     packages = await micropip.list();
     let rows = packages.toString().split("\n").slice(2);
-    demo_output.innerHTML = "💬 installing packages: "
+    demoOutputElement.innerHTML = "💬 installing packages: "
     rows.forEach((row) => {
-        demo_output.innerHTML += `${row.split(" | ")[0].trim()},  `;
+        demoOutputElement.innerHTML += `${row.split(" | ")[0].trim()},  `;
     })
-    demo_output.innerHTML += "..."
+    demoOutputElement.innerHTML += "..."
 }
 
-function reportStatus(message) {
-    demo_output.innerHTML = `💬 ${message}`
-}
 
+
+/**
+ * Takes the value of a textarea and renders it with pygments in the specified language
+ * @param {Element} element The textarea that serves as input
+ * @param {Element} richElement The target element that will display the formatted code.
+ * @param {string} language Language of the input
+ * @returns {Promise<void>}
+ */
 async function highlight(element, richElement, language) {
     let pyodide = await pyodideReadyPromise;
     try {
@@ -45,52 +74,73 @@ async function highlight(element, richElement, language) {
     }
 }
 
-function rich_edit_sync_scroll(element, richElement) {
+/**
+ * used for synchronizing the scroll position between the textarea and the rich-text rendering in the background.
+ * @param {Element} element the textarea that has been scrolled.
+ * @param {Element} richElement the background element that needs to by adjusted to have the same scroll position.
+ */
+function richEditSyncScroll(element, richElement) {
   // Get and set x and y
   richElement.scrollTop = element.scrollTop;
   richElement.scrollLeft = element.scrollLeft;
 }
 
-async function configure_textfield(element, richElement, language) {
+/**
+ * Configures the textarea. Adds the following behavior:
+ * * 'Tab'-keypresses will add 4 whitespaces instead of jumping to the next input.
+ * * When the content changes, re-generation of the output files will be triggered after no changes occurred for 500ms.
+ * * When the content changes, it will be formatted with Pygments and rendered in the `richElement` element.
+ *
+ * @see https://css-tricks.com/creating-an-editable-textarea-that-supports-syntax-highlighted-code/
+ *
+ * @param {Element} element The textarea element.
+ * @param {Element} richElement The background element that renders the formatted input.
+ * @param {string} language The language of the textarea
+ * @returns {Promise<void>}
+ */
+async function configureTextarea(element, richElement, language) {
     await pyodideReadyPromise;
-    element.addEventListener("keydown", function(e) {
-        if (e.key == 'Tab') {
+    element.addEventListener("keydown", (e) => {
+        if (e.key === 'Tab') {
             e.preventDefault();
-            const start = this.selectionStart;
-            const end = this.selectionEnd;
+            const start = e.target.selectionStart;
+            const end = e.target.selectionEnd;
 
             // set textarea value to: text before caret + tab + text after caret
-            this.value = this.value.substring(0, start) +
-              "    " + this.value.substring(end);
+            e.target.value = e.target.value.substring(0, start) +
+              "    " + e.target.value.substring(end);
 
             // put caret at right position again
-            this.selectionStart =
-              this.selectionEnd = start + 4;
+            e.target.selectionStart = e.target.selectionEnd = start + 4;
+            highlight(element, richElement, language);
         }
     });
-    var timeoutID;
+    let timeoutID;
     element.addEventListener("input", (e) => {
         clearTimeout(timeoutID);
         timeoutID = setTimeout(function() {
-            generate(demo_input.value, demo_config.value);
-            window.sessionStorage.setItem("idl_input", demo_input.value);
-            window.sessionStorage.setItem("config_input", demo_config.value);
+            generate(idlInputElement.value, configInputElement.value);
+            window.sessionStorage.setItem("idl_input", idlInputElement.value);
+            window.sessionStorage.setItem("config_input", configInputElement.value);
         }, 500);
         highlight(element, richElement, language);
-        rich_edit_sync_scroll(element, richElement);
+        richEditSyncScroll(element, richElement);
     });
     element.addEventListener("scroll", (e) => {
-        rich_edit_sync_scroll(element, richElement);
+        richEditSyncScroll(element, richElement);
     })
     await highlight(element, richElement, language);
     element.removeAttribute("disabled");
 }
 
-// init Pyodide
+/**
+ * Initializes the Pyodine environment. Installs all required dependencies.
+ * @returns {Promise<*>}
+ */
 async function main() {
     let intervalId;
     try {
-        reportStatus("loading demo... This may take a while...");
+        reportStatus("loading demo... This will take a while...");
         let pyodide = await loadPyodide();
         await pyodide.loadPackage("micropip")
         const micropip = await pyodide.pyimport("micropip");
@@ -101,7 +151,7 @@ async function main() {
         await micropip.install("https://github.com/pydantic/pydantic-core/releases/download/v0.23.1/pydantic_core-0.23.1-cp311-cp311-emscripten_3_1_32_wasm32.whl");
         await micropip.install("http://localhost:8001/pydjinni-0.1.2.dev27+gefd6587.d20230427-py3-none-any.whl")
         clearInterval(intervalId);
-        reportStatus("ready... start defining your IDL!");
+        reportStatus("ready...");
         return pyodide;
     } catch (err) {
         clearInterval(intervalId);
@@ -110,14 +160,21 @@ async function main() {
     }
 }
 
-async function visualize_results(path, target_element_id) {
+/**
+ * Visualizes the generated files for a specific target language.
+ * @param {string} path The path where the generated files can be found. This should contain files that have already been
+ *             rendered with Pygments.
+ * @param {string} targetElementId The id of the container that the files should be visualized in.
+ * @returns {Promise<void>}
+ */
+async function visualizeResults(path, targetElementId) {
     let pyodide = await pyodideReadyPromise;
-    target_element = document.getElementById(target_element_id);
+    const target_element = document.getElementById(targetElementId);
     target_element.innerHTML = "";
-    files = pyodide.FS.readdir(path)
+    const files = pyodide.FS.readdir(path)
     files.forEach((file) => {
-        if(file != ".." && file != ".") {
-            file_content = pyodide.FS.readFile(path + "/" + file, { encoding: 'utf8' })
+        if(file !== ".." && file !== ".") {
+            const file_content = pyodide.FS.readFile(path + "/" + file, { encoding: 'utf8' })
             const container = document.createElement("div");
             container.className = "output_container"
             const title = document.createElement("div");
@@ -132,13 +189,19 @@ async function visualize_results(path, target_element_id) {
     })
 }
 
-async function generate(idl_content, config_content) {
+/**
+ * takes IDL content and parses it with PyDjinni. Generates output files in the target languages C++, Java, Objective-C.
+ * @param {string} idlContent
+ * @param {string} configContent
+ * @returns {Promise<void>}
+ */
+async function generate(idlContent, configContent) {
     let pyodide = await pyodideReadyPromise;
     reportStatus("parsing & generating...")
-    pyodide.FS.writeFile("/input.idl", idl_content, { encoding: "utf8" });
-    pyodide.FS.writeFile("/pydjinni.yaml", config_content, { encoding: "utf8" });
+    pyodide.FS.writeFile("/input.djinni", idlContent, { encoding: "utf8" });
+    pyodide.FS.writeFile("/pydjinni.yaml", configContent, { encoding: "utf8" });
     try {
-        result = pyodide.runPython(`
+        const result = pyodide.runPython(`
             import shutil
             from pydjinni import API
             from pathlib import Path
@@ -146,6 +209,7 @@ async function generate(idl_content, config_content) {
             from pydjinni.parser.parser import IdlParser
             from pygments import highlight
             from pygments.lexers import CppLexer, JavaLexer
+            from pygments.lexers.objective import ObjectiveCLexer
             from pygments.formatters import HtmlFormatter
 
             result = ""
@@ -154,6 +218,8 @@ async function generate(idl_content, config_content) {
             cpp_html_path = Path("/out/cpp/html")
             java_source_path = Path("/out/java/source")
             java_html_path = Path("/out/java/html")
+            objc_source_path = Path("/out/objc/header")
+            objc_html_path = Path("/out/objc/html")
             try:
                 api = API().configure("/pydjinni.yaml", options={
                     "generate": {
@@ -171,9 +237,21 @@ async function generate(idl_content, config_content) {
                                 "header": "/out/jni/header",
                                 "source": "/out/jni/source"
                             }
+                        },
+                        "objc": {
+                            "out": {
+                                "header": "/out/objc/header",
+                                "source": "/out/objc/source"
+                            }
+                        },
+                        "objcpp": {
+                            "out": {
+                                "header": "/out/objcpp/header",
+                                "source": "/out/objcpp/source"
+                            }
                         }
                     }
-                }).parse("/input.idl").generate("cpp", clean=True).generate("java", clean=True)
+                }).parse("/input.djinni").generate("cpp", clean=True).generate("java", clean=True).generate("objc", clean=True)
                 
                 def highlight_generated_files(source_path: Path, target_path: Path, lexer):
                     files = source_path.glob("*")
@@ -186,6 +264,7 @@ async function generate(idl_content, config_content) {
 
                 highlight_generated_files(cpp_header_path, cpp_html_path, CppLexer())
                 highlight_generated_files(java_source_path, java_html_path, JavaLexer())
+                highlight_generated_files(objc_source_path, objc_html_path, ObjectiveCLexer())
                 result = (0, "success")
             except IdlParser.ParsingException as e:
                 result = (1, f"{e}")
@@ -195,49 +274,84 @@ async function generate(idl_content, config_content) {
                 result = (3, f"{e}")
             result
         `);
-        result_code = result.get(0);
-        result_message = result.get(1);
-        if(result_code === 1) { // parsing error
-            reportError(result_message);
-            demo_input.className = "error"
-        } else if(result_code === 2) { //configuration error
-            reportError(result_message);
-            demo_config.className = "error"
-        } else if(result_code === 3) { // other error
-            reportError(result_message);
+        const resultCode = result.get(0);
+        const resultMessage = result.get(1);
+        if(resultCode === 1) { // parsing error
+            reportError(resultMessage);
+            idlInputElement.className = "error"
+        } else if(resultCode === 2) { //configuration error
+            reportError(resultMessage);
+            configInputElement.className = "error"
+        } else if(resultCode === 3) { // other error
+            reportError(resultMessage);
         } else {
-            demo_input.className = ""
-            demo_config.className = ""
+            idlInputElement.className = ""
+            configInputElement.className = ""
             reportSuccess(result.get(1));
-            await visualize_results("/out/cpp/html", "generated_cpp_files");
-            await visualize_results("/out/java/html", "generated_java_files");
+            await visualizeResults("/out/cpp/html", "generated_cpp_files");
+            await visualizeResults("/out/java/html", "generated_java_files");
+            await visualizeResults("/out/objc/html", "generated_objc_files");
         }
     } catch (err) {
         reportError(err)
     }
 }
 
-function demo_init() {
+/**
+ * Initializes the Demo.
+ * - Downloads the required Pyodide library
+ * - Queries for a list of commonly used elements
+ * - Initializes the Pyodide environment
+ * - reads the current IDL and config file from the `sessionStorage` if it exists.
+ * - sets up the textarea elements
+ * - triggers generation
+ *
+ * For loading the Pyodide library, a weird workaround has to be done: This function creates a script element that
+ * then in turn will load the referenced script and reports once the loading is finished.
+ * This is required because "instant loading" in "Material for MkDocs" loads the page a bit weird: It will just replace
+ * the page content dynamically, which is why the `window.onload` trigger can not be used to determine if all resources
+ * are loaded. It may not be triggered when the user navigates to the page.
+ */
+function demoInit() {
+    const pyodideScript = document.createElement("script");
+    // a simple way to set attributes according to me
+    Object.assign(pyodideScript, {
+        id: "pyodide",
+        src: "https://cdn.jsdelivr.net/pyodide/v0.23.1/full/pyodide.js",
+    });
+
     let edit_button = document.getElementsByClassName("md-content__button")[0]
     edit_button.innerHTML = ""
-    demo_output = document.getElementById("demo_output");
-    demo_input = document.getElementById("idl_input");
-    rich_demo_input = document.getElementById("rich_idl_input");
-    demo_config = document.getElementById("config_input");
-    rich_demo_config = document.getElementById("rich_config_input");
+    demoOutputElement = document.getElementById("demo_output");
+    idlInputElement = document.getElementById("idl_input");
+    const richDemoInputElement = document.getElementById("rich_idl_input");
+    configInputElement = document.getElementById("config_input");
+    const richDemoConfigElement = document.getElementById("rich_config_input");
 
-    pyodideReadyPromise = pyodideReadyPromise || main();
+    // this will be called once the Pyodide library is downloaded.
+    pyodideScript.addEventListener("load", () => {
+        pyodideReadyPromise = pyodideReadyPromise || main();
 
-    idl_input = window.sessionStorage.getItem("idl_input");
-    config_input = window.sessionStorage.getItem("config_input");
+        const idlInput = window.sessionStorage.getItem("idl_input");
+        const configInput = window.sessionStorage.getItem("config_input");
 
-    if(idl_input || config_input) {
-        demo_input.value = idl_input;
-        demo_config.value = config_input;
-        generate(demo_input.value, demo_config.value);
-    }
-    configure_textfield(demo_input, rich_demo_input, "djinni");
-    configure_textfield(demo_config, rich_demo_config, "yaml");
+        if(idlInput) {
+            idlInputElement.value = idlInput;
+        }
+        if(configInput) {
+            configInputElement.value = configInput;
+        }
+        configureTextarea(idlInputElement, richDemoInputElement, "djinni");
+        configureTextarea(configInputElement, richDemoConfigElement, "yaml");
+        generate(idlInputElement.value, configInputElement.value);
+    });
+    // adding the script block to the DOM, telling the browser to load the Pyodide library.
+    document.body.appendChild(pyodideScript);
 }
 
-demo_init();
+demoInit()
+
+
+
+
+

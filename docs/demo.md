@@ -13,13 +13,29 @@ hide:
 
     <span class=rich_editor>
         <code id="rich_idl_input" class="rich_text"></code>
-        <textarea disabled id="idl_input" name="idl_input" placeholder="Define your PyDjinni interface here..." spellcheck="false"></textarea>
+        <textarea disabled id="idl_input" name="idl_input" placeholder="Define your PyDjinni interface here..." spellcheck="false">
+    foo = enum {
+        bar;
+        baz;
+    }
+    </textarea>
     </span>
 === "Config"
 
     <span class=rich_editor>
         <code id="rich_config_input" class="rich_text"></code>
-        <textarea disabled id="config_input" name="config_input" spellcheck="false"></textarea>
+        <textarea disabled id="config_input" name="config_input" spellcheck="false">
+    generate:
+        cpp:
+            namespace: foo::bar
+        java:
+            package: foo.bar
+        jni:
+            namespace: foo::bar::jni
+        objc:
+            type_prefix: FB
+            swift_bridging_header: bridging_header.h
+    </textarea>
     </span>
 
 </div>
@@ -28,22 +44,28 @@ hide:
 
 === "C++"
 
-    <span id="generated_cpp_files" class="generated_listing"></span>
+    <span id="generated_cpp_files" class="generated_listing" markdown>
+        <span class="teaser">:material-file-code:<br>Generated C++ interfaces will be displayed here.</span>
+    </span>
 
 === "Java"
 
-    <span id="generated_java_files" class="generated_listing"></span>
+    <span id="generated_java_files" class="generated_listing" markdown>
+        <span class="teaser">:material-file-code:<br>Generated Java code will be displayed here.</span>
+    </span>
 
 === "Objective-C"
 
-    <span id="generated_objc_files" class="generated_listing"></span>
+    <span id="generated_objc_files" class="generated_listing" markdown>
+        <span class="teaser">:material-file-code:<br>Generated Objective-C interfaces will be displayed here.</span>
+    </span>
 
 </div>
 
 </div>
 
 <div id="demo_output">
-    This demo uses Pyodide to execute Python code in the Browser. If you see this message, your browser may have problems with that. :(
+    This demo uses Pyodide to execute Python code in the Browser. It requires Javascript and a good portion of luck to work!
 </div>
 
 ----
