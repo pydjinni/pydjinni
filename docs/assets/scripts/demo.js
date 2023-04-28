@@ -119,6 +119,7 @@ async function visualize_results(path, target_element_id) {
         if(file != ".." && file != ".") {
             file_content = pyodide.FS.readFile(path + "/" + file, { encoding: 'utf8' })
             const container = document.createElement("div");
+            container.className = "output_container"
             const title = document.createElement("div");
             title.className = "filename";
             title.innerText = file;
@@ -141,7 +142,8 @@ async function generate(idl_content, config_content) {
             import shutil
             from pydjinni import API
             from pathlib import Path
-            from pydjinni.exceptions import ApplicationException
+            from pydjinni.exceptions import ApplicationException, ConfigurationException
+            from pydjinni.parser.parser import IdlParser
             from pygments import highlight
             from pygments.lexers import CppLexer, JavaLexer
             from pygments.formatters import HtmlFormatter
@@ -184,15 +186,28 @@ async function generate(idl_content, config_content) {
 
                 highlight_generated_files(cpp_header_path, cpp_html_path, CppLexer())
                 highlight_generated_files(java_source_path, java_html_path, JavaLexer())
-                result = (True, "success")
+                result = (0, "success")
+            except IdlParser.ParsingException as e:
+                result = (1, f"{e}")
+            except ConfigurationException as e:
+                result = (2, f"{e}")
             except ApplicationException as e:
-                result = (False, f"{e}")
+                result = (3, f"{e}")
             result
         `);
-        console.log(result)
-        if(!result.get(0)) {
-            reportError(result.get(1));
+        result_code = result.get(0);
+        result_message = result.get(1);
+        if(result_code === 1) { // parsing error
+            reportError(result_message);
+            demo_input.className = "error"
+        } else if(result_code === 2) { //configuration error
+            reportError(result_message);
+            demo_config.className = "error"
+        } else if(result_code === 3) { // other error
+            reportError(result_message);
         } else {
+            demo_input.className = ""
+            demo_config.className = ""
             reportSuccess(result.get(1));
             await visualize_results("/out/cpp/html", "generated_cpp_files");
             await visualize_results("/out/java/html", "generated_java_files");

@@ -6,6 +6,18 @@
     margin: 0;
 }
 
+.generated_listing code, .md-typeset .rich_text, textarea {
+    display: block;
+    padding: 10px;
+    font-size: .85em;
+    line-height: 1.6;
+    font-feature-settings: "kern";
+    font-family: var(--md-code-font-family);
+    border: 2px solid transparent;
+    overflow-y: auto;
+}
+
+
 textarea {
     background: transparent;
     border-radius: var(--border-radius);
@@ -19,6 +31,8 @@ textarea {
     left: 0;
     right: 0;
     top: 0;
+    border: 2px solid transparent;
+    scrollbar-width: thin;
 }
 
 textarea[disabled] {
@@ -29,24 +43,29 @@ textarea:focus {
     border: 2px solid var(--md-accent-fg-color);
 }
 
+[data-md-color-scheme=slate] textarea.error {
+    border-color: #d74343;
+}
+
+[data-md-color-scheme=default] textarea.error {
+    border-color: #ea6d6d;
+}
+
 .generated_listing {
     border-radius: var(--border-radius);
 }
 
-.generated_listing code, .md-typeset .rich_text, textarea {
-    display: block;
-    padding: 10px;
-    font-size: .85em;
-    line-height: 1.6;
-    font-feature-settings: "kern";
-    font-family: var(--md-code-font-family);
-    border: 2px solid transparent;
-    overflow-y: auto;
-}
 
 .generated_listing code {
     border-radius: 0 0 var(--border-radius) var(--border-radius);
     margin-bottom: 10px;
+    overflow-x: scroll;
+    padding-bottom: 0;
+    scrollbar-width: thin;
+}
+
+.generated_listing .output_container:last-of-type code {
+    margin-bottom: 0;
 }
 
 .md-typeset .rich_text, textarea {
@@ -54,15 +73,23 @@ textarea:focus {
     overflow: auto;
 }
 
-
 .md-typeset .rich_text .highlight pre, .generated_listing code pre {
     margin: 0;
     line-height: 1.6;
 }
 
+
 .rich_editor {
     position: relative;
     display: block;
+}
+
+.rich_text {
+    scrollbar-width: none;
+}
+
+.rich_text::-webkit-scrollbar {
+    display: none;
 }
 
 .generated_listing .filename {
@@ -74,6 +101,7 @@ textarea:focus {
     font-size: .85em;
     font-feature-settings: "kern";
     font-family: var(--md-code-font-family);
+    box-shadow: 2px -4px 0 0 var(--md-default-bg-color);
 }
 
 #demo_output {
@@ -98,7 +126,11 @@ textarea:focus {
 
     .demo-right {
         flex-grow: 1;
+        max-width: 60%;
+        min-width: 60%;
     }
+
+
 
     #demo {
         display: flex;
@@ -114,8 +146,80 @@ textarea:focus {
         overscroll-behavior: none;
     }
 
+    .generated_listing {
+        overflow-y: scroll;
+    }
+
     .generated_listing .filename {
         position: sticky;
         top: 0;
     }
+
+    .generated_listing code pre {
+        margin: 0 0 -20px 0;
+    }
+
+    @-moz-document url-prefix() {
+        .demo-right {
+            max-width: calc(60% - 14px);
+            min-width: calc(60% - 14px);
+        }
+
+        .generated_listing code pre {
+            margin: 0 0 -8px 0;
+        }
+    }
+}
+
+@-moz-document url-prefix() {
+    .generated_listing, .generated_listing code {
+        overflow: auto;
+    }
+}
+
+
+.generated_listing code::-webkit-scrollbar, textarea::-webkit-scrollbar {
+    width: 15px;
+    height: 15px;
+}
+
+.generated_listing::-webkit-scrollbar {
+    width: 12px;
+}
+
+/* Track */
+.generated_listing code::-webkit-scrollbar-track, .generated_listing::-webkit-scrollbar-track, textarea::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.generated_listing code::-webkit-scrollbar-thumb, textarea::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border: 3px solid rgba(0,0,0,0);
+    border-radius: var(--border-radius);
+}
+
+/* Handle */
+.generated_listing code:hover::-webkit-scrollbar-thumb, textarea:hover::-webkit-scrollbar-thumb {
+    background-color: var(--md-default-fg-color--lighter);
+    background-clip: padding-box;
+}
+
+.generated_listing::-webkit-scrollbar-thumb {
+    background: transparent;
+}
+
+.generated_listing:hover::-webkit-scrollbar-thumb {
+    background: var(--md-default-fg-color--lighter);
+    border-left: 3px solid rgba(0,0,0,0);
+    background-clip: padding-box;
+}
+
+/* Handle on hover */
+.generated_listing code::-webkit-scrollbar-thumb:hover, .generated_listing::-webkit-scrollbar-thumb:hover, textarea::-webkit-scrollbar-thumb:hover {
+    background: var(--md-default-fg-color--light);
+    background-clip: padding-box;
+}
+
+textarea::-webkit-scrollbar-corner {
+  background: transparent;
 }
