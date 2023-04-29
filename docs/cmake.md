@@ -23,7 +23,7 @@ Sets the `CMAKE_CONFIGURE_DEPENDS` property on all reported input files (parsed 
 picked up during parsing and the used config file), to automatically trigger re-configuration when one of the 
 referenced files changes.
 
-
+In case of an error, the CMake configuration is aborted.
 
 ## Options
 
@@ -69,7 +69,8 @@ If you don't want to check out the entire project just to use the CMake module, 
 project manually, and just included from the path were it was copied to:
 
 ```cmake
-include(cmake/modules/Pydjinni.cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+include(Pydjinni)
 ```
 
 [:octicons-download-16: Download PyDjinni Module](https://raw.githubusercontent.com/pydjinni/pydjinni/{{ git.tag }}/cmake/PyDjinni.cmake){ .md-button download }
@@ -95,5 +96,3 @@ The following variables are populated:
 - `jni_GENERATED_SOURCES`
 - `jni_GENERATED_HEADERS`
 
-In case of an error, the variable `PYDJINNI_ERROR_CODE` is populated with the error code that the CLI has returned
-(see [CLI Return Codes](cli.md#return-codes))
