@@ -206,11 +206,11 @@ span.teaser .twemoji {
 
 .generated_listing::-webkit-scrollbar-thumb {
     background: transparent;
+    border-left: 3px solid rgba(0,0,0,0);
 }
 
 .generated_listing:hover::-webkit-scrollbar-thumb {
     background: var(--md-default-fg-color--lighter);
-    border-left: 3px solid rgba(0,0,0,0);
     background-clip: padding-box;
 }
 

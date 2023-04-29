@@ -92,6 +92,11 @@
     margin-right: 0;
 }
 
+.js .md-typeset .tabbed-labels:before {
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+}
+
 @media screen and (min-width: 60em) {
     .md-search__form {
         height: 1.64rem;
