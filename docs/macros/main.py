@@ -2,6 +2,7 @@ import json
 import logging
 from collections import OrderedDict
 from pathlib import Path
+from setuptools_scm import get_version
 
 import jsonref
 from mkdocs_click._docs import make_command_docs
@@ -145,3 +146,7 @@ def define_env(env):
     @env.macro
     def supported_targets(joint: str = "|", wrapper: str = ""):
         return wrapper + (wrapper + joint + wrapper).join(list(API().generation_targets.keys())) + wrapper
+
+    @env.macro
+    def pydjinni_version():
+        return get_version()

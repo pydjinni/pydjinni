@@ -137,9 +137,12 @@ async function configureTextarea(element, richElement, language) {
 
 /**
  * Initializes the Pyodine environment. Installs all required dependencies.
+ * @param {string} version       Version of Pydjinni that should be loaded from PyPi
+ * @param {boolean} localFallback Fallback URL for local development.
+ *                               Will load the given file from localhost:8001 if specified
  * @returns {Promise<*>}
  */
-async function main() {
+async function main(version, localFallback) {
     let intervalId;
     try {
         reportStatus("loading demo... This will take a while...");
@@ -151,7 +154,11 @@ async function main() {
         }, 200);
         await micropip.install("pygments==2.15");
         await micropip.install("https://github.com/pydantic/pydantic-core/releases/download/v0.23.1/pydantic_core-0.23.1-cp311-cp311-emscripten_3_1_32_wasm32.whl");
-        await micropip.install("http://localhost:8001/pydjinni-0.1.2.dev27+gefd6587.d20230427-py3-none-any.whl")
+        if(localFallback) {
+            await micropip.install(`http://localhost:8001/pydjinni-${version}-py3-none-any.whl`)
+        } else {
+            await micropip.install(`pydjinni==${version}`)
+        }
         clearInterval(intervalId);
         reportStatus("ready...");
         return pyodide;
@@ -332,7 +339,14 @@ function demoInit() {
 
     // this will be called once the Pyodide library is downloaded.
     pyodideScript.addEventListener("load", () => {
-        pyodideReadyPromise = pyodideReadyPromise || main();
+        const version = document.getElementById("pydjinni_version").innerText
+        const localFallback = location.hostname === "localhost"
+        if(localFallback) {
+            console.info("This demo has been detected to run on 'localhost'.")
+            console.info("run 'python -m build && python -m http.server --directory ./dist 8001' before loading the demo.")
+        }
+
+        pyodideReadyPromise = pyodideReadyPromise || main(version, localFallback);
 
         const idlInput = window.sessionStorage.getItem("idl_input");
         const configInput = window.sessionStorage.getItem("config_input");

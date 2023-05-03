@@ -83,3 +83,5 @@ No data is sent to a server!
     stop working! All data will be lost once the browser tab is closed.
 
 <br>
+
+<small>This demo runs on PyDjinni v<span id="pydjinni_version">{{ pydjinni_version() }}</span></small>
