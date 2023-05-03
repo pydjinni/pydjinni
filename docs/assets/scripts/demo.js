@@ -67,6 +67,8 @@ async function highlight(element, richElement, language) {
             content = input_file.read_text()
             if content.endswith('\\n'):
                 content += " "
+            if content.startswith('\\n'):
+                content = " " + content
             highlight(content, get_lexer_by_name("${language}"), HtmlFormatter())
         `)
     } catch (err) {

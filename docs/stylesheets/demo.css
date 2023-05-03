@@ -105,7 +105,7 @@ span.teaser .twemoji {
 
 .generated_listing .filename {
     background: var(--md-default-bg-color);
-    z-index: 5;
+    z-index: 2;
     border-radius: var(--border-radius) var(--border-radius) 0 0;
     border: 1px solid var(--md-default-fg-color--lightest);
     padding: 6px 10px;
