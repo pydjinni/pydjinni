@@ -31,8 +31,9 @@ The options are:
 
 * `<filename>`<br>Filename/path of the Djinni-IDL file that should be processed.
 * `LANGUAGES`<br>List of languages that bindings should be generated for. 
-  Possible values: `cpp`, `objc`.
-* `CONFIG <config>` *Optional*<br>Filename/path to the configuration file
+  Possible values: {{ supported_targets(", ", "`") }}.
+* `CONFIG <config>` *Optional*<br>Filename/path to the configuration file. Defaults to `pydjinni.yaml`. To disable the
+  configuration with a config file completely, set `CONFIG` to `None`.
 * `OPTIONS <options>` *Optional*<br>List of additional arbitrary configuration options that should be passed to the CLI.
 * `WORKING_DIRECTORY <workdir>` *Optional*<br>The working-directory from which the generate comment should be executed.
   <br>Default: `CMAKE_CURRENT_SOURCE_DIR`.
@@ -73,7 +74,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(Pydjinni)
 ```
 
-[:octicons-download-16: Download PyDjinni Module](https://raw.githubusercontent.com/pydjinni/pydjinni/{{ git.tag }}/cmake/PyDjinni.cmake){ .md-button download }
+[:octicons-download-16: Download PyDjinni Module](https://raw.githubusercontent.com/pydjinni/pydjinni/{{ git.tag }}/cmake/modules/PyDjinni.cmake){ .md-button download }
 
 
 ## Example

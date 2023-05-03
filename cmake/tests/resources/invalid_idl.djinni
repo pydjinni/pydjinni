@@ -1,0 +1,3 @@
+my_cool_enum = enum {
+    option1
+}

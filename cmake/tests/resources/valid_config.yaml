@@ -1,0 +1,17 @@
+generate:
+  java:
+    out: out/java
+    package: foo.bar
+  jni:
+    out: out/jni
+    namespace: foo::bar::jni
+  cpp:
+    out:
+      header: out/cpp/header
+      source: out/cpp/source
+    namespace: foo::bar
+  objc:
+    out: out/objc
+  objcpp:
+    out: out/objcpp
+

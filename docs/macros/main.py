@@ -143,5 +143,5 @@ def define_env(env):
         return output
 
     @env.macro
-    def supported_targets():
-        return "|".join(list(API().generation_targets.keys()))
+    def supported_targets(joint: str = "|", wrapper: str = ""):
+        return wrapper + (wrapper + joint + wrapper).join(list(API().generation_targets.keys())) + wrapper
