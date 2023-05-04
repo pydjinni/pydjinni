@@ -1,0 +1,13 @@
+{% extends "base.jinja2" %}
+
+{% block content %}
+{{ type_def.objc.comment }}
+@interface {{ type_def.objc.boxed }} : NSObject
+{% for field in type_def.fields %}
+{% if field.comment %}
+{{ field.objc.comment }}
+{% endif %}
+@property (nonatomic, readonly) {{ field.type_ref.type_def.objc.typename }} {{ field.objc.name }};
+{% endfor %}
+@end
+{% endblock %}

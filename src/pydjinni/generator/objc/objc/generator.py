@@ -7,16 +7,28 @@ from .marshal import ObjcMarshal
 class ObjcGenerator(Generator, key="objc", marshal=ObjcMarshal, writes_header=True):
 
     def generate_enum(self, type_def: Enum):
-        pass
+        self.write_header(
+            template="header/enum.h.jinja2",
+            path=self.marshal.header_path() / type_def.objc.header,
+            type_def=type_def)
 
     def generate_flags(self, type_def: Flags):
-        pass
+        self.write_header(
+            template="header/flags.h.jinja2",
+            path=self.marshal.header_path() / type_def.objc.header,
+            type_def=type_def)
 
     def generate_record(self, type_def: Record):
-        pass
+        self.write_header(
+            template="header/record.h.jinja2",
+            path=self.marshal.header_path() / type_def.objc.header,
+            type_def=type_def)
 
     def generate_interface(self, type_def: Interface):
-        pass
+        self.write_header(
+            template="header/interface.h.jinja2",
+            path=self.marshal.header_path() / type_def.objc.header,
+            type_def=type_def)
 
     def generate_bridging_header(self, ast: list[BaseType]):
         if self.marshal.config.swift_bridging_header:

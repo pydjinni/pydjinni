@@ -1,15 +1,15 @@
-idl        = type+ EOF
-comment    = ('#' r'.*$')+
-type       = enum/flags/record/interface
+idl        = type_def* EOF
+comment    = r'#.*$'+
+type_def   = enum/flags/record/interface
 enum       = comment? identifier '=' 'enum' '{' item* '}'
 flags      = comment? identifier '=' 'flags' '{' flag* '}'
 record     = comment? identifier '=' 'record' '{' field* '}'
 interface  = comment? identifier '=' 'interface' language* '{' method* '}'
-field      = comment? identifier ':' datatype ';'
-method     = comment? 'static'? identifier '(' ((parameter ',')* parameter)? ')' (':' datatype)? ';'
-parameter  = identifier ':' datatype
+field      = comment? identifier ':' data_type ';'
+method     = comment? 'static'? identifier '(' ((parameter ',')* parameter)? ')' (':' data_type)? ';'
+parameter  = identifier ':' data_type
 language   = '+c'/'+j'/'+s'/'+o'
 item       = comment? identifier ';'
 flag       = comment? identifier ('=' ('all'/'none'))? ';'
 identifier = r'[-\w]+'
-datatype   = r'[-\w]+'
+data_type  = r'[-\w]+'

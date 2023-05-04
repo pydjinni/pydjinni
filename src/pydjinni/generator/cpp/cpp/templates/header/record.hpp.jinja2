@@ -1,31 +1,38 @@
-{% include "base.jinja2" %}
+{% extends "base.jinja2" %}
 
+{% block header %}
 #pragma once
 
 {% for include in type_def.cpp.includes -%}
 #include {{ include }}
 {% endfor %}
+{% endblock %}
 
+{% block content %}
+{{ type_def.cpp.comment }}
 struct {{ type_def.cpp.typename }} final {
-    {% for field in type_def.fields %}
-        /** {{ field.cpp.comment }} */
-        {{ field.cpp.typename }} {{ field.cpp.name }};
-    {% endfor %}
+{% for field in type_def.fields %}
+    {% if field.comment %}
+    {{ field.cpp.comment | indent(width=4) }}
+    {% endif %}
+    {{ field.type_ref.type_def.cpp.typename ~ " " ~ field.cpp.name }};
+{% endfor %}
 
     {{ type_def.cpp.typename }}(
-        {% for field in type_def.fields -%}
-            {{ field.cpp.typename }} {{ field.cpp.name }}_{{ ", " if not loop.last }}
-        {% endfor %})
-    :{% for field in type_def.fields %}
-        {{ ", " if not loop.first }} {{ field.cpp.name }}(std::move({{ field.cpp.name }}_))
+    {%- for field in type_def.fields %}
+        {{- field.type_ref.type_def.cpp.typename ~ " " ~ field.cpp.name ~ "_" ~ (", " if not loop.last) }}
+    {%- endfor %})
+    {% for field in type_def.fields %}
+    {{ (": " if loop.first else ', ') ~ field.cpp.name }}(std::move({{ field.cpp.name }}_))
     {% endfor %}
     {}
 
-    {% if config.default_record_constructor %}
-        {{ type_def.cpp.typename }}()
-        :{% for field in type_def.fields -%}
-            {{ ", " if not loop.first }} {{ field.cpp.name }}()
-        {% endfor %}
-        {}
-    {% endif %}
+{% if config.default_record_constructor %}
+    {{ type_def.cpp.typename }}()
+    {% for field in type_def.fields %}
+    {{ (": " if loop.first else ', ') ~ field.cpp.name }}()
+    {% endfor %}
+    {}
+{% endif %}
 };
+{% endblock %}

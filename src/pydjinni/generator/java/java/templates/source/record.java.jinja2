@@ -1,1 +1,40 @@
 {% include "base.jinja2" %}
+
+{% block header %}
+import java.util.HashMap;
+import java.util.HashSet;
+{% endblock %}
+
+{% block content %}
+{{ type_def.java.comment }}
+{{ config.class_access_modifier.value ~ (" final" if config.use_final_for_record) }} class {{ type_def.java.boxed }} {
+{% for field in type_def.fields %}
+    {% if field.comment %}
+    {{ field.java.comment | indent(4) }}
+    {% endif %}
+    {{ "final" if config.use_final_for_record }} {{ field.type_ref.type_def.java.typename }} {{ field.java.name }};
+{% endfor %}
+    public {{ type_def.java.boxed }}(
+    {% for field in type_def.fields %}
+        {{ field.type_ref.type_def.java.typename }} {{ field.java.name ~ ("," if not loop.last) }}
+    {% endfor %}
+    ) {
+    {% for field in type_def.fields %}
+        this.{{ field.java.name }} = {{ field.java.name }};
+    {% endfor %}
+    }
+
+{% for field in type_def.fields %}
+    public {{ field.type_ref.type_def.java.typename }} {{ field.java.getter }}() { return {{ field.java.name }}; }
+{% endfor %}
+
+    @Override
+    public String toString() {
+        return "{{ type_def.java.boxed }}{" +
+        {% for field in type_def.fields %}
+            "{{ ("," if not loop.first) ~ field.java.name }}=" + {{ field.java.name }} +
+        {% endfor %}
+        "}";
+    }
+}
+{% endblock %}

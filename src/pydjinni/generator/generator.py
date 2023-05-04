@@ -38,7 +38,9 @@ class Generator(ABC):
         self._input_file = None
         self._generator_directory = Path(inspect.getfile(self.__class__)).parent
         self._jinja_env = Environment(
-            loader=FileSystemLoader(self._generator_directory / "templates")
+            loader=FileSystemLoader(self._generator_directory / "templates"),
+            trim_blocks=True, lstrip_blocks=True,
+            keep_trailing_newline=True
         )
         processed_files_model_builder.add_generated_field(self.key, header=self.writes_header,
                                                           source=self.writes_source)

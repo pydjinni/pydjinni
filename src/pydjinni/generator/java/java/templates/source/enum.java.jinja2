@@ -1,12 +1,11 @@
-{% include "base.jinja2" %}
+{% extends "base.jinja2" %}
 
-package {{ config.package }};
-
+{% block content %}
 {{ type_def.java.comment }}
 public enum {{ type_def.java.boxed }} {
-{% for item in type_def.items -%}
-    {{ item.java.comment }}
-    {{ item.java.name }},
+{% for item in type_def.items %}
+    {{ item.java.comment | indent(width=4) }}
+    {{ item.java.name ~ (";" if loop.last else ",") }}
 {% endfor %}
-    ;
 }
+{% endblock %}

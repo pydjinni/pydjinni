@@ -48,12 +48,12 @@ class IdlParser:
         def visit_idl(self, node, children):
             return children[0:]
 
-        def visit_type(self, node, children):
-            datatype = unpack(children)
-            self.resolver.register(datatype)
-            return datatype
+        def visit_type_def(self, node, children):
+            data_type = unpack(children)
+            self.resolver.register(data_type)
+            return data_type
 
-        def second_type(self, children):
+        def second_type_def(self, children):
             for marshal in self.marshals:
                 marshal.marshal(children)
 
@@ -106,17 +106,17 @@ class IdlParser:
         def visit_identifier(self, node, children):
             return Identifier(node.value)
 
-        def visit_datatype(self, node, children):
+        def visit_data_type(self, node, children):
             return TypeReference(name=node.value, position=node.position)
 
-        def second_datatype(self, children):
+        def second_data_type(self, children):
             self.resolver.resolve(children)
 
         def visit_item(self, node, children):
             return Enum.Item(
                 name=unpack(children.identifier),
                 position=node.position,
-                comment=None
+                comment=unpack(children.comment)
             )
 
         def second_item(self, children):
@@ -129,7 +129,7 @@ class IdlParser:
                 position=node.position,
                 comment=unpack(children.comment),
                 parameters=children.parameter,
-                return_type_ref=unpack(children.datatype),
+                return_type_ref=unpack(children.data_type),
                 static=node[0] == 'static'
             )
 
@@ -140,8 +140,9 @@ class IdlParser:
         def visit_parameter(self, node, children):
             return Interface.Method.Parameter(
                 name=unpack(children.identifier),
+                comment=unpack(children.comment),
                 position=node.position,
-                type_ref=unpack(children.datatype)
+                type_ref=unpack(children.data_type)
             )
 
         def second_parameter(self, children):
@@ -153,7 +154,7 @@ class IdlParser:
                 name=unpack(children.identifier),
                 position=node.position,
                 comment=unpack(children.comment),
-                type_ref=unpack(children.datatype)
+                type_ref=unpack(children.data_type)
             )
 
         def second_field(self, children):
@@ -161,7 +162,7 @@ class IdlParser:
                 marshal.marshal(children)
 
         def visit_comment(self, node, children):
-            return '\n'.join(children)
+            return [child[1:] for child in children]
 
     def parse(self, idl: Path) -> list[BaseType]:
         """
@@ -192,11 +193,13 @@ class IdlParser:
         except Resolver.TypeResolvingException as e:
             line, col = self.parser.pos_to_linecol(e.position)
             context = self.parser.context(position=e.position)
-            raise IdlParser.TypeResolvingException(idl, e.position, f"Unknown type '{e.type_reference.name}' at position ({line}, {col}) => '{context}' ")
+            raise IdlParser.TypeResolvingException(idl, e.position,
+                                                   f"Unknown type '{e.type_reference.name}' at position ({line}, {col}) => '{context}' ")
         except Resolver.DuplicateTypeException as e:
             line, col = self.parser.pos_to_linecol(e.position)
             context = self.parser.context(position=e.position)
-            raise IdlParser.DuplicateTypeException(idl, e.position, f"Type '{e.datatype.name}' at position ({line}, {col}) => '{context}' ")
+            raise IdlParser.DuplicateTypeException(idl, e.position,
+                                                   f"Type '{e.datatype.name}' at position ({line}, {col}) => '{context}' ")
         except arpeggio.NoMatch as e:
             raise IdlParser.ParsingException(idl, e.position, str(e)[:-1])
         except Marshal.MarshalException as e:

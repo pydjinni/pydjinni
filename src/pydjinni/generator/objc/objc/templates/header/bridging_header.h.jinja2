@@ -1,7 +1,6 @@
-{% include "base.jinja2" %}
+{% extends "base.jinja2" %}
 
-#import <Foundation/Foundation.h>
-
+{% block content %}
 //! Project version number for bridgingheader.
 FOUNDATION_EXPORT double bridgingheaderVersionNumber;
 
@@ -11,3 +10,4 @@ FOUNDATION_EXPORT const unsigned char bridgingheaderVersionString[];
 {% for type_def in ast -%}
 #import "{{ type_def.objc.header }}"
 {% endfor %}
+{% endblock %}

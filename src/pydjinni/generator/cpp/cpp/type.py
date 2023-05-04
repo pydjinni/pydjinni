@@ -18,9 +18,9 @@ class CppExternalType(BaseModel):
 class CppType(CppExternalType):
     source: Path
     includes: list[Path]
-    comment: str | None = None
+    comment: str | None
 
 
 class CppField(BaseModel):
     name: str
-    comment: str | None = None
+    comment: str | None

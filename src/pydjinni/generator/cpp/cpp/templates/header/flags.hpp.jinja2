@@ -1,1 +1,54 @@
-{% include "base.jinja2" %}
+{% extends "base.jinja2" %}
+
+{% block header %}
+#pragma once
+{% endblock %}
+
+{% set counter = namespace(value=0) %}
+
+{% block content %}
+{{ type_def.cpp.comment }}
+enum class {{ type_def.cpp.typename }} : unsigned {
+{% for flag in type_def.flags %}
+    {% if flag.comment %}
+    {{ flag.cpp.comment | indent(4) }}
+    {% endif %}
+    {{ flag.cpp.name ~ " = " -}}
+    {% if flag.none %}
+        {{- "0" -}}
+    {% elif flag.all %}
+        {{- "0 | " -}}
+        {% for flag in type_def.flags if not flag.none and not flag.all %}
+            {{- flag.cpp.name ~ (" | " if not loop.last) -}}
+        {% endfor %}
+    {% else %}
+        {{- "1u << " ~ counter.value -}}
+        {% set counter.value = counter.value + 1 %}
+    {% endif %}
+    {{- ("," if not loop.last) }}
+{% endfor %}
+};
+
+constexpr {{ type_def.cpp.typename }} operator|({{ type_def.cpp.typename }} lhs, {{ type_def.cpp.typename }} rhs) noexcept {
+    return static_cast<{{ type_def.cpp.typename }}>(static_cast<unsigned>(lhs) | static_cast<unsigned>(rhs));
+}
+inline {{ type_def.cpp.typename }}& operator|=({{ type_def.cpp.typename }}& lhs, {{ type_def.cpp.typename }} rhs) noexcept {
+    return lhs = lhs | rhs;
+}
+constexpr {{ type_def.cpp.typename }} operator&({{ type_def.cpp.typename }} lhs, {{ type_def.cpp.typename }} rhs) noexcept {
+    return static_cast<{{ type_def.cpp.typename }}>(static_cast<unsigned>(lhs) & static_cast<unsigned>(rhs));
+}
+inline {{ type_def.cpp.typename }}& operator&=({{ type_def.cpp.typename }}& lhs, {{ type_def.cpp.typename }} rhs) noexcept {
+    return lhs = lhs & rhs;
+}
+constexpr {{ type_def.cpp.typename }} operator^({{ type_def.cpp.typename }} lhs, {{ type_def.cpp.typename }} rhs) noexcept {
+    return static_cast<{{ type_def.cpp.typename }}>(static_cast<unsigned>(lhs) ^ static_cast<unsigned>(rhs));
+}
+inline {{ type_def.cpp.typename }}& operator^=({{ type_def.cpp.typename }}& lhs, {{ type_def.cpp.typename }} rhs) noexcept {
+    return lhs =lhs ^ rhs;
+}
+constexpr {{ type_def.cpp.typename }} operator~({{ type_def.cpp.typename }} x) noexcept {
+    return static_cast<{{ type_def.cpp.typename }}>(~static_cast<unsigned>(x));
+}
+
+{% endblock %}

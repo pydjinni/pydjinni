@@ -1,0 +1,13 @@
+{% extends "base.jinja2" %}
+
+{% block content %}
+{{ type_def.objc.comment }}
+typedef NS_ENUM(NSUInteger, {{ type_def.objc.boxed }}) {
+{% for item in type_def.items %}
+    {% if item.comment %}
+    {{ item.objc.comment | indent(4) }}
+    {% endif %}
+    {{ item.objc.name ~ ("," if not loop.last) }}
+{% endfor %}
+};
+{% endblock %}

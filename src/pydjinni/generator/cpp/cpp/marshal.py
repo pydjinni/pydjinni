@@ -1,8 +1,11 @@
 from pathlib import Path
 
+import mistletoe
+
 from pydjinni.generator.marshal import Marshal
 from pydjinni.parser.ast import Interface, Record, Enum, Flags
 from pydjinni.parser.base_models import BaseType, BaseField
+from .comment_renderer import DoxygenCommentRenderer
 from .config import CppConfig
 from .external_types import external_types
 from .type import CppExternalType, CppType, CppField
@@ -25,24 +28,29 @@ class CppMarshal(Marshal[CppConfig, CppExternalType], types=external_types):
     def marshal_type(self, type_def: BaseType):
         type_def.cpp = CppType(
             typename=type_def.name.convert(self.config.identifier.type),
+            comment=mistletoe.markdown(type_def.comment, DoxygenCommentRenderer) if type_def.comment else '',
             header=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.header_extension}"),
             source=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.source_extension}"),
             includes=self.includes(type_def)
         )
 
     def marshal_field(self, field_def: BaseField):
+        comment = mistletoe.markdown(field_def.comment, DoxygenCommentRenderer) if field_def.comment else ''
         match field_def:
             case Enum.Item() | Flags.Flag():
                 field_def.cpp = CppField(
-                    name=field_def.name.convert(self.config.identifier.enum)
+                    name=field_def.name.convert(self.config.identifier.enum),
+                    comment=comment
                 )
             case Record.Field() | Interface.Method.Parameter():
                 field_def.cpp = CppField(
-                    name=field_def.name.convert(self.config.identifier.field)
+                    name=field_def.name.convert(self.config.identifier.field),
+                    comment=comment
                 )
             case Interface.Method():
                 field_def.cpp = CppField(
-                    name=field_def.name.convert(self.config.identifier.method)
+                    name=field_def.name.convert(self.config.identifier.method),
+                    comment=comment
                 )
 
 

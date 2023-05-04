@@ -1,0 +1,27 @@
+{% extends "base.jinja2" %}
+
+{% set counter = namespace(value=0) %}
+
+{% block content %}
+{{ type_def.objc.comment }}
+typedef NS_OPTIONS(NSUInteger, {{ type_def.objc.boxed }}) {
+{% for flag in type_def.flags %}
+    {% if flag.comment %}
+    {{ flag.objc.comment | indent(4) }}
+    {% endif %}
+    {{ flag.objc.name ~ " = " -}}
+    {% if flag.none %}
+        {{- "0" -}}
+    {% elif flag.all %}
+        {{- "0 | " -}}
+        {% for flag in type_def.flags if not flag.none and not flag.all %}
+            {{- flag.objc.name ~ (" | " if not loop.last) -}}
+        {% endfor %}
+    {% else %}
+        {{- "1u << " ~ counter.value -}}
+        {% set counter.value = counter.value + 1 %}
+    {% endif %}
+    {{- ("," if not loop.last) }}
+{% endfor %}
+};
+{% endblock %}
