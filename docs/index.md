@@ -7,26 +7,20 @@ hide:
 ---
 <center>
 
+<div class="hero" markdown>
+
 <img src="assets/logo.png" alt="logo" width="90" height="90">
 <h1 class="hero-title">Integrate C++ code into<br>your Java, Objective-C or C# application!</h1>
 PyDjinni is a tool for generating cross-language type declarations and interface bindings.<br>
 Heavily inspired by the original [Djinni by Dropbox](https://github.com/dropbox/djinni), it's designed to connect C++ with either Java, Objective-C, Rust or C#.
 
-[:material-rocket-launch-outline: Get Started](installation.md){ .md-button .md-button--primary }&nbsp;
+<br>
+[&nbsp;&nbsp;:material-rocket-launch-outline: Get Started&nbsp;&nbsp;](installation.md){ .md-button .md-button--primary }&nbsp;
 [:octicons-comment-discussion-16: Discuss](https://github.com/pydjinni/pydjinni/discussions){ .md-button }&nbsp;
 [:simple-github: Contribute](https://github.com/pydjinni/pydjinni){ .md-button }
 
-
-<br>
-<br>
-<br>
-
-:octicons-chevron-down-12:
-
-<br>
-<br>
+</div>
 </center>
-<hr>
 <br>
 
 

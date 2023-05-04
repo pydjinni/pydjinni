@@ -46,7 +46,7 @@ publish = [
     "build==0.10.0"
 ]
 doc = [
-    "mkdocs-material==9.1.6",
+    "mkdocs-material==9.1.9",
     "mkdocs-click==0.8.0",
     "mike==1.1.2",
     "jsonref==1.1.0",

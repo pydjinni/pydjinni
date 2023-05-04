@@ -1,10 +1,5 @@
 {% include "base.jinja2" %}
 
-{% block header %}
-import java.util.HashMap;
-import java.util.HashSet;
-{% endblock %}
-
 {% block content %}
 {{ type_def.java.comment }}
 {{ config.class_access_modifier.value ~ (" final" if config.use_final_for_record) }} class {{ type_def.java.boxed }} {
