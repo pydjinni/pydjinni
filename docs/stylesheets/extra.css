@@ -206,7 +206,7 @@
     background-color: transparent;
 }
 
-.md-sidebar {
+[data-md-toggle=drawer]:checked~.md-container .md-sidebar--primary {
     border-radius: 0 calc(2 * var(--border-radius)) calc(2 * var(--border-radius)) 0;
     overflow: hidden;
     border: 1px solid var(--md-default-fg-color--lightest);

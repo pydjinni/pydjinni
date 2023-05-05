@@ -1,0 +1,1 @@
+project(PyDjinniIntegrationTests C CXX)

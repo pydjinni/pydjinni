@@ -1,15 +1,15 @@
-{% include "base.jinja2" %}
+{% extends "base.jinja2" %}
 
+{% block header %}
 #pragma once
 
 #include "djinni/jni/djinni_support.hpp"
-
 {% for include in type_def.jni.includes -%}
 #include "{{ include }}"
 {% endfor -%}
+{% endblock %}
 
-namespace {{ config.namespace }} {
-
+{% block content %}
 class {{ type_def.jni.translator }} final : ::djinni::JniEnum {
 public:
     using Type = {{ type_def.jni.translator }}
@@ -23,5 +23,4 @@ private:
     Type() : JniEnum("{{ type_def.jni.type_signature }}") {}
     friend ::djinni::JniClass<Type>;
 };
-
-}  // namespace {{ config.namespace }}
+{% endblock %}

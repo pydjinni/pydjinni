@@ -18,14 +18,16 @@ if(DJINNI_OBJC)
 add_subdirectory(objc/objcpp)
 endif()
 
-add_executable(common_support_lib_tests
-    support_lib/tests/test.cpp
-)
+if(BUILD_TESTING)
+    add_executable(common_support_lib_tests
+        support_lib/tests/test.cpp
+    )
 
-target_link_libraries(common_support_lib_tests
-    PRIVATE
-        support_lib::common
-        Catch2::Catch2WithMain
-)
+    target_link_libraries(common_support_lib_tests
+        PRIVATE
+            support_lib::common
+            Catch2::Catch2WithMain
+    )
 
-catch_discover_tests(common_support_lib_tests)
+    catch_discover_tests(common_support_lib_tests)
+endif()

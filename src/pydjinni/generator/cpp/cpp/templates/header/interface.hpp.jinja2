@@ -1,1 +1,23 @@
 {% extends "base.jinja2" %}
+
+{% block header %}
+#pragma once
+{% endblock %}
+
+{% block content %}
+{{ type_def.cpp.comment }}
+class {{ type_def.cpp.typename }} {
+    virtual ~{{ type_def.cpp.typename }}() {}
+
+{% for method in type_def.methods %}
+    {% if method.comment %}
+    {{ method.cpp.comment | indent(4) }}
+    {% endif %}
+    {{ "static" if method.static else "virtual" }} {{ method.return_type_ref.type_def.cpp.typename if method.return_type_ref else "void" }} {{ method.cpp.name }}(
+    {%- for parameter in method.parameters -%}
+        const {{ parameter.type_ref.type_def.cpp.typename }}& {{ parameter.cpp.name ~ (", " if not loop.last) }}
+    {%- endfor -%}
+    ) = 0;
+{% endfor %}
+};
+{% endblock %}

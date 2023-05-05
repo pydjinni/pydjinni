@@ -23,8 +23,6 @@ Heavily inspired by the original [Djinni by Dropbox](https://github.com/dropbox/
 </center>
 <br>
 
-
-
 ```{ .djinni .text .left }
 # comment
 person = record { # (1)!

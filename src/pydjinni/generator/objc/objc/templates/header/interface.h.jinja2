@@ -1,4 +1,17 @@
 {% extends "base.jinja2" %}
 
 {% block content %}
+{{ type_def.objc.comment }}
+@protocol {{ type_def.objc.boxed }} <NSObject>
+{% for method in type_def.methods %}
+{% if method.comment %}
+{{ method.objc.comment }}
+{% endif %}
+{{ "+" if method.static else "-" }} {{ (("(" ~ method.return_type_ref.type_def.objc.typename ~ ")") if method.return_type_ref) ~ method.objc.name }}
+{%- for parameter in method.parameters -%}
+{{ ":" if loop.first else (" " ~ parameter.objc.name ~ ":") }}(nonnull {{ parameter.type_ref.type_def.objc.typename }} *){{ parameter.objc.name }}
+{%- endfor -%}
+;
+{% endfor %}
+@end
 {% endblock %}

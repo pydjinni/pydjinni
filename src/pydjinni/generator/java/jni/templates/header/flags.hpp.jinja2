@@ -1,1 +1,26 @@
-{% include "base.jinja2" %}
+{% extends "base.jinja2" %}
+
+{% block header %}
+#pragma once
+
+#include "djinni/jni/djinni_support.hpp"
+{% for include in type_def.jni.includes -%}
+#include "{{ include }}"
+{% endfor -%}
+{% endblock %}
+
+{% block content %}
+class {{ type_def.jni.translator }} final : ::djinni::JniFlags {
+public:
+    using Type = {{ type_def.jni.translator }}
+    using CppType = ::{{ type_def.cpp.identifier }};
+    using JniType = jobject;
+
+    static CppType toCpp(JNIEnv* jniEnv, JniType j) { return static_cast<CppType>(::djinni::JniClass<Type>::get().ordinal(jniEnv, j)); }
+    static ::djinni::LocalRef<JniType> fromCpp(JNIEnv* jniEnv, CppType c) { return ::djinni::JniClass<Type>::get().create(jniEnv, static_cast<jint>(c)); }
+
+private:
+    Type() : JniEnum("{{ type_def.jni.type_signature }}") {}
+    friend ::djinni::JniClass<Type>;
+};
+{% endblock %}
