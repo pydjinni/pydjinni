@@ -21,6 +21,7 @@ endif()
 if(BUILD_TESTING)
     add_executable(common_support_lib_tests
         support_lib/tests/test.cpp
+        support_lib/tests/test2.cpp
     )
 
     target_link_libraries(common_support_lib_tests
@@ -29,5 +30,7 @@ if(BUILD_TESTING)
             Catch2::Catch2WithMain
     )
 
-    catch_discover_tests(common_support_lib_tests)
+    catch_discover_tests(common_support_lib_tests
+        REPORTER junit
+    )
 endif()

@@ -24,7 +24,9 @@ jobs:
       - name: Install dev dependencies
         run: pip install .[dev]
       - name: Run tests
-        run: pytest tests
+        run: pytest tests --junitxml=pytest-report.xml
+      - name: Report Results
+        run: python util/markdown_test_reporter.py >> $GITHUB_STEP_SUMMARY
   integration_test:
     name: Support Lib Unit-test & Integration tests
     strategy:
