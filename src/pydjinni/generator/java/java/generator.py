@@ -7,27 +7,27 @@ class JavaGenerator(Generator, key="java", marshal=JavaMarshal, writes_source=Tr
 
     def generate_enum(self, type_def: Enum):
         self.write_source(
-            template="source/enum.java.jinja2",
+            template="enum.java.jinja2",
             path=self.marshal.source_path() / type_def.java.source,
             type_def=type_def)
 
     def generate_flags(self, type_def: Flags):
         self.write_source(
-            template="source/flags.java.jinja2",
+            template="flags.java.jinja2",
             path=self.marshal.source_path() / type_def.java.source,
             type_def=type_def
         )
 
     def generate_record(self, type_def: Record):
         self.write_source(
-            template="source/record.java.jinja2",
+            template="record.java.jinja2",
             path=self.marshal.source_path() / type_def.java.source,
             type_def=type_def
         )
 
     def generate_interface(self, type_def: Interface):
         self.write_source(
-            template="source/interface.java.jinja2",
+            template="interface.java.jinja2",
             path=self.marshal.source_path() / type_def.java.source,
             type_def=type_def
         )

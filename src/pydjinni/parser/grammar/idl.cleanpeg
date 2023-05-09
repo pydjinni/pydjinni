@@ -4,11 +4,11 @@ type_def   = enum/flags/record/interface
 enum       = comment? identifier '=' 'enum' '{' item* '}'
 flags      = comment? identifier '=' 'flags' '{' flag* '}'
 record     = comment? identifier '=' 'record' '{' field* '}'
-interface  = comment? identifier '=' 'interface' language* '{' method* '}'
+interface  = comment? identifier '=' 'interface' targets '{' method* '}'
 field      = comment? identifier ':' data_type ';'
 method     = comment? 'static'? identifier '(' ((parameter ',')* parameter)? ')' (':' data_type)? ';'
 parameter  = identifier ':' data_type
-language   = '+c'/'+j'/'+s'/'+o'
+targets    = (r'\+[a-z]+'/r'-[a-z]+')*
 item       = comment? identifier ';'
 flag       = comment? identifier ('=' ('all'/'none'))? ';'
 identifier = r'[-\w]+'

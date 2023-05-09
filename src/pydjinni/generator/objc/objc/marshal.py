@@ -14,10 +14,13 @@ from .config import ObjcConfig
 class ObjcMarshal(Marshal[ObjcConfig, ObjcExternalType], types=external_types):
     def marshal_type(self, type_def: BaseType):
         prefix = self.config.type_prefix if self.config.type_prefix else ""
+        typename= f"{prefix}{type_def.name.convert(self.config.identifier.type)}"
         type_def.objc = ObjcType(
-            boxed=f"{prefix}{type_def.name.convert(self.config.identifier.type)}",
+            typename=typename,
+            boxed=typename,
             comment=mistletoe.markdown(type_def.comment, DocCCommentRenderer) if type_def.comment else '',
-            header=Path(f"{prefix}{type_def.name.convert(self.config.identifier.file)}.{self.config.header_extension}")
+            header=Path(f"{prefix}{type_def.name.convert(self.config.identifier.file)}.{self.config.header_extension}"),
+            swift_typename=type_def.name.convert(self.config.identifier.type) if self.config.swift.omit_type_prefix else typename
         )
 
     def marshal_field(self, field_def: BaseField):

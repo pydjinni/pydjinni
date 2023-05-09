@@ -31,7 +31,8 @@ class CppMarshal(Marshal[CppConfig, CppExternalType], types=external_types):
             comment=mistletoe.markdown(type_def.comment, DoxygenCommentRenderer) if type_def.comment else '',
             header=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.header_extension}"),
             source=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.source_extension}"),
-            includes=self.includes(type_def)
+            includes=self.includes(type_def),
+            proxy=isinstance(type_def, Interface) and self.key in type_def.targets
         )
 
     def marshal_field(self, field_def: BaseField):

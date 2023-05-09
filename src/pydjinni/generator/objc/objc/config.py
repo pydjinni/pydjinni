@@ -15,13 +15,25 @@ class ObjcIdentifierStyle(BaseModel):
     local: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.camel
 
 
+class SwiftConfig(BaseModel):
+    """Configuration options related to using the Objective-C interface from Swift"""
+    bridging_header: Path = Field(
+        default=None,
+        description="The name of the Objective-C Bridging Header required for using the interface from Swift."
+    )
+    omit_type_prefix: bool = Field(
+        default=True,
+        description="Whether the type prefix should be omitted for the Swift interface."
+    )
+
+
 class ObjcConfig(BaseModel):
     out: Path | OutPaths = Field(
         description="The output folder for the generated files. Separate folders for `source` and `header` files can be specified."
     )
     type_prefix: str = Field(
         default=None,
-        description="The prefix for Objective-C data types (usually two or three letters)"
+        description="The prefix for Objective-C data types (usually two or three letters)."
     )
     header_extension: str = Field(
         default="h",
@@ -31,4 +43,5 @@ class ObjcConfig(BaseModel):
         default=None,
         description="The name of the Objective-C Bridging Header required for using the interface from Swift."
     )
+    swift: SwiftConfig = SwiftConfig()
     identifier: ObjcIdentifierStyle = ObjcIdentifierStyle()

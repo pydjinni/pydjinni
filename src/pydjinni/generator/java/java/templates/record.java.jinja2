@@ -2,7 +2,7 @@
 
 {% block content %}
 {{ type_def.java.comment }}
-{{ config.class_access_modifier.value ~ (" final" if config.use_final_for_record) }} class {{ type_def.java.boxed }} {
+{{ config.class_access_modifier.value ~ (" final" if config.use_final_for_record) }} class {{ type_def.java.typename }} {
 {% for field in type_def.fields %}
     {% if field.comment %}
     {{ field.java.comment | indent(4) }}
@@ -25,7 +25,7 @@
 
     @Override
     public String toString() {
-        return "{{ type_def.java.boxed }}{" +
+        return "{{ type_def.java.typename }}{" +
         {% for field in type_def.fields %}
             "{{ ("," if not loop.first) ~ field.java.name }}=" + {{ field.java.name }} +
         {% endfor %}

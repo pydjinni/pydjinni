@@ -11,6 +11,7 @@ class ObjcExternalType(BaseModel):
 
 
 class ObjcType(ObjcExternalType):
+    swift_typename: str
     comment: str | None = None
 
 

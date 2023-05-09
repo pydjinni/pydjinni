@@ -1,0 +1,14 @@
+generate:
+  java:
+    out: generated/java
+    package: test.record
+  jni:
+    out: generated/jni
+    namespace: test::record::jni
+  cpp:
+    out: generated/cpp
+    namespace: test::record
+  objc:
+    out: generated/objc
+  objcpp:
+    out: generated/objcpp

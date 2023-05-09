@@ -50,3 +50,14 @@ class JniGenerator(
             path=self.marshal.source_path() / type_def.jni.source,
             type_def=type_def
         )
+
+    def generate_loader(self):
+        if self.marshal.config.jni_loader:
+            self.write_source(
+                template="source/loader.cpp.jinja2",
+                path=self.marshal.source_path() / "pydjinni" / "jni" / "loader.cpp"
+            )
+
+    def generate(self, ast: list[BaseType]):
+        super().generate(ast)
+        self.generate_loader()

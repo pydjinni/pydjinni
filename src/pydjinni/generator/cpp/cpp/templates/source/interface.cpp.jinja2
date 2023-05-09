@@ -1,3 +1,5 @@
-{% include "base.jinja2" %}
+{% extends "base.jinja2" %}
 
-#include {{ type_def.cpp.header }}
+{% block header %}
+{{ include_def(type_def.cpp.header) }}
+{% endblock %}

@@ -2,7 +2,7 @@
 
 {% block content %}
 {{ type_def.java.comment }}
-public enum {{ type_def.java.boxed }} {
+public enum {{ type_def.java.typename }} {
 {% for item in type_def.items %}
     {% if item.comment %}
     {{ item.java.comment | indent(width=4) }}

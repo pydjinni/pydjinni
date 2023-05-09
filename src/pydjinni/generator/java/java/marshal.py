@@ -12,10 +12,12 @@ from .type import JavaType, JavaField, JavaExternalType
 
 class JavaMarshal(Marshal[JavaConfig, JavaExternalType], types=external_types):
     def marshal_type(self, type_def: BaseType):
+        typename = type_def.name.convert(self.config.identifier.type)
         type_def.java = JavaType(
-            boxed=type_def.name.convert(self.config.identifier.type),
+            typename=typename,
+            boxed=typename,
             source=self.config.out / f"{type_def.name.convert(self.config.identifier.file)}.java",
-            comment=mistletoe.markdown(type_def.comment, JavaDocCommentRenderer) if type_def.comment else ''
+            comment=mistletoe.markdown(type_def.comment, JavaDocCommentRenderer) if type_def.comment else '',
         )
 
     def marshal_field(self, field_def: BaseField):

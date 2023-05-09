@@ -34,7 +34,8 @@ def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, Path, MagicMock, M
     parser = IdlParser(
         resolver=resolver_mock,
         marshals=[marshal_mock],
-        file_reader=reader
+        file_reader=reader,
+        targets=[]
     )
 
     # AND GIVEN an input file
@@ -172,7 +173,7 @@ def test_parsing_interface(tmp_path: Path):
     parser, input_file, _, _ = given(
         tmp_path=tmp_path,
         input_idl="""
-        foo = interface +c {
+        foo = interface +cpp {
             method();
             static static_method();
             method_with_return(): i8;
@@ -196,6 +197,7 @@ def test_parsing_interface(tmp_path: Path):
     assert_method(methods[3], "method_with_parameter", params=[("param", "i8")])
     params = [("param", "i8"), ("param2", "i8")]
     assert_method(methods[4], "method_with_parameters_and_return", params=params, return_type="i8")
+    assert "cpp" in interface.targets
 
 
 def test_parsing_invalid_input(tmp_path: Path):

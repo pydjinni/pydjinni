@@ -1,0 +1,81 @@
+{% extends "base.jinja2" %}
+
+{% block header %}
+{% if type_def.cpp.proxy -%}
+import java.util.concurrent.atomic.AtomicBoolean;
+{% endif %}
+{% endblock %}
+
+{%- macro return_type(type_ref) -%}
+{{ type_ref.type_def.java.typename if type_ref else "void" }}
+{%- endmacro -%}
+
+{% macro parameters(method) %}
+{%- for parameter in method.parameters -%}
+    {{ parameter.type_ref.type_def.java.typename }} {{ parameter.java.name ~ (", " if not loop.last) }}
+{%- endfor -%}
+{% endmacro %}
+
+{% block content %}
+{{ type_def.java.comment }}
+{{ config.class_access_modifier.value }} abstract class {{ type_def.java.typename }} {
+    {% for method in type_def.methods %}
+    {% if method.comment %}
+    {{ method.java.comment | indent(4) }}
+    {% endif %}
+    public {{ "static" if method.static else "abstract" }} {{ return_type(method.return_type_ref) }} {{ method.java.name }}({{ parameters(method) }})
+    {%- if method.static -%}
+    {
+        return CppProxy.{{ method.java.name }}(
+        {%- for parameter in method.parameters -%}
+        {{ parameter.java.name ~ (", " if not loop.last) }}
+        {%- endfor -%}
+        );
+    };
+    {% else -%}
+    ;
+    {% endif %}
+    {% endfor %}
+    {% if type_def.cpp.proxy %}
+
+    private static final class CppProxy extends {{ type_def.java.typename }} {
+        private final long nativeRef;
+        private final AtomicBoolean destroyed = new AtomicBoolean(false);
+
+        private CppProxy(long nativeRef)
+        {
+            if (nativeRef == 0) throw new RuntimeException("nativeRef is zero");
+            this.nativeRef = nativeRef;
+        }
+
+        private native void nativeDestroy(long nativeRef);
+        public void _djinni_private_destroy()
+        {
+            boolean destroyed = this.destroyed.getAndSet(true);
+            if (!destroyed) nativeDestroy(this.nativeRef);
+        }
+        @SuppressWarnings("deprecation")
+        protected void finalize() throws java.lang.Throwable
+        {
+            _djinni_private_destroy();
+            super.finalize();
+        }
+
+        {% for method in type_def.methods %}
+
+        {% if method.static %}
+        public static native {{ return_type(method.return_type_ref) }} {{ method.java.name }}({{ parameters(method) }});
+        {% else %}
+        @Override
+        public {{ return_type(method.return_type_ref) }} {{ method.java.name }}({{ parameters(method) }}) {
+            assert !this.destroyed.get() : "trying to use a destroyed object";
+            return native_{{ method.java.name }}(this.nativeRef, key);
+        }
+        private native void native_{{ method.java.name }}(long _nativeRef{{ (", " if method.parameters) ~ parameters(method) }});
+        {% endif %}
+        {% endfor %}
+
+    }
+    {% endif %}
+}
+{% endblock %}

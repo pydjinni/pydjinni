@@ -1,0 +1,7 @@
+foo = record {
+    bar: i8;
+}
+
+helper = interface +cpp {
+    static get_foo(foo: foo): foo;
+}

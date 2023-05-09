@@ -4,7 +4,11 @@ project(PyDjinniObjcSupportLib OBJC OBJCXX)
 
 add_library(objc_support_lib
         support_lib/src/support.mm
+        support_lib/src/error.mm
+        support_lib/src/proxy_cache.mm
 )
+
+target_compile_options(objc_support_lib PUBLIC "-fobjc-arc")
 
 target_include_directories(objc_support_lib PUBLIC support_lib/include)
 

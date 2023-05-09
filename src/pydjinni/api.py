@@ -233,6 +233,7 @@ class API:
             parser = IdlParser(
                 resolver=self._resolver,
                 marshals=marshals,
+                targets=[key for key in self._generate_targets],
                 file_reader=self._file_reader_writer
             )
 

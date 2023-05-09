@@ -3,8 +3,9 @@
 {% block header %}
 #pragma once
 
+#include <algorithm>
 {% for include in type_def.cpp.includes -%}
-#include {{ include }}
+{{ include_def(include) }}
 {% endfor %}
 {% endblock %}
 

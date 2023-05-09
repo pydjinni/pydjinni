@@ -18,10 +18,11 @@ def unpack(list_input: []):
 
 
 class IdlParser:
-    def __init__(self, resolver: Resolver, marshals: list[Marshal], file_reader: FileReaderWriter):
+    def __init__(self, resolver: Resolver, marshals: list[Marshal], targets: list[str], file_reader: FileReaderWriter):
         self.parser = ParserPEG(IDL_GRAMMAR_PATH.read_text(), root_rule_name="idl")
         self.resolver = resolver
         self.marshals = marshals
+        self.targets = targets
         self.file_reader = file_reader
 
     class ParsingException(ApplicationException, code=150):
@@ -40,10 +41,11 @@ class IdlParser:
         """Marshalling error"""
 
     class Visitor(PTNodeVisitor):
-        def __init__(self, resolver: Resolver, marshals: list[Marshal], **kwargs):
+        def __init__(self, resolver: Resolver, marshals: list[Marshal], targets: list[str], **kwargs):
             super().__init__(**kwargs)
             self.resolver = resolver
             self.marshals = marshals
+            self.targets = targets
 
         def visit_idl(self, node, children):
             return children[0:]
@@ -87,12 +89,13 @@ class IdlParser:
                 marshal.marshal(children)
 
         def visit_interface(self, node, children):
-            name = unpack(children.identifier)
+            targets = unpack(children.targets) or self.targets
             return Interface(
-                name=name,
+                name=unpack(children.identifier),
                 position=node.position,
                 comment=unpack(children.comment),
-                methods=children.method
+                methods=children.method,
+                targets=targets
             )
 
         def visit_record(self, node, children):
@@ -145,6 +148,18 @@ class IdlParser:
                 type_ref=unpack(children.data_type)
             )
 
+        def visit_targets(self, node, children):
+            includes = []
+            excludes = []
+            for child in children:
+                if child.startswith('+'):
+                    includes.append(child[1:])
+                else:
+                    excludes.append(child[1:])
+            if not includes:
+                includes = self.targets
+            return [include for include in includes if include not in excludes]
+
         def second_parameter(self, children):
             for marshal in self.marshals:
                 marshal.marshal(children)
@@ -186,7 +201,7 @@ class IdlParser:
         """
         try:
             parse_tree = self.parser.parse(self.file_reader.read_idl(idl))
-            ast = visit_parse_tree(parse_tree, IdlParser.Visitor(self.resolver, self.marshals))
+            ast = visit_parse_tree(parse_tree, IdlParser.Visitor(self.resolver, self.marshals, self.targets))
             return ast
         except FileNotFoundError as e:
             raise FileNotFoundException(idl)

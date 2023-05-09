@@ -38,6 +38,7 @@ class Interface(BaseType):
         static: bool
 
     methods: list[Method]
+    targets: list[str]
 
 
 class Record(BaseType):

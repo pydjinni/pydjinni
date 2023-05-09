@@ -2,13 +2,17 @@ cmake_minimum_required(VERSION 3.6.0)
 
 project(PyDjinniSupportLib C CXX)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 Include(FetchContent)
-include(CTest)
+Include(CTest)
+Include(PyDjinni)
 
 option(DJINNI_JNI "Build for Java/JNI interop" OFF)
 option(DJINNI_OBJC "Build for Objective-C interop" OFF)
 
 if(BUILD_TESTING)
+    find_package(Java REQUIRED)
+    include(UseJava)
     FetchContent_Declare(
       Catch2
       GIT_REPOSITORY https://github.com/catchorg/Catch2.git

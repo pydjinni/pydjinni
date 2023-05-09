@@ -19,6 +19,7 @@ class CppType(CppExternalType):
     source: Path
     includes: list[Path]
     comment: str | None
+    proxy: bool = False
 
 
 class CppField(BaseModel):

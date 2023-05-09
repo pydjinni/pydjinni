@@ -31,8 +31,8 @@ class ObjcGenerator(Generator, key="objc", marshal=ObjcMarshal, writes_header=Tr
             type_def=type_def)
 
     def generate_bridging_header(self, ast: list[BaseType]):
-        if self.marshal.config.swift_bridging_header:
-            path = self.marshal.header_path() / self.marshal.config.swift_bridging_header
+        if self.marshal.config.swift.bridging_header:
+            path = self.marshal.header_path() / self.marshal.config.swift.bridging_header
             self.write_header(
                 template="header/bridging_header.h.jinja2",
                 path=path,

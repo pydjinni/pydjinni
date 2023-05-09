@@ -2,6 +2,7 @@
 
 {% block content %}
 {{ type_def.objc.comment }}
+NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
 @interface {{ type_def.objc.boxed }} : NSObject
 {% for field in type_def.fields %}
 {% if field.comment %}

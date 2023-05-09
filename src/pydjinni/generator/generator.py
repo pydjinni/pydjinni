@@ -37,11 +37,16 @@ class Generator(ABC):
         self._file_writer = file_writer
         self._input_file = None
         self._generator_directory = Path(inspect.getfile(self.__class__)).parent
+
+        def is_system_include(header: str):
+            return str(header).startswith("<") and str(header).endswith(">")
+
         self._jinja_env = Environment(
             loader=FileSystemLoader(self._generator_directory / "templates"),
             trim_blocks=True, lstrip_blocks=True,
             keep_trailing_newline=True
         )
+        self._jinja_env.tests["system_include"] = is_system_include
         processed_files_model_builder.add_generated_field(self.key, header=self.writes_header,
                                                           source=self.writes_source)
         self.marshal = self._marshal_type(

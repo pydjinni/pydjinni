@@ -2,6 +2,7 @@
 
 {% block content %}
 {{ type_def.objc.comment }}
+NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
 @protocol {{ type_def.objc.boxed }} <NSObject>
 {% for method in type_def.methods %}
 {% if method.comment %}
@@ -12,6 +13,11 @@
 {{ ":" if loop.first else (" " ~ parameter.objc.name ~ ":") }}(nonnull {{ parameter.type_ref.type_def.objc.typename }} *){{ parameter.objc.name }}
 {%- endfor -%}
 ;
+  __attribute__((swift_name("{{ method.objc.name }}(
+{%- for parameter in method.parameters -%}
+{{ parameter.objc.name }}:
+{%- endfor -%}
+)")));
 {% endfor %}
 @end
 {% endblock %}
