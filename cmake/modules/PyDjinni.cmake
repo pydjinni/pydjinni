@@ -28,7 +28,7 @@ cmake_minimum_required(VERSION 3.19)
 function(pydjinni_generate IDL)
     cmake_parse_arguments(DJINNI
         # options
-            ""
+            "CLEAN"
         # one-value keywords
             "CONFIG;WORKING_DIRECTORY"
         # multi-value keywords
@@ -52,6 +52,9 @@ function(pydjinni_generate IDL)
     list(JOIN DJINNI_LANGUAGES ", " DJINNI_LANGUAGES_STRING)
     message(STATUS "${MESSAGE_PREFIX} Generating Gluecode from '${IDL}' for target languages: ${DJINNI_LANGUAGES_STRING}")
 
+    if(DJINNI_CLEAN)
+        list(APPEND ADDITIONAL_GENERATE_OPTIONS --clean)
+    endif()
     if(DJINNI_CONFIG)
         list(APPEND ADDITIONAL_OPTIONS --config ${DJINNI_CONFIG})
     endif()
@@ -67,7 +70,7 @@ function(pydjinni_generate IDL)
    execute_process(COMMAND ${DJINNI_EXECUTABLE}
             ${ADDITIONAL_OPTIONS}
             --option generate.list_processed_files:${DJINNI_PROCESSED_FILES_OUTFILE}
-            generate ${IDL} ${DJINNI_LANGUAGES}
+            generate ${ADDITIONAL_GENERATE_OPTIONS} ${IDL} ${DJINNI_LANGUAGES}
         RESULT_VARIABLE PYDIJNNI_RESULT
         WORKING_DIRECTORY ${DJINNI_WORKING_DIRECTORY}
     )
@@ -142,7 +145,7 @@ function(pydjinni_generate IDL)
     # trigger re-generation if IDL file or config changes
     list(APPEND DEPENDS ${PARSED_IDL_FILES})
     list(APPEND DEPENDS ${PARSED_EXTERNAL_TYPE_FILES})
-    if(NOT DJINNI_CONFIG STREQUAL "None")
+    if(DJINNI_CONFIG AND NOT DJINNI_CONFIG STREQUAL "None")
         file(TO_CMAKE_PATH ${DJINNI_CONFIG} CMAKE_PATH_CONFIG)
         list(APPEND DEPENDS ${CMAKE_PATH_CONFIG})
     endif()
