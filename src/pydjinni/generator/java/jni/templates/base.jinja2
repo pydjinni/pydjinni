@@ -4,9 +4,12 @@
 {% block header %}
 {% endblock %}
 
-namespace {{ config.namespace }} {
+{%- if type_def.jni.namespace -%}
+namespace {{ type_def.jni.namespace }} {
+{% endif %}
 {% block content %}
 {% endblock content %}
-}  // namespace {{ config.namespace }}
-
+{% if type_def.jni.namespace -%}
+}  // namespace {{ type_def.jni.namespace }}
+{% endif %}
 

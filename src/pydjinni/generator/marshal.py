@@ -6,7 +6,7 @@ import pydantic
 from pydantic import BaseModel
 
 from pydjinni.config.config_model_builder import ConfigModelBuilder
-from pydjinni.config.types import OutPaths
+from pydjinni.config.types import OutPaths, IdentifierStyle
 from pydjinni.exceptions import ConfigurationException
 from pydjinni.generator.external_types import ExternalTypes, ExternalTypeDef, ExternalTypesBuilder
 from pydjinni.parser.base_models import BaseType, BaseField
@@ -68,6 +68,18 @@ class Marshal(ABC, Generic[ConfigModel, ExternalTypeDef]):
             return out.source
         else:
             return out
+
+    def marshal_namespace(
+            self,
+            type_def: BaseType,
+            identifier_style: IdentifierStyle | IdentifierStyle.Case,
+            config_namespace: str = None,
+            separator: str = "::"
+    ) -> list[str]:
+        namespace = [namespace.convert(identifier_style) for namespace in type_def.namespace]
+        if config_namespace:
+            namespace = config_namespace.split(separator) + namespace
+        return namespace
 
     @abstractmethod
     def marshal_type(self, type_def: BaseType):

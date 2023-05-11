@@ -3,9 +3,9 @@ cmake_minimum_required(VERSION 3.6.0)
 project(PyDjinniObjcSupportLib OBJC OBJCXX)
 
 add_library(objc_support_lib
-        support_lib/src/support.mm
-        support_lib/src/error.mm
-        support_lib/src/proxy_cache.mm
+        support_lib/src/pydjinni/support.mm
+        support_lib/src/pydjinni/error.mm
+        support_lib/src/pydjinni/proxy_cache.mm
 )
 
 target_compile_options(objc_support_lib PUBLIC "-fobjc-arc")

@@ -17,6 +17,7 @@ class JniExternalType(BaseModel):
 
 class JniType(JniExternalType):
     source: Path
+    namespace: str
     comment: str | None = None
 
 

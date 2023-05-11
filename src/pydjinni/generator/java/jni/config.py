@@ -11,6 +11,7 @@ class JniIdentifierStyle(BaseModel):
     enum: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.train
     field: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.camel
     method: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.camel
+    namespace: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.pascal
 
 
 class JniConfig(BaseModel):

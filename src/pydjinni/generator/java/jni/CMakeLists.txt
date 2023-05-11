@@ -7,7 +7,7 @@ set(JAVA_AWT_INCLUDE_PATH NotNeeded)
 find_package(JNI REQUIRED QUIET)
 
 add_library(jni_support_lib
-        support_lib/src/support.cpp
+        support_lib/src/pydjinni/support.cpp
 )
 
 target_include_directories(jni_support_lib PUBLIC support_lib/include)

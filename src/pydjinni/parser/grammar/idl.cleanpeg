@@ -1,4 +1,4 @@
-idl        = (import_def/extern)* type_def* EOF
+idl        = (import_def/extern)* (type_def/namespace)* EOF
 comment    = r'#.*$'+
 type_def   = enum/flags/record/interface
 enum       = comment? identifier '=' 'enum' '{' item* '}'
@@ -16,4 +16,4 @@ data_type  = r'[-\w]+'
 filepath   = r'".*"'
 import_def = '@import' filepath
 extern     = '@extern' filepath
-
+namespace  = 'namespace' (identifier '.')* identifier '{' (type_def/namespace)* '}'

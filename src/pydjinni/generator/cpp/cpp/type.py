@@ -19,6 +19,7 @@ class CppType(CppExternalType):
     source: Path
     includes: list[Path]
     comment: str | None
+    namespace: str
     proxy: bool = False
 
 

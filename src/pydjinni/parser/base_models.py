@@ -11,6 +11,7 @@ class BaseExternalType(BaseModel):
 class BaseType(BaseModel, extra='allow'):
     name: Identifier
     position: int
+    namespace: list[Identifier] = []
     comment: list[str] | None = None
 
 

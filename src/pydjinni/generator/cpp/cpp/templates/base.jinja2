@@ -12,7 +12,11 @@
 {% block header %}
 {% endblock %}
 
-namespace {{ config.namespace }} {
+{%- if type_def.cpp.namespace -%}
+namespace {{ type_def.cpp.namespace }} {
+{% endif %}
 {% block content %}
 {% endblock content %}
-}  // namespace {{ config.namespace }}
+{% if type_def.cpp.namespace -%}
+}  // namespace {{ type_def.cpp.namespace }}
+{% endif %}

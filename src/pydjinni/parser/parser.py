@@ -62,7 +62,8 @@ class IdlParser(PTNodeVisitor):
     def visit_idl(self, node, children):
         imports = unpack(children.import_def) or []
         type_defs = children.type_def or []
-        return imports + type_defs
+        namespaced_type_defs = unpack(children.namespace) or []
+        return imports + type_defs + namespaced_type_defs
 
     def visit_type_def(self, node, children):
         data_type = unpack(children)
@@ -212,6 +213,12 @@ class IdlParser(PTNodeVisitor):
 
     def visit_extern(self, node, children):
         self.resolver.load_external(unpack(children.filepath))
+
+    def visit_namespace(self, node, children):
+        namespaced_type_defs = unpack(children.namespace) or []
+        for type_def in children.type_def + namespaced_type_defs:
+            type_def.namespace = children.identifier + type_def.namespace
+        return children.type_def + namespaced_type_defs
 
     def _get_context(self, position) -> tuple[int, int, str]:
         line, col = self.idl_parser.pos_to_linecol(position)

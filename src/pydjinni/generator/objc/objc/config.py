@@ -6,7 +6,6 @@ from pydjinni.config.types import OutPaths, IdentifierStyle
 
 
 class ObjcIdentifierStyle(BaseModel):
-    file: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.pascal
     enum: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.pascal
     field: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.camel
     method: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.camel
@@ -20,10 +19,6 @@ class SwiftConfig(BaseModel):
     bridging_header: Path = Field(
         default=None,
         description="The name of the Objective-C Bridging Header required for using the interface from Swift."
-    )
-    omit_type_prefix: bool = Field(
-        default=True,
-        description="Whether the type prefix should be omitted for the Swift interface."
     )
 
 

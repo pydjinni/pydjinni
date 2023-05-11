@@ -11,6 +11,7 @@ class CppIdentifier(BaseModel):
     file: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.snake
     field: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.train
     method: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.snake
+    namespace: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.pascal
 
 
 class CppConfig(BaseModel):

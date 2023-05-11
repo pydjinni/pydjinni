@@ -21,4 +21,4 @@ pydjinni_generate(${IDL_FILE}
 then("the custom options should be taken into account in the generated output")
 
 assert(java_GENERATED_SOURCES)
-assert_in_list("out/java-custom/out/java-custom/Foo.java" java_GENERATED_SOURCES)
+assert_in_list("out/java-custom/foo/bar/Foo.java" java_GENERATED_SOURCES)

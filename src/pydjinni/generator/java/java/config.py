@@ -12,6 +12,7 @@ class JavaIdentifierStyle(BaseModel):
     field: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.camel
     type: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.pascal
     method: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.camel
+    package: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.snake
 
 
 class JavaConfig(BaseModel):

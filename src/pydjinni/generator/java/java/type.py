@@ -18,6 +18,7 @@ class JavaExternalType(BaseModel):
 
 class JavaType(JavaExternalType):
     source: Path
+    package: str
     comment: str | None = None
 
 

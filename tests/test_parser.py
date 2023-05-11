@@ -382,7 +382,7 @@ def test_missing_import(tmp_path: Path):
 
 
 def test_extern(tmp_path: Path):
-    # given an idl file that references an extern type
+    # GIVEN an idl file that references an extern type
     parser, input_file, resolver_mock, _ = given(
         tmp_path=tmp_path,
         input_idl="""
@@ -406,7 +406,7 @@ def test_extern(tmp_path: Path):
 
 
 def test_missing_extern(tmp_path: Path):
-    # given an idl file that references an extern type that does not exist
+    # GIVEN an idl file that references an extern type that does not exist
     parser, input_file, resolver_mock, _ = given(
         tmp_path=tmp_path,
         input_idl="""
@@ -418,3 +418,34 @@ def test_missing_extern(tmp_path: Path):
     # THEN a FileNotFoundException should be raised
     with pytest.raises(FileNotFoundException):
         parser.parse(input_file)
+
+
+def test_namespace(tmp_path: Path):
+    # GIVEN an idl file that defines namespaces
+    parser, input_file, _, _ = given(
+        tmp_path=tmp_path,
+        input_idl="""
+        namespace foo.bar {
+            foo = enum {
+                first_item;
+                second_item;
+            }
+            namespace baz {
+                bar = enum {
+                    first_item;
+                    second_item;
+                }
+            }
+        }
+            """
+    )
+
+    # WHEN parsing the idl file
+    ast = parser.parse(input_file)
+
+    # THEN the ast should contain two types each labelled with their respective namespace
+    assert len(ast) == 2
+    assert ast[0].name == "foo"
+    assert ast[0].namespace == ["foo", "bar"]
+    assert ast[1].name == "bar"
+    assert ast[1].namespace == ["foo", "bar", "baz"]
