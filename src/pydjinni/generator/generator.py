@@ -132,6 +132,8 @@ class Generator(ABC):
 
     def generate(self, ast: list[BaseType]):
         if self.marshal.config:
+            if self.writes_header:
+                self._file_writer.setup_include_dir(self.key, self.marshal.header_path())
             if self.support_lib_commons:
                 self.generate_support_lib()
             for type_def in ast:

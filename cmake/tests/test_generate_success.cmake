@@ -22,6 +22,8 @@ assert(DEPENDS_LENGTH EQUAL 2)
 
 then("the variable cpp_GENERATED_HEADERS should be set")
 assert(cpp_GENERATED_HEADERS)
+then("the variable cpp_INCLUDE_DIR should be set to the configured include dir")
+assert(cpp_INCLUDE_DIR STREQUAL "out/cpp/header")
 then("the variable cpp_GENERATED_SOURCES should be set")
 assert(cpp_GENERATED_SOURCES)
 then("the variable java_GENERATED_SOURCES should be set")

@@ -16,8 +16,8 @@ pydjinni_generate(<filename>
 
 Calls the PyDjinni Generator and populates variables with the generated sources
 
-The output variables are named `<language>_GENERATED_SOURCES` and `<language>_GENERATED_HEADERS`, where `<language>`
-refers to the *Generator* language.
+The output variables are named `<language>_GENERATED_SOURCES`, `<language>_GENERATED_HEADERS` and 
+`<language>_INCLUDE_DIR`, where `<language>` refers to the *Generator* language.
 
 Sets the `CMAKE_CONFIGURE_DEPENDS` property on all reported input files (parsed IDL files, external types that are 
 picked up during parsing and the used config file), to automatically trigger re-configuration when one of the 
@@ -74,7 +74,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(Pydjinni)
 ```
 
-[:octicons-download-16: Download PyDjinni Module](https://raw.githubusercontent.com/pydjinni/pydjinni/{{ git.tag }}/cmake/modules/PyDjinni.cmake){ .md-button download }
+[:octicons-download-16: Download PyDjinni Module {{ git.tag }}](https://raw.githubusercontent.com/pydjinni/pydjinni/{{ git.tag }}/cmake/modules/PyDjinni.cmake){ .md-button download }
 
 
 ## Example
@@ -96,4 +96,5 @@ The following variables are populated:
 - `java_GENERATED_SOURCES`
 - `jni_GENERATED_SOURCES`
 - `jni_GENERATED_HEADERS`
+- `jni_INCLUDE_DIR`
 

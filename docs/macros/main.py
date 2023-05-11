@@ -12,7 +12,7 @@ from pydjinni.api import API
 from pydjinni.exceptions import return_codes
 
 
-def render_config_schema_table(element, indent: int):
+def render_config_schema_table(element, indent: int, render_defaults=True):
     first_value = True
     result = ""
     if "properties" in element:
@@ -23,7 +23,7 @@ def render_config_schema_table(element, indent: int):
                 result += f"\n{'#' * indent} {key}\n\n"
                 if value.get("description"):
                     result += f"\n{value['description']}\n\n"
-                result += render_config_schema_table(value, indent + 1)
+                result += render_config_schema_table(value, indent + 1, render_defaults)
             if value.get("type") != "object":
                 if first_value:
                     result += f"| Name | Type | Description |\n"
@@ -59,7 +59,7 @@ def render_config_schema_table(element, indent: int):
                         result += "**Examples:<br>**"
                         for example in examples:
                             result += f"- `{example}`<br>"
-                if "default" in value and value["default"] is not None:
+                if render_defaults and "default" in value and value["default"] is not None:
                     default = value['default']
                     result += "**Default:** "
                     if isinstance(default, dict):
@@ -106,7 +106,7 @@ def define_env(env):
     def processed_files_schema_table(header_indent: int = 3):
         json_schema = json.dumps(api.processed_files_model.model_json_schema())
         schema = jsonref.loads(json_schema)
-        return render_config_schema_table(schema, header_indent)
+        return render_config_schema_table(schema, header_indent, False)
 
     @env.macro
     def cli_commands():

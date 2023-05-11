@@ -37,6 +37,10 @@ class ProcessedFilesModelBuilder:
         def key_model(key: str, fields: tuple[bool, bool]):
             fields_kwargs = {}
             if fields[0]:
+                fields_kwargs["include_dir"] = (Path, FieldInfo(
+                    default=Path(),
+                    description=f"Path where all {key} header files are written to."
+                ))
                 fields_kwargs["header"] = (list[Path], FieldInfo(
                     default=[],
                     description=f"List of generated {key} header files."

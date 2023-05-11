@@ -13,6 +13,7 @@ def given() -> FileReaderWriter:
             class FooProcessedFilesList(BaseModel):
                 source: list[Path] = []
                 header: list[Path] = []
+                include_dir: str = ""
 
             class BarProcessedFilesList(BaseModel):
                 source: list[Path] = []
@@ -185,3 +186,15 @@ def test_read_external_type(tmp_path):
     # THEN the reading of the file should be recorded in the processed files model
     assert len(reader.processed_files.parsed.external_types) == 1
     assert external_type in reader.processed_files.parsed.external_types
+
+
+def test_configure_include_dir():
+    writer = given()
+
+    include_dir = Path("foo_include_dir")
+
+    # WHEN configuring the include_dir for an existing target
+    writer.setup_include_dir("foo", include_dir)
+
+    # THEN the processed files output should report the configured include directory
+    assert writer.processed_files.generated.foo.include_dir == include_dir

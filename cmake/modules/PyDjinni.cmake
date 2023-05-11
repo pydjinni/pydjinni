@@ -138,6 +138,12 @@ function(pydjinni_generate IDL)
     foreach(LANGUAGE ${GENERATED_LANGUAGES})
         get_generated_files(${LANGUAGE} header)
         set(${LANGUAGE}_GENERATED_HEADERS ${${LANGUAGE}_GENERATED_HEADERS} PARENT_SCOPE)
+        string(JSON INCLUDE_DIR
+            ERROR_VARIABLE INCLUDE_DIR_JSON_ERROR
+            GET ${PROCESSED_FILES} generated ${LANGUAGE} include_dir)
+        if(NOT INCLUDE_DIR_JSON_ERROR)
+            set(${LANGUAGE}_INCLUDE_DIR ${INCLUDE_DIR} PARENT_SCOPE)
+        endif()
         get_generated_files(${LANGUAGE} source)
         set(${LANGUAGE}_GENERATED_SOURCES ${${LANGUAGE}_GENERATED_SOURCES} PARENT_SCOPE)
     endforeach()

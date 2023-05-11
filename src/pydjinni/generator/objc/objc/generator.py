@@ -4,7 +4,7 @@ from pydjinni.parser.base_models import BaseType
 from .marshal import ObjcMarshal
 
 
-class ObjcGenerator(Generator, key="objc", marshal=ObjcMarshal, writes_header=True):
+class ObjcGenerator(Generator, key="objc", marshal=ObjcMarshal, writes_header=True, writes_source=True):
 
     def generate_enum(self, type_def: Enum):
         self.write_header(
