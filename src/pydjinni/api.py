@@ -234,7 +234,8 @@ class API:
                 resolver=self._resolver,
                 marshals=marshals,
                 targets=[key for key in self._generate_targets],
-                file_reader=self._file_reader_writer
+                file_reader=self._file_reader_writer,
+                include_dirs=generate_config.include_dirs
             )
 
             # parsing the input IDL. The output is an AST that contains type definitions for each provided marshal

@@ -10,3 +10,7 @@ class GenerateBaseConfig(BaseModel):
         description="File that reports all the parsed and generated files. File format is determined by the file extension. "
                     "Supported extensions: `.yaml`, `.yml`, `.json`, `.toml`"
     )
+    include_dirs: list[Path] = Field(
+        default=[],
+        description="Include directories that are searched for `@import` and `@extern` directives."
+    )

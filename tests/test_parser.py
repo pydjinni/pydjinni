@@ -35,7 +35,8 @@ def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, Path, MagicMock, M
         resolver=resolver_mock,
         marshals=[marshal_mock],
         file_reader=reader,
-        targets=['cpp', 'java']
+        targets=['cpp', 'java'],
+        include_dirs=[tmp_path]
     )
 
     # AND GIVEN an input file
@@ -286,7 +287,7 @@ def test_parsing_missing_type(tmp_path):
         parser.parse(input_file)
 
 
-def test_parsing_duplicate_type(tmp_path):
+def test_parsing_duplicate_type(tmp_path: Path):
     # GIVEN an input that redefines an existing type
     parser, input_file, resolver_mock, _ = given(
         tmp_path=tmp_path,
@@ -308,7 +309,7 @@ def test_parsing_duplicate_type(tmp_path):
         parser.parse(input_file)
 
 
-def test_parsing_non_existing_file(tmp_path):
+def test_parsing_non_existing_file(tmp_path: Path):
     parser, _, _, _ = given(
         tmp_path=tmp_path,
         input_idl=""
@@ -320,7 +321,7 @@ def test_parsing_non_existing_file(tmp_path):
         parser.parse(tmp_path / 'test.djinni')
 
 
-def test_marshalling_error(tmp_path):
+def test_marshalling_error(tmp_path: Path):
     # GIVEN input that cannot be marshalled by one of the registered Marshals
     parser, input_file, _, marshal_mock = given(
         tmp_path=tmp_path,
@@ -339,4 +340,81 @@ def test_marshalling_error(tmp_path):
     # WHEN parsing the input
     # THEN a IdlParser.MarshallingException should be raised
     with pytest.raises(IdlParser.MarshallingException):
+        parser.parse(input_file)
+
+
+def test_import(tmp_path: Path):
+    # GIVEN an idl file that imports another file
+    parser, input_file, _, _ = given(
+        tmp_path=tmp_path,
+        input_idl="""
+                @import "foo.pydjinni"
+                """
+    )
+    # AND GIVEN the imported file
+    imported_file = tmp_path / "foo.pydjinni"
+    imported_file.write_text("""
+    foo = record {
+        bar: i8;
+    }
+    """)
+
+    # THEN the record from the imported file should be included in the AST
+    record = when(parser, input_file, Record, "foo")
+
+    fields = record.fields
+    assert len(fields) == 1
+    assert_field(fields[0], name="bar", typename="i8")
+
+
+def test_missing_import(tmp_path: Path):
+    # GIVEN an idl file that imports another idl file that does not exist
+    parser, input_file, _, _ = given(
+        tmp_path=tmp_path,
+        input_idl="""
+                    @import "foo.pydjinni"
+                    """
+    )
+    # WHEN parsing the file
+    # THEN a FileNotFoundException should be raised
+    with pytest.raises(FileNotFoundException):
+        parser.parse(input_file)
+
+
+def test_extern(tmp_path: Path):
+    # given an idl file that references an extern type
+    parser, input_file, resolver_mock, _ = given(
+        tmp_path=tmp_path,
+        input_idl="""
+        @extern "extern.yaml"
+        """
+    )
+
+    # AND GIVEN the extern file
+    extern_file = tmp_path / "extern.yaml"
+    extern_file.touch()
+
+    # WHEN parsing the file
+    ast = parser.parse(input_file)
+
+    # THEN the Resolver should have been called in order to load the external type
+    resolver_mock.load_external.assert_called_once()
+    resolver_mock.load_external.assert_called_with(extern_file)
+
+    # THEN the resulting AST should be empty
+    assert len(ast) == 0
+
+
+def test_missing_extern(tmp_path: Path):
+    # given an idl file that references an extern type that does not exist
+    parser, input_file, resolver_mock, _ = given(
+        tmp_path=tmp_path,
+        input_idl="""
+            @extern "extern.yaml"
+            """
+    )
+
+    # WHEN parsing the file
+    # THEN a FileNotFoundException should be raised
+    with pytest.raises(FileNotFoundException):
         parser.parse(input_file)
