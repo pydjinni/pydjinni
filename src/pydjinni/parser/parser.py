@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pathlib import Path
 
 import arpeggio
@@ -40,7 +41,16 @@ class IdlParser:
     class MarshallingException(ParsingException, code=153):
         """Marshalling error"""
 
+    class UnknownInterfaceTargetException(ParsingException, code=154):
+        """Unknown interface target"""
+
     class Visitor(PTNodeVisitor):
+        @dataclass
+        class UnknownInterfaceTargetException(Exception):
+            """Exception raised when one of the given interface targets is not known to the parser"""
+            target: str
+            position: int
+
         def __init__(self, resolver: Resolver, marshals: list[Marshal], targets: list[str], **kwargs):
             super().__init__(**kwargs)
             self.resolver = resolver
@@ -158,7 +168,12 @@ class IdlParser:
                     excludes.append(child[1:])
             if not includes:
                 includes = self.targets
-            return [include for include in includes if include not in excludes]
+
+            targets = [include for include in includes if include not in excludes]
+            for target in targets:
+                if target not in self.targets:
+                    raise IdlParser.Visitor.UnknownInterfaceTargetException(target=target, position=node.position)
+            return targets
 
         def second_parameter(self, children):
             for marshal in self.marshals:
@@ -219,3 +234,7 @@ class IdlParser:
             raise IdlParser.ParsingException(idl, e.position, str(e)[:-1])
         except Marshal.MarshalException as e:
             raise IdlParser.MarshallingException(idl, e.input_def.position, f"'{e.input_def.name}' created {e}")
+        except IdlParser.Visitor.UnknownInterfaceTargetException as e:
+            line, col = self.parser.pos_to_linecol(e.position)
+            context = self.parser.context(position=e.position)
+            raise IdlParser.UnknownInterfaceTargetException(idl, e.position, f"'{e.target}' at position ({line}, {col}) => '{context}' ")
