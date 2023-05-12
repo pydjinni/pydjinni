@@ -42,32 +42,22 @@ The options are:
 
 ### FetchContent
 
-The recommended installation approach is by using `FetchContent`.
-Make sure to call `FetchContent_MakeAvailable` [before the first `project` declaration](https://cmake.org/cmake/help/latest/module/FetchContent.html#populating-content-without-adding-it-to-the-build){ target="_blank" } in your `CMakeLists.txt`:
+The recommended installation approach is by using `FetchContent`:
 
 ```cmake
-cmake_minimum_required(VERSION 3.14)
-
 include(FetchContent)
-FetchContent_Declare(
-  pydjinni
-  GIT_TAG v1.0.0 # or any later version
-  URL  https://github.com/pydjinni/pydjinni
-  SOURCE_DIR cmake
+FetchContent_Declare(pydjinni
+    URL https://raw.githubusercontent.com/pydjinni/pydjinni/{{ git.tag }}/cmake/modules/PyDjinni.cmake
+    DOWNLOAD_NO_EXTRACT TRUE
 )
 FetchContent_MakeAvailable(pydjinni)
-
 list(APPEND CMAKE_MODULE_PATH ${pydjinni_SOURCE_DIR})
-
 include(PyDjinni)
-
-project(CrossCompileExample)
 ```
 
 ### Manual Copy
 
-If you don't want to check out the entire project just to use the CMake module, the file can also be copied into the 
-project manually, and just included from the path were it was copied to:
+The file can also be copied into the project manually, and just included from the path were it was copied to:
 
 ```cmake
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
