@@ -1,1 +1,39 @@
 {% include "base.jinja2" %}
+
+{% block header %}
+#include "{{ type_def.jni.header }}"
+{% endblock %}
+
+{% block content %}
+{{ type_def.jni.name }}::{{ type_def.jni.name }}() : ::djinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.name }}>("{{ type_def.jni.type_signature }}") {}
+{{ type_def.jni.name }}::~{{ type_def.jni.name }}() = default;
+
+CJNIEXPORT void JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef)
+{
+    try {
+        DJINNI_FUNCTION_PROLOGUE1(jniEnv, nativeRef);
+        delete reinterpret_cast<::djinni::CppProxyHandle<{{ type_def.cpp.typename }}>*>(nativeRef);
+    } JNI_TRANSLATE_EXCEPTIONS_RETURN(jniEnv, )
+}
+
+{% for method in type_def.methods %}
+CJNIEXPORT {{ method.return_type_ref.type_def.jni.typename if method.return_type_ref else "void" }} JNICALL {{ type_def.jni.jni_prefix }}_{{ method.jni.jni_name }}(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef
+    {%- for parameter in method.parameters -%}
+    , {{ parameter.type_ref.type_def.jni.typename }} {{ parameter.jni.name }}
+    {%- endfor -%}
+    ) {
+    try {
+        DJINNI_FUNCTION_PROLOGUE1(jniEnv, nativeRef);
+        const auto& ref = ::djinni::objectFromHandleAddress<{{ type_def.cpp.typename }}>(nativeRef);
+        {{ "r = " if method.return_type_ref }}ref->{{ method.cpp.name }}(::djinni::I32::toCpp(jniEnv
+        {%- for parameter in method.parameters -%}
+            , {{ parameter.jni.name }}
+        {%- endfor -%}
+        ));
+        {% if method.return_type_ref %}
+        return ::djinni::release({{ method.return_type_ref.type_def.jni.translator }}::fromCpp(jniEnv, r));
+        {% endif %}
+    } JNI_TRANSLATE_EXCEPTIONS_RETURN(jniEnv, 0)
+}
+{% endfor %}
+{% endblock %}
