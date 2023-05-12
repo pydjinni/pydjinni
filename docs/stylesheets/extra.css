@@ -166,9 +166,19 @@
     background-size: 2500px 2500px;
     background-clip:text;
     -webkit-background-clip:text;
-    animation: animate 90s ease-in-out infinite;
+    animation: animate 120s ease-in-out infinite;
     color: transparent;
 }
+
+@keyframes animate {
+    0%, 100% {
+        background-position: top left;
+    }
+    50% {
+        background-position: bottom right;
+    }
+}
+
 
 .md-typeset h1.hero-title .headerlink {
     display: none;
@@ -186,17 +196,27 @@
     z-index: 2;
     position: relative;
     padding: 2em;
+    box-shadow: 0 4px 20px 0 rgba(0,0,0,0.06);
+    border: 1px solid var(--md-default-fg-color--lightest);
 }
 
-@keyframes animate {
-    0%, 100% {
-        background-position: top left;
-    }
-    50% {
-        background-position: bottom right;
-    }
+.try-now-button {
+    box-shadow: 0 4px 16px 0 #4051B5AA;
+    transition: box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out, border 0.2s ease-in-out !important;
 }
 
+.try-now-button:hover {
+    box-shadow: 0 4px 24px 0 #4051B5AA;
+}
+
+.try-now-button .twemoji {
+    transition: margin .18s ease-in;
+}
+
+.try-now-button:hover .twemoji {
+    margin-left: 6px;
+    margin-right: -6px;
+}
 
 [data-md-color-scheme=slate] .invert-in-dark-mode {
     filter: invert(0.9) hue-rotate(180deg);

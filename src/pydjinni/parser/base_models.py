@@ -1,10 +1,14 @@
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel, Field
 
 from pydjinni.parser.identifier import Identifier
 
 
 class BaseExternalType(BaseModel):
     name: str
+    namespace: str = Field(
+        default="",
+        pattern="[_\.\w]+"
+    )
     comment: str | None = None
 
 

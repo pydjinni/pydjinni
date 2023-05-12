@@ -131,7 +131,7 @@ The tools functionality can also be used from a Python API, in order to seamless
 <br>
 <center>
 
-[&nbsp;&nbsp;Try Now &nbsp; :material-arrow-right:&nbsp;&nbsp;](installation.md){ .md-button .md-button--primary }
+[&nbsp;&nbsp;Try Now &nbsp; :material-arrow-right:&nbsp;&nbsp;](installation.md){ .md-button .md-button--primary .try-now-button }
 
 </center>
 <br>

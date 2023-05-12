@@ -63,12 +63,12 @@ class IdlParser(PTNodeVisitor):
         imports = unpack(children.import_def) or []
         type_defs = children.type_def or []
         namespaced_type_defs = unpack(children.namespace) or []
+        for type_def in type_defs + namespaced_type_defs:
+            self.resolver.register(type_def)
         return imports + type_defs + namespaced_type_defs
 
     def visit_type_def(self, node, children):
-        data_type = unpack(children)
-        self.resolver.register(data_type)
-        return data_type
+        return unpack(children)
 
     def second_type_def(self, children):
         for marshal in self.marshals:
@@ -235,7 +235,7 @@ class IdlParser(PTNodeVisitor):
 
         Args:
             idl: Path to the IDL file that should be parsed
-            position: The position of the @import statement, if the method is called recurively by an import
+            position: The position of the @import statement, if the method is called recursively by an import
 
         Returns:
             The parsed Abstract Syntax Tree (AST)

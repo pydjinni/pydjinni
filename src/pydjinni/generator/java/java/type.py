@@ -7,7 +7,7 @@ class JavaExternalType(BaseModel):
     """Java type information"""
     typename: str = Field(
         default=None,
-        pattern=r"^[A-Za-z0-9]*$"
+        pattern=r"^([a-z][a-z0-9_]*([.][a-z0-9_]+)+[0-9a-z_][.])?[a-zA-Z][a-zA-Z0-9_]*$"
     )
     boxed: str = Field(
         pattern=r"^([a-z][a-z0-9_]*([.][a-z0-9_]+)+[0-9a-z_][.])?[a-zA-Z][a-zA-Z0-9_]*$"
@@ -17,6 +17,7 @@ class JavaExternalType(BaseModel):
 
 
 class JavaType(JavaExternalType):
+    name: str
     source: Path
     package: str
     comment: str | None = None

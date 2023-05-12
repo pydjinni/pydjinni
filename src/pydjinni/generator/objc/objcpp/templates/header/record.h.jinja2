@@ -1,0 +1,22 @@
+{% extends "base.jinja2" %}
+
+{% block header %}
+#import "{{ type_def.objc.header }}"
+#include "{{ type_def.cpp.header }}"
+
+static_assert(__has_feature(objc_arc), "PyDjinni requires ARC to be enabled for this file");
+
+@class {{ type_def.objc.typename }};
+{% endblock %}
+
+{% block content %}
+struct {{ type_def.objcpp.name }} {
+    using CppType = {{ type_def.cpp.typename }};
+    using ObjcType = ::{{ type_def.objc.typename }}*;
+
+    using Boxed = {{ type_def.objc.boxed }};
+
+    static CppType toCpp(ObjcType objc);
+    static ObjcType fromCpp(const CppType& cpp);
+};
+{% endblock %}

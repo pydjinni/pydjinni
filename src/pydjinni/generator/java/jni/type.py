@@ -16,11 +16,10 @@ class JniExternalType(BaseModel):
 
 
 class JniType(JniExternalType):
+    name: str
     source: Path
     namespace: str
-    comment: str | None = None
 
 
 class JniField(BaseModel):
     name: str
-    comment: str | None = None

@@ -16,6 +16,7 @@ class CppExternalType(BaseModel):
 
 
 class CppType(CppExternalType):
+    name: str
     source: Path
     includes: list[Path]
     comment: str | None

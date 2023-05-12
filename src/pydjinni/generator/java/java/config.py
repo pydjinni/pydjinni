@@ -7,7 +7,6 @@ from pydjinni.config.types import IdentifierStyle
 
 
 class JavaIdentifierStyle(BaseModel):
-    file: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.pascal
     enum: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.train
     field: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.camel
     type: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.pascal

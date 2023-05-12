@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 {% block content %}
 {{ type_def.java.comment }}
-{{ config.class_access_modifier.value }} abstract class {{ type_def.java.typename }} {
+{{ config.class_access_modifier.value }} abstract class {{ type_def.java.name }} {
     {% for method in type_def.methods %}
     {% if method.comment %}
     {{ method.java.comment | indent(4) }}
@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     {% endfor %}
     {% if type_def.cpp.proxy %}
 
-    private static final class CppProxy extends {{ type_def.java.typename }} {
+    private static final class CppProxy extends {{ type_def.java.name }} {
         private final long nativeRef;
         private final AtomicBoolean destroyed = new AtomicBoolean(false);
 

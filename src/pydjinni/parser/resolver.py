@@ -39,13 +39,15 @@ class Resolver:
             raise FileNotFoundException(path)
 
     def register(self, datatype: BaseType):
-        if datatype.name in self.registry:
+        registry_name = ".".join(datatype.namespace + [datatype.name])
+        if registry_name in self.registry:
             raise Resolver.DuplicateTypeException(datatype=datatype, position=datatype.position)
         else:
-            self.registry[datatype.name] = datatype
+            self.registry[registry_name] = datatype
 
     def register_external(self, type_definition: BaseExternalType):
-        self.registry[type_definition.name] = type_definition
+        registry_name = f"{type_definition.namespace}.{type_definition.name}" if type_definition.namespace else type_definition.name
+        self.registry[registry_name] = type_definition
 
     def resolve(self, type_reference: TypeReference):
         type_reference.type_def = self.registry.get(type_reference.name)

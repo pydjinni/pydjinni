@@ -8,7 +8,7 @@
 
 {% block content %}
 {{ type_def.cpp.comment }}
-enum class {{ type_def.cpp.typename }} : unsigned {
+enum class {{ type_def.cpp.name }} : unsigned {
 {% for flag in type_def.flags %}
     {% if flag.comment %}
     {{ flag.cpp.comment | indent(4) }}
@@ -29,26 +29,26 @@ enum class {{ type_def.cpp.typename }} : unsigned {
 {% endfor %}
 };
 
-constexpr {{ type_def.cpp.typename }} operator|({{ type_def.cpp.typename }} lhs, {{ type_def.cpp.typename }} rhs) noexcept {
+constexpr {{ type_def.cpp.name }} operator|({{ type_def.cpp.name }} lhs, {{ type_def.cpp.name }} rhs) noexcept {
     return static_cast<{{ type_def.cpp.typename }}>(static_cast<unsigned>(lhs) | static_cast<unsigned>(rhs));
 }
-inline {{ type_def.cpp.typename }}& operator|=({{ type_def.cpp.typename }}& lhs, {{ type_def.cpp.typename }} rhs) noexcept {
+inline {{ type_def.cpp.name }}& operator|=({{ type_def.cpp.name }}& lhs, {{ type_def.cpp.name }} rhs) noexcept {
     return lhs = lhs | rhs;
 }
-constexpr {{ type_def.cpp.typename }} operator&({{ type_def.cpp.typename }} lhs, {{ type_def.cpp.typename }} rhs) noexcept {
-    return static_cast<{{ type_def.cpp.typename }}>(static_cast<unsigned>(lhs) & static_cast<unsigned>(rhs));
+constexpr {{ type_def.cpp.name }} operator&({{ type_def.cpp.name }} lhs, {{ type_def.cpp.name }} rhs) noexcept {
+    return static_cast<{{ type_def.cpp.name }}>(static_cast<unsigned>(lhs) & static_cast<unsigned>(rhs));
 }
-inline {{ type_def.cpp.typename }}& operator&=({{ type_def.cpp.typename }}& lhs, {{ type_def.cpp.typename }} rhs) noexcept {
+inline {{ type_def.cpp.name }}& operator&=({{ type_def.cpp.name }}& lhs, {{ type_def.cpp.name }} rhs) noexcept {
     return lhs = lhs & rhs;
 }
-constexpr {{ type_def.cpp.typename }} operator^({{ type_def.cpp.typename }} lhs, {{ type_def.cpp.typename }} rhs) noexcept {
-    return static_cast<{{ type_def.cpp.typename }}>(static_cast<unsigned>(lhs) ^ static_cast<unsigned>(rhs));
+constexpr {{ type_def.cpp.name }} operator^({{ type_def.cpp.name }} lhs, {{ type_def.cpp.name }} rhs) noexcept {
+    return static_cast<{{ type_def.cpp.name }}>(static_cast<unsigned>(lhs) ^ static_cast<unsigned>(rhs));
 }
-inline {{ type_def.cpp.typename }}& operator^=({{ type_def.cpp.typename }}& lhs, {{ type_def.cpp.typename }} rhs) noexcept {
+inline {{ type_def.cpp.name }}& operator^=({{ type_def.cpp.name }}& lhs, {{ type_def.cpp.name }} rhs) noexcept {
     return lhs =lhs ^ rhs;
 }
-constexpr {{ type_def.cpp.typename }} operator~({{ type_def.cpp.typename }} x) noexcept {
-    return static_cast<{{ type_def.cpp.typename }}>(~static_cast<unsigned>(x));
+constexpr {{ type_def.cpp.name }} operator~({{ type_def.cpp.name }} x) noexcept {
+    return static_cast<{{ type_def.cpp.name }}>(~static_cast<unsigned>(x));
 }
 
 {% endblock %}

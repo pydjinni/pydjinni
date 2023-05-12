@@ -11,9 +11,11 @@ from .type import JniField, JniType, JniExternalType
 class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
     def marshal_type(self, type_def: BaseType):
         namespace = self.marshal_namespace(type_def, self.config.identifier.namespace, self.config.namespace)
+        name = type_def.name.convert(self.config.identifier.class_name)
         type_def.jni = JniType(
-            translator=type_def.name.convert(self.config.identifier.class_name),
-            typename=type_def.name.convert(self.config.identifier.class_name),
+            name=name,
+            translator="::".join(namespace + [name]),
+            typename='jobject',
             header=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.header_extension}"),
             source=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.source_extension}"),
             namespace="::".join(namespace),

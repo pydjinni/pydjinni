@@ -27,14 +27,16 @@ class CppMarshal(Marshal[CppConfig, CppExternalType], types=external_types):
 
     def marshal_type(self, type_def: BaseType):
         namespace = self.marshal_namespace(type_def, self.config.identifier.namespace, self.config.namespace)
-
+        name = type_def.name.convert(self.config.identifier.type)
+        typename = "::" + "::".join(namespace + [name])
         type_def.cpp = CppType(
-            typename=type_def.name.convert(self.config.identifier.type),
+            name=name,
+            typename=typename,
             comment=mistletoe.markdown(type_def.comment, DoxygenCommentRenderer) if type_def.comment else '',
             header=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.header_extension}"),
             source=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.source_extension}"),
             includes=self.includes(type_def),
-            namespace='::'.join(namespace),
+            namespace="::".join(namespace),
             proxy=isinstance(type_def, Interface) and self.key in type_def.targets
         )
 

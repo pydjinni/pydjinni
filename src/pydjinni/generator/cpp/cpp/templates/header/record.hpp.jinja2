@@ -11,7 +11,7 @@
 
 {% block content %}
 {{ type_def.cpp.comment }}
-struct {{ type_def.cpp.typename }} final {
+struct {{ type_def.cpp.name }} final {
 {% for field in type_def.fields %}
     {% if field.comment %}
     {{ field.cpp.comment | indent(width=4) }}
@@ -19,7 +19,7 @@ struct {{ type_def.cpp.typename }} final {
     {{ field.type_ref.type_def.cpp.typename ~ " " ~ field.cpp.name }};
 {% endfor %}
 
-    {{ type_def.cpp.typename }}(
+    {{ type_def.cpp.name }}(
     {%- for field in type_def.fields %}
         {{- field.type_ref.type_def.cpp.typename ~ " " ~ field.cpp.name ~ "_" ~ (", " if not loop.last) }}
     {%- endfor %})
@@ -29,7 +29,7 @@ struct {{ type_def.cpp.typename }} final {
     {}
 
 {% if config.default_record_constructor %}
-    {{ type_def.cpp.typename }}()
+    {{ type_def.cpp.name }}()
     {% for field in type_def.fields %}
     {{ (": " if loop.first else ', ') ~ field.cpp.name }}()
     {% endfor %}

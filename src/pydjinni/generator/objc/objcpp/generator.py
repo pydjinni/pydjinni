@@ -13,14 +13,33 @@ class ObjcppGenerator(
     support_lib_commons=True
 ):
     def generate_enum(self, type_def: Enum):
-        pass
+        self.write_header(
+            template="header/enum.h.jinja2",
+            path=self.marshal.header_path() / type_def.objcpp.header,
+            type_def=type_def)
 
     def generate_flags(self, type_def: Flags):
-        pass
+        self.write_header(
+            template="header/flags.h.jinja2",
+            path=self.marshal.header_path() / type_def.objcpp.header,
+            type_def=type_def)
 
     def generate_record(self, type_def: Record):
-        pass
+        self.write_header(
+            template="header/record.h.jinja2",
+            path=self.marshal.header_path() / type_def.objcpp.header,
+            type_def=type_def)
+        self.write_source(
+            template="source/record.mm.jinja2",
+            path=self.marshal.source_path() / type_def.objcpp.source,
+            type_def=type_def)
 
     def generate_interface(self, type_def: Interface):
-        pass
-
+        self.write_header(
+            template="header/interface.h.jinja2",
+            path=self.marshal.header_path() / type_def.objcpp.header,
+            type_def=type_def)
+        self.write_source(
+            template="source/interface.mm.jinja2",
+            path=self.marshal.source_path() / type_def.objcpp.source,
+            type_def=type_def)

@@ -2,7 +2,7 @@
 
 {% block content %}
 {{ type_def.java.comment }}
-public enum {{ type_def.java.typename }} {
+public enum {{ type_def.java.name }} {
 {% for flag in type_def.flags if not flag.none and not flag.all %}
     {% if flag.comment %}
     {{ flag.java.comment | indent(4) }}

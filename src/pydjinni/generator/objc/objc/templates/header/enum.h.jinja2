@@ -3,7 +3,7 @@
 {% block content %}
 {{ type_def.objc.comment }}
 NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
-typedef NS_ENUM(NSUInteger, {{ type_def.objc.boxed }}) {
+typedef NS_ENUM(NSUInteger, {{ type_def.objc.typename }}) {
 {% for item in type_def.items %}
     {% if item.comment %}
     {{ item.objc.comment | indent(4) }}

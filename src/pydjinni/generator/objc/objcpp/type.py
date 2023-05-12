@@ -11,9 +11,10 @@ class ObjcppExternalType(BaseModel):
 
 
 class ObjcppType(ObjcppExternalType):
-    comment: str | None = None
+    namespace: str
+    name: str
+    source: Path
 
 
 class ObjcppField(BaseModel):
     name: str
-    comment: str | None = None

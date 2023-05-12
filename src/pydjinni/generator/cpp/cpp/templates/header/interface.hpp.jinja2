@@ -9,8 +9,8 @@
 
 {% block content %}
 {{ type_def.cpp.comment }}
-class {{ type_def.cpp.typename }} {
-    virtual ~{{ type_def.cpp.typename }}() {}
+class {{ type_def.cpp.name }} {
+    virtual ~{{ type_def.cpp.name }}() {}
 
 {% for method in type_def.methods %}
     {% if method.comment %}

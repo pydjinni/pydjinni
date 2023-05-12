@@ -8,13 +8,12 @@
 {% endblock %}
 
 {% block content %}
-class {{ type_def.jni.translator }} final : ::djinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.translator }}> {
+class {{ type_def.jni.name }} final : ::djinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.name }}> {
 public:
     using CppType = std::shared_ptr<{{ type_def.cpp.typename }}>;
     using CppOptType = std::shared_ptr<{{ type_def.cpp.typename }}>;
-    using JniType = jobject;
-
-    using Boxed = MyCppInterface;
+    using JniType = {{ type_def.jni.name }};
+    using Boxed = {{ type_def.cpp.typename }};
 
     ~MyCppInterface();
 
@@ -23,9 +22,9 @@ public:
     static ::djinni::LocalRef<JniType> fromCpp(JNIEnv* jniEnv, const CppType& c) { return fromCppOpt(jniEnv, c); }
 
 private:
-    {{ type_def.jni.translator }}();
-    friend ::djinni::JniClass<{{ type_def.jni.translator }}>;
-    friend ::djinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.translator }}>;
+    {{ type_def.jni.name }}();
+    friend ::djinni::JniClass<{{ type_def.jni.name }}>;
+    friend ::djinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.name }}>;
 
 };
 {% endblock %}

@@ -2,14 +2,14 @@
 
 {% block content %}
 {{ type_def.java.comment }}
-{{ config.class_access_modifier.value ~ (" final" if config.use_final_for_record) }} class {{ type_def.java.typename }} {
+{{ config.class_access_modifier.value ~ (" final" if config.use_final_for_record) }} class {{ type_def.java.name }} {
 {% for field in type_def.fields %}
     {% if field.comment %}
     {{ field.java.comment | indent(4) }}
     {% endif %}
     {{ "final" if config.use_final_for_record }} {{ field.type_ref.type_def.java.typename }} {{ field.java.name }};
 {% endfor %}
-    public {{ type_def.java.boxed }}(
+    public {{ type_def.java.name }}(
     {% for field in type_def.fields %}
         {{ field.type_ref.type_def.java.typename }} {{ field.java.name ~ ("," if not loop.last) }}
     {% endfor %}

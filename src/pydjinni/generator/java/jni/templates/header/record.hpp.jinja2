@@ -8,20 +8,20 @@
 {% endblock %}
 
 {% block content %}
-class {{ type_def.jni.translator }} final {
+class {{ type_def.jni.name }} final {
 public:
     using CppType = {{ type_def.cpp.typename }};
-    using JniType = jobject;
+    using JniType = {{ type_def.jni.typename }};
 
-    using Boxed = {{ type_def.jni.translator }};
+    using Boxed = {{ type_def.jni.name }};
 
-    ~{{ type_def.jni.translator }}();
+    ~{{ type_def.jni.name }}();
 
     static CppType toCpp(JNIEnv* jniEnv, JniType j);
     static ::djinni::LocalRef<JniType> fromCpp(JNIEnv * jniEnv, const CppType& c);
 private:
-    {{ type_def.jni.translator }}();
-    friend ::djinni::JniClass<{{ type_def.jni.translator }}>;
+    {{ type_def.jni.name }}();
+    friend ::djinni::JniClass<{{ type_def.jni.name }}>;
 
     const ::djinni::GlobalRef<jclass> clazz { ::djinni::jniFindClass("{{ type_def.jni.type_signature }}") };
     const jmethodID jconstructor { ::djinni::jniGetMethodID(clazz.get(), "<init>", "(

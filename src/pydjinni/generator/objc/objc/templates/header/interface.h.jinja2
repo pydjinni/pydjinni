@@ -3,7 +3,7 @@
 {% block content %}
 {{ type_def.objc.comment }}
 NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
-@protocol {{ type_def.objc.boxed }} <NSObject>
+@protocol {{ type_def.objc.typename }} <NSObject>
 {% for method in type_def.methods %}
 {% if method.comment %}
 {{ method.objc.comment }}

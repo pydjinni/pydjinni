@@ -3,7 +3,15 @@
 {% block content %}
 {{ type_def.objc.comment }}
 NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
-@interface {{ type_def.objc.boxed }} : NSObject
+@interface {{ type_def.objc.typename }} : NSObject
+- (nonnull instancetype){{ type_def.objc.init }}
+    {%- for field in type_def.fields -%}
+        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}({{ field.type_ref.type_def.objc.typename }}){{ field.objc.name }}
+    {%- endfor -%};
++ (nonnull instancetype){{ type_def.objc.convenience_init }}
+    {%- for field in type_def.fields -%}
+        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}({{ field.type_ref.type_def.objc.typename }}){{ field.objc.name }}
+    {%- endfor -%};
 {% for field in type_def.fields %}
 {% if field.comment %}
 {{ field.objc.comment }}

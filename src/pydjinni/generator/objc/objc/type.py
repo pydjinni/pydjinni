@@ -13,6 +13,8 @@ class ObjcExternalType(BaseModel):
 class ObjcType(ObjcExternalType):
     swift_typename: str
     comment: str | None = None
+    init: str = None
+    convenience_init: str = None
 
 
 class ObjcField(BaseModel):

@@ -15,11 +15,13 @@ from .type import JavaType, JavaField, JavaExternalType
 class JavaMarshal(Marshal[JavaConfig, JavaExternalType], types=external_types):
     def marshal_type(self, type_def: BaseType):
         package = self.marshal_namespace(type_def, self.config.identifier.package, self.config.package, ".")
-        typename = type_def.name.convert(self.config.identifier.type)
+        name = type_def.name.convert(self.config.identifier.type)
+        typename = ".".join(package + [name])
         type_def.java = JavaType(
             typename=typename,
             boxed=typename,
-            source=Path().joinpath(*package) /f"{type_def.name.convert(self.config.identifier.file)}.java",
+            name=name,
+            source=Path().joinpath(*package) / f"{name}.java",
             package=".".join(package),
             comment=mistletoe.markdown(type_def.comment, JavaDocCommentRenderer) if type_def.comment else '',
         )
@@ -48,5 +50,3 @@ class JavaMarshal(Marshal[JavaConfig, JavaExternalType], types=external_types):
                     name=field_def.name.convert(self.config.identifier.method),
                     comment=comment
                 )
-
-

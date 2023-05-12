@@ -6,7 +6,7 @@
 
 {% block content %}
 {{ type_def.cpp.comment}}
-enum class {{ type_def.cpp.typename }} : int {
+enum class {{ type_def.cpp.name }} : int {
 {% for item in type_def.items %}
     {% if item.comment %}
     {{ item.cpp.comment | indent(width=4) }}

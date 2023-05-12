@@ -1,0 +1,50 @@
+{% extends "base.jinja2" %}
+
+{% block header %}
+#import "{{ type_def.objcpp.header }}"
+#import "{{ type_def.objc.header }}"
+#import "pydjinni/objc/marshal.h"
+#include <stdexcept>
+
+static_assert(__has_feature(objc_arc), "PyDjinni requires ARC to be enabled for this file");
+{% endblock %}
+
+{% block content %}
+class {{ type_def.objcpp.name }}::ObjcProxy final : public {{ type_def.cpp.name }}, private ::pydjinni::ObjcProxyBase<ObjcType> {
+    friend class {{ type_def.objcpp.typename }};
+public:
+    using ObjcProxyBase::ObjcProxyBase;
+    {% for method in type_def.methods %}
+    {{ method.return_type_ref.type_def.cpp.typename if method.return_type_ref.type_def else "void" }} {{ method.cpp.name }}(
+    {%- for parameter in method.parameters -%}
+        const {{ parameter.type_ref.type_def.cpp.typename }}& parameter.cpp.name {{ ", " if not loop.last }}
+    {%- endfor -%}
+    ) override {
+        @autoreleasepool {
+            auto objcpp_result_ = [djinni_private_get_proxied_objc_object() {{ method.objc.name }}
+            {%- for parameter in method.parameters -%}
+                {{ " " ~ parameter.objc.name if not loop.first }}:({{ parameter.type_ref.type_def.objcpp.translator }}::fromCpp({{ parameter.cpp.name }}))
+            {%- endfor -%}
+            ];
+            {% if method.return_type_ref.type_def %}
+            return {{ method.return_type_ref.type_def.objcpp.translator }}::toCpp(objcpp_result_);
+            {% endif %}
+        }
+    }
+    {% endfor %}
+};
+
+auto {{ type_def.objcpp.name }}::toCpp(ObjcType objc) -> CppType {
+    if(!objc) {
+        return nullptr;
+    }
+    return ::djinni::get_objc_proxy<ObjcProxy>(objc);
+}
+
+auto {{ type_def.objcpp.name }}::fromCppOpt(const CppOptType& cpp) -> ObjcType {
+    if(!cpp) {
+        return nil;
+    }
+    return dynamic_cast<ObjcProxy&>(*cpp).djinni_private_get_proxied_objc_object();
+}
+{% endblock %}
