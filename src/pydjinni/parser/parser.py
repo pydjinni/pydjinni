@@ -59,6 +59,24 @@ class IdlParser(PTNodeVisitor):
         target: str
         position: int
 
+    @dataclass
+    class VisitorMissingFieldException(Exception):
+        """Exception raised when a const record assignment lacks a required keys"""
+        field: str
+        position: int
+
+    @dataclass
+    class VisitorUnknownFieldException(Exception):
+        """Exception raised when a const record assignment defined a key that is unknown"""
+        field: str
+        position: int
+
+    @dataclass
+    class VisitorInvalidAssignmentException(Exception):
+        """Exception raised when a const record assignment to an enum or flag defined an unknown value"""
+        value: str
+        position: int
+
     def visit_idl(self, node, children):
         imports = unpack(children.import_def) or []
         type_defs = children.type_def or []
@@ -110,7 +128,8 @@ class IdlParser(PTNodeVisitor):
             position=node.position,
             comment=unpack(children.comment),
             methods=children.method,
-            targets=targets
+            targets=targets,
+            constants=children.constant
         )
 
     def visit_record(self, node, children):
@@ -118,7 +137,8 @@ class IdlParser(PTNodeVisitor):
             name=unpack(children.identifier),
             position=node.position,
             comment=unpack(children.comment),
-            fields=children.field
+            fields=children.field,
+            constants=children.constant
         )
 
     def visit_identifier(self, node, children):
@@ -207,6 +227,64 @@ class IdlParser(PTNodeVisitor):
                 return search_path
         raise FileNotFoundException(path)
 
+    def visit_string(self, node, children) -> str:
+        return node.value[1:-1]
+
+    def visit_integer(self, node, children) -> int:
+        return int(node.value)
+
+    def visit_float(self, node, children) -> float:
+        return float(node.value)
+
+    def visit_bool(self, node, children) -> bool:
+        return node.value == "True"
+
+    def visit_assignment(self, node, children):
+        unpack(children.identifier), unpack(children.value)
+        return Assignment(
+            key=unpack(children.identifier),
+            position=node.position,
+            value=unpack(children.value)
+        )
+
+    def visit_object(self, node, children):
+        return children
+
+    def visit_constant(self, node, children):
+        return Constant(
+            name=unpack(children.identifier),
+            type_ref=unpack(children.data_type),
+            value=unpack(children.value),
+            position=node.position
+        )
+
+    def second_constant(self, children):
+        type_def = children.type_ref.type_def
+        match type_def:
+            case BaseExternalType():
+                primitive = type_def.primitive
+                value = children.value
+                if not (type_def.primitive and (
+                        (primitive == BaseExternalType.Primitive.int and type(value) == int) or
+                        (primitive == BaseExternalType.Primitive.float and type(value) == float) or
+                        (primitive == BaseExternalType.Primitive.string and type(value) == str) or
+                        (primitive == BaseExternalType.Primitive.bool and type(value) == bool))):
+                    raise IdlParser.VisitorInvalidAssignmentException(str(value), children.position)
+            case Flags() | Enum():
+                fields = [item.name for item in (type_def.items or type_def.flags)]
+                if children.value not in fields:
+                    raise IdlParser.VisitorInvalidAssignmentException(str(children.value), children.position)
+            case Record():
+                fields = type_def.fields
+                assignment_keys = [assignment.key for assignment in children.value]
+                record_keys = [field.name for field in fields]
+                for assignment in children.value:
+                    if assignment.key not in record_keys:
+                        raise IdlParser.VisitorUnknownFieldException(assignment.key, assignment.position)
+                for field in fields:
+                    if field.name not in assignment_keys:
+                        raise IdlParser.VisitorMissingFieldException(field.name, children.position)
+
     def visit_import_def(self, node, children):
         ast = self.parse(unpack(children.filepath), node.position)
         return ast
@@ -276,6 +354,27 @@ class IdlParser(PTNodeVisitor):
                 e.position,
                 f"'{e.target}' at position ({line}, {col}) => '{context}' "
             )
+        except IdlParser.VisitorMissingFieldException as e:
+            line, col, context = self._get_context(e.position)
+            raise IdlParser.ParsingException(
+                idl, e.position,
+                f"Missing field '{e.field}' in constant assignment at position ({line}, {col}) => '{context}'"
+            )
+        except IdlParser.VisitorUnknownFieldException as e:
+            line, col, context = self._get_context(e.position)
+            raise IdlParser.ParsingException(
+                idl, e.position,
+                f"Unknown field '{e.field}' defined in constant assignment at position ({line}, {col}) => '{context}'"
+            )
+        except IdlParser.VisitorInvalidAssignmentException as e:
+            line, col, context = self._get_context(e.position)
+            raise IdlParser.ParsingException(
+                idl, e.position,
+                f"Invalid value '{e.value}' assigned to const at position ({line}, {col}) => '{context}'"
+            )
         except RecursionError:
             line, col, context = self._get_context(position)
-            raise IdlParser.RecursiveImport(idl, position, f"file imports itself at position ({line}, {col}) => '{context}'")
+            raise IdlParser.RecursiveImport(
+                idl, position,
+                f"file imports itself at position ({line}, {col}) => '{context}'"
+            )

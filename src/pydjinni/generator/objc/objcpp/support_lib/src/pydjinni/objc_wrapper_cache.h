@@ -21,7 +21,7 @@
 
 #include "pydjinni/proxy_cache_interface.hpp"
 
-namespace djinni {
+namespace pydjinni {
 
 struct unretained_id_hash { std::size_t operator()(__unsafe_unretained id ptr) const; };
 
@@ -67,7 +67,7 @@ static std::shared_ptr<CppType> get_objc_proxy(ObjcType * objcRef) {
 // and destruction under our direct control.
 template <typename ObjcType>
 class ObjcProxyBase {
-    using HandleType = ::djinni::ObjcProxyCache::Handle<ObjcType>;
+    using HandleType = ObjcProxyCache::Handle<ObjcType>;
 public:
     ObjcProxyBase(ObjcType objc) {
         @autoreleasepool {
@@ -100,4 +100,4 @@ private:
     };
 };
 
-} // namespace djinni
+} // namespace pydjinni

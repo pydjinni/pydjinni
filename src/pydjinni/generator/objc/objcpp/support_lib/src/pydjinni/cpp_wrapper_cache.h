@@ -21,7 +21,7 @@
 
 #include "pydjinni/proxy_cache_interface.hpp"
 
-namespace djinni {
+namespace pydjinni {
 
 struct CppProxyCacheTraits {
     using UnowningImplPointer = void *;
@@ -59,4 +59,4 @@ ObjcType * get_cpp_proxy(const CppPtrType & cppRef) {
     return get_cpp_proxy_impl<ObjcType, typename std::remove_reference<decltype(*cppRef)>::type>(cppRef);
 }
 
-} // namespace djinni
+} // namespace pydjinni

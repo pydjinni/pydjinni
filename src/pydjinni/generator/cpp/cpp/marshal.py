@@ -13,18 +13,6 @@ from .type import CppExternalType, CppType, CppField
 
 class CppMarshal(Marshal[CppConfig, CppExternalType], types=external_types):
 
-    def includes(self, type_def: BaseType) -> list[Path]:
-        includes_list: list[Path] = []
-        match type_def:
-            case Record():
-                includes_list = [type_dep.type_ref.type_def.cpp.header for type_dep in type_def.fields]
-            case Interface():
-                for method in type_def.methods:
-                    includes_list += [param.type_ref.type_def.cpp.header for param in method.parameters]
-                    if method.return_type_ref is not None:
-                        includes_list.append(method.return_type_ref.type_def.cpp.header)
-        return [*set(includes_list)]
-
     def marshal_type(self, type_def: BaseType):
         namespace = self.marshal_namespace(type_def, self.config.identifier.namespace, self.config.namespace)
         name = type_def.name.convert(self.config.identifier.type)

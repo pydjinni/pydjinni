@@ -3,12 +3,12 @@
 {% block header %}
 #pragma once
 
-#include "djinni/jni/support.hpp"
-#include "{{ type_def.jni.header }}"
+#include "pydjinni/jni/support.hpp"
+#include {{ type_def.jni.header | header }}
 {% endblock %}
 
 {% block content %}
-class {{ type_def.jni.name }} final : ::djinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.name }}> {
+class {{ type_def.jni.name }} final : ::pydjinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.name }}> {
 public:
     using CppType = std::shared_ptr<{{ type_def.cpp.typename }}>;
     using CppOptType = std::shared_ptr<{{ type_def.cpp.typename }}>;
@@ -17,14 +17,14 @@ public:
 
     ~MyCppInterface();
 
-    static CppType toCpp(JNIEnv* jniEnv, JniType j) { return ::djinni::JniClass<{{ type_def.jni.translator }}>::get()._fromJava(jniEnv, j); }
-    static ::djinni::LocalRef<JniType> fromCppOpt(JNIEnv* jniEnv, const CppOptType& c) { return {jniEnv, ::djinni::JniClass<{{ type_def.jni.translator }}>::get()._toJava(jniEnv, c)}; }
-    static ::djinni::LocalRef<JniType> fromCpp(JNIEnv* jniEnv, const CppType& c) { return fromCppOpt(jniEnv, c); }
+    static CppType toCpp(JNIEnv* jniEnv, JniType j) { return ::pydjinni::JniClass<{{ type_def.jni.translator }}>::get()._fromJava(jniEnv, j); }
+    static ::pydjinni::LocalRef<JniType> fromCppOpt(JNIEnv* jniEnv, const CppOptType& c) { return {jniEnv, ::pydjinni::JniClass<{{ type_def.jni.translator }}>::get()._toJava(jniEnv, c)}; }
+    static ::pydjinni::LocalRef<JniType> fromCpp(JNIEnv* jniEnv, const CppType& c) { return fromCppOpt(jniEnv, c); }
 
 private:
     {{ type_def.jni.name }}();
-    friend ::djinni::JniClass<{{ type_def.jni.name }}>;
-    friend ::djinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.name }}>;
+    friend ::pydjinni::JniClass<{{ type_def.jni.name }}>;
+    friend ::pydjinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.name }}>;
 
 };
 {% endblock %}

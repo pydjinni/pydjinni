@@ -2,12 +2,22 @@ from typing import Generic, TypeVar
 
 from pydantic import BaseModel
 
+from pydjinni.parser.base_models import BaseExternalType
+
 ExternalTypeDef = TypeVar("ExternalTypeDef")
 
 
 class ExternalTypes(BaseModel, Generic[ExternalTypeDef]):
-    i8: ExternalTypeDef
-    i16: ExternalTypeDef
+    i8: ExternalTypeDef = BaseExternalType(
+        name='i8',
+        primitive=BaseExternalType.Primitive.int,
+        comment="8 bit integer type"
+    )
+    i16: ExternalTypeDef = BaseExternalType(
+        name='i16',
+        primitive=BaseExternalType.Primitive.int,
+        comment="16 bit integer type"
+    )
 
 
 class ExternalTypesBuilder:
@@ -20,10 +30,12 @@ class ExternalTypesBuilder:
 
     def build(self) -> list:
         output = []
-        for field in ExternalTypes.model_fields:
+        for field, model in ExternalTypes.model_fields.items():
             field_kwargs = {key: getattr(external_types, field) for key, external_types in self._external_types.items()}
             output.append(self._external_base_type(
-                name=field,
+                name=model.default.name,
+                primitive=model.default.primitive,
+                comment=model.default.comment,
                 **field_kwargs
             ))
         return output

@@ -23,7 +23,7 @@
 
 static_assert(sizeof(jlong) >= sizeof(void*), "must be able to fit a void* into a jlong");
 
-namespace djinni {
+namespace pydjinni {
 
 // Set only once from JNI_OnLoad before any other JNI calls, so no lock needed.
 static JavaVM * g_cachedJVM;
@@ -623,7 +623,7 @@ void jniDefaultSetPendingFromCurrent(JNIEnv * env, const char * /*ctx*/) noexcep
 	jniDefaultSetPendingFromCurrentImpl(env);
 }
 
-template class ProxyCache<JavaProxyCacheTraits>;
+template class ::pydjinni::ProxyCache<JavaProxyCacheTraits>;
 
 CppProxyClassInfo::CppProxyClassInfo(const char * className)
     : clazz(jniFindClass(className)),
@@ -688,4 +688,4 @@ private:
 
 template class ProxyCache<JniCppProxyCacheTraits>;
 
-} // namespace djinni
+} // namespace pydjinni

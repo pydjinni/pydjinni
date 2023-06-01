@@ -10,7 +10,7 @@ from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.file.processed_files_model_builder import ProcessedFiles
 from pydjinni.generator.marshal import Marshal
 from pydjinni.parser.ast import Record, Enum, Flags, Interface, TypeReference
-from pydjinni.parser.base_models import BaseType, BaseField
+from pydjinni.parser.base_models import BaseType, BaseField, BaseExternalType
 from pydjinni.parser.parser import IdlParser
 from pydjinni.parser.resolver import Resolver
 
@@ -449,3 +449,83 @@ def test_namespace(tmp_path: Path):
     assert ast[0].namespace == ["foo", "bar"]
     assert ast[1].name == "bar"
     assert ast[1].namespace == ["foo", "bar", "baz"]
+
+
+@pytest.mark.parametrize("typename,primitive,literal_value,value", [
+    ('i8', BaseExternalType.Primitive.int, '5', 5),
+    ('f32', BaseExternalType.Primitive.float, '42.2', 42.2),
+    ('bool', BaseExternalType.Primitive.bool, 'True', True),
+    ('bool', BaseExternalType.Primitive.bool, 'False', False),
+    ('string', BaseExternalType.Primitive.string, '"the foo is in the bar"', "the foo is in the bar"),
+])
+def test_record_primitive_constant(tmp_path, typename, primitive, literal_value, value):
+    # GIVEN an idl file that defines a record with a constant
+    parser, input_file, resolver_mock, _ = given(
+        tmp_path=tmp_path,
+        input_idl=f"""
+        foo = record {{
+            const bar: {typename} = {literal_value};
+        }}
+        """
+    )
+
+    # AND GIVEN a resolver that returns the matching primitive type
+    def resolve(type_reference: TypeReference):
+        type_reference.type_def = BaseExternalType(
+            name=typename,
+            primitive=primitive
+        )
+
+    resolver_mock.resolve.side_effect = resolve
+
+    record = when(parser, input_file, Record, "foo")
+
+    # THEN the record should contain the defined constant and value
+    assert len(record.constants) == 1
+    constant = record.constants[0]
+    assert constant.name == "bar"
+    assert constant.value == value
+    assert constant.type_ref.name == typename
+
+
+@pytest.mark.parametrize("typename,primitive,literal_value", [
+    ('i8', BaseExternalType.Primitive.int, '"this is a number, I swear!"'),
+    ('i8', BaseExternalType.Primitive.int, '52.6'),
+    ('i8', BaseExternalType.Primitive.int, 'True'),
+    ('i8', BaseExternalType.Primitive.int, 'False'),
+    ('f32', BaseExternalType.Primitive.float, '42'),
+    ('f32', BaseExternalType.Primitive.float, '"42"'),
+    ('f32', BaseExternalType.Primitive.float, 'True'),
+    ('f32', BaseExternalType.Primitive.float, 'False'),
+    ('bool', BaseExternalType.Primitive.bool, '"the truth is here"'),
+    ('bool', BaseExternalType.Primitive.bool, '4'),
+    ('bool', BaseExternalType.Primitive.bool, '4.2'),
+    ('string', BaseExternalType.Primitive.string, '5'),
+    ('string', BaseExternalType.Primitive.string, '5.4'),
+    ('string', BaseExternalType.Primitive.string, 'True'),
+    ('string', BaseExternalType.Primitive.string, 'False'),
+])
+def test_record_wrong_primitive_constant(tmp_path, typename, primitive, literal_value):
+    # GIVEN an idl file that defines a record with a constant
+    parser, input_file, resolver_mock, _ = given(
+        tmp_path=tmp_path,
+        input_idl=f"""
+            foo = record {{
+                const bar: {typename} = {literal_value};
+            }}
+            """
+    )
+
+    # AND GIVEN a resolver that returns a primitive type that does not match the provided const value
+    def resolve(type_reference: TypeReference):
+        type_reference.type_def = BaseExternalType(
+            name=typename,
+            primitive=primitive
+        )
+
+    resolver_mock.resolve.side_effect = resolve
+
+    # WHEN parsing the idl
+    # THEN a Parsing exception should be thrown
+    with pytest.raises(IdlParser.ParsingException):
+        when(parser, input_file, Record, "foo")

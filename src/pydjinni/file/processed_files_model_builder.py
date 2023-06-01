@@ -50,6 +50,10 @@ class ProcessedFilesModelBuilder:
                     default=[],
                     description=f"List of generated {key} source files."
                 ))
+                fields_kwargs["source_dir"] = (Path, FieldInfo(
+                    default=Path(),
+                    description=f"Path where all {key} source files are written to."
+                ))
             return create_model(
                 f"Generated_{key}",
                 **fields_kwargs

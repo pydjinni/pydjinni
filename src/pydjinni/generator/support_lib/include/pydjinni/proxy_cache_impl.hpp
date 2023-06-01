@@ -76,7 +76,7 @@ template<class T> using UniqueLock = std::unique_lock<T>;
 // From "Expert Judgment on Markers to Deter Inadvertent Human Intrusion into the Waste
 // Isolation Pilot Plant", Sandia National Laboratories report SAND92-1382 / UC-721, p. F-49
 
-namespace djinni {
+namespace pydjinni {
 
 // See comment on `get_unowning()` in proxy_cache_interface.hpp.
 template <typename T> static inline auto upgrade_weak(const T & ptr) -> decltype(ptr.lock()) {
@@ -248,4 +248,4 @@ auto ProxyCache<Traits>::get(const std::type_index & tag,
     return get_base()->get(tag, impl, alloc);
 }
 
-} // namespace djinni
+} // namespace pydjinni

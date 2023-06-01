@@ -18,6 +18,7 @@ class JniExternalType(BaseModel):
 class JniType(JniExternalType):
     name: str
     jni_prefix: str = None
+    includes: list[Path]
     source: Path
     namespace: str
 

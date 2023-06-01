@@ -20,7 +20,7 @@
 #include <functional>
 #include <typeindex>
 
-namespace djinni {
+namespace pydjinni {
 
 /*
  * The template parameters we receive here can be a number of different types: C++ smart
@@ -182,4 +182,4 @@ private:
     static const std::shared_ptr<Pimpl> & get_base();
 };
 
-} // namespace djinni
+} // namespace pydjinni

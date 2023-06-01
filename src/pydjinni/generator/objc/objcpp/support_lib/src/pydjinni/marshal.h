@@ -18,7 +18,7 @@
 
 static_assert(__has_feature(objc_arc), "Djinni requires ARC to be enabled for this file");
 
-namespace djinni {
+namespace pydjinni {
 
 struct Bool {
     using CppType = bool;
@@ -346,4 +346,4 @@ public:
     }
 };
 
-} // namespace djinni
+} // namespace pydjinni

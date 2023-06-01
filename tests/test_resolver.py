@@ -2,7 +2,6 @@ from pathlib import Path
 
 import pytest
 import yaml
-from pydantic import BaseModel
 
 from pydjinni.exceptions import InputParsingException
 from pydjinni.parser.ast import TypeReference
@@ -125,9 +124,29 @@ def test_load_invalid_external_type(tmp_path: Path):
     }))
 
     # AND GIVEN a type reference to the external type
-    type_ref = TypeReference(name=Identifier("bar"), position=2)
+    TypeReference(name=Identifier("bar"), position=2)
 
     # WHEN loading the type definition from the file
     # THEN an InputParsingException should be raised
     with pytest.raises(InputParsingException):
         resolver.load_external(file)
+
+
+def test_register_namespaced_type(tmp_path: Path):
+    # GIVEN a resolver instance
+    resolver = Resolver(BaseExternalType)
+
+    # AND GIVEN a type with a namespace that should be registered
+    new_type = BaseType(name=Identifier("bar"), namespace=[Identifier("foo")], position=0)
+
+    # AND GIVEN a type reference to the same type
+    type_ref = TypeReference(name=Identifier("foo.bar"), position=2)
+
+    # WHEN registering the new type
+    resolver.register(new_type)
+
+    # AND WHEN resolving the registered type from a provided type reference
+    resolver.resolve(type_ref)
+
+    # THEN the type_ref should now contain a reference to the new type
+    assert type_ref.type_def == new_type

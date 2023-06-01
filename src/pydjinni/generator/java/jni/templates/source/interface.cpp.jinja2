@@ -1,4 +1,4 @@
-{% include "base.jinja2" %}
+{% extends "base.jinja2" %}
 
 {% block header %}
 #include "{{ type_def.jni.header }}"
@@ -10,10 +10,9 @@
 
 CJNIEXPORT void JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef)
 {
-    try {
-        DJINNI_FUNCTION_PROLOGUE1(jniEnv, nativeRef);
+    ::pydjinni::translate_exceptions(jniEnv, [&](){
         delete reinterpret_cast<::djinni::CppProxyHandle<{{ type_def.cpp.typename }}>*>(nativeRef);
-    } JNI_TRANSLATE_EXCEPTIONS_RETURN(jniEnv, )
+    });
 }
 
 {% for method in type_def.methods %}
@@ -22,18 +21,17 @@ CJNIEXPORT {{ method.return_type_ref.type_def.jni.typename if method.return_type
     , {{ parameter.type_ref.type_def.jni.typename }} {{ parameter.jni.name }}
     {%- endfor -%}
     ) {
-    try {
-        DJINNI_FUNCTION_PROLOGUE1(jniEnv, nativeRef);
-        const auto& ref = ::djinni::objectFromHandleAddress<{{ type_def.cpp.typename }}>(nativeRef);
-        {{ "r = " if method.return_type_ref }}ref->{{ method.cpp.name }}(::djinni::I32::toCpp(jniEnv
+    {{ "return" if method.return_type_ref }} ::pydjinni::translate_exceptions(jniEnv, [&](){
+        const auto& ref = ::pydjinni::objectFromHandleAddress<{{ type_def.cpp.typename }}>(nativeRef);
+        {{ "auto r = " if method.return_type_ref }}ref->{{ method.cpp.name }}(
         {%- for parameter in method.parameters -%}
-            , {{ parameter.jni.name }}
+            {{ parameter.type_ref.type_def.jni.translator }}::toCpp(jniEnv, {{ parameter.jni.name }}){{ ", " if not loop.last }}
         {%- endfor -%}
-        ));
+        );
         {% if method.return_type_ref %}
-        return ::djinni::release({{ method.return_type_ref.type_def.jni.translator }}::fromCpp(jniEnv, r));
+        return ::pydjinni::release({{ method.return_type_ref.type_def.jni.translator }}::fromCpp(jniEnv, r));
         {% endif %}
-    } JNI_TRANSLATE_EXCEPTIONS_RETURN(jniEnv, 0)
+    });
 }
 {% endfor %}
 {% endblock %}

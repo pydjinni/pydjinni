@@ -12,10 +12,10 @@ def run(test_name: str):
         test_name: name of the CMake test to call
     """
     # Allow test execution from within "it" folder
-    cwd = "." if Path(os.getcwd()).name == "tests" else "cmake/tests"
+    working_directory = Path(__file__).parent
     print("")
     try:
-        print(subprocess.check_output(["cmake", "-P", f"{test_name}.cmake"], cwd=cwd, stderr=subprocess.PIPE, universal_newlines=True))
+        print(subprocess.check_output(["cmake", "-P", f"{test_name}.cmake"], cwd=working_directory, stderr=subprocess.PIPE, universal_newlines=True))
     except subprocess.CalledProcessError as e:
         print(e.output)
         print(e.stderr)

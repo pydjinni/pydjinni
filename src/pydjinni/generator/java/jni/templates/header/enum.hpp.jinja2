@@ -3,9 +3,9 @@
 {% block header %}
 #pragma once
 
-#include "djinni/jni/djinni_support.hpp"
+#include "pydjinni/jni/support.hpp"
 {% for include in type_def.jni.includes -%}
-#include "{{ include }}"
+#include "{{ include | header }}"
 {% endfor -%}
 {% endblock %}
 

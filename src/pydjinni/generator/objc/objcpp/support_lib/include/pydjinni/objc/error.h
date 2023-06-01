@@ -16,7 +16,7 @@
 
 #pragma once
 
-namespace djinni {
+namespace pydjinni {
 
 // Throws an exception for an unimplemented method call.
 [[noreturn]] void throwUnimplemented(const char * ctx, NSString * msg);
@@ -24,7 +24,7 @@ namespace djinni {
 // Helper function for exception translation. Do not call directly!
 [[noreturn]] void throwNSExceptionFromCurrent(const char * ctx);
 
-} // namespace djinni
+} // namespace pydjinni
 
 #define DJINNI_UNIMPLEMENTED(msg) \
     ::djinni::throwUnimplemented(__PRETTY_FUNCTION__, msg);

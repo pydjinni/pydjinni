@@ -5,8 +5,8 @@ from pydjinni.generator.marshal import ExternalTypes
 
 external_types = ExternalTypes[JniExternalType](
     i8=JniExternalType(
-        translator="::pydjinni::translators::jni::I8",
-        header=Path("pydjinni/translators/jni/int.hpp"),
+        translator="::pydjinni::jni::translator::I8",
+        header=Path("pydjinni/jni/marshal.hpp"),
         typename='jobject',
         type_signature="B"
     ),

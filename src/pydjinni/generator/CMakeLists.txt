@@ -9,11 +9,11 @@ target_compile_features(common_support_lib INTERFACE cxx_std_20)
 
 add_library(support_lib::common ALIAS common_support_lib)
 
-if(DJINNI_JNI)
+if(PYDJINNI_JNI)
 add_subdirectory(java/jni)
 endif()
 
-if(DJINNI_OBJC)
+if(PYDJINNI_OBJC)
 add_subdirectory(objc/objcpp)
 endif()
 

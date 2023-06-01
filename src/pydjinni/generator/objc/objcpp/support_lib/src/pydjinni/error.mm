@@ -20,7 +20,7 @@
 // clang-format on
 static_assert(__has_feature(objc_arc), "Djinni requires ARC to be enabled for this file");
 
-namespace djinni {
+namespace pydjinni {
 
 [[noreturn]] __attribute__((weak)) void throwUnimplemented(const char * /*ctx*/, NSString * message) {
     [NSException raise:NSInternalInconsistencyException format:@"Unimplemented: %@", message];
@@ -37,4 +37,4 @@ namespace djinni {
     }
 }
 
-} // namespace djinni
+} // namespace pydjinni

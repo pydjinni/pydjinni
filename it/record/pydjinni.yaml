@@ -3,12 +3,24 @@ generate:
     out: generated/java
     package: test.record
   jni:
-    out: generated/jni
+    out:
+      header: generated/include/jni
+      source: generated/src/jni
+    identifier:
+      file:
+        prefix: marshal_
+        style: snake_case
     namespace: test::record::jni
   cpp:
-    out: generated/cpp
+    out:
+      header: generated/include/cpp
+      source: generated/src/cpp
     namespace: test::record
   objc:
-    out: generated/objc
+    out:
+      header: generated/include/objc
+      source: generated/src/objc
   objcpp:
-    out: generated/objcpp
+    out:
+      header: generated/include/objcpp
+      source: generated/src/objcpp

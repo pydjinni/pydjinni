@@ -7,12 +7,10 @@ Include(FetchContent)
 Include(CTest)
 Include(PyDjinni)
 
-option(DJINNI_JNI "Build for Java/JNI interop" OFF)
-option(DJINNI_OBJC "Build for Objective-C interop" OFF)
+option(PYDJINNI_JNI "Build for Java/JNI interop" OFF)
+option(PYDJINNI_OBJC "Build for Objective-C interop" OFF)
 
 if(BUILD_TESTING)
-    find_package(Java REQUIRED)
-    include(UseJava)
     FetchContent_Declare(
       Catch2
       GIT_REPOSITORY https://github.com/catchorg/Catch2.git

@@ -3,8 +3,16 @@ comment    = r'#.*$'+
 type_def   = enum/flags/record/interface
 enum       = comment? identifier '=' 'enum' '{' item* '}'
 flags      = comment? identifier '=' 'flags' '{' flag* '}'
-record     = comment? identifier '=' 'record' '{' field* '}'
-interface  = comment? identifier '=' 'interface' targets '{' method* '}'
+record     = comment? identifier '=' 'record' '{' (field/constant)* '}'
+interface  = comment? identifier '=' 'interface' targets '{' (method/constant)* '}'
+constant   = comment? 'const' identifier ':' data_type '=' value ';'
+value      = (string/float/integer/bool/identifier/object)
+string     = r'".*"'
+integer    = r'\d+'
+float      = r'\d*\.\d+'
+bool       = 'True'/'False'
+object     = '{' ((assignment ',')* assignment)? '}'
+assignment = identifier '=' value
 field      = comment? identifier ':' data_type ';'
 method     = comment? 'static'? identifier '(' ((parameter ',')* parameter)? ')' (':' data_type)? ';'
 parameter  = identifier ':' data_type

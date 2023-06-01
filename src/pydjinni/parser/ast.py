@@ -28,6 +28,19 @@ class TypeReference(BaseModel):
     )
 
 
+class Assignment(BaseModel):
+    key: Identifier
+    position: int
+    value: int | float | str | Identifier
+
+
+class Constant(BaseModel):
+    name: Identifier
+    type_ref: TypeReference
+    position: int
+    value: int | float | str | Identifier | list[Assignment]
+
+
 class Interface(BaseType):
     class Method(BaseField):
         class Parameter(BaseField):
@@ -38,6 +51,7 @@ class Interface(BaseType):
         static: bool
 
     methods: list[Method]
+    constants: list[Constant]
     targets: list[str]
 
 
@@ -46,3 +60,4 @@ class Record(BaseType):
         type_ref: TypeReference
 
     fields: list[Field]
+    constants: list[Constant]

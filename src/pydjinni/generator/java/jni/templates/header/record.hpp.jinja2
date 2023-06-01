@@ -3,8 +3,8 @@
 {% block header %}
 #pragma once
 
-#include "djinni/jni/support.hpp"
-#include "{{ type_def.jni.header }}"
+#include "pydjinni/jni/support.hpp"
+#include {{ type_def.cpp.header | header }}
 {% endblock %}
 
 {% block content %}
@@ -18,19 +18,19 @@ public:
     ~{{ type_def.jni.name }}();
 
     static CppType toCpp(JNIEnv* jniEnv, JniType j);
-    static ::djinni::LocalRef<JniType> fromCpp(JNIEnv * jniEnv, const CppType& c);
+    static ::pydjinni::LocalRef<JniType> fromCpp(JNIEnv * jniEnv, const CppType& c);
 private:
     {{ type_def.jni.name }}();
-    friend ::djinni::JniClass<{{ type_def.jni.name }}>;
+    friend ::pydjinni::JniClass<{{ type_def.jni.name }}>;
 
-    const ::djinni::GlobalRef<jclass> clazz { ::djinni::jniFindClass("{{ type_def.jni.type_signature }}") };
-    const jmethodID jconstructor { ::djinni::jniGetMethodID(clazz.get(), "<init>", "(
+    const ::pydjinni::GlobalRef<jclass> clazz { ::pydjinni::jniFindClass("{{ type_def.jni.type_signature }}") };
+    const jmethodID jconstructor { ::pydjinni::jniGetMethodID(clazz.get(), "<init>", "(
     {%- for field in type_def.fields -%}
     {{ field.type_ref.type_def.jni.type_signature }}
     {%- endfor -%}
     )V") };
     {% for field in type_def.fields %}
-    const jfieldID field_{{ field.jni.name }} { ::djinni::jniGetFieldID(clazz.get(), "{{ field.java.name }}", "{{ field.type_ref.type_def.jni.type_signature }}") };
+    const jfieldID field_{{ field.jni.name }} { ::pydjinni::jniGetFieldID(clazz.get(), "{{ field.java.name }}", "{{ field.type_ref.type_def.jni.type_signature }}") };
     {% endfor %}
-}
+};
 {% endblock %}

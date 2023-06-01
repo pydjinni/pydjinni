@@ -25,7 +25,11 @@ class JniConfig(BaseModel):
     )
     include_prefix: Path = Field(
         default=None,
-        description="The prefix for #includes of JNI header files from JNI C++ files"
+        description="The prefix for `#includes` of JNI header files from JNI C++ files."
+    )
+    include_cpp_prefix: Path = Field(
+        default=None,
+        description="The prefix for `#includes` of the main header files from JNI C++ files."
     )
     header_extension: str = Field(
         default="hpp",

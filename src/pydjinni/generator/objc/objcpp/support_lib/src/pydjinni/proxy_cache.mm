@@ -20,7 +20,7 @@ static_assert(__has_feature(objc_arc), "Djinni requires ARC to be enabled for th
 #include "objc_wrapper_cache.h"
 #include "cpp_wrapper_cache.h"
 
-namespace djinni {
+namespace pydjinni {
 
 std::size_t unretained_id_hash::operator()(__unsafe_unretained id ptr) const {
     return std::hash<void*>()((__bridge void*)ptr);
@@ -29,4 +29,4 @@ std::size_t unretained_id_hash::operator()(__unsafe_unretained id ptr) const {
 template class ProxyCache<ObjcProxyCacheTraits>;
 template class ProxyCache<CppProxyCacheTraits>;
 
-} // namespace djinni
+} // namespace pydjinni

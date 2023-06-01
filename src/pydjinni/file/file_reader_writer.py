@@ -22,9 +22,13 @@ class FileReaderWriter:
     def setup(self, processed_files_model: type[ProcessedFiles]):
         self._processed_files = processed_files_model().model_copy(deep=True)
 
-    def setup_include_dir(self, key: str, path: Path):
+    def setup_include_dir(self, key: str, include_dir: Path):
         generator = getattr(self.processed_files.generated, key)
-        generator.include_dir = path
+        generator.include_dir = include_dir
+
+    def setup_source_dir(self, key: str, source_dir: Path):
+        generator = getattr(self.processed_files.generated, key)
+        generator.source_dir = source_dir
 
     @property
     def processed_files(self) -> ProcessedFiles:

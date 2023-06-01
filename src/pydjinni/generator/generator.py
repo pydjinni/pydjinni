@@ -38,15 +38,15 @@ class Generator(ABC):
         self._input_file = None
         self._generator_directory = Path(inspect.getfile(self.__class__)).parent
 
-        def is_system_include(header: str):
-            return str(header).startswith("<") and str(header).endswith(">")
+        def header(header: str):
+            return header if str(header).startswith("<") and str(header).endswith(">") else f'"{header}"'
 
         self._jinja_env = Environment(
             loader=FileSystemLoader(self._generator_directory / "templates"),
             trim_blocks=True, lstrip_blocks=True,
             keep_trailing_newline=True
         )
-        self._jinja_env.tests["system_include"] = is_system_include
+        self._jinja_env.filters["header"] = header
         processed_files_model_builder.add_generated_field(self.key, header=self.writes_header,
                                                           source=self.writes_source)
         self.marshal = self._marshal_type(
@@ -134,6 +134,8 @@ class Generator(ABC):
         if self.marshal.config:
             if self.writes_header:
                 self._file_writer.setup_include_dir(self.key, self.marshal.header_path())
+            if self.writes_source:
+                self._file_writer.setup_source_dir(self.key, self.marshal.source_path())
             if self.support_lib_commons:
                 self.generate_support_lib()
             for type_def in ast:

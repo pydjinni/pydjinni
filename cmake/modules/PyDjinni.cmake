@@ -145,6 +145,13 @@ function(pydjinni_generate IDL)
             file(TO_CMAKE_PATH ${INCLUDE_DIR} CMAKE_INCLUDE_DIR)
             set(${LANGUAGE}_INCLUDE_DIR ${CMAKE_INCLUDE_DIR} PARENT_SCOPE)
         endif()
+        string(JSON SOURCE_DIR
+            ERROR_VARIABLE SOURCE_DIR_JSON_ERROR
+            GET ${PROCESSED_FILES} generated ${LANGUAGE} source_dir)
+        if(NOT SOURCE_DIR_JSON_ERROR)
+            file(TO_CMAKE_PATH ${SOURCE_DIR} CMAKE_SOURCE_DIR)
+            set(${LANGUAGE}_SOURCE_DIR ${CMAKE_SOURCE_DIR} PARENT_SCOPE)
+        endif()
         get_generated_files(${LANGUAGE} source)
         set(${LANGUAGE}_GENERATED_SOURCES ${${LANGUAGE}_GENERATED_SOURCES} PARENT_SCOPE)
     endforeach()

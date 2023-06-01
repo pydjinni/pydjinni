@@ -1,32 +1,35 @@
-{% include "base.jinja2" %}
+{% extends "base.jinja2" %}
 
 {% block header %}
-#include "{{ type_def.jni.header }}"
+#include {{ type_def.jni.header | header }}
+{% for include in type_def.jni.includes %}
+#include {{ include | header }}
+{% endfor %}
 {% endblock %}
 
 {% block content %}
 {{ type_def.jni.name }}::{{ type_def.jni.name }}() = default;
 {{ type_def.jni.name }}::~{{ type_def.jni.name }}() = default;
 
-auto {{ type_def.jni.name }}::fromCpp(JNIEnv* jniEnv, const CppType& c) -> ::djinni::LocalRef<JniType> {
-    const auto& data = ::djinni::JniClass<{{ type_def.jni.name }}>::get();
-    auto r = ::djinni::LocalRef<JniType>{jniEnv->NewObject(
+auto {{ type_def.jni.name }}::fromCpp(JNIEnv* jniEnv, const CppType& c) -> ::pydjinni::LocalRef<JniType> {
+    const auto& data = ::pydjinni::JniClass<{{ type_def.jni.name }}>::get();
+    auto r = ::pydjinni::LocalRef<JniType>{jniEnv->NewObject(
         data.clazz.get(), data.jconstructor,
         {% for field in type_def.fields %}
-        ::djinni::get({{ field.type_ref.type_def.jni.translator }}::fromCpp(jniEnv, c.{{ field.cpp.name }}){{ "," if not loop.last }}
+        ::pydjinni::get({{ field.type_ref.type_def.jni.translator }}::fromCpp(jniEnv, c.{{ field.cpp.name }})){{ "," if not loop.last }}
         {% endfor %}
     )};
-    ::djinni::jni::jniExceptionCheck(jniEnv);
+    ::pydjinni::jniExceptionCheck(jniEnv);
     return r;
 }
 
 auto {{ type_def.jni.name }}::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
-    ::djinni::JniLocalScope jscope(jniEnv, 5);
+    ::pydjinni::JniLocalScope jscope(jniEnv, 5);
     assert(j != nullptr);
-    const auto& data = ::djinni::JniClass<{{ type_def.jni.name }}>::get();
+    const auto& data = ::pydjinni::JniClass<{{ type_def.jni.name }}>::get();
     return {
     {% for field in type_def.fields %}
-        {{ field.type_ref.type_def.jni.translator }}::toCpp(jniEnv, jniEnv->GetObjectField(j, data.{{ field.jni.name }})){{ "," if not loop.last }}
+        {{ field.type_ref.type_def.jni.translator }}::toCpp(jniEnv, jniEnv->GetObjectField(j, data.field_{{ field.jni.name }})){{ "," if not loop.last }}
     {% endfor %}
     };
 }

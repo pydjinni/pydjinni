@@ -5,7 +5,7 @@
 
 #include <algorithm>
 {% for include in type_def.cpp.includes -%}
-{{ include_def(include) }}
+#include {{ include | header }}
 {% endfor %}
 {% endblock %}
 
