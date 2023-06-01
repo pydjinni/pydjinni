@@ -55,6 +55,7 @@ Datatypes are automatically converted, and interface calls are forwarded across 
 <div class="clear"></div>
 <br>
 <br>
+<br>
 
 
 ```{ .yaml .left }
@@ -83,6 +84,7 @@ Optionally, options can also be passed to the command line interface directly, l
 <div class="clear"></div>
 <br>
 <br>
+<br>
 
 
 ```{ .toml .left }
@@ -104,6 +106,7 @@ That way for example support for an additional host language can be added withou
 to the project.
 
 <div class="clear"></div>
+<br>
 <br>
 <br>
 
@@ -130,6 +133,23 @@ The tools functionality can also be used from a Python API, in order to seamless
 <br>
 <br>
 <center>
+
+# Roadmap
+
+PyDjinni is written completely from scratch and still has some rough edges.<br>
+Here is what is planned for the near future:
+
+
+<div id="roadmap" markdown>
+- [x] Publish Initial Preview
+- [ ] Release stable version 1.0
+- [ ] Rust support
+- [ ] Javascript support
+</div>
+
+<br>
+<br>
+
 
 [&nbsp;&nbsp;Try Now &nbsp; :material-arrow-right:&nbsp;&nbsp;](installation.md){ .md-button .md-button--primary .try-now-button }
 

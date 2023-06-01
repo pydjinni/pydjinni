@@ -218,6 +218,12 @@
     margin-right: -6px;
 }
 
+#roadmap {
+    display: inline-block;
+    text-align: left;
+    margin: 0 auto;
+}
+
 [data-md-color-scheme=slate] .invert-in-dark-mode {
     filter: invert(0.9) hue-rotate(180deg);
 }
