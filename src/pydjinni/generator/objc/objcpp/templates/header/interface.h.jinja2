@@ -1,1 +1,27 @@
 {% extends "base.jinja2" %}
+
+{% block header %}
+#include "{{ type_def.cpp.header }}"
+#include <memory>
+static_assert(__has_feature(objc_arc), "Djinni requires ARC to be enabled for this file");
+
+@class {{ type_def.objc.typename }};
+{% endblock %}
+
+{% block content %}
+class {{ type_def.objcpp.name }} {
+public:
+    using CppType = std::shared_ptr<{{ type_def.cpp.typename }}>;
+    using CppOptType = std::shared_ptr<{{ type_def.cpp.typename }}>;
+    using ObjcType = ::{{ type_def.objc.typename }}*;
+
+    using Boxed = {{ type_def.objcpp.name }};
+
+    static CppType toCpp(ObjcType objc);
+    static ObjcType fromCppOpt(const CppOptType& cpp);
+    static ObjcType fromCpp(const CppType& cpp) { return fromCppOpt(cpp); }
+
+private:
+    class ObjcProxy;
+};
+{% endblock %}

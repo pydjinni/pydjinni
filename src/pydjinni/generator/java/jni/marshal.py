@@ -5,7 +5,7 @@ from pydjinni.parser.ast import Enum, Flags, Interface, Record
 from pydjinni.parser.base_models import BaseType, BaseField
 from .config import JniConfig
 from .external_types import external_types
-from .type import JniField, JniType, JniExternalType
+from .type import JniField, JniType, JniExternalType, NativeType
 
 
 class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
@@ -15,7 +15,7 @@ class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
         type_def.jni = JniType(
             name=name,
             translator="::" + "::".join(namespace + [name]),
-            typename='jobject',
+            typename=NativeType.object,
             header=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.header_extension}"),
             source=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.source_extension}"),
             namespace="::".join(namespace),

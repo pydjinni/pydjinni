@@ -10,6 +10,7 @@
 {% block content %}
 {{ type_def.cpp.comment }}
 class {{ type_def.cpp.name }} {
+public:
     virtual ~{{ type_def.cpp.name }}() {}
 
 {% for method in type_def.methods %}

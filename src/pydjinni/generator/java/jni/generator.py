@@ -1,6 +1,8 @@
+from pydjinni.generator.filters import header
 from pydjinni.generator.generator import Generator
 from pydjinni.parser.ast import Enum, Flags, Record, Interface
 from pydjinni.parser.base_models import BaseType
+from .filters import get_field_accessor
 from .marshal import JniMarshal
 
 
@@ -10,7 +12,8 @@ class JniGenerator(
     marshal=JniMarshal,
     writes_header=True,
     writes_source=True,
-    support_lib_commons=True
+    support_lib_commons=True,
+    filters=[header, get_field_accessor]
 ):
 
     def generate_enum(self, type_def: Enum):

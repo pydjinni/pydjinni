@@ -24,3 +24,4 @@ generate:
     out:
       header: generated/include/objcpp
       source: generated/src/objcpp
+    namespace: test::record::objcpp

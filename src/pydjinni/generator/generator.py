@@ -2,6 +2,7 @@ import inspect
 import shutil
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Callable
 
 from jinja2 import Environment, FileSystemLoader
 
@@ -21,12 +22,13 @@ class Generator(ABC):
     """
 
     def __init_subclass__(cls, key: str, marshal: type[Marshal], writes_header: bool = False,
-                          writes_source: bool = False, support_lib_commons: bool = False) -> None:
+                          writes_source: bool = False, support_lib_commons: bool = False, filters: list[Callable] = None) -> None:
         cls._marshal_type = marshal
         cls.key = key
         cls.writes_header = writes_header
         cls.writes_source = writes_source
         cls.support_lib_commons = support_lib_commons
+        cls.filters = filters or []
 
     def __init__(
             self,
@@ -38,15 +40,13 @@ class Generator(ABC):
         self._input_file = None
         self._generator_directory = Path(inspect.getfile(self.__class__)).parent
 
-        def header(header: str):
-            return header if str(header).startswith("<") and str(header).endswith(">") else f'"{header}"'
-
         self._jinja_env = Environment(
             loader=FileSystemLoader(self._generator_directory / "templates"),
             trim_blocks=True, lstrip_blocks=True,
             keep_trailing_newline=True
         )
-        self._jinja_env.filters["header"] = header
+        for filter_callable in self.filters:
+            self._jinja_env.filters[filter_callable.__name__] = filter_callable
         processed_files_model_builder.add_generated_field(self.key, header=self.writes_header,
                                                           source=self.writes_source)
         self.marshal = self._marshal_type(

@@ -18,13 +18,17 @@ def render_config_schema_table(element, indent: int, render_defaults=True):
     if "properties" in element:
         for key, value in element["properties"].items():
             if value.get("allOf") and len(value["allOf"]) == 1:
+                if value.get("default"):
+                    value["allOf"][0]["default"] = value["default"]
+                if value.get("description"):
+                    value["allOf"][0]["description"] = value["description"]
                 value = value["allOf"][0]
             if value.get("type") == "object":
                 result += f"\n{'#' * indent} {key}\n\n"
                 if value.get("description"):
                     result += f"\n{value['description']}\n\n"
                 result += render_config_schema_table(value, indent + 1, render_defaults)
-            if value.get("type") != "object":
+            else:
                 if first_value:
                     result += f"| Name | Type | Description |\n"
                     result += f"| ---- | ---- | ----------- |\n"
@@ -50,7 +54,7 @@ def render_config_schema_table(element, indent: int, render_defaults=True):
                 if "description" in value:
                     result += f"{value['description']}<br>"
                 if "enum" in value:
-                    result += f"one of `{'`, `'.join(value['enum'])}`<br>"
+                    result += f"One of `{'`, `'.join(value['enum'])}`<br>"
                 if "examples" in value:
                     examples = value["examples"]
                     if len(examples) == 1:

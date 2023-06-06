@@ -11,7 +11,7 @@
 class {{ type_def.jni.name }} final {
 public:
     using CppType = {{ type_def.cpp.typename }};
-    using JniType = {{ type_def.jni.typename }};
+    using JniType = {{ type_def.jni.typename.value }};
 
     using Boxed = {{ type_def.jni.name }};
 

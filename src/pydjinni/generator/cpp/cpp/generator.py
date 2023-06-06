@@ -1,3 +1,4 @@
+from pydjinni.generator.filters import header
 from pydjinni.generator.generator import Generator
 from pydjinni.parser.ast import Interface, Record, Flags, Enum
 from .marshal import CppMarshal
@@ -9,7 +10,8 @@ class CppGenerator(
     marshal=CppMarshal,
     writes_header=True,
     writes_source=True,
-    support_lib_commons=True
+    support_lib_commons=True,
+    filters=[header]
 ):
 
     def generate_enum(self, type_def: Enum):

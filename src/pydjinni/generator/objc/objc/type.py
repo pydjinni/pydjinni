@@ -15,6 +15,8 @@ class ObjcType(ObjcExternalType):
     comment: str | None = None
     init: str = None
     convenience_init: str = None
+    imports: list[Path]
+
 
 
 class ObjcField(BaseModel):

@@ -14,6 +14,7 @@ class ObjcppType(ObjcppExternalType):
     namespace: str
     name: str
     source: Path
+    imports: list[Path]
 
 
 class ObjcppField(BaseModel):

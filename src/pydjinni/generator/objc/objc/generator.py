@@ -1,10 +1,18 @@
 from pydjinni.generator.generator import Generator
 from pydjinni.parser.ast import Interface, Record, Flags, Enum
 from pydjinni.parser.base_models import BaseType
+from .filter import type_decl
 from .marshal import ObjcMarshal
+from ...filters import header
 
 
-class ObjcGenerator(Generator, key="objc", marshal=ObjcMarshal, writes_header=True, writes_source=True):
+class ObjcGenerator(
+    Generator,
+    key="objc",
+    marshal=ObjcMarshal,
+    writes_header=True,
+    writes_source=True,
+    filters=[header, type_decl]):
 
     def generate_enum(self, type_def: Enum):
         self.write_header(

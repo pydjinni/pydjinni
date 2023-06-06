@@ -32,6 +32,7 @@ class ObjcMarshal(Marshal[ObjcConfig, ObjcExternalType], types=external_types):
             comment=mistletoe.markdown(type_def.comment, DocCCommentRenderer) if type_def.comment else '',
             header=Path(f"{typename}.{self.config.header_extension}"),
             swift_typename=".".join(namespace + [type_def.name.convert(self.config.identifier.type)]),
+            imports=self.includes(type_def),
             **kwargs
         )
 

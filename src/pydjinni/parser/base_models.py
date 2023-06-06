@@ -11,6 +11,7 @@ class BaseExternalType(BaseModel):
         float = 'float'
         string = 'string'
         bool = 'bool'
+
     name: str = Field(
         description="Name of the type in the IDL"
     )

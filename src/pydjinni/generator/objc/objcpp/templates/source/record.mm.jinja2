@@ -2,11 +2,12 @@
 
 {% block header %}
 #import "{{ type_def.objcpp.header }}"
+#import "pydjinni/marshal.h"
 #include <cassert>
 {% endblock %}
 
 {% block content %}
-auto {{ type_def.objcpp.name }}::toCpp(objcType obj) -> CppType {
+auto {{ type_def.objcpp.name }}::toCpp(ObjcType obj) -> CppType {
     assert(obj);
     return {
     {% for field in type_def.fields %}

@@ -1,6 +1,19 @@
+from enum import Enum
 from pathlib import Path
 
 from pydantic import BaseModel, Field
+
+
+class NativeType(str, Enum):
+    object = 'jobject'
+    boolean = 'jboolean'
+    byte = 'jbyte'
+    char = 'jchar'
+    short = 'jshort'
+    int = 'jint'
+    long = 'jlong'
+    float = 'jfloat'
+    double = 'jdouble'
 
 
 class JniExternalType(BaseModel):
@@ -8,7 +21,10 @@ class JniExternalType(BaseModel):
         pattern=r"^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))*[a-zA-Z][a-zA-Z0-9_]*$"
     )
     header: Path
-    typename: str = 'jobject'
+    typename: NativeType = Field(
+        default=NativeType.object,
+        description="The Java native type as represented in JNI."
+    )
     type_signature: str = Field(
         pattern=r'^(\((\[?[ZBCSIJFD]|(L([a-z][a-z0-9]*/)*[A-Z][a-zA-Z0-9]*);)*\))?(\[?[ZBCSIJFD]|(L([a-z][a-z0-9]*/)*[A-Z][a-zA-Z0-9]*);)?$',
         examples=["(ILjava/lang/String;[I)J"]

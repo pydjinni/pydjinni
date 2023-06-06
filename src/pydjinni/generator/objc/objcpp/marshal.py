@@ -11,14 +11,15 @@ from .type import ObjcppExternalType, ObjcppType, ObjcppField
 
 class ObjcppMarshal(Marshal[ObjcppConfig, ObjcppExternalType], types=external_types):
     def marshal_type(self, type_def: BaseType):
-        namespace = self.marshal_namespace(type_def, IdentifierStyle.Case.pascal)
+        namespace = self.marshal_namespace(type_def, IdentifierStyle.Case.pascal, self.config.namespace)
         name = type_def.name.convert(IdentifierStyle.Case.pascal)
         type_def.objcpp = ObjcppType(
             name=name,
             namespace="::".join(namespace),
             header=Path(f"{name}+Private.{self.config.header_extension}"),
             source=Path(f"{name}+Private.{self.config.source_extension}"),
-            translator="::" + "::".join(namespace + [name])
+            translator="::" + "::".join(namespace + [name]),
+            imports=self.includes(type_def)
         )
 
     def marshal_field(self, field_def: BaseField):
