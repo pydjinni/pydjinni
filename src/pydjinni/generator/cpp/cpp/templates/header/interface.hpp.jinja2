@@ -2,9 +2,6 @@
 
 {% block header %}
 #pragma once
-{% for include in type_def.cpp.includes -%}
-#include {{ include | header }}
-{% endfor %}
 {% endblock %}
 
 {% block content %}

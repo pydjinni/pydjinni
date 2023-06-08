@@ -3,7 +3,7 @@ from pydjinni.parser.ast import Interface, Record, Flags, Enum
 from pydjinni.parser.base_models import BaseType
 from .filter import type_decl
 from .marshal import ObjcMarshal
-from ...filters import header
+from pydjinni.generator.filters import header
 
 
 class ObjcGenerator(
@@ -12,7 +12,8 @@ class ObjcGenerator(
     marshal=ObjcMarshal,
     writes_header=True,
     writes_source=True,
-    filters=[header, type_decl]):
+    filters=[header, type_decl]
+):
 
     def generate_enum(self, type_def: Enum):
         self.write_header(

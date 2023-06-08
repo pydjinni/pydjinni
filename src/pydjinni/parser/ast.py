@@ -1,7 +1,4 @@
-from pydantic import BaseModel, Field
-
-from pydjinni.parser.base_models import BaseType, BaseField, BaseExternalType
-from pydjinni.parser.identifier import Identifier
+from pydjinni.parser.base_models import BaseType, BaseField, BaseClassType, TypeReference
 
 
 class Enum(BaseType):
@@ -19,29 +16,7 @@ class Flags(BaseType):
     flags: list[Flag]
 
 
-class TypeReference(BaseModel):
-    name: Identifier
-    position: int
-    type_def: BaseExternalType = Field(
-        default=None,
-        repr=False
-    )
-
-
-class Assignment(BaseModel):
-    key: Identifier
-    position: int
-    value: int | float | str | Identifier
-
-
-class Constant(BaseModel):
-    name: Identifier
-    type_ref: TypeReference
-    position: int
-    value: int | float | str | Identifier | list[Assignment]
-
-
-class Interface(BaseType):
+class Interface(BaseClassType):
     class Method(BaseField):
         class Parameter(BaseField):
             type_ref: TypeReference
@@ -51,13 +26,11 @@ class Interface(BaseType):
         static: bool
 
     methods: list[Method]
-    constants: list[Constant]
     targets: list[str]
 
 
-class Record(BaseType):
+class Record(BaseClassType):
     class Field(BaseField):
         type_ref: TypeReference
 
     fields: list[Field]
-    constants: list[Constant]

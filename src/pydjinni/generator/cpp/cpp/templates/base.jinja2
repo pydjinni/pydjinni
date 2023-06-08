@@ -3,6 +3,9 @@
 
 {% block header %}
 {% endblock %}
+{% for dependency in type_def.dependencies -%}
+#include {{ dependency.cpp.header | header }}
+{% endfor %}
 
 {%- if type_def.cpp.namespace -%}
 namespace {{ type_def.cpp.namespace }} {

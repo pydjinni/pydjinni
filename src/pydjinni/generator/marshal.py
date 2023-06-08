@@ -9,7 +9,6 @@ from pydjinni.config.config_model_builder import ConfigModelBuilder
 from pydjinni.config.types import OutPaths, IdentifierStyle
 from pydjinni.exceptions import ConfigurationException
 from pydjinni.generator.external_types import ExternalTypes, ExternalTypeDef, ExternalTypesBuilder
-from pydjinni.parser.ast import Record, Interface
 from pydjinni.parser.base_models import BaseType, BaseField
 from pydjinni.parser.type_model_builder import TypeModelBuilder
 
@@ -69,23 +68,6 @@ class Marshal(ABC, Generic[ConfigModel, ExternalTypeDef]):
             return out.source
         else:
             return out
-
-    def includes(self, type_def: BaseType) -> list[Path]:
-        includes_list: list[Path] = []
-        match type_def:
-            case Record():
-                for type_dep in type_def.fields:
-                    target_type_dep = getattr(type_dep.type_ref.type_def, self.key)
-                    includes_list.append(target_type_dep.header)
-            case Interface():
-                for method in type_def.methods:
-                    for param in method.parameters:
-                        target_type_dep = getattr(param.type_ref.type_def, self.key)
-                        includes_list.append(target_type_dep.header)
-                    if method.return_type_ref is not None:
-                        target_type_dep = getattr(method.return_type_ref.type_def, self.key)
-                        includes_list.append(target_type_dep.header)
-        return [*set(includes_list)]
 
     def marshal_namespace(
             self,

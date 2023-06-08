@@ -15,7 +15,7 @@ from pydjinni.parser.parser import IdlParser
 from pydjinni.parser.resolver import Resolver
 
 
-def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, Path, MagicMock, MagicMock]:
+def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, MagicMock, MagicMock]:
     """
     Prepares the testing environment by initializing the parser and the file to be parsed.
 
@@ -30,25 +30,28 @@ def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, Path, MagicMock, M
     reader.setup(ProcessedFiles)
     resolver_mock = MagicMock(spec=Resolver)
     marshal_mock = MagicMock(spec=Marshal)
+
+    # AND GIVEN an input file
+    input_file = tmp_path / f"{uuid.uuid4()}.djinni"
+    input_file.write_text(input_idl)
+
     # GIVEN a Parser instance
     parser = IdlParser(
         resolver=resolver_mock,
         marshals=[marshal_mock],
         file_reader=reader,
         targets=['cpp', 'java'],
-        include_dirs=[tmp_path]
+        include_dirs=[tmp_path],
+        idl=input_file
     )
 
-    # AND GIVEN an input file
-    input_file = tmp_path / f"{uuid.uuid4()}.djinni"
-    input_file.write_text(input_idl)
-    return parser, input_file, resolver_mock, marshal_mock
+    return parser, resolver_mock, marshal_mock
 
 
 TypeDef = TypeVar("TypeDef", bound=BaseType)
 
 
-def when(parser: IdlParser, input_file: Path, type_type: type[TypeDef], type_name: str) -> TypeDef:
+def when(parser: IdlParser, type_type: type[TypeDef], type_name: str) -> TypeDef:
     """
     parses the given input and asserts that the result is an AST with exactly one element
     of the expected type and name.
@@ -63,7 +66,7 @@ def when(parser: IdlParser, input_file: Path, type_type: type[TypeDef], type_nam
         the one element in the AST that was returned by the parser
     """
     # WHEN parsing the input file
-    ast = parser.parse(input_file)
+    ast = parser.parse()
 
     # THEN the resulting AST should contain one element
     assert len(ast) == 1
@@ -75,8 +78,30 @@ def when(parser: IdlParser, input_file: Path, type_type: type[TypeDef], type_nam
     return type_def
 
 
+def record_resolve(name, field_name, field_typename, field_primitive):
+    def resolve(type_reference: TypeReference):
+        type_reference.type_def = Record(
+            name=name,
+            position=0,
+            fields=[Record.Field(
+                name=field_name,
+                position=0,
+                type_ref=TypeReference(
+                    name=field_typename,
+                    position=0,
+                    type_def=BaseExternalType(
+                        name=field_typename,
+                        primitive=field_primitive
+                    )
+                )
+            )],
+            constants=[]
+
+        )
+    return resolve
+
 def test_parsing_enum(tmp_path: Path):
-    parser, input_file, _, _ = given(
+    parser, _, _ = given(
         tmp_path=tmp_path,
         input_idl="""
         foo = enum {
@@ -86,7 +111,7 @@ def test_parsing_enum(tmp_path: Path):
         """
     )
 
-    enum = when(parser, input_file, Enum, "foo")
+    enum = when(parser, Enum, "foo")
 
     items = enum.items
 
@@ -104,7 +129,7 @@ def assert_flag(flag: Flags.Flag, name: str, none: bool = False, all: bool = Fal
 
 
 def test_parsing_flags(tmp_path: Path):
-    parser, input_file, _, _ = given(
+    parser, _, _ = given(
         tmp_path=tmp_path,
         input_idl="""
         foo = flags {
@@ -116,7 +141,7 @@ def test_parsing_flags(tmp_path: Path):
         """
     )
 
-    flags = when(parser, input_file, Flags, "foo")
+    flags = when(parser, Flags, "foo")
 
     flag_items = flags.flags
 
@@ -134,7 +159,7 @@ def assert_field(field: Record.Field, name: str, typename: str):
 
 
 def test_parsing_record(tmp_path: Path):
-    parser, input_file, _, _ = given(
+    parser, _, _ = given(
         tmp_path=tmp_path,
         input_idl="""
         foo = record {
@@ -144,7 +169,7 @@ def test_parsing_record(tmp_path: Path):
         """
     )
 
-    record = when(parser, input_file, Record, "foo")
+    record = when(parser, Record, "foo")
 
     fields = record.fields
 
@@ -171,7 +196,7 @@ def assert_method(method: Interface.Method, name: str, params: list[tuple[str, s
 
 
 def test_parsing_interface(tmp_path: Path):
-    parser, input_file, _, _ = given(
+    parser, _, _ = given(
         tmp_path=tmp_path,
         input_idl="""
             foo = interface +cpp {
@@ -184,7 +209,7 @@ def test_parsing_interface(tmp_path: Path):
             """
     )
 
-    interface = when(parser, input_file, Interface, "foo")
+    interface = when(parser, Interface, "foo")
 
     methods = interface.methods
 
@@ -204,7 +229,7 @@ def test_parsing_interface(tmp_path: Path):
 
 def test_parsing_interface_unknown_target(tmp_path: Path):
     # GIVEN an idl file that references an unknown target language for the defined interface
-    parser, input_file, _, _ = given(
+    parser, _, _ = given(
         tmp_path=tmp_path,
         input_idl="""
             foo = interface +foo {
@@ -215,12 +240,12 @@ def test_parsing_interface_unknown_target(tmp_path: Path):
     # WHEN parsing the input
     # THEN a IdlParser.UnknownInterfaceTargetException should be raised
     with pytest.raises(IdlParser.UnknownInterfaceTargetException):
-        parser.parse(input_file)
+        parser.parse()
 
 
 def test_parsing_interface_no_target(tmp_path: Path):
     # GIVEN an idl file that references no target language for the defined interface
-    parser, input_file, _, _ = given(
+    parser, _, _ = given(
         tmp_path=tmp_path,
         input_idl="""
             foo = interface {
@@ -229,7 +254,7 @@ def test_parsing_interface_no_target(tmp_path: Path):
             """
     )
     # WHEN parsing the input
-    interface = when(parser, input_file, Interface, "foo")
+    interface = when(parser, Interface, "foo")
     # THEN all known interface targets should be set for the defined interface
     assert "cpp" in interface.targets
     assert "java" in interface.targets
@@ -238,7 +263,7 @@ def test_parsing_interface_no_target(tmp_path: Path):
 
 def test_parsing_interface_minus_target(tmp_path: Path):
     # GIVEN an idl file that only references the exclusion of a target from the defined interface
-    parser, input_file, _, _ = given(
+    parser, _, _ = given(
         tmp_path=tmp_path,
         input_idl="""
             foo = interface -cpp {
@@ -247,14 +272,14 @@ def test_parsing_interface_minus_target(tmp_path: Path):
             """
     )
     # WHEN parsing the input
-    interface = when(parser, input_file, Interface, "foo")
+    interface = when(parser, Interface, "foo")
     # THEN all known interface targets except the one excluded should be present in the interface
     assert "java" in interface.targets
     assert len(interface.targets) == 1
 
 
 def test_parsing_invalid_input(tmp_path: Path):
-    parser, input_file, _, _ = given(
+    parser, _, _ = given(
         tmp_path=tmp_path,
         input_idl="****",
     )
@@ -262,12 +287,12 @@ def test_parsing_invalid_input(tmp_path: Path):
     # WHEN parsing the input
     # THEN a IdlParser.ParsingException should be raised
     with pytest.raises(IdlParser.ParsingException):
-        parser.parse(input_file)
+        parser.parse()
 
 
 def test_parsing_missing_type(tmp_path):
     # GIVEN an input with an unknown type reference
-    parser, input_file, resolver_mock, _ = given(
+    parser, resolver_mock, _ = given(
         tmp_path=tmp_path,
         input_idl="""
         foo = record {
@@ -284,12 +309,12 @@ def test_parsing_missing_type(tmp_path):
     # WHEN parsing the input
     # THEN a IdlParser.TypeResolvingException should be raised
     with pytest.raises(IdlParser.TypeResolvingException):
-        parser.parse(input_file)
+        parser.parse()
 
 
 def test_parsing_duplicate_type(tmp_path: Path):
     # GIVEN an input that redefines an existing type
-    parser, input_file, resolver_mock, _ = given(
+    parser, resolver_mock, _ = given(
         tmp_path=tmp_path,
         input_idl="""
             i8 = record {
@@ -306,24 +331,25 @@ def test_parsing_duplicate_type(tmp_path: Path):
     # WHEN parsing the input
     # THEN a IdlParser.DuplicateTypeException should be raised
     with pytest.raises(IdlParser.DuplicateTypeException):
-        parser.parse(input_file)
+        parser.parse()
 
 
 def test_parsing_non_existing_file(tmp_path: Path):
-    parser, _, _, _ = given(
+    parser, _, _ = given(
         tmp_path=tmp_path,
         input_idl=""
     )
+    parser.idl = tmp_path / 'test.djinni'
 
     # WHEN parsing a file that does not exist
     # THEN a FileNotFoundException should be raised
     with pytest.raises(FileNotFoundException):
-        parser.parse(tmp_path / 'test.djinni')
+        parser.parse()
 
 
 def test_marshalling_error(tmp_path: Path):
     # GIVEN input that cannot be marshalled by one of the registered Marshals
-    parser, input_file, _, marshal_mock = given(
+    parser, _, marshal_mock = given(
         tmp_path=tmp_path,
         input_idl="""
             i8 = record {
@@ -340,12 +366,12 @@ def test_marshalling_error(tmp_path: Path):
     # WHEN parsing the input
     # THEN a IdlParser.MarshallingException should be raised
     with pytest.raises(IdlParser.MarshallingException):
-        parser.parse(input_file)
+        parser.parse()
 
 
 def test_import(tmp_path: Path):
     # GIVEN an idl file that imports another file
-    parser, input_file, _, _ = given(
+    parser, _, _ = given(
         tmp_path=tmp_path,
         input_idl="""
                 @import "foo.pydjinni"
@@ -360,7 +386,7 @@ def test_import(tmp_path: Path):
     """)
 
     # THEN the record from the imported file should be included in the AST
-    record = when(parser, input_file, Record, "foo")
+    record = when(parser, Record, "foo")
 
     fields = record.fields
     assert len(fields) == 1
@@ -369,7 +395,7 @@ def test_import(tmp_path: Path):
 
 def test_missing_import(tmp_path: Path):
     # GIVEN an idl file that imports another idl file that does not exist
-    parser, input_file, _, _ = given(
+    parser, _, _ = given(
         tmp_path=tmp_path,
         input_idl="""
                     @import "foo.pydjinni"
@@ -378,12 +404,12 @@ def test_missing_import(tmp_path: Path):
     # WHEN parsing the file
     # THEN a FileNotFoundException should be raised
     with pytest.raises(FileNotFoundException):
-        parser.parse(input_file)
+        parser.parse()
 
 
 def test_extern(tmp_path: Path):
     # GIVEN an idl file that references an extern type
-    parser, input_file, resolver_mock, _ = given(
+    parser, resolver_mock, _ = given(
         tmp_path=tmp_path,
         input_idl="""
         @extern "extern.yaml"
@@ -395,7 +421,7 @@ def test_extern(tmp_path: Path):
     extern_file.touch()
 
     # WHEN parsing the file
-    ast = parser.parse(input_file)
+    ast = parser.parse()
 
     # THEN the Resolver should have been called in order to load the external type
     resolver_mock.load_external.assert_called_once()
@@ -407,7 +433,7 @@ def test_extern(tmp_path: Path):
 
 def test_missing_extern(tmp_path: Path):
     # GIVEN an idl file that references an extern type that does not exist
-    parser, input_file, resolver_mock, _ = given(
+    parser, resolver_mock, _ = given(
         tmp_path=tmp_path,
         input_idl="""
             @extern "extern.yaml"
@@ -417,12 +443,12 @@ def test_missing_extern(tmp_path: Path):
     # WHEN parsing the file
     # THEN a FileNotFoundException should be raised
     with pytest.raises(FileNotFoundException):
-        parser.parse(input_file)
+        parser.parse()
 
 
 def test_namespace(tmp_path: Path):
     # GIVEN an idl file that defines namespaces
-    parser, input_file, _, _ = given(
+    parser, _, _ = given(
         tmp_path=tmp_path,
         input_idl="""
         namespace foo.bar {
@@ -441,7 +467,7 @@ def test_namespace(tmp_path: Path):
     )
 
     # WHEN parsing the idl file
-    ast = parser.parse(input_file)
+    ast = parser.parse()
 
     # THEN the ast should contain two types each labelled with their respective namespace
     assert len(ast) == 2
@@ -460,7 +486,7 @@ def test_namespace(tmp_path: Path):
 ])
 def test_record_primitive_constant(tmp_path, typename, primitive, literal_value, value):
     # GIVEN an idl file that defines a record with a constant
-    parser, input_file, resolver_mock, _ = given(
+    parser, resolver_mock, _ = given(
         tmp_path=tmp_path,
         input_idl=f"""
         foo = record {{
@@ -478,7 +504,7 @@ def test_record_primitive_constant(tmp_path, typename, primitive, literal_value,
 
     resolver_mock.resolve.side_effect = resolve
 
-    record = when(parser, input_file, Record, "foo")
+    record = when(parser, Record, "foo")
 
     # THEN the record should contain the defined constant and value
     assert len(record.constants) == 1
@@ -507,7 +533,7 @@ def test_record_primitive_constant(tmp_path, typename, primitive, literal_value,
 ])
 def test_record_wrong_primitive_constant(tmp_path, typename, primitive, literal_value):
     # GIVEN an idl file that defines a record with a constant
-    parser, input_file, resolver_mock, _ = given(
+    parser, resolver_mock, _ = given(
         tmp_path=tmp_path,
         input_idl=f"""
             foo = record {{
@@ -528,4 +554,45 @@ def test_record_wrong_primitive_constant(tmp_path, typename, primitive, literal_
     # WHEN parsing the idl
     # THEN a Parsing exception should be thrown
     with pytest.raises(IdlParser.ParsingException):
-        when(parser, input_file, Record, "foo")
+        when(parser, Record, "foo")
+
+
+@pytest.mark.parametrize("literal_value", [
+    '5', '5.5', 'false', 'true', '"test"', '{a="foo"}', '{a=5.5}', '{a=true}'
+])
+def test_record_wrong_const_record_assignment(tmp_path, literal_value):
+    # GIVEN an idl file that assigns a primitive value to a const record type
+    parser, resolver_mock, _ = given(
+        tmp_path=tmp_path,
+        input_idl=f"""
+                bar = record {{
+                    const b: foo = {literal_value};
+                }}
+                """
+    )
+
+    resolver_mock.resolve.side_effect = record_resolve("foo", "a", "i8", BaseExternalType.Primitive.int)
+
+    # WHEN parsing the file
+    # THEN a InvalidAssignmentException should be raised
+    with pytest.raises(IdlParser.InvalidAssignmentException):
+        parser.parse()
+
+
+def test_record_wrong_const_unknown_field_assignment(tmp_path):
+    # GIVEN an idl file that assigns an object with an unknown field to a const value
+    parser, resolver_mock, _ = given(
+        tmp_path=tmp_path,
+        input_idl="""
+                    bar = record {
+                        const b: foo = {b=5};
+                    }
+                    """
+    )
+
+    resolver_mock.resolve.side_effect = record_resolve("foo", "a", "i8", BaseExternalType.Primitive.int)
+
+    # WHEN parsing the file
+    # THEN a InvalidAssignmentException should be raised
+    with pytest.raises(IdlParser.UnknownFieldException):
+        parser.parse()

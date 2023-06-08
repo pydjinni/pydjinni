@@ -2,8 +2,8 @@
 
 {% block header %}
 #include {{ type_def.jni.header | header }}
-{% for include in type_def.jni.includes %}
-#include {{ include | header }}
+{% for dependency in type_def.dependencies %}
+#include {{ dependency.jni.header | header }}
 {% endfor %}
 {% endblock %}
 

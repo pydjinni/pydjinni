@@ -41,7 +41,10 @@ class Resolver:
     def register(self, datatype: BaseType):
         registry_name = ".".join(datatype.namespace + [datatype.name])
         if registry_name in self.registry:
-            raise Resolver.DuplicateTypeException(datatype=datatype, position=datatype.position)
+            raise Resolver.DuplicateTypeException(
+                datatype=datatype,
+                position=datatype.position
+            )
         else:
             self.registry[registry_name] = datatype
 

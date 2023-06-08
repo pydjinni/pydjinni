@@ -235,11 +235,12 @@ class API:
                 marshals=marshals,
                 targets=[key for key in self._generate_targets],
                 file_reader=self._file_reader_writer,
-                include_dirs=generate_config.include_dirs
+                include_dirs=generate_config.include_dirs,
+                idl=idl
             )
 
             # parsing the input IDL. The output is an AST that contains type definitions for each provided marshal
-            ast = parser.parse(idl)
+            ast = parser.parse()
             return API.ConfiguredContext.GenerateContext(
                 generate_targets=self._generate_targets,
                 file_writer=self._file_reader_writer,

@@ -4,7 +4,7 @@ import mistletoe
 
 from pydjinni.generator.marshal import Marshal
 from pydjinni.parser.ast import Enum, Flags, Record, Interface
-from pydjinni.parser.base_models import BaseField, BaseType
+from pydjinni.parser.base_models import BaseField, BaseType, Constant
 from pydjinni.parser.identifier import Identifier
 from .comment_renderer import DocCCommentRenderer
 from .external_types import external_types
@@ -32,26 +32,19 @@ class ObjcMarshal(Marshal[ObjcConfig, ObjcExternalType], types=external_types):
             comment=mistletoe.markdown(type_def.comment, DocCCommentRenderer) if type_def.comment else '',
             header=Path(f"{typename}.{self.config.header_extension}"),
             swift_typename=".".join(namespace + [type_def.name.convert(self.config.identifier.type)]),
-            imports=self.includes(type_def),
             **kwargs
         )
 
     def marshal_field(self, field_def: BaseField):
         comment = mistletoe.markdown(field_def.comment, DocCCommentRenderer) if field_def.comment else ''
-        prefix = self.config.type_prefix if self.config.type_prefix else ""
         match field_def:
             case Enum.Item() | Flags.Flag():
-                field_def.objc = ObjcField(
-                    name=field_def.name.convert(self.config.identifier.enum),
-                    comment=comment
-                )
-            case Record.Field() | Interface.Method.Parameter():
-                field_def.objc = ObjcField(
-                    name=field_def.name.convert(self.config.identifier.field),
-                    comment=comment
-                )
-            case Interface.Method():
-                field_def.objc = ObjcField(
-                    name=field_def.name.convert(self.config.identifier.method),
-                    comment=comment
-                )
+                style = self.config.identifier.enum
+            case Record.Field() | Interface.Method.Parameter() | Constant():
+                style = self.config.identifier.field
+            case Interface.Method() | _:
+                style = self.config.identifier.method
+        field_def.objc = ObjcField(
+            name=field_def.name.convert(style),
+            comment=comment
+        )

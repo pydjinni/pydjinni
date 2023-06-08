@@ -18,8 +18,7 @@ class ObjcppMarshal(Marshal[ObjcppConfig, ObjcppExternalType], types=external_ty
             namespace="::".join(namespace),
             header=Path(f"{name}+Private.{self.config.header_extension}"),
             source=Path(f"{name}+Private.{self.config.source_extension}"),
-            translator="::" + "::".join(namespace + [name]),
-            imports=self.includes(type_def)
+            translator="::" + "::".join(namespace + [name])
         )
 
     def marshal_field(self, field_def: BaseField):

@@ -7,7 +7,7 @@ from pydjinni.config.types import IdentifierStyle
 
 class Identifier(str):
     @classmethod
-    def __get_pydantic_core_schema__(cls, **_kwargs: Any) -> core_schema.AnySchema:
+    def __get_pydantic_core_schema__(cls, source, handler) -> core_schema.CoreSchema:
         return core_schema.any_schema()
 
     def convert(self, style: IdentifierStyle | IdentifierStyle.Case):

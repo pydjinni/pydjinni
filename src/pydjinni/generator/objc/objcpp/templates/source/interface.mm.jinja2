@@ -3,9 +3,6 @@
 {% block header %}
 #import "{{ type_def.objcpp.header }}"
 #import "{{ type_def.objc.header }}"
-{% for import in type_def.objcpp.imports -%}
-#import {{ import | header }}
-{% endfor %}
 #import "pydjinni/objc/marshal.h"
 #import "pydjinni/objc/error.h"
 #import "pydjinni/marshal.h"

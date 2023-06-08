@@ -19,7 +19,6 @@ class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
             header=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.header_extension}"),
             source=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.source_extension}"),
             namespace="::".join(namespace),
-            includes=self.includes(type_def),
             type_signature="(ILjava/lang/String;[I)J",
             jni_prefix="_".join(["Java"] + namespace + [name])
         )

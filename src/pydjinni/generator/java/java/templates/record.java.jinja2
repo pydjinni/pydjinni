@@ -1,12 +1,15 @@
 {% include "base.jinja2" %}
+{% from "macros.jinja2" import comment, constant_def %}
 
 {% block content %}
-{{ type_def.java.comment }}
+{{ comment(type_def, indentation=0) }}
 {{ config.class_access_modifier.value ~ (" final" if config.use_final_for_record) }} class {{ type_def.java.name }} {
+    {% for constant in type_def.constants -%}
+    {{ constant_def(constant) }}
+    {%- endfor %}
+
 {% for field in type_def.fields %}
-    {% if field.comment %}
-    {{ field.java.comment | indent(4) }}
-    {% endif %}
+    {{ comment(field) }}
     {{ "final" if config.use_final_for_record }} {{ field.type_ref.type_def.java.typename }} {{ field.java.name }};
 {% endfor %}
     public {{ type_def.java.name }}(

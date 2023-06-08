@@ -2,6 +2,8 @@ from pathlib import Path
 
 from pydantic import BaseModel
 
+from pydjinni.parser.base_models import BaseType, BaseExternalType
+
 
 class ObjcExternalType(BaseModel):
     typename: str = None
@@ -15,7 +17,6 @@ class ObjcType(ObjcExternalType):
     comment: str | None = None
     init: str = None
     convenience_init: str = None
-    imports: list[Path]
 
 
 

@@ -1,4 +1,5 @@
 {% extends "base.jinja2" %}
+{% from "macros.jinja2" import comment, constant_def %}
 
 {% block header %}
 {% if type_def.cpp.proxy -%}
@@ -17,12 +18,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 {% endmacro %}
 
 {% block content %}
-{{ type_def.java.comment }}
+{{ comment(type_def, indentation=0) }}
 {{ config.class_access_modifier.value }} abstract class {{ type_def.java.name }} {
+    {%- for constant in type_def.constants -%}
+    {{- constant_def(constant) }}
+    {% endfor %}
     {% for method in type_def.methods %}
-    {% if method.comment %}
-    {{ method.java.comment | indent(4) }}
-    {% endif %}
+    {{ comment(method) }}
     public {{ "static" if method.static else "abstract" }} {{ return_type(method.return_type_ref) }} {{ method.java.name }}({{ parameters(method) }})
     {%- if method.static -%}
     {

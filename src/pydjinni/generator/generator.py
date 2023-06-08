@@ -21,14 +21,22 @@ class Generator(ABC):
     generic arguments.
     """
 
-    def __init_subclass__(cls, key: str, marshal: type[Marshal], writes_header: bool = False,
-                          writes_source: bool = False, support_lib_commons: bool = False, filters: list[Callable] = None) -> None:
+    def __init_subclass__(
+            cls,
+            key: str,
+            marshal: type[Marshal],
+            writes_header: bool = False,
+            writes_source: bool = False,
+            support_lib_commons: bool = False,
+            filters: list[Callable] = None,
+            tests: list[Callable] = None) -> None:
         cls._marshal_type = marshal
         cls.key = key
         cls.writes_header = writes_header
         cls.writes_source = writes_source
         cls.support_lib_commons = support_lib_commons
         cls.filters = filters or []
+        cls.tests = tests or []
 
     def __init__(
             self,
@@ -47,6 +55,8 @@ class Generator(ABC):
         )
         for filter_callable in self.filters:
             self._jinja_env.filters[filter_callable.__name__] = filter_callable
+        for test_callable in self.tests:
+            self._jinja_env.tests[test_callable.__name__] = test_callable
         processed_files_model_builder.add_generated_field(self.key, header=self.writes_header,
                                                           source=self.writes_source)
         self.marshal = self._marshal_type(

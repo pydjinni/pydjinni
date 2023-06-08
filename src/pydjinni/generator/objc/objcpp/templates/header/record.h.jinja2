@@ -1,6 +1,9 @@
 {% extends "base.jinja2" %}
 
 {% block header %}
+{% for dependency in type_def.dependencies -%}
+#import {{ dependency.objcpp.header | header }}
+{% endfor %}
 #import "{{ type_def.objc.header }}"
 #include "{{ type_def.cpp.header }}"
 

@@ -7,9 +7,10 @@ class ApplicationException(Exception):
     """Pydjinni Application Exception"""
 
     def __init_subclass__(cls, code: int = -1):
-        cls.code = code
-        assert return_codes.get(code) is None, f"The return code '{code}' is already in use!"
-        return_codes[code] = cls.__doc__
+        if code > 0:
+            cls.code = code
+            assert return_codes.get(code) is None, f"The return code '{code}' is already in use!"
+            return_codes[code] = cls.__doc__
 
     def __init__(self, param: str, file: Path = None):
         self._param = param

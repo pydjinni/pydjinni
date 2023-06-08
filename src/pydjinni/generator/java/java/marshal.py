@@ -4,7 +4,7 @@ import mistletoe
 
 from pydjinni.generator.marshal import Marshal
 from pydjinni.parser.ast import Enum, Record, Interface, Flags
-from pydjinni.parser.base_models import BaseType, BaseField
+from pydjinni.parser.base_models import BaseType, BaseField, Constant
 from pydjinni.parser.identifier import Identifier
 from .comment_renderer import JavaDocCommentRenderer
 from .config import JavaConfig
@@ -30,23 +30,18 @@ class JavaMarshal(Marshal[JavaConfig, JavaExternalType], types=external_types):
         comment = mistletoe.markdown(field_def.comment, JavaDocCommentRenderer) if field_def.comment else ''
         match field_def:
             case Enum.Item() | Flags.Flag():
-                field_def.java = JavaField(
-                    name=field_def.name.convert(self.config.identifier.enum),
-                    comment=comment
-                )
+                style = self.config.identifier.enum
             case Record.Field():
-                field_def.java = JavaField(
-                    name=field_def.name.convert(self.config.identifier.field),
-                    getter=Identifier(f"get_{field_def.name}").convert(self.config.identifier.method),
-                    comment=comment
-                )
+                style = self.config.identifier.field
+            case Constant():
+                style = self.config.identifier.const
             case Interface.Method.Parameter():
-                field_def.java = JavaField(
-                    name=field_def.name.convert(self.config.identifier.field),
-                    comment=comment
-                )
-            case Interface.Method():
-                field_def.java = JavaField(
-                    name=field_def.name.convert(self.config.identifier.method),
-                    comment=comment
-                )
+                style = self.config.identifier.field
+            case Interface.Method() | _:
+                style = self.config.identifier.method
+
+        field_def.java = JavaField(
+            name=field_def.name.convert(style),
+            getter=Identifier(f"get_{field_def.name}").convert(self.config.identifier.method) if type(field_def) is Record.Field else None,
+            comment=comment
+        )
