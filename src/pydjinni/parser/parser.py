@@ -10,6 +10,7 @@ from arpeggio.cleanpeg import ParserPEG
 from pydjinni.defs import IDL_GRAMMAR_PATH
 from pydjinni.exceptions import FileNotFoundException, ApplicationException
 from pydjinni.file.file_reader_writer import FileReaderWriter
+from pydjinni.generator.cpp.cpp.generator import CppGenerator
 from pydjinni.generator.marshal import Marshal
 from .ast import *
 from .base_models import Assignment, Constant, BaseExternalType, ObjectValue
@@ -37,7 +38,7 @@ class IdlParser(PTNodeVisitor):
     class ParsingException(ApplicationException, code=150):
         """IDL Parsing error"""
 
-        def __init__(self, idl: Path, message: str, line: int, col: int, context: str):
+        def __init__(self, idl: Path, line: int, col: int, context: str, message: str = ""):
             super().__init__(f"{message} at position ({line}, {col}) => '{context}'", file=idl)
             self.line = line
             self.col = col
@@ -48,6 +49,12 @@ class IdlParser(PTNodeVisitor):
 
     class TypeResolvingException(ParsingException, code=152):
         """The referenced type could not be found. IDL Parsing error"""
+
+    class StaticNotAllowedException(ParsingException):
+        """methods are only allowed to be static on 'cpp' interfaces"""
+
+    class StaticAndConstException(ParsingException):
+        """method cannot be both static and const"""
 
     class MarshallingException(ParsingException, code=153):
         """Marshalling error"""
@@ -129,6 +136,8 @@ class IdlParser(PTNodeVisitor):
 
     def second_interface(self, type_def: Interface):
         for method in type_def.methods:
+            if CppGenerator.key not in type_def.targets and method.static:
+                raise IdlParser.StaticNotAllowedException(self.idl, *self._get_context(method.position))
             for param in method.parameters:
                 if param.type_ref.type_def not in type_def.dependencies:
                     type_def.dependencies.append(param.type_ref.type_def)
@@ -136,13 +145,23 @@ class IdlParser(PTNodeVisitor):
                 if method.return_type_ref.type_def not in type_def.dependencies:
                     type_def.dependencies.append(method.return_type_ref.type_def)
 
+
+    def visit_deriving(self, node, children):
+        return children.declaration
+
     def visit_record(self, node, children):
+        targets = unpack(children.targets) or self.targets
+        deriving = unpack(children.deriving) or []
         return Record(
             name=unpack(children.identifier),
             position=node.position,
             comment=unpack(children.comment),
             fields=children.field,
-            constants=children.constant
+            targets=targets,
+            constants=children.constant,
+            deriving_eq='eq' in deriving,
+            deriving_ord='ord' in deriving,
+            deriving_json='json' in deriving
         )
 
     def second_record(self, type_def: Record):
@@ -171,13 +190,18 @@ class IdlParser(PTNodeVisitor):
             marshal.marshal(children)
 
     def visit_method(self, node, children):
+        static = 'static' in children
+        const = 'const' in children
+        if static and const:
+            raise IdlParser.StaticAndConstException(self.idl, *self._get_context(node.position))
         return Interface.Method(
             name=unpack(children.identifier),
             position=node.position,
             comment=unpack(children.comment),
             parameters=children.parameter,
             return_type_ref=unpack(children.data_type),
-            static=node[0] == 'static'
+            static='static' in children,
+            const='const' in children,
         )
 
     def second_method(self, children):
@@ -208,8 +232,8 @@ class IdlParser(PTNodeVisitor):
             if target not in self.targets:
                 raise IdlParser.UnknownInterfaceTargetException(
                     self.idl,
-                    f"'{target}'",
-                    *self._get_context(node.position)
+                    *self._get_context(node.position),
+                    message=f"'{target}'"
                 )
         return targets
 
@@ -298,16 +322,17 @@ class IdlParser(PTNodeVisitor):
                         value_description = f"value"
                     raise IdlParser.InvalidAssignmentException(
                         self.idl,
-                        f"Invalid {value_description} assigned to const '{name}' of type '{type_def.name}'",
-                        *self._get_context(position)
+                        *self._get_context(position),
+                        message=f"Invalid {value_description} assigned to const '{name}' of type '{type_def.name}'"
                     )
             case Flags() | Enum():
                 fields = [item.name for item in (type_def.items or type_def.flags)]
                 if value not in fields:
                     raise IdlParser.InvalidAssignmentException(
                         self.idl,
-                        f"Invalid value '{str(value)}' assigned to const",
-                        *self._get_context(position))
+                        *self._get_context(position),
+                        message=f"Invalid value '{str(value)}' assigned to const"
+                    )
             case Record():
                 fields = type_def.fields
                 if type(value) is ObjectValue:
@@ -316,8 +341,9 @@ class IdlParser(PTNodeVisitor):
                         if assignment.key not in record_keys:
                             raise IdlParser.UnknownFieldException(
                                 self.idl,
-                                f"Unknown field '{assignment.key}' defined in constant assignment",
-                                *self._get_context(assignment.position))
+                                *self._get_context(assignment.position),
+                                message=f"Unknown field '{assignment.key}' defined in constant assignment"
+                            )
                     for field in fields:
                         if field.name in value.assignments:
                             self._check_const_assignment(
@@ -329,14 +355,15 @@ class IdlParser(PTNodeVisitor):
                         else:
                             raise IdlParser.MissingFieldException(
                                 self.idl,
-                                f"Missing field '{field.name}' in constant assignment",
-                                *self._get_context(position))
+                                *self._get_context(position),
+                                message=f"Missing field '{field.name}' in constant assignment"
+                            )
 
                 else:
                     raise IdlParser.InvalidAssignmentException(
                         self.idl,
-                        f"Invalid primitive value '{str(value)}' assigned to const record type '{type_def.name}'",
-                        *self._get_context(position)
+                        *self._get_context(position),
+                        message=f"Invalid primitive value '{str(value)}' assigned to const record type '{type_def.name}'"
                     )
 
     def visit_import_def(self, node, children):
@@ -393,23 +420,27 @@ class IdlParser(PTNodeVisitor):
         except Resolver.TypeResolvingException as e:
             raise IdlParser.TypeResolvingException(
                 self.idl,
-                f"Unknown type '{e.type_reference.name}'",
-                *self._get_context(e.position)
+                *self._get_context(e.position),
+                message=f"Unknown type '{e.type_reference.name}'"
             )
         except Resolver.DuplicateTypeException as e:
             raise IdlParser.DuplicateTypeException(
                 self.idl,
-                f"Type '{e.datatype.name}' has been redefined",
-                *self._get_context(e.position)
+                *self._get_context(e.position),
+                message=f"Type '{e.datatype.name}' has been redefined"
             )
         except arpeggio.NoMatch as e:
             e.eval_attrs()
             raise IdlParser.ParsingException(self.idl, e.message, *self._get_context(e.position))
         except Marshal.MarshalException as e:
-            raise IdlParser.MarshallingException(self.idl, f"'{e.input_def.name}' created {e}", *self._get_context(e.input_def.position))
+            raise IdlParser.MarshallingException(
+                self.idl,
+                *self._get_context(e.input_def.position),
+                message=f"'{e.input_def.name}' created {e}"
+            )
         except RecursionError:
             raise IdlParser.RecursiveImport(
                 self.idl,
-                f"file imports itself",
-                *self._get_context(self.position)
+                *self._get_context(self.position),
+                message=f"file imports itself"
             )

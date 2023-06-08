@@ -18,7 +18,7 @@ class BaseExternalType(BaseModel):
     )
     namespace: str = Field(
         default=None,
-        pattern="[_\.\w]+",
+        pattern=r"[_\.\w]+",
         description="Optional namespace that the type lives in"
     )
     primitive: Primitive | None = Field(
@@ -68,3 +68,4 @@ class Constant(BaseField):
 
 class BaseClassType(BaseType):
     constants: list[Constant]
+    targets: list[str]

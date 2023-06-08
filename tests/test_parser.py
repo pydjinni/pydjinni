@@ -95,10 +95,15 @@ def record_resolve(name, field_name, field_typename, field_primitive):
                     )
                 )
             )],
-            constants=[]
-
+            constants=[],
+            targets=[],
+            deriving_eq=False,
+            deriving_ord=False,
+            deriving_json=False
         )
+
     return resolve
+
 
 def test_parsing_enum(tmp_path: Path):
     parser, _, _ = given(
@@ -179,10 +184,53 @@ def test_parsing_record(tmp_path: Path):
     assert_field(fields[1], name="baz", typename="i8")
 
 
+@pytest.mark.parametrize("deriving,eq,ord,json", [
+    ('eq', True, False, False),
+    ('eq, ord', True, True, False),
+    ('eq, ord, json', True, True, True),
+    ('json', False, False, True)
+])
+def test_parsing_record_deriving(tmp_path: Path, deriving, eq, ord, json):
+    # GIVEN an idl file that defines a record that derives some extensions
+    parser, _, _ = given(
+        tmp_path=tmp_path,
+        input_idl=f"""
+            foo = record {{
+                baz: i8;
+            }} deriving ({deriving})
+            """
+    )
+
+    record = when(parser, Record, "foo")
+
+    # THEN only the derived extensions should be enabled
+    assert record.deriving_eq == eq
+    assert record.deriving_ord == ord
+    assert record.deriving_json == json
+
+
+def test_parsing_base_record(tmp_path: Path):
+    # GIVEN an idl file that defines a record will be extended in C++
+    parser, _, _ = given(
+        tmp_path=tmp_path,
+        input_idl="""
+                foo = record +cpp {
+                    baz: i8;
+                }
+                """
+    )
+    record = when(parser, Record, "foo")
+
+    # THEN the target language C++ should be set
+    assert len(record.targets) == 1
+    assert 'cpp' in record.targets
+
+
 def assert_method(method: Interface.Method, name: str, params: list[tuple[str, str]] = None, return_type: str = None,
-                  static: bool = False):
+                  static: bool = False, const: bool = False):
     assert method.name == name
     assert method.static == static
+    assert method.const == const
     if return_type:
         assert method.return_type_ref.name == return_type
     else:
@@ -202,6 +250,7 @@ def test_parsing_interface(tmp_path: Path):
             foo = interface +cpp {
                 method();
                 static static_method();
+                const const_method();
                 method_with_return(): i8;
                 method_with_parameter(param: i8);
                 method_with_parameters_and_return(param: i8, param2: i8): i8;
@@ -214,15 +263,16 @@ def test_parsing_interface(tmp_path: Path):
     methods = interface.methods
 
     # THEN the interface should have exactly 5 methods
-    assert len(methods) == 5
+    assert len(methods) == 6
 
     # THEN the methods should have the expected names, parameters and attributes
     assert_method(methods[0], "method")
     assert_method(methods[1], "static_method", static=True)
-    assert_method(methods[2], "method_with_return", return_type="i8")
-    assert_method(methods[3], "method_with_parameter", params=[("param", "i8")])
+    assert_method(methods[2], "const_method", const=True)
+    assert_method(methods[3], "method_with_return", return_type="i8")
+    assert_method(methods[4], "method_with_parameter", params=[("param", "i8")])
     params = [("param", "i8"), ("param2", "i8")]
-    assert_method(methods[4], "method_with_parameters_and_return", params=params, return_type="i8")
+    assert_method(methods[5], "method_with_parameters_and_return", params=params, return_type="i8")
     assert "cpp" in interface.targets
     assert len(interface.targets) == 1
 
@@ -276,6 +326,38 @@ def test_parsing_interface_minus_target(tmp_path: Path):
     # THEN all known interface targets except the one excluded should be present in the interface
     assert "java" in interface.targets
     assert len(interface.targets) == 1
+
+
+def test_parsing_interface_static_not_allowed(tmp_path):
+    # GIVEN an idl file that defines an interface with a static method that is not targeting `cpp`
+    parser, resolver_mock, _ = given(
+        tmp_path=tmp_path,
+        input_idl="""
+            foo = interface -cpp {
+                static foo();
+            }       
+            """
+    )
+
+    # THEN a StaticNotAllowedException should be raised
+    with pytest.raises(IdlParser.StaticNotAllowedException):
+        parser.parse()
+
+
+def test_parsing_interface_static_and_const_not_allowed(tmp_path):
+    # GIVEN an idl file that defines an interface with a static const method
+    parser, resolver_mock, _ = given(
+        tmp_path=tmp_path,
+        input_idl="""
+                foo = interface +cpp {
+                    static const foo();
+                }       
+                """
+    )
+
+    # THEN a StaticAndConstException should be raised
+    with pytest.raises(IdlParser.StaticAndConstException):
+        parser.parse()
 
 
 def test_parsing_invalid_input(tmp_path: Path):

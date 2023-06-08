@@ -24,9 +24,9 @@ class Interface(BaseClassType):
         parameters: list[Parameter]
         return_type_ref: TypeReference | None
         static: bool
+        const: bool
 
     methods: list[Method]
-    targets: list[str]
 
 
 class Record(BaseClassType):
@@ -34,3 +34,6 @@ class Record(BaseClassType):
         type_ref: TypeReference
 
     fields: list[Field]
+    deriving_eq: bool
+    deriving_ord: bool
+    deriving_json: bool

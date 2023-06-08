@@ -39,7 +39,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
     {% endif %}
     {% endfor %}
     {% if type_def.cpp.proxy %}
-
     private static final class CppProxy extends {{ type_def.java.name }} {
         private final long nativeRef;
         private final AtomicBoolean destroyed = new AtomicBoolean(false);
