@@ -1,4 +1,5 @@
 {% extends "base.jinja2" %}
+{% from "macros.jinja2" import comment %}
 
 {% block header %}
 #pragma once
@@ -7,12 +8,10 @@
 {% set counter = namespace(value=0) %}
 
 {% block content %}
-{{ type_def.cpp.comment }}
+{{ comment(type_def) }}
 enum class {{ type_def.cpp.name }} : unsigned {
 {% for flag in type_def.flags %}
-    {% if flag.comment %}
-    {{ flag.cpp.comment | indent(4) }}
-    {% endif %}
+    {{ comment(flag) }}
     {{ flag.cpp.name ~ " = " -}}
     {% if flag.none %}
         {{- "0" -}}

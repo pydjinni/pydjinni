@@ -9,9 +9,10 @@ class CppIdentifier(BaseModel):
     type: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.pascal
     enum: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.train
     file: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.snake
-    field: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.train
+    field: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.snake
     method: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.snake
     namespace: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.pascal
+    const: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.train
 
 
 class CppConfig(BaseModel):

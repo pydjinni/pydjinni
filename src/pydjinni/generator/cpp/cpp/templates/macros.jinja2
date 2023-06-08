@@ -1,6 +1,6 @@
 {% macro comment(def, indentation=4) %}
 {%- if def.comment -%}
-{{ def.java.comment | indent(indentation) }}
+{{ def.cpp.comment | indent(indentation) }}
 {%- endif -%}
 {% endmacro %}
 
@@ -8,7 +8,7 @@
 {%- if value is string -%}"{{ value }}"
 {%- elif value is number %}{{ value }}
 {%- elif value is boolean %}{{ "true" if value else "false" }}
-{%- else %}new {{ type_def.java.typename }}(
+{%- else %}{{ type_def.cpp.typename }}(
 {%- for field in type_def.fields -%}
     {{ value_def(value.assignments[field.name].value, field.type_ref.type_def) ~ (", " if not loop.last) }}
 {%- endfor -%}
@@ -16,8 +16,12 @@
 {%- endif -%}
 {% endmacro %}
 
-{% macro constant_def(constant) %}
-    {{ comment(constant) }}
-    public static final {{ constant.type_ref.type_def.java.typename }} {{ constant.java.name }} = {{ value_def(constant.value, constant.type_ref.type_def) }};
+{% macro constant_declaration(constant) %}
+    {{ comment(constant)}}
+    static const {{ constant.type_ref.type_def.cpp.typename }} {{ constant.cpp.name }};
+{% endmacro %}
+
+{% macro constant_definition(type_def, constant) %}
+    const {{ constant.type_ref.type_def.cpp.typename }} {{ type_def.cpp.name }}::{{ constant.cpp.name }} = {{ value_def(constant.value, constant.type_ref.type_def) }};
 {% endmacro %}
 

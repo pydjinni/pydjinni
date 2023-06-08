@@ -32,11 +32,12 @@ class CppGenerator(
             path=self.marshal.header_path() / type_def.cpp.header,
             type_def=type_def
         )
-        self.write_source(
-            template="source/record.cpp.jinja2",
-            path=self.marshal.source_path() / type_def.cpp.source,
-            type_def=type_def
-        )
+        if type_def.constants:
+            self.write_source(
+                template="source/record.cpp.jinja2",
+                path=self.marshal.source_path() / type_def.cpp.source,
+                type_def=type_def
+            )
 
     def generate_interface(self, type_def: Interface):
         self.write_header(
@@ -44,8 +45,9 @@ class CppGenerator(
             path=self.marshal.header_path() / type_def.cpp.header,
             type_def=type_def
         )
-        self.write_source(
-            template="source/interface.cpp.jinja2",
-            path=self.marshal.source_path() / type_def.cpp.source,
-            type_def=type_def
-        )
+        if type_def.constants:
+            self.write_source(
+                template="source/interface.cpp.jinja2",
+                path=self.marshal.source_path() / type_def.cpp.source,
+                type_def=type_def
+            )

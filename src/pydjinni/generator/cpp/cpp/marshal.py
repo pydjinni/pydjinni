@@ -31,19 +31,16 @@ class CppMarshal(Marshal[CppConfig, CppExternalType], types=external_types):
         comment = mistletoe.markdown(field_def.comment, DoxygenCommentRenderer) if field_def.comment else ''
         match field_def:
             case Enum.Item() | Flags.Flag():
-                field_def.cpp = CppField(
-                    name=field_def.name.convert(self.config.identifier.enum),
-                    comment=comment
-                )
-            case Record.Field() | Interface.Method.Parameter() | Constant():
-                field_def.cpp = CppField(
-                    name=field_def.name.convert(self.config.identifier.field),
-                    comment=comment
-                )
-            case Interface.Method():
-                field_def.cpp = CppField(
-                    name=field_def.name.convert(self.config.identifier.method),
-                    comment=comment
-                )
+                style = self.config.identifier.enum
+            case Record.Field() | Interface.Method.Parameter():
+                style = self.config.identifier.field
+            case Constant():
+                style = self.config.identifier.const
+            case Interface.Method() | _:
+                style = self.config.identifier.method
 
+        field_def.cpp = CppField(
+            name=field_def.name.convert(style),
+            comment=comment
+        )
 
