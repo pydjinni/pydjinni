@@ -37,3 +37,4 @@ class Record(BaseClassType):
     deriving_eq: bool
     deriving_ord: bool
     deriving_json: bool
+    deriving_str: bool

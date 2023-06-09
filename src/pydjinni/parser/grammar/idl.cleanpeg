@@ -3,7 +3,7 @@ comment     = r'#.*$'+
 type_def    = enum/flags/record/interface
 enum        = comment? identifier '=' 'enum' '{' item* '}'
 flags       = comment? identifier '=' 'flags' '{' flag* '}'
-declaration = 'eq'/'ord'/'json'
+declaration = 'eq'/'ord'/'json'/'str'
 deriving    = 'deriving' '(' ((declaration ',')* declaration)? ')'
 record      = comment? identifier '=' 'record' targets? '{' (field/constant)* '}' deriving?
 interface   = comment? identifier '=' 'interface' targets '{' (method/constant)* '}'

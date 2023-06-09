@@ -236,6 +236,7 @@ class API:
                 targets=[key for key in self._generate_targets],
                 file_reader=self._file_reader_writer,
                 include_dirs=generate_config.include_dirs,
+                default_deriving=generate_config.default_deriving,
                 idl=idl
             )
 

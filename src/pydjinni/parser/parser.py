@@ -23,8 +23,18 @@ def unpack(list_input: []):
 
 
 class IdlParser(PTNodeVisitor):
-    def __init__(self, resolver: Resolver, marshals: list[Marshal], targets: list[str], include_dirs: list[Path],
-                 file_reader: FileReaderWriter, idl: Path, position: int = 0, **kwargs):
+    def __init__(
+            self,
+            resolver: Resolver,
+            marshals: list[Marshal],
+            targets: list[str],
+            include_dirs: list[Path],
+            default_deriving: list[str],
+            file_reader: FileReaderWriter,
+            idl: Path,
+            position: int = 0,
+            **kwargs
+    ):
         super().__init__(**kwargs)
         self.idl_parser = ParserPEG(IDL_GRAMMAR_PATH.read_text(), root_rule_name="idl")
         self.resolver = resolver
@@ -32,6 +42,7 @@ class IdlParser(PTNodeVisitor):
         self.targets = targets
         self.file_reader = file_reader
         self.include_dirs = include_dirs
+        self.default_deriving = default_deriving
         self.idl = idl
         self.position = position
 
@@ -159,9 +170,10 @@ class IdlParser(PTNodeVisitor):
             fields=children.field,
             targets=targets,
             constants=children.constant,
-            deriving_eq='eq' in deriving,
-            deriving_ord='ord' in deriving,
-            deriving_json='json' in deriving
+            deriving_eq='eq' in deriving or 'eq' in self.default_deriving,
+            deriving_ord='ord' in deriving or 'ord' in self.default_deriving,
+            deriving_json='json' in deriving or 'json' in self.default_deriving,
+            deriving_str='str' in deriving or 'str' in self.default_deriving
         )
 
     def second_record(self, type_def: Record):
@@ -372,6 +384,7 @@ class IdlParser(PTNodeVisitor):
             marshals=self.marshals,
             targets=self.targets,
             include_dirs=self.include_dirs,
+            default_deriving=self.default_deriving,
             file_reader=self.file_reader,
             idl=unpack(children.filepath),
             position=node.position).parse()

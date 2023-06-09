@@ -42,6 +42,7 @@ def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, MagicMock, MagicMo
         file_reader=reader,
         targets=['cpp', 'java'],
         include_dirs=[tmp_path],
+        default_deriving=[],
         idl=input_file
     )
 
@@ -99,7 +100,8 @@ def record_resolve(name, field_name, field_typename, field_primitive):
             targets=[],
             deriving_eq=False,
             deriving_ord=False,
-            deriving_json=False
+            deriving_json=False,
+            deriving_str=False
         )
 
     return resolve
@@ -184,13 +186,14 @@ def test_parsing_record(tmp_path: Path):
     assert_field(fields[1], name="baz", typename="i8")
 
 
-@pytest.mark.parametrize("deriving,eq,ord,json", [
-    ('eq', True, False, False),
-    ('eq, ord', True, True, False),
-    ('eq, ord, json', True, True, True),
-    ('json', False, False, True)
+@pytest.mark.parametrize("deriving,eq,ord,json,string", [
+    ('eq', True, False, False, False),
+    ('eq, ord', True, True, False, False),
+    ('eq, ord, json', True, True, True, False),
+    ('eq, ord, json, str', True, True, True, True),
+    ('json', False, False, True, False)
 ])
-def test_parsing_record_deriving(tmp_path: Path, deriving, eq, ord, json):
+def test_parsing_record_deriving(tmp_path: Path, deriving, eq, ord, json, string):
     # GIVEN an idl file that defines a record that derives some extensions
     parser, _, _ = given(
         tmp_path=tmp_path,
@@ -207,6 +210,7 @@ def test_parsing_record_deriving(tmp_path: Path, deriving, eq, ord, json):
     assert record.deriving_eq == eq
     assert record.deriving_ord == ord
     assert record.deriving_json == json
+    assert record.deriving_str == string
 
 
 def test_parsing_base_record(tmp_path: Path):

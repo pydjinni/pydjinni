@@ -26,6 +26,7 @@
     public {{ field.type_ref.type_def.java.typename }} {{ field.java.getter }}() { return {{ field.java.name }}; }
 {% endfor %}
 
+{% if type_def.deriving_str %}
     @Override
     public String toString() {
         return "{{ type_def.java.typename }}{" +
@@ -34,5 +35,6 @@
         {% endfor %}
         "}";
     }
+{% endif %}
 }
 {% endblock %}
