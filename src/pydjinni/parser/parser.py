@@ -59,7 +59,7 @@ class IdlParser(PTNodeVisitor):
         """The defined type already exists. IDL Parsing error"""
 
     class TypeResolvingException(ParsingException, code=152):
-        """The referenced type could not be found. IDL Parsing error"""
+        """The referenced type could not be resolved. IDL Parsing error"""
 
     class StaticNotAllowedException(ParsingException):
         """methods are only allowed to be static on 'cpp' interfaces"""
@@ -142,7 +142,8 @@ class IdlParser(PTNodeVisitor):
             comment=unpack(children.comment),
             methods=children.method,
             targets=targets,
-            constants=children.constant
+            constants=children.constant,
+            properties=children.property
         )
 
     def second_interface(self, type_def: Interface):
@@ -184,10 +185,23 @@ class IdlParser(PTNodeVisitor):
         return Identifier(node.value)
 
     def visit_data_type(self, node, children):
-        return TypeReference(name=node.value, position=node.position)
+        parameters = children.data_type or []
+        return TypeReference(name=str(node[0]), parameters=parameters, position=node.position)
 
-    def second_data_type(self, children):
-        self.resolver.resolve(children)
+    def second_data_type(self, type_ref: TypeReference):
+        self.resolver.resolve(type_ref)
+        if type_ref.parameters and not type_ref.type_def.params:
+            raise IdlParser.TypeResolvingException(
+                self.idl,
+                *self._get_context(type_ref.position),
+                message=f"Type '{type_ref.name}' does not accept generic parameters")
+        elif type_ref.parameters and len(type_ref.type_def.params) != len(type_ref.parameters):
+            expected_parameters = ", ".join(type_ref.type_def.params)
+            raise IdlParser.TypeResolvingException(
+                self.idl,
+                *self._get_context(type_ref.position),
+                message=f"Invalid number of generic parameters given to '{type_ref.name}'. "
+                        f"Expects {len(type_ref.type_def.params)} ({expected_parameters}), but {len(type_ref.parameters)} where given.")
 
     def visit_item(self, node, children):
         return Enum.Item(
@@ -215,9 +229,23 @@ class IdlParser(PTNodeVisitor):
             const='const' in children,
         )
 
-    def second_method(self, children):
+    def second_method(self, method: Interface.Method):
         for marshal in self.marshals:
-            marshal.marshal(children)
+            marshal.marshal(method)
+
+    def visit_property(self, node, children):
+        return Interface.Property(
+            name=unpack(children.identifier),
+            type_ref=unpack(children.data_type),
+            comment=unpack(children.comment),
+            position=node.position
+        )
+
+    def second_property(self, property_def: Interface.Property):
+        for marshal in self.marshals:
+            marshal.marshal(property_def)
+
+
 
     def visit_parameter(self, node, children):
         return Interface.Method.Parameter(
@@ -443,7 +471,7 @@ class IdlParser(PTNodeVisitor):
             )
         except arpeggio.NoMatch as e:
             e.eval_attrs()
-            raise IdlParser.ParsingException(self.idl, e.message, *self._get_context(e.position))
+            raise IdlParser.ParsingException(self.idl, *self._get_context(e.position), message=e.message)
         except Marshal.MarshalException as e:
             raise IdlParser.MarshallingException(
                 self.idl,

@@ -93,7 +93,8 @@ def record_resolve(name, field_name, field_typename, field_primitive):
                     type_def=BaseExternalType(
                         name=field_typename,
                         primitive=field_primitive
-                    )
+                    ),
+                    parameters=[]
                 )
             )],
             constants=[],
@@ -172,6 +173,7 @@ def test_parsing_record(tmp_path: Path):
         foo = record {
             bar: i8;
             baz: i8;
+            const foobar: i8 = 5;
         }
         """
     )
@@ -184,6 +186,15 @@ def test_parsing_record(tmp_path: Path):
     assert len(fields) == 2
     assert_field(fields[0], name="bar", typename="i8")
     assert_field(fields[1], name="baz", typename="i8")
+    assert not record.targets
+
+    # THEN the record should have the defined constant
+    assert len(record.constants) == 1
+    constant = record.constants[0]
+    assert constant.name == "foobar"
+    assert constant.type_ref.name == "i8"
+    assert constant.value == 5
+    assert type(constant.value) is int
 
 
 @pytest.mark.parametrize("deriving,eq,ord,json,string", [
@@ -258,6 +269,8 @@ def test_parsing_interface(tmp_path: Path):
                 method_with_return(): i8;
                 method_with_parameter(param: i8);
                 method_with_parameters_and_return(param: i8, param2: i8): i8;
+                property a: i8;
+                const b: i8 = 5;
             }
             """
     )
@@ -277,8 +290,24 @@ def test_parsing_interface(tmp_path: Path):
     assert_method(methods[4], "method_with_parameter", params=[("param", "i8")])
     params = [("param", "i8"), ("param2", "i8")]
     assert_method(methods[5], "method_with_parameters_and_return", params=params, return_type="i8")
+
+    # then the expected targets should be defined
     assert "cpp" in interface.targets
     assert len(interface.targets) == 1
+
+    # then the defined constants should be present
+    assert len(interface.constants) == 1
+    constant = interface.constants[0]
+    assert constant.name == "b"
+    assert constant.value == 5
+    assert constant.type_ref.name == "i8"
+
+    # then the defined properties should be present
+    assert len(interface.properties) == 1
+    property_def = interface.properties[0]
+    assert property_def.name == "a"
+    assert property_def.type_ref.name == "i8"
+
 
 
 def test_parsing_interface_unknown_target(tmp_path: Path):

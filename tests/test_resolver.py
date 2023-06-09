@@ -18,7 +18,7 @@ def internal_given() -> tuple[Resolver, BaseType, TypeReference]:
     new_type = BaseType(name=Identifier("foo"), position=0)
 
     # AND GIVEN a type reference to the same type
-    type_ref = TypeReference(name=Identifier("foo"), position=2)
+    type_ref = TypeReference(name=Identifier("foo"), position=2, parameters=[])
 
     return resolver, new_type, type_ref
 
@@ -31,7 +31,7 @@ def external_given() -> tuple[Resolver, BaseExternalType, TypeReference]:
     new_type = BaseExternalType(name="foo")
 
     # AND GIVEN a type reference to the same type
-    type_ref = TypeReference(name=Identifier("foo"), position=2)
+    type_ref = TypeReference(name=Identifier("foo"), position=2, parameters=[])
 
     return resolver, new_type, type_ref
 
@@ -99,7 +99,7 @@ def test_load_external_type(tmp_path: Path):
     }))
 
     # AND GIVEN a type reference to the external type
-    type_ref = TypeReference(name=Identifier("bar"), position=2)
+    type_ref = TypeReference(name=Identifier("bar"), position=2, parameters=[])
 
     # WHEN loading the type definition from the file
     resolver.load_external(file)
@@ -124,7 +124,7 @@ def test_load_invalid_external_type(tmp_path: Path):
     }))
 
     # AND GIVEN a type reference to the external type
-    TypeReference(name=Identifier("bar"), position=2)
+    TypeReference(name=Identifier("bar"), position=2, parameters=[])
 
     # WHEN loading the type definition from the file
     # THEN an InputParsingException should be raised
@@ -140,7 +140,7 @@ def test_register_namespaced_type(tmp_path: Path):
     new_type = BaseType(name=Identifier("bar"), namespace=[Identifier("foo")], position=0)
 
     # AND GIVEN a type reference to the same type
-    type_ref = TypeReference(name=Identifier("foo.bar"), position=2)
+    type_ref = TypeReference(name=Identifier("foo.bar"), position=2, parameters=[])
 
     # WHEN registering the new type
     resolver.register(new_type)

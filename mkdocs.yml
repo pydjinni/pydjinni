@@ -81,6 +81,7 @@ nav:
   - Getting started:
       - Installation: installation.md
       - Usage: usage.md
+      - Features: features.md
       - Migration: migration.md
   - Reference:
       - CLI: cli.md

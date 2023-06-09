@@ -12,8 +12,9 @@ class PyDjinniLexer(RegexLexer):
     tokens = {
         'root': [
             (r'# .*\n', Comment),
+            (r'(namespace)( *.*)({)', bygroups(Keyword, Name.Namespace, Other)),
             (r'(.* *)(= *)(record|interface|flags|enum)', bygroups(Name.Class, Operator, Keyword)),
-            (r'(.* *)(:)( *.* *)(;|,)', bygroups(Name.Property, Operator, Name.Class, Punctuation)),
+            (r'( *property)?( *.* *)(:)( *.* *)(;|,)', bygroups(Keyword, Name.Property, Operator, Name.Class, Punctuation)),
             (r'.', Text),
         ]
     }

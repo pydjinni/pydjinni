@@ -36,6 +36,7 @@ class ExternalTypesBuilder:
                 name=model.default.name,
                 primitive=model.default.primitive,
                 comment=model.default.comment,
+                params=model.default.params,
                 **field_kwargs
             ))
         return output

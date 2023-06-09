@@ -25,6 +25,7 @@ class BaseExternalType(BaseModel):
         default=None,
         description="If the type can be assigned primitive values, defines which primitive value the type accepts"
     )
+    params: list[str] = []
     comment: str | None = None
 
 
@@ -45,7 +46,8 @@ class BaseField(BaseModel, extra='allow'):
 class TypeReference(BaseModel):
     name: Identifier
     position: int
-    type_def: BaseExternalType = Field(
+    parameters: list[TypeReference]
+    type_def: BaseExternalType | BaseType = Field(
         default=None,
         repr=False
     )

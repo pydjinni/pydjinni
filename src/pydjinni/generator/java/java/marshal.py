@@ -24,7 +24,7 @@ class JavaMarshal(Marshal[JavaConfig, JavaExternalType], types=external_types):
             typename=typename,
             boxed=typename,
             name=marshalled_name,
-            source=Path().joinpath(*package) / f"{name}.java",
+            source=Path().joinpath(*package) / f"{marshalled_name}.java",
             package=".".join(package),
             comment=mistletoe.markdown(type_def.comment, JavaDocCommentRenderer) if type_def.comment else '',
         )
@@ -34,7 +34,7 @@ class JavaMarshal(Marshal[JavaConfig, JavaExternalType], types=external_types):
         match field_def:
             case Enum.Item() | Flags.Flag():
                 style = self.config.identifier.enum
-            case Record.Field():
+            case Record.Field() | Interface.Property():
                 style = self.config.identifier.field
             case Constant():
                 style = self.config.identifier.const
@@ -45,6 +45,11 @@ class JavaMarshal(Marshal[JavaConfig, JavaExternalType], types=external_types):
 
         field_def.java = JavaField(
             name=field_def.name.convert(style),
-            getter=Identifier(f"get_{field_def.name}").convert(self.config.identifier.method) if type(field_def) is Record.Field else None,
+            getter=Identifier(f"get_{field_def.name}").convert(self.config.identifier.method)
+            if type(field_def) in [Record.Field, Interface.Property]
+            else None,
+            setter=Identifier(f"set_{field_def.name}").convert(self.config.identifier.field)
+            if type(field_def) is Interface.Property
+            else None,
             comment=comment
         )

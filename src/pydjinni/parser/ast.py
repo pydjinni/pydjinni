@@ -26,7 +26,11 @@ class Interface(BaseClassType):
         static: bool
         const: bool
 
+    class Property(BaseField):
+        type_ref: TypeReference
+
     methods: list[Method]
+    properties: list[Property]
 
 
 class Record(BaseClassType):

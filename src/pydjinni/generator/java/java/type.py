@@ -26,4 +26,5 @@ class JavaType(JavaExternalType):
 class JavaField(BaseModel):
     name: str
     getter: str | None = None
+    setter: str | None = None
     comment: str | None = None

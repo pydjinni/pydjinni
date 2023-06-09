@@ -10,6 +10,7 @@ class GenerateBaseConfig(BaseModel):
         ord = 'ord'
         str = 'str'
         json = 'json'
+        parcellable = 'parcellable'
 
     list_processed_files: Path = Field(
         default=None,
