@@ -4,7 +4,7 @@ import mistletoe
 
 from pydjinni.generator.marshal import Marshal
 from pydjinni.parser.ast import Enum, Record, Interface, Flags
-from pydjinni.parser.base_models import BaseType, BaseField, Constant
+from pydjinni.parser.base_models import BaseType, BaseField, Constant, BaseClassType
 from pydjinni.parser.identifier import Identifier
 from .comment_renderer import JavaDocCommentRenderer
 from .config import JavaConfig
@@ -15,12 +15,15 @@ from .type import JavaType, JavaField, JavaExternalType
 class JavaMarshal(Marshal[JavaConfig, JavaExternalType], types=external_types):
     def marshal_type(self, type_def: BaseType):
         package = self.marshal_namespace(type_def, self.config.identifier.package, self.config.package, ".")
-        name = type_def.name.convert(self.config.identifier.type)
-        typename = ".".join(package + [name])
+        name = type_def.name
+        if isinstance(type_def, Record) and self.key in type_def.targets:
+            name += "_base"
+        marshalled_name = Identifier(name).convert(self.config.identifier.type)
+        typename = ".".join(package + [marshalled_name])
         type_def.java = JavaType(
             typename=typename,
             boxed=typename,
-            name=name,
+            name=marshalled_name,
             source=Path().joinpath(*package) / f"{name}.java",
             package=".".join(package),
             comment=mistletoe.markdown(type_def.comment, JavaDocCommentRenderer) if type_def.comment else '',

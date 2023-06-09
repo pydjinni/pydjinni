@@ -156,12 +156,11 @@ class IdlParser(PTNodeVisitor):
                 if method.return_type_ref.type_def not in type_def.dependencies:
                     type_def.dependencies.append(method.return_type_ref.type_def)
 
-
     def visit_deriving(self, node, children):
         return children.declaration
 
     def visit_record(self, node, children):
-        targets = unpack(children.targets) or self.targets
+        targets = unpack(children.targets) or []
         deriving = unpack(children.deriving) or []
         return Record(
             name=unpack(children.identifier),
@@ -231,12 +230,12 @@ class IdlParser(PTNodeVisitor):
     def visit_targets(self, node, children):
         includes = []
         excludes = []
-        for child in children:
-            if child.startswith('+'):
-                includes.append(child[1:])
+        for item in children:
+            if item.startswith('+'):
+                includes.append(item[1:])
             else:
-                excludes.append(child[1:])
-        if not includes:
+                excludes.append(item[1:])
+        if (not includes) and excludes:
             includes = self.targets
 
         targets = [include for include in includes if include not in excludes]
