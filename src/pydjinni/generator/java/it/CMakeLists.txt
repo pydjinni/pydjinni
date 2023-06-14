@@ -1,0 +1,59 @@
+project(PyDjinniJava_IntegrationTesting C CXX)
+
+find_package(Java 1.8 REQUIRED)
+include(UseJava)
+include(Maven)
+
+maven_add(junit-platform-console-standalone GROUP org.junit.platform VERSION 1.9.3)
+
+
+function(java_test_case TEST_CASE_NAME)
+    cmake_parse_arguments(TEST_CASE
+        # options
+        ""
+        # one-value keywords
+        ""
+        # multi-value keywords
+        "SOURCES;OPTIONS"
+        # args
+        ${ARGN}
+    )
+    implement_test_case(${TEST_CASE_NAME} LANGUAGE java OPTIONS
+            ${TEST_CASE_OPTIONS}
+            generate.java.loader:${TEST_CASE_NAME}
+            generate.jni.loader:${TEST_CASE_NAME})
+
+    set(JNI_TARGET_NAME ${TEST_CASE_NAME})
+    set(JAVA_TARGET_NAME ${TEST_CASE_NAME}Java)
+    add_library(${JNI_TARGET_NAME} SHARED
+            ${jni_GENERATED_SOURCES}
+            )
+    target_include_directories(${JNI_TARGET_NAME} PUBLIC ${jni_INCLUDE_DIR} ${jni_SOURCE_DIR})
+    target_link_libraries(${JNI_TARGET_NAME} PUBLIC JNI::JNI test::${TEST_CASE_NAME})
+    add_library(test::jni::${TEST_CASE_NAME} ALIAS ${JNI_TARGET_NAME})
+
+    add_jar(${JAVA_TARGET_NAME}
+        OUTPUT_NAME ${TEST_CASE_NAME}
+        SOURCES
+            ${java_GENERATED_SOURCES}
+            ${TEST_CASE_SOURCES}
+        INCLUDE_JARS
+            ${junit-platform-console-standalone_JAR}
+    )
+    add_dependencies(${JAVA_TARGET_NAME} ${JNI_TARGET_NAME})
+    get_target_property(TEST_JAR_FILE ${JAVA_TARGET_NAME} JAR_FILE)
+    add_test(NAME Java_${TEST_CASE_NAME} COMMAND ${Java_JAVA_EXECUTABLE}
+        -Xcheck:jni
+        -Djava.library.path=$<TARGET_FILE_DIR:test::jni::${TEST_CASE_NAME}>
+        -jar ${junit-platform-console-standalone_JAR}
+        --class-path=${TEST_JAR_FILE}
+        --scan-classpath
+        --disable-banner
+        --exclude-engine=junit-vintage
+        --exclude-engine=junit-platform-suite
+
+
+    )
+endfunction()
+
+add_subdirectory(record)

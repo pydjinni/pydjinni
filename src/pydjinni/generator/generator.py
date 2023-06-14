@@ -140,13 +140,13 @@ class Generator(ABC):
         shutil.rmtree(self.marshal.header_path(), ignore_errors=True)
         shutil.rmtree(self.marshal.source_path(), ignore_errors=True)
 
-    def generate(self, ast: list[BaseType]):
+    def generate(self, ast: list[BaseType], copy_support_lib_sources: bool = True):
         if self.marshal.config:
             if self.writes_header:
                 self._file_writer.setup_include_dir(self.key, self.marshal.header_path())
             if self.writes_source:
                 self._file_writer.setup_source_dir(self.key, self.marshal.source_path())
-            if self.support_lib_commons:
+            if self.support_lib_commons and copy_support_lib_sources:
                 self.generate_support_lib()
             for type_def in ast:
                 match type_def:

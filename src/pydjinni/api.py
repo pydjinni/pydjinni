@@ -277,7 +277,7 @@ class API:
                     the same context. Generation commands can be chained.
                 """
                 target = self._generate_targets[target_name]
-                target.generate(self._ast, clean=clean)
+                target.generate(self._ast, clean=clean, copy_support_lib_sources=self._config.support_lib_sources)
                 return self
 
             def write_processed_files(self) -> API.ConfiguredContext.GenerateContext:

@@ -2,15 +2,16 @@ cmake_minimum_required(VERSION 3.6.0)
 
 project(PyDjinniSupportLib C CXX)
 
+option(BUILD_TESTING "Whether testing should be enabled or not" ON)
+set(PYDJINNI_LANGUAGE_TARGETS "java;objc" CACHE STRING "List of languages that should be targeted" )
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 Include(FetchContent)
-Include(CTest)
 Include(PyDjinni)
 
-option(PYDJINNI_JNI "Build for Java/JNI interop" OFF)
-option(PYDJINNI_OBJC "Build for Objective-C interop" OFF)
-
 if(BUILD_TESTING)
+    Include(IntegrationTesting)
+    enable_testing()
     FetchContent_Declare(
       Catch2
       GIT_REPOSITORY https://github.com/catchorg/Catch2.git
@@ -21,7 +22,3 @@ if(BUILD_TESTING)
 endif()
 
 add_subdirectory(src/pydjinni/generator)
-
-if(BUILD_TESTING)
-    add_subdirectory(it)
-endif()

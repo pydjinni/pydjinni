@@ -56,4 +56,9 @@ class JavaConfig(BaseModel):
         default=True,
         description="Whether generated Java classes for records should be marked `final`",
     )
+    loader: str = Field(
+        default=None,
+        description="Name of the class loader. If this option is set, a class loader java file is generated, loading a "
+                    "library with the same name as the class."
+    )
     identifier: JavaIdentifierStyle = JavaIdentifierStyle()

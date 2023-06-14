@@ -37,11 +37,11 @@ class Target(ABC):
         for generator_instance in self.generator_instances:
             generator_instance.input_file(path)
 
-    def generate(self, ast: list[BaseType], clean: bool = False):
+    def generate(self, ast: list[BaseType], clean: bool = False, copy_support_lib_sources: bool = True):
         for generator_instance in self.generator_instances:
             if clean:
                 generator_instance.clean()
-            generator_instance.generate(ast)
+            generator_instance.generate(ast, copy_support_lib_sources)
 
     @property
     def marshals(self) -> list[Marshal]:

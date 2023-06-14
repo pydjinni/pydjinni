@@ -1,0 +1,12 @@
+java_test_case(RecordTest
+    OPTIONS
+        generate.java.out:${CMAKE_CURRENT_SOURCE_DIR}/generated/java
+        generate.java.package:test.record
+        generate.jni.out.header:${CMAKE_CURRENT_SOURCE_DIR}/generated/include/jni
+        generate.jni.out.source:${CMAKE_CURRENT_SOURCE_DIR}/generated/src/jni
+        generate.jni.identifier.file.prefix:marshal_
+        generate.jni.identifier.file.style:snake_case
+        generate.jni.namespace:test::record::jni
+    SOURCES
+        src/TestRecord.java
+)

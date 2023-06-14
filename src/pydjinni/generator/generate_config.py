@@ -26,3 +26,7 @@ class GenerateBaseConfig(BaseModel):
         default=[],
         description="Deriving functionality that should be added to every record by default."
     )
+    support_lib_sources: bool = Field(
+        default=True,
+        description="Whether the required support lib sources should be copied to the generated output."
+    )
