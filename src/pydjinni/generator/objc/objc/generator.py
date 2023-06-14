@@ -48,6 +48,6 @@ class ObjcGenerator(
                 ast=ast
             )
 
-    def generate(self, ast: list[BaseType]):
-        super().generate(ast)
+    def generate(self, ast: list[BaseType], copy_support_lib_sources: bool = True):
+        super().generate(ast, copy_support_lib_sources)
         self.generate_bridging_header(ast)
