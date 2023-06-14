@@ -1,4 +1,5 @@
 #include "helper.hpp"
+#include <cassert>
 
 namespace test::record {
 
