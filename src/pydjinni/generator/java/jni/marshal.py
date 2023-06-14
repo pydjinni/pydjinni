@@ -12,6 +12,7 @@ class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
     def marshal_type(self, type_def: BaseType):
         namespace = self.marshal_namespace(type_def, self.config.identifier.namespace, self.config.namespace)
         name = type_def.name.convert(self.config.identifier.class_name)
+        java_path = type_def.java.package.split('.') + [name]
         type_def.jni = JniType(
             name=name,
             translator="::" + "::".join(namespace + [name]),
@@ -19,9 +20,10 @@ class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
             header=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.header_extension}"),
             source=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.source_extension}"),
             namespace="::".join(namespace),
-            type_signature="(ILjava/lang/String;[I)J",
-            jni_prefix="_".join(["Java"] + namespace + [name])
+            type_signature=f"{'/'.join(java_path)}{'$CppProxy' if isinstance(type_def, Interface) else ''}",
+            jni_prefix="_".join(["Java"] + java_path + ["00024CppProxy"])
         )
+
 
     def marshal_field(self, field_def: BaseField):
         match field_def:
@@ -37,5 +39,5 @@ class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
                 name = field_def.name.convert(self.config.identifier.method)
                 field_def.jni = JniField(
                     name=name,
-                    jni_name="_".join(["00024CppProxy", "native", "1" + name])
+                    jni_name=name
                 )

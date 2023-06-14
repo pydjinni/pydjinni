@@ -26,7 +26,6 @@ class JniExternalType(BaseModel):
         description="The Java native type as represented in JNI."
     )
     type_signature: str = Field(
-        pattern=r'^(\((\[?[ZBCSIJFD]|(L([a-z][a-z0-9]*/)*[A-Z][a-zA-Z0-9]*);)*\))?(\[?[ZBCSIJFD]|(L([a-z][a-z0-9]*/)*[A-Z][a-zA-Z0-9]*);)?$',
         examples=["(ILjava/lang/String;[I)J"]
     )
 

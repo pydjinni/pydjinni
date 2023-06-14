@@ -39,8 +39,8 @@ class JniConfig(BaseModel):
         default="cpp",
         description="The filename extension for JNI C++ files"
     )
-    loader: str = Field(
-        default=None,
-        description="If set, a minimal `JNI_OnLoad_<loader>`/`JNI_OnUnload_<loader>` implementation is generated."
+    loader: bool = Field(
+        default=True,
+        description="If enabled, a minimal `JNI_OnLoad`/`JNI_OnUnload` implementation is generated."
     )
     identifier: JniIdentifierStyle = JniIdentifierStyle()

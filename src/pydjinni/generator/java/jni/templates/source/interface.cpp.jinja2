@@ -11,7 +11,7 @@
 {{ type_def.jni.name }}::{{ type_def.jni.name }}() : ::pydjinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.name }}>("{{ type_def.jni.type_signature }}") {}
 {{ type_def.jni.name }}::~{{ type_def.jni.name }}() = default;
 
-CJNIEXPORT void JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef)
+CJNIEXPORT void JNICALL {{ type_def.jni.jni_prefix }}_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef)
 {
     ::pydjinni::translate_exceptions(jniEnv, [&](){
         delete reinterpret_cast<::pydjinni::CppProxyHandle<{{ type_def.cpp.typename }}>*>(nativeRef);
@@ -19,16 +19,20 @@ CJNIEXPORT void JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_nativeDestro
 }
 
 {% for method in type_def.methods %}
-CJNIEXPORT {{ method.return_type_ref.type_def.jni.typename.value if method.return_type_ref else "void" }} JNICALL {{ type_def.jni.jni_prefix }}_{{ method.jni.jni_name }}(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef
+CJNIEXPORT {{ method.return_type_ref.type_def.jni.typename.value if method.return_type_ref else "void" }} JNICALL {{ type_def.jni.jni_prefix }}_{{ method.jni.jni_name }}(JNIEnv* jniEnv, jobject /*this*/{{ ", jlong nativeRef" if not method.static }}
     {%- for parameter in method.parameters -%}
     , {{ parameter.type_ref.type_def.jni.typename.value }} {{ parameter.jni.name }}
     {%- endfor -%}
     ) {
     {{ "return" if method.return_type_ref }} ::pydjinni::translate_exceptions(jniEnv, [&](){
+        {% if method.static %}
+        {{ "auto r = " if method.return_type_ref }}{{ type_def.cpp.typename }}::{{ method.cpp.name }}(
+        {%- else -%}
         const auto& ref = ::pydjinni::objectFromHandleAddress<{{ type_def.cpp.typename }}>(nativeRef);
         {{ "auto r = " if method.return_type_ref }}ref->{{ method.cpp.name }}(
+        {%- endif -%}
         {%- for parameter in method.parameters -%}
-            {{ parameter.type_ref.type_def.jni.translator }}::toCpp(jniEnv, {{ parameter.jni.name }}){{ ", " if not loop.last }}
+        {{ parameter.type_ref.type_def.jni.translator }}::toCpp(jniEnv, {{ parameter.jni.name }}){{ ", " if not loop.last }}
         {%- endfor -%}
         );
         {% if method.return_type_ref %}

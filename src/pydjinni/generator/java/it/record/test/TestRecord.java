@@ -12,10 +12,10 @@ class TestRecord {
 
 
     @Test
-    void foo() {
-        var foo = new Foo((byte)5);
+    void testGetRecord() {
+        var foo = new Foo((byte)42);
         var new_foo = Helper.getFoo(foo);
-
+        assertEquals(new_foo.getBar(), 42);
     }
 
 }
