@@ -47,7 +47,7 @@ class Marshal(ABC, Generic[ConfigModel, ExternalTypeDef]):
         external_types_factory.register(self.key, self.types)
 
     def configure(self, config: ConfigModel):
-        self.config = getattr(config, self.key)
+        self.config = config
 
     def header_path(self) -> Path:
         """

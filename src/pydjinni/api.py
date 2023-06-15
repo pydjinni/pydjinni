@@ -225,7 +225,7 @@ class API:
 
             for marshal in marshals:
                 marshal.register_external_types(self._external_types_builder)
-                marshal.configure(generate_config)
+                marshal.configure(getattr(generate_config, marshal.key))
 
             for external_type_def in self._external_types_builder.build():
                 self._resolver.register_external(external_type_def)

@@ -21,25 +21,25 @@ class Interface(BaseClassType):
         class Parameter(BaseField):
             type_ref: TypeReference
 
-        parameters: list[Parameter]
-        return_type_ref: TypeReference | None
-        static: bool
-        const: bool
+        parameters: list[Parameter] = []
+        return_type_ref: TypeReference | None = None
+        static: bool = False
+        const: bool = False
 
     class Property(BaseField):
         type_ref: TypeReference
 
-    main: bool
-    methods: list[Method]
-    properties: list[Property]
+    main: bool = False
+    methods: list[Method] = []
+    properties: list[Property] = []
 
 
 class Record(BaseClassType):
     class Field(BaseField):
         type_ref: TypeReference
 
-    fields: list[Field]
-    deriving_eq: bool
-    deriving_ord: bool
-    deriving_json: bool
-    deriving_str: bool
+    fields: list[Field] = []
+    deriving_eq: bool = False
+    deriving_ord: bool = False
+    deriving_json: bool = False
+    deriving_str: bool = False

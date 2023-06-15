@@ -34,7 +34,7 @@ class BaseExternalType(BaseModel):
 
 class BaseType(BaseModel, extra='allow'):
     name: Identifier
-    position: int
+    position: int = -1
     namespace: list[Identifier] = []
     comment: list[str] | None = None
     dependencies: list[BaseType | BaseExternalType] = []
@@ -42,7 +42,7 @@ class BaseType(BaseModel, extra='allow'):
 
 class BaseField(BaseModel, extra='allow'):
     name: Identifier
-    position: int
+    position: int = -1
     comment: list[str] | None = None
 
 
@@ -67,10 +67,10 @@ class ObjectValue(BaseModel):
 
 
 class Constant(BaseField):
-    type_ref: TypeReference
-    value: int | float | str | bool | Identifier | ObjectValue
+    type_ref: TypeReference = None
+    value: int | float | str | bool | Identifier | ObjectValue = None
 
 
 class BaseClassType(BaseType):
-    constants: list[Constant]
-    targets: list[str]
+    constants: list[Constant] = []
+    targets: list[str] = []
