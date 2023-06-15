@@ -143,7 +143,8 @@ class IdlParser(PTNodeVisitor):
             methods=children.method,
             targets=targets,
             constants=children.constant,
-            properties=children.property
+            properties=children.property,
+            main=type(children[1]) == str and children[1] == "main"
         )
 
     def second_interface(self, type_def: Interface):
@@ -348,11 +349,10 @@ class IdlParser(PTNodeVisitor):
         match type_def:
             case BaseExternalType():
                 primitive = type_def.primitive
-                if not (type_def.primitive and (
-                        (primitive == BaseExternalType.Primitive.int and type(value) == int) or
+                if not ((primitive == BaseExternalType.Primitive.int and type(value) == int) or
                         (primitive == BaseExternalType.Primitive.float and type(value) == float) or
                         (primitive == BaseExternalType.Primitive.string and type(value) == str) or
-                        (primitive == BaseExternalType.Primitive.bool and type(value) == bool))):
+                        (primitive == BaseExternalType.Primitive.bool and type(value) == bool)):
                     if type(value) == str:
                         value_description = f'string value "{value}"'
                     elif type(value) in [int, float, bool]:

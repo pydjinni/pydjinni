@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field
 
 from pydjinni.config.types import IdentifierStyle
 
-
 class JavaIdentifierStyle(BaseModel):
     enum: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.train
     field: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.camel
@@ -56,9 +55,10 @@ class JavaConfig(BaseModel):
         default=True,
         description="Whether generated Java classes for records should be marked `final`",
     )
-    loader: str = Field(
+    native_lib: str = Field(
         default=None,
-        description="Name of the class loader. If this option is set, a class loader java file is generated, loading a "
-                    "library with the same name as the class."
+        description="Name of the native library containing the JNI interface. "
+                    "If this option is set and an interface is marked as `main`, a static block will be "
+                    "added to the interface, that loads the native library."
     )
     identifier: JavaIdentifierStyle = JavaIdentifierStyle()

@@ -25,3 +25,19 @@
     const {{ constant.type_ref.type_def.cpp.typename }} {{ type_def.cpp.name }}::{{ constant.cpp.name }} = {{ value_def(constant.value, constant.type_ref.type_def) }};
 {% endmacro %}
 
+{% macro return_type(method) %}
+    {%- if method.return_type_ref -%}
+        {%- if method.return_type_ref.type_def is shared_ptr -%}
+            std::shared_ptr<{{ method.return_type_ref.type_def.cpp.typename }}>
+        {%- else -%}
+            {{ method.return_type_ref.type_def.cpp.typename }}
+        {%- endif -%}
+    {%- else -%}
+        void
+    {%- endif -%}
+{% endmacro %}
+
+{% macro attributes(method) %}
+    {{- "static" if method.static else "virtual" -}}
+    {{- " const" if method.const -}}
+{% endmacro %}

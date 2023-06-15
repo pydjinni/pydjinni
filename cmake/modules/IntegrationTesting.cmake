@@ -53,7 +53,7 @@ macro(implement_test_case TEST_CASE_NAME)
     get_target_property(TEST_CASE_INTERFACE test::${TEST_CASE_NAME} PYDJINNI_INTERFACE)
     get_target_property(TEST_CASE_PARENT_OPTIONS test::${TEST_CASE_NAME} PYDJINNI_OPTIONS)
     get_target_property(TEST_CASE_WORKING_DIRECTORY test::${TEST_CASE_NAME} SOURCE_DIR)
-    pydjinni_generate(${TEST_CASE_INTERFACE}
+    pydjinni_generate(${TEST_CASE_INTERFACE} CLEAN
         LANGUAGES ${TEST_CASE_LANGUAGE}
         CONFIG None
         OPTIONS ${TEST_CASE_PARENT_OPTIONS} ${TEST_CASE_OPTIONS}

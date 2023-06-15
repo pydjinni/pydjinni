@@ -29,6 +29,7 @@ class Interface(BaseClassType):
     class Property(BaseField):
         type_ref: TypeReference
 
+    main: bool
     methods: list[Method]
     properties: list[Property]
 

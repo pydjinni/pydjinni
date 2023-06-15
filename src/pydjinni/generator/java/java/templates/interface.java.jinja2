@@ -11,15 +11,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 {{ type_ref.type_def.java.typename if type_ref else "void" }}
 {%- endmacro -%}
 
-{% macro parameters(method) %}
+{% macro parameters(method, with_types = True) %}
 {%- for parameter in method.parameters -%}
-    {{ parameter.type_ref.type_def.java.typename }} {{ parameter.java.name ~ (", " if not loop.last) }}
+    {{ (parameter.type_ref.type_def.java.typename ~ " ") if with_types }}{{ parameter.java.name ~ (", " if not loop.last) }}
 {%- endfor -%}
 {% endmacro %}
 
 {% block content %}
 {{ comment(type_def, indentation=0) }}
 {{ config.class_access_modifier.value }} abstract class {{ type_def.java.name }} {
+    {% if type_def.main and config.native_lib %}
+    static {
+        new {{ config.package }}.native_lib.{{ config.native_lib }}Loader();
+    }
+    {% endif %}
     {%- for constant in type_def.constants -%}
     {{- constant_def(constant) }}
     {% endfor %}
@@ -70,9 +75,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
         @Override
         public {{ return_type(method.return_type_ref) }} {{ method.java.name }}({{ parameters(method) }}) {
             assert !this.destroyed.get() : "trying to use a destroyed object";
-            return native_{{ method.java.name }}(this.nativeRef, key);
+            return native_{{ method.java.name }}(this.nativeRef, {{ parameters(method, with_types=False) }});
         }
-        private native void native_{{ method.java.name }}(long _nativeRef{{ (", " if method.parameters) ~ parameters(method) }});
+        private native {{ return_type(method.return_type_ref) }} native_{{ method.java.name }}(long _nativeRef{{ (", " if method.parameters) ~ parameters(method) }});
         {% endif %}
         {% endfor %}
 

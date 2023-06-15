@@ -23,7 +23,7 @@ function(java_test_case TEST_CASE_NAME)
             generate.java.out:${CMAKE_CURRENT_LIST_DIR}/generated/java
             generate.jni.out.header:${CMAKE_CURRENT_LIST_DIR}/generated/include/jni
             generate.jni.out.source:${CMAKE_CURRENT_LIST_DIR}/generated/src/jni
-            generate.java.loader:${TEST_CASE_NAME})
+            generate.java.native_lib:${TEST_CASE_NAME})
 
     set(JNI_TARGET_NAME ${TEST_CASE_NAME})
     set(JAVA_TARGET_NAME ${TEST_CASE_NAME}Java)
@@ -59,3 +59,4 @@ function(java_test_case TEST_CASE_NAME)
 endfunction()
 
 add_subdirectory(record)
+add_subdirectory(interface)

@@ -12,6 +12,10 @@ class BaseExternalType(BaseModel):
         float = 'float'
         string = 'string'
         bool = 'bool'
+        interface = 'interface'
+        record = 'record'
+        enum = 'enum'
+        flags = 'flags'
 
     name: str = Field(
         description="Name of the type in the IDL"
@@ -21,9 +25,8 @@ class BaseExternalType(BaseModel):
         pattern=r"[_\.\w]+",
         description="Optional namespace that the type lives in"
     )
-    primitive: Primitive | None = Field(
-        default=None,
-        description="If the type can be assigned primitive values, defines which primitive value the type accepts"
+    primitive: Primitive = Field(
+        description="The underlying primitive type"
     )
     params: list[str] = []
     comment: str | None = None

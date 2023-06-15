@@ -5,5 +5,5 @@ java_test_case(RecordTest
         generate.jni.identifier.file.style:snake_case
         generate.jni.namespace:test::record::jni
     SOURCES
-        test/TestRecord.java
+        tests/TestRecord.java
 )

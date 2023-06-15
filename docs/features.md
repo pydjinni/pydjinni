@@ -19,6 +19,36 @@ the configuration.
 
 ## Interface 
 
+### Main Interface { .new-badge }
+
+Usually a PyDjinni library will have one or more entrypoints, in the form of an `interface` with a `static` constructor.
+When using the library from Java, it is vital to ensure that the underlying native JNI library is loaded before 
+calling the constructor.
+
+Usually this requires a `System.loadLibrary("FooBar");` call ahead of time.
+
+To automate the native library loading, any interface can be marked as `main`:
+
+```djinni
+foo = main interface +cpp {
+   static get_instance(): foo
+}
+```
+
+Given that the name of the native library is configured in the `generator.java.native_lib` property, a static
+initialization block is added to the interface, ensuring that the native library is loaded automatically.
+
+If no interface is marked `main`, the underlying loader can be initialized manually. 
+It is named `<native_lib>Loader` and lives in the `native_lib` sub-package:
+
+```java
+class Main {
+    static {
+        new foo.bar.native_lib.FooBarLoader()
+    }
+}
+```
+
 ### Properties { .new-badge }
 
 When designing an interface, the `property` descriptor can be used to define values that support a mechanism of

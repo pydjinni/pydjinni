@@ -1,0 +1,9 @@
+java_test_case(InterfaceTest
+    OPTIONS
+        generate.java.package:test.interface_test
+        generate.jni.identifier.file.prefix:marshal_
+        generate.jni.identifier.file.style:snake_case
+        generate.jni.namespace:test::interface::jni
+    SOURCES
+        tests/TestInterface.java
+)

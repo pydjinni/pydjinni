@@ -28,7 +28,7 @@ def external_given() -> tuple[Resolver, BaseExternalType, TypeReference]:
     resolver = Resolver(BaseExternalType)
 
     # AND GIVEN a type that should be registered
-    new_type = BaseExternalType(name="foo")
+    new_type = BaseExternalType(name="foo", primitive='record')
 
     # AND GIVEN a type reference to the same type
     type_ref = TypeReference(name=Identifier("foo"), position=2, parameters=[])
@@ -95,6 +95,7 @@ def test_load_external_type(tmp_path: Path):
     file = tmp_path / "my_type.yaml"
     file.write_text(yaml.dump({
         'name': 'bar',
+        'primitive': 'int',
         'foo': 5
     }))
 

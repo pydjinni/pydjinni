@@ -1,0 +1,4 @@
+calculator = main interface +cpp {
+    static get_instance(): calculator;
+    add(a: i8, b: i8): i8;
+}
