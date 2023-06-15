@@ -26,7 +26,7 @@ def render_config_schema_table(element, indent: int, render_defaults=True):
             if value.get("type") == "object":
                 result += f"\n{'#' * indent} {key}\n\n"
                 if value.get("description"):
-                    result += f"\n{value['description']}\n\n"
+                    result += f"\n{value['description'].lstrip()}\n\n"
                 result += render_config_schema_table(value, indent + 1, render_defaults)
             else:
                 if first_value:
