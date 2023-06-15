@@ -35,6 +35,7 @@ function(define_test_case TEST_CASE_NAME)
         PROPERTIES
             PYDJINNI_INTERFACE "${TEST_CASE_INTERFACE}"
             PYDJINNI_OPTIONS "${TEST_CASE_OPTIONS}"
+            POSITION_INDEPENDENT_CODE ON
     )
 
 endfunction()
