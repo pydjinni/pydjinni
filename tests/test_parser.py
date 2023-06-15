@@ -279,6 +279,9 @@ def test_parsing_interface(tmp_path: Path):
 
     methods = interface.methods
 
+    # THEN the interface should not be marked as 'main'
+    assert not interface.main
+
     # THEN the interface should have exactly 5 methods
     assert len(methods) == 6
 
@@ -307,7 +310,6 @@ def test_parsing_interface(tmp_path: Path):
     property_def = interface.properties[0]
     assert property_def.name == "a"
     assert property_def.type_ref.name == "i8"
-
 
 
 def test_parsing_interface_unknown_target(tmp_path: Path):
@@ -379,17 +381,47 @@ def test_parsing_interface_static_not_allowed(tmp_path):
 
 def test_parsing_interface_static_and_const_not_allowed(tmp_path):
     # GIVEN an idl file that defines an interface with a static const method
-    parser, resolver_mock, _ = given(
+    parser, _, _ = given(
         tmp_path=tmp_path,
         input_idl="""
-                foo = interface +cpp {
-                    static const foo();
-                }       
-                """
+            foo = interface +cpp {
+                static const foo();
+            }       
+            """
     )
 
     # THEN a StaticAndConstException should be raised
     with pytest.raises(IdlParser.StaticAndConstException):
+        parser.parse()
+
+
+def test_parsing_main_interface(tmp_path):
+    # GIVEN an idl file that defines a main interface (code entrypoint)
+    parser, _, _ = given(
+        tmp_path=tmp_path,
+        input_idl="""
+            foo = main interface +cpp {}       
+            """
+    )
+    # WHEN parsing the input
+    interface = when(parser, Interface, "foo")
+
+    # THEN the interface should be marked as 'main'
+    assert interface.main
+
+
+@pytest.mark.parametrize("targets", ["-cpp", "+cpp +java"])
+def test_parsing_main_interface_not_cpp(tmp_path, targets):
+    # GIVEN an idl file that defines a main interface (code entrypoint)
+    parser, _, _ = given(
+        tmp_path=tmp_path,
+        input_idl=f"""
+            foo = main interface {targets} {{}}       
+            """
+    )
+    # WHEN parsing the input
+    # THEN a ParsingException should be thrown because the 'main' interface is not implemented in C++
+    with pytest.raises(IdlParser.ParsingException):
         parser.parse()
 
 

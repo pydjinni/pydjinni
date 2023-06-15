@@ -148,6 +148,11 @@ class IdlParser(PTNodeVisitor):
         )
 
     def second_interface(self, type_def: Interface):
+        if type_def.main and type_def.targets != [CppGenerator.key]:
+            raise IdlParser.ParsingException(
+                self.idl, *self._get_context(type_def.position),
+                message="a 'main' interface can only be implemented in C++"
+            )
         for method in type_def.methods:
             if CppGenerator.key not in type_def.targets and method.static:
                 raise IdlParser.StaticNotAllowedException(self.idl, *self._get_context(method.position))
