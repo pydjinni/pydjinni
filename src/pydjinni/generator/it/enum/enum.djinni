@@ -1,0 +1,9 @@
+example_enum = enum {
+    a;
+    b;
+    c;
+}
+
+helper = main interface +cpp {
+    static get_enum(example_enum: example_enum): example_enum;
+}

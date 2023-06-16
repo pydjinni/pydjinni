@@ -53,10 +53,9 @@ function(java_test_case TEST_CASE_NAME)
         --disable-banner
         --exclude-engine=junit-vintage
         --exclude-engine=junit-platform-suite
-
-
     )
 endfunction()
 
 add_subdirectory(record)
 add_subdirectory(interface)
+add_subdirectory(enum)

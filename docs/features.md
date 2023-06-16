@@ -27,7 +27,7 @@ calling the constructor.
 
 Usually this requires a `System.loadLibrary("FooBar");` call ahead of time.
 
-To automate the native library loading, any interface can be marked as `main`:
+To automate the native library loading, any C++ interface can be marked as `main`:
 
 ```djinni
 foo = main interface +cpp {

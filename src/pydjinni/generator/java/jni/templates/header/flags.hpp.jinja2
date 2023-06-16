@@ -10,17 +10,17 @@
 {% endblock %}
 
 {% block content %}
-class {{ type_def.jni.translator }} final : ::djinni::JniFlags {
+class {{ type_def.jni.translator }} final : ::pydjinni::JniFlags {
 public:
-    using Type = {{ type_def.jni.name }}
+    using Type = {{ type_def.jni.name }};
     using CppType = {{ type_def.cpp.typename }};
     using JniType = {{ type_def.jni.typename.value }};
 
-    static CppType toCpp(JNIEnv* jniEnv, JniType j) { return static_cast<CppType>(::djinni::JniClass<Type>::get().ordinal(jniEnv, j)); }
-    static ::djinni::LocalRef<JniType> fromCpp(JNIEnv* jniEnv, CppType c) { return ::djinni::JniClass<Type>::get().create(jniEnv, static_cast<jint>(c)); }
+    static CppType toCpp(JNIEnv* jniEnv, JniType j) { return static_cast<CppType>(::pydjinni::JniClass<Type>::get().ordinal(jniEnv, j)); }
+    static ::pydjinni::LocalRef<JniType> fromCpp(JNIEnv* jniEnv, CppType c) { return ::pydjinni::JniClass<Type>::get().create(jniEnv, static_cast<jint>(c)); }
 
 private:
-    Type() : JniEnum("{{ type_def.jni.type_signature }}") {}
-    friend ::djinni::JniClass<Type>;
+    {{ type_def.jni.name }}() : JniEnum("{{ type_def.jni.type_signature }}") {}
+    friend ::pydjinni::JniClass<Type>;
 };
 {% endblock %}

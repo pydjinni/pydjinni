@@ -18,10 +18,16 @@ function(define_test_case TEST_CASE_NAME)
         ${ARGN}
         )
 
+    list(APPEND TEST_CASE_OPTIONS
+        generate.cpp.out.header:generated/include/cpp
+        generate.cpp.out.source:generated/src/cpp
+    )
+
     pydjinni_generate(${TEST_CASE_INTERFACE} CLEAN
         LANGUAGES cpp
         CONFIG None
-        OPTIONS ${TEST_CASE_OPTIONS}
+        OPTIONS
+            ${TEST_CASE_OPTIONS}
     )
     set(BASE_LIB_NAME ${TEST_CASE_NAME}Base)
     add_library(${BASE_LIB_NAME} STATIC

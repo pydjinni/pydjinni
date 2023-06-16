@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 from pydjinni.config.types import IdentifierStyle
 
+
 class JavaIdentifierStyle(BaseModel):
     enum: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.train
     field: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.camel
@@ -12,6 +13,7 @@ class JavaIdentifierStyle(BaseModel):
     method: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.camel
     package: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.snake
     const: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.train
+
 
 class JavaConfig(BaseModel):
     """
