@@ -1,0 +1,12 @@
+example_flags = flags {
+    a;
+    b;
+    all = all;
+    none = none;
+}
+
+helper = main interface +cpp {
+    static get_flag(example_flag: example_flags): example_flags;
+    static get_all_flag(example_flag: example_flags): example_flags;
+    static get_none_flag(example_flag: example_flags): example_flags;
+}

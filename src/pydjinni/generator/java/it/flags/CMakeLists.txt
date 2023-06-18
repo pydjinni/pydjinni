@@ -1,0 +1,9 @@
+java_test_case(FlagsTest
+    OPTIONS
+        generate.java.package:test.flags_test
+        generate.jni.identifier.file.prefix:marshal_
+        generate.jni.identifier.file.style:snake_case
+        generate.jni.namespace:test::flags::jni
+    SOURCES
+        tests/FlagsTest.java
+)

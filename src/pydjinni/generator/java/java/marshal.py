@@ -19,7 +19,11 @@ class JavaMarshal(Marshal[JavaConfig, JavaExternalType], types=external_types):
         if isinstance(type_def, Record) and self.key in type_def.targets:
             name += "_base"
         marshalled_name = Identifier(name).convert(self.config.identifier.type)
-        typename = ".".join(package + [marshalled_name])
+        match type_def:
+            case Flags():
+                typename = f"java.util.EnumSet<{'.'.join(package + [marshalled_name])}>"
+            case _:
+                typename = ".".join(package + [marshalled_name])
         type_def.java = JavaType(
             typename=typename,
             boxed=typename,

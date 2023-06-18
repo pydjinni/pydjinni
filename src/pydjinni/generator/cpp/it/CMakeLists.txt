@@ -35,3 +35,13 @@ cpp_test_case(InterfaceTest
     SOURCES
         tests/test_interface.cpp
 )
+
+cpp_test_case(EnumTest
+    SOURCES
+        tests/test_enum.cpp
+)
+
+cpp_test_case(FlagsTest
+    SOURCES
+        tests/test_flags.cpp
+)

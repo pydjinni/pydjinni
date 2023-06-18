@@ -24,7 +24,8 @@ class CppMarshal(Marshal[CppConfig, CppExternalType], types=external_types):
             header=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.header_extension}"),
             source=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.source_extension}"),
             namespace="::".join(namespace),
-            proxy=isinstance(type_def, Interface) and self.key in type_def.targets
+            proxy=isinstance(type_def, Interface) and self.key in type_def.targets,
+            by_value=type(type_def) not in [Interface, Record]
         )
 
     def marshal_field(self, field_def: BaseField):
