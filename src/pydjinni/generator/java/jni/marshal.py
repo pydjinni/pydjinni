@@ -15,14 +15,20 @@ class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
         segments = [segment.replace("$", "_00024") for segment in segments]
         return "_".join(segments)
 
+    def _marshal_method_type_signature(self, method: Interface.Method):
+        parameter_type_signatures = ""
+        for parameter in method.parameters:
+            if parameter.type_ref.type_def.jni.typename is NativeType.object:
+                parameter_type_signatures += f"L{parameter.type_ref.type_def.jni.type_signature};"
+            else:
+                parameter_type_signatures += parameter.type_ref.type_def.jni.type_signature
+        return_type_signature = method.return_type_ref.type_def.jni.type_signature if method.return_type_ref else ""
+        return f"({parameter_type_signatures}){return_type_signature}"
+
     def marshal_type(self, type_def: BaseType):
         namespace = self.marshal_namespace(type_def, self.config.identifier.namespace, self.config.namespace)
         name = type_def.name.convert(self.config.identifier.class_name)
-        java_path = type_def.java.package.split('.')
-        if isinstance(type_def, Interface):
-            java_path.append(f"{name}$CppProxy")
-        else:
-            java_path.append(name)
+        java_path = type_def.java.package.split('.') + [name]
         type_def.jni = JniType(
             name=name,
             translator="::" + "::".join(namespace + [name]),
@@ -48,5 +54,7 @@ class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
                 name = field_def.name.convert(self.config.identifier.method)
                 field_def.jni = JniField(
                     name=name,
-                    jni_name=name
+                    jni_name=name,
+                    type_signature=self._marshal_method_type_signature(field_def),
+                    routine_name=f"Call{field_def.return_type_ref.type_def.jni.typename[1:].capitalize()}Method" if field_def.return_type_ref else "CallVoidMethod"
                 )

@@ -75,7 +75,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
         @Override
         public {{ return_type(method.return_type_ref) }} {{ method.java.name }}({{ parameters(method) }}) {
             assert !this.destroyed.get() : "trying to use a destroyed object";
-            return native_{{ method.java.name }}(this.nativeRef, {{ parameters(method, with_types=False) }});
+            {{ "return" if method.return_type_ref }} native_{{ method.java.name }}(this.nativeRef {{ (", " if method.parameters) ~ parameters(method, with_types=False) }});
         }
         private native {{ return_type(method.return_type_ref) }} native_{{ method.java.name }}(long _nativeRef{{ (", " if method.parameters) ~ parameters(method) }});
         {% endif %}

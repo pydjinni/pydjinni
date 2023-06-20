@@ -39,5 +39,4 @@
 
 {% macro attributes(method) %}
     {{- "static" if method.static else "virtual" -}}
-    {{- " const" if method.const -}}
 {% endmacro %}

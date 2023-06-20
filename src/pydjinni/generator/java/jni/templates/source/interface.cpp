@@ -12,8 +12,30 @@
 {% endmacro %}
 
 {% block content %}
-{{ type_def.jni.name }}::{{ type_def.jni.name }}() : ::pydjinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.name }}>("{{ type_def.jni.type_signature }}") {}
+{{ type_def.jni.name }}::{{ type_def.jni.name }}() : ::pydjinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.name }}>("{{ type_def.jni.type_signature }}$CppProxy") {}
 {{ type_def.jni.name }}::~{{ type_def.jni.name }}() = default;
+
+{% if 'java' in type_def.targets %}
+{{ type_def.jni.name }}::JavaProxy::JavaProxy(JniType j) : Handle(::pydjinni::jniGetThreadEnv(), j) {}
+{{ type_def.jni.name }}::JavaProxy::~JavaProxy() = default;
+
+{% for method in type_def.methods %}
+{{ method.cpp.type_spec }} {{ type_def.jni.name }}::JavaProxy::{{ method.cpp.name }}(
+{%- for parameter in method.parameters -%}
+    {{ parameter.cpp.type_spec }} {{ parameter.cpp.name ~ (", " if not loop.last) }}
+{%- endfor -%}
+) {{ "const" if method.const }} {
+    auto jniEnv = ::pydjinni::jniGetThreadEnv();
+    ::pydjinni::JniLocalScope jscope(jniEnv, 10);
+    const auto& data = ::pydjinni::JniClass<{{ type_def.jni.translator }}>::get();
+    {{ "auto jret = " if method.return_type_ref }} jniEnv->{{ method.jni.routine_name }}(Handle::get().get(), data.method_{{ method.java.name }});
+    ::pydjinni::jniExceptionCheck(jniEnv);
+    {% if method.return_type_ref %}
+    return {{ method.return_type_ref.type_def.jni.translator }}::toCpp(jniEnv, jret);
+    {% endif %}
+}
+{% endfor %}
+{% endif %}
 
 CJNIEXPORT void JNICALL {{ type_def.jni.jni_prefix }}_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef)
 {
@@ -23,7 +45,7 @@ CJNIEXPORT void JNICALL {{ type_def.jni.jni_prefix }}_nativeDestroy(JNIEnv* jniE
 }
 
 {% for method in type_def.methods %}
-CJNIEXPORT {{ return_type(method) }} JNICALL {{ type_def.jni.jni_prefix }}_{{ "native_1" if not method.static }}{{ method.jni.jni_name }}(JNIEnv* jniEnv, jobject /*this*/{{ ", jlong nativeRef" if not method.static }}
+CJNIEXPORT {{ return_type(method) }} JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_{{ "native_1" if not method.static }}{{ method.jni.jni_name }}(JNIEnv* jniEnv, jobject /*this*/{{ ", jlong nativeRef" if not method.static }}
     {%- for parameter in method.parameters -%}
     , {{ parameter.type_ref.type_def.jni.typename.value }} {{ parameter.jni.name }}
     {%- endfor -%}

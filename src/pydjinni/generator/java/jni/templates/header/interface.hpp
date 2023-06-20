@@ -27,5 +27,28 @@ private:
     friend ::pydjinni::JniClass<{{ type_def.jni.name }}>;
     friend ::pydjinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.name }}>;
 
+
+{% if 'java' in type_def.targets %}
+    class JavaProxy final : ::pydjinni::JavaProxyHandle<JavaProxy>, public {{ type_def.cpp.typename }} {
+    public:
+        JavaProxy(JniType j);
+        ~JavaProxy();
+
+        {% for method in type_def.methods %}
+        {{ method.cpp.type_spec }} {{ method.cpp.name }}(
+        {%- for parameter in method.parameters -%}
+            {{ parameter.cpp.type_spec }} {{ parameter.cpp.name ~ (", " if not loop.last) }}
+        {%- endfor -%}
+        ) {{ "const" if method.const }} override;
+        {% endfor %}
+    private:
+        friend ::pydjinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.translator }}>;
+    };
+
+    const ::pydjinni::GlobalRef<jclass> clazz { ::pydjinni::jniFindClass("{{ type_def.jni.type_signature }}") };
+    {% for method in type_def.methods %}
+    const jmethodID method_{{ method.jni.name }} { ::pydjinni::jniGetMethodID(clazz.get(), "{{ method.java.name }}", "{{ method.jni.type_signature }}") };
+    {% endfor %}
+{% endif %}
 };
 {% endblock %}

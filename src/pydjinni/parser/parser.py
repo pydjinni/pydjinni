@@ -94,7 +94,10 @@ class IdlParser(PTNodeVisitor):
         return imports + type_defs + namespaced_type_defs
 
     def visit_type_def(self, node, children):
-        return unpack(children)
+        type_def = unpack(children)
+        for marshal in self.marshals:
+            marshal.marshal(type_def)
+        return type_def
 
     def second_type_def(self, type_def):
         match type_def:
@@ -102,8 +105,6 @@ class IdlParser(PTNodeVisitor):
                 for type_dep in type_def.constants:
                     if type_dep.type_ref.type_def not in type_def.dependencies:
                         type_def.dependencies.append(type_dep.type_ref.type_def)
-        for marshal in self.marshals:
-            marshal.marshal(type_def)
 
     def visit_enum(self, node, children):
         return Enum(

@@ -1,5 +1,5 @@
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import comment, return_type, attributes %}
+{% from "macros.jinja2" import comment, return_type, attributes, constant_declaration %}
 
 {% block header %}
 #pragma once
@@ -18,15 +18,11 @@ public:
 {%- endfor %}
 {% for method in type_def.methods %}
     {{ comment(method) }}
-    {{ attributes(method) }} {{ return_type(method) }} {{ method.cpp.name }}(
+    {{ attributes(method) }} {{ method.cpp.type_spec }} {{ method.cpp.name }}(
     {%- for parameter in method.parameters -%}
-        {%- if parameter.type_ref.type_def.cpp.by_value -%}
-            {{ parameter.type_ref.type_def.cpp.typename }} {{ parameter.cpp.name ~ (", " if not loop.last) }}
-        {%- else -%}
-            const {{ parameter.type_ref.type_def.cpp.typename }}& {{ parameter.cpp.name ~ (", " if not loop.last) }}
-        {%- endif -%}
+        {{ parameter.cpp.type_spec }} {{ parameter.cpp.name ~ (", " if not loop.last) }}
     {%- endfor -%}
-    ){{ " = 0" if not method.static }};
+    ){{ " const" if method.const }}{{ " = 0" if not method.static }};
 {% endfor %}
 };
 {% endblock %}

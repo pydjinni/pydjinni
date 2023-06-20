@@ -35,7 +35,7 @@ def given() -> JniMarshal:
                     source=Path(),
                     package="foo.bar"
                 )),
-                "::Foo", "foo.hpp", "jobject", 'foo/bar/Foo$CppProxy', "Foo", "Java_foo_bar_Foo_00024CppProxy", "foo.cpp", ""
+                "::Foo", "foo.hpp", "jobject", 'foo/bar/Foo', "Foo", "Java_foo_bar_Foo", "foo.cpp", ""
         ),
     ]
 )

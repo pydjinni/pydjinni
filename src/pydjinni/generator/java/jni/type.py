@@ -40,3 +40,5 @@ class JniType(JniExternalType):
 class JniField(BaseModel):
     name: str
     jni_name: str = None
+    type_signature: str = None
+    routine_name: str = None

@@ -32,24 +32,24 @@ class JniGenerator(
 
     def generate_record(self, type_def: Record):
         self.write_header(
-            template="header/record.hpp.jinja2",
+            template="header/record.hpp",
             path=self.marshal.header_path() / type_def.jni.header,
             type_def=type_def
         )
         self.write_source(
-            template="source/record.cpp.jinja2",
+            template="source/record.cpp",
             path=self.marshal.source_path() / type_def.jni.source,
             type_def=type_def
         )
 
     def generate_interface(self, type_def: Interface):
         self.write_header(
-            template="header/interface.hpp.jinja2",
+            template="header/interface.hpp",
             path=self.marshal.header_path() / type_def.jni.header,
             type_def=type_def
         )
         self.write_source(
-            template="source/interface.cpp.jinja2",
+            template="source/interface.cpp",
             path=self.marshal.source_path() / type_def.jni.source,
             type_def=type_def
         )
