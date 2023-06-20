@@ -1,4 +1,5 @@
 #include "calculator_impl.hpp"
+#include <cassert>
 
 using namespace test::interface;
 
