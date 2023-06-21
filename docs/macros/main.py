@@ -2,6 +2,8 @@ import json
 import logging
 from collections import OrderedDict
 from pathlib import Path
+from typing import Any
+
 from setuptools_scm import get_version
 
 import jsonref
@@ -15,6 +17,7 @@ from pydjinni.exceptions import return_codes
 def render_config_schema_table(element, indent: int, render_defaults=True):
     first_value = True
     result = ""
+    postponed: list[tuple[str, Any]] = []
     if "properties" in element:
         for key, value in element["properties"].items():
             if value.get("allOf") and len(value["allOf"]) == 1:
@@ -24,10 +27,10 @@ def render_config_schema_table(element, indent: int, render_defaults=True):
                     value["allOf"][0]["description"] = value["description"]
                 value = value["allOf"][0]
             if value.get("type") == "object":
-                result += f"\n{'#' * indent} {key}\n\n"
+                content = f"\n{'#' * indent} {key}\n\n"
                 if value.get("description"):
-                    result += f"\n{value['description'].lstrip()}\n\n"
-                result += render_config_schema_table(value, indent + 1, render_defaults)
+                    content += f"\n{value['description'].lstrip()}\n\n"
+                postponed.append((content, value))
             else:
                 if first_value:
                     result += f"| Name | Type | Description |\n"
@@ -73,7 +76,9 @@ def render_config_schema_table(element, indent: int, render_defaults=True):
                     else:
                         result += f"`{value['default']}`"
                 result += " |\n"
-
+        for content, value in postponed:
+            result += content
+            result += render_config_schema_table(value, indent + 1, render_defaults)
     return result
 
 
