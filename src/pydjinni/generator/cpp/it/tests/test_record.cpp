@@ -2,7 +2,7 @@
 #include "foo.hpp"
 #include "helper.hpp"
 
-SCENARIO("Testing the generated record") {
+TEST_CASE("Cpp.RecordTest") {
     GIVEN("a Foo record instance") {
         auto foo = test::record::Foo(42);
         WHEN("passing the record through a helper interface") {

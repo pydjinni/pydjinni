@@ -18,15 +18,16 @@ function(java_test_case TEST_CASE_NAME)
         # args
         ${ARGN}
     )
+    set(JNI_TARGET_NAME ${TEST_CASE_NAME}Jni)
+    set(JAVA_TARGET_NAME ${TEST_CASE_NAME}Java)
+
     implement_test_case(${TEST_CASE_NAME} LANGUAGE java OPTIONS
             ${TEST_CASE_OPTIONS}
             generate.java.out:${CMAKE_CURRENT_LIST_DIR}/generated/java
             generate.jni.out.header:${CMAKE_CURRENT_LIST_DIR}/generated/include/jni
             generate.jni.out.source:${CMAKE_CURRENT_LIST_DIR}/generated/src/jni
-            generate.java.native_lib:${TEST_CASE_NAME})
+            generate.java.native_lib:${JNI_TARGET_NAME})
 
-    set(JNI_TARGET_NAME ${TEST_CASE_NAME})
-    set(JAVA_TARGET_NAME ${TEST_CASE_NAME}Java)
     add_library(${JNI_TARGET_NAME} SHARED
             ${jni_GENERATED_SOURCES}
             )
@@ -44,7 +45,7 @@ function(java_test_case TEST_CASE_NAME)
     )
     add_dependencies(${JAVA_TARGET_NAME} ${JNI_TARGET_NAME})
     get_target_property(TEST_JAR_FILE ${JAVA_TARGET_NAME} JAR_FILE)
-    add_test(NAME Java_${TEST_CASE_NAME} COMMAND ${Java_JAVA_EXECUTABLE}
+    add_test(NAME Java.${TEST_CASE_NAME} COMMAND ${Java_JAVA_EXECUTABLE}
         -Xcheck:jni
         -Djava.library.path=$<TARGET_FILE_DIR:test::jni::${TEST_CASE_NAME}>
         -jar ${junit-platform-console-standalone_JAR}

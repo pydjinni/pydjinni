@@ -34,9 +34,17 @@ class ObjcConfig(BaseModel):
         default="h",
         description="The filename extension for Objective-C header files."
     )
+    source_extension: str = Field(
+        default="m",
+        description="The filename extension for Objective-C source files."
+    )
     swift_bridging_header: Path = Field(
         default=None,
         description="The name of the Objective-C Bridging Header required for using the interface from Swift."
+    )
+    strict_protocols: bool = Field(
+        default=False,
+        description="All generated `@protocol` will implement `<NSObject>`"
     )
     swift: SwiftConfig = SwiftConfig()
     identifier: ObjcIdentifierStyle = ObjcIdentifierStyle()

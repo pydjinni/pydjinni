@@ -40,6 +40,9 @@ class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
             jni_prefix=self.marshal_jni_prefix(["Java"] + java_path)
         )
 
+    def _get_field_accessor(self, native_type: NativeType) -> str:
+        return f"Get{native_type[1:].capitalize()}Field"
+
     def marshal_field(self, field_def: BaseField):
         match field_def:
             case Enum.Item() | Flags.Flag():
@@ -48,7 +51,8 @@ class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
                 )
             case Record.Field() | Interface.Method.Parameter():
                 field_def.jni = JniField(
-                    name=field_def.name.convert(self.config.identifier.field)
+                    name=field_def.name.convert(self.config.identifier.field),
+                    field_accessor=self._get_field_accessor(field_def.type_ref.type_def.jni.typename)
                 )
             case Interface.Method():
                 name = field_def.name.convert(self.config.identifier.method)

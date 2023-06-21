@@ -1,4 +1,5 @@
 {% extends "base.jinja2" %}
+{% from "macros.jinja2" import constant_declaration %}
 
 {% block header %}
 {% for dependency in type_def.dependencies -%}
@@ -9,14 +10,18 @@
 {% block content %}
 {{ type_def.objc.comment }}
 NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
-@protocol {{ type_def.objc.typename }} <NSObject>
+{% if "objc" in type_def.targets %}
+@protocol {{ type_def.objc.typename }} {{ "<NSObject>" if config.strict_protocols }}
+{% else %}
+@interface {{ type_def.objc.typename }} : NSObject
+{% endif %}
 {% for method in type_def.methods %}
 {% if method.comment %}
 {{ method.objc.comment }}
 {% endif %}
-{{ "+" if method.static else "-" }} {{ ((method.return_type_ref.type_def | type_decl ) if method.return_type_ref) ~ method.objc.name }}
+{{ method.objc.specifier }} {{ method.objc.type_decl ~ method.objc.name }}
 {%- for parameter in method.parameters -%}
-{{ ":" if loop.first else (" " ~ parameter.objc.name ~ ":") }}{{ parameter.type_ref.type_def | type_decl }}{{ parameter.objc.name }}
+{{ ":" if loop.first else (" " ~ parameter.objc.name ~ ":") }}{{ parameter.objc.type_decl ~ parameter.objc.name }}
 {% endfor %}
   __attribute__((swift_name("{{ method.objc.name }}(
 {%- for parameter in method.parameters -%}
@@ -25,4 +30,9 @@ NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
 )")));
 {% endfor %}
 @end
+
+{% for constant in type_def.constants -%}
+{{ constant_declaration(type_def, constant) }}
+{%- endfor %}
+
 {% endblock %}

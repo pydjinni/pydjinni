@@ -2,7 +2,7 @@
 #include "example_flags.hpp"
 #include "helper.hpp"
 
-SCENARIO("Testing the generated flags") {
+TEST_CASE("Cpp.FlagsTest") {
     GIVEN("a ExampleFlags flag value") {
         auto flag_value = test::flags_test::ExampleFlags::A;
         WHEN("passing the flag through a helper interface") {

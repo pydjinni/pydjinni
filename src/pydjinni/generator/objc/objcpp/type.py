@@ -4,9 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class ObjcppExternalType(BaseModel):
-    translator: str = Field(
-        pattern=r"^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))*[a-zA-Z][a-zA-Z0-9_]*$"
-    )
+    translator: str
     header: Path
 
 

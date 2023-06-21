@@ -42,3 +42,4 @@ class JniField(BaseModel):
     jni_name: str = None
     type_signature: str = None
     routine_name: str = None
+    field_accessor: str = None

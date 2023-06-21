@@ -1,7 +1,6 @@
 from pydjinni.generator.generator import Generator
 from pydjinni.parser.ast import Interface, Record, Flags, Enum
 from pydjinni.parser.base_models import BaseType
-from .filter import type_decl
 from .marshal import ObjcMarshal
 from pydjinni.generator.filters import header
 
@@ -12,7 +11,7 @@ class ObjcGenerator(
     marshal=ObjcMarshal,
     writes_header=True,
     writes_source=True,
-    filters=[header, type_decl]
+    filters=[header]
 ):
 
     def generate_enum(self, type_def: Enum):
@@ -31,13 +30,25 @@ class ObjcGenerator(
         self.write_header(
             template="header/record.h.jinja2",
             path=self.marshal.header_path() / type_def.objc.header,
-            type_def=type_def)
+            type_def=type_def
+        )
+        self.write_source(
+            template="source/record.m.jinja2",
+            path=self.marshal.source_path() / type_def.objc.source,
+            type_def=type_def
+        )
 
     def generate_interface(self, type_def: Interface):
         self.write_header(
             template="header/interface.h.jinja2",
             path=self.marshal.header_path() / type_def.objc.header,
             type_def=type_def)
+        if type_def.constants:
+            self.write_source(
+                template="source/interface.m.jinja2",
+                path=self.marshal.source_path() / type_def.objc.source,
+                type_def=type_def
+            )
 
     def generate_bridging_header(self, ast: list[BaseType]):
         if self.marshal.config.swift.bridging_header:

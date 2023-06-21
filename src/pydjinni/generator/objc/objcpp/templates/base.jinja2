@@ -4,6 +4,9 @@
 {% block header %}
 {% endblock %}
 
+{% block no_namespace %}
+{% endblock %}
+
 {% if type_def.objcpp.namespace -%}
 namespace {{ type_def.objcpp.namespace }} {
 {% endif %}

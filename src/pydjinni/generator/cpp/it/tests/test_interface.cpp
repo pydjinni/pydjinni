@@ -2,7 +2,7 @@
 #include "calculator.hpp"
 #include "platform_interface.hpp"
 
-SCENARIO("Testing the generated interface") {
+TEST_CASE("Cpp.InterfaceTest") {
     GIVEN("a Calculator interface instance") {
         auto calculator = test::interface::Calculator::get_instance();
         WHEN("using the calculator interface") {

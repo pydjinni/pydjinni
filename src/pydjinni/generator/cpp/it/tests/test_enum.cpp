@@ -2,7 +2,7 @@
 #include "example_enum.hpp"
 #include "helper.hpp"
 
-SCENARIO("Testing the generated enum") {
+TEST_CASE("Cpp.EnumTest") {
     GIVEN("a ExampleEnum enum value") {
         auto enum_value = test::enum_test::ExampleEnum::A;
         WHEN("passing the enum through a helper interface") {

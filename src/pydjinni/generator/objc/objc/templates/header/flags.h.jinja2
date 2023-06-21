@@ -10,13 +10,13 @@ typedef NS_OPTIONS(NSUInteger, {{ type_def.objc.typename }}) {
     {% if flag.comment %}
     {{ flag.objc.comment | indent(4) }}
     {% endif %}
-    {{ flag.objc.name ~ " = " -}}
+    {{ type_def.objc.typename ~ flag.objc.name ~ " = " -}}
     {% if flag.none %}
         {{- "0" -}}
     {% elif flag.all %}
         {{- "0 | " -}}
         {% for flag in type_def.flags if not flag.none and not flag.all %}
-            {{- flag.objc.name ~ (" | " if not loop.last) -}}
+            {{- type_def.objc.typename ~ flag.objc.name ~ (" | " if not loop.last) -}}
         {% endfor %}
     {% else %}
         {{- "1u << " ~ counter.value -}}

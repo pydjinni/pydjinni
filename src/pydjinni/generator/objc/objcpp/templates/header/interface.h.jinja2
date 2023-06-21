@@ -8,7 +8,7 @@
 #include <memory>
 static_assert(__has_feature(objc_arc), "Djinni requires ARC to be enabled for this file");
 
-@class {{ type_def.objc.typename }};
+{{ ("@protocol " if "objc" in type_def.targets else "@class ") ~ type_def.objc.typename }};
 {% endblock %}
 
 {% block content %}
@@ -16,7 +16,12 @@ class {{ type_def.objcpp.name }} {
 public:
     using CppType = std::shared_ptr<{{ type_def.cpp.typename }}>;
     using CppOptType = std::shared_ptr<{{ type_def.cpp.typename }}>;
-    using ObjcType = ::{{ type_def.objc.typename }}*;
+    using ObjcType =
+    {%- if "objc" in type_def.targets -%}
+        id<{{ type_def.objc.typename }}>;
+    {%- else -%}
+        ::{{ type_def.objc.typename }}*;
+    {% endif %}
 
     using Boxed = {{ type_def.objcpp.name }};
 

@@ -17,9 +17,12 @@ class ObjcType(ObjcExternalType):
     comment: str | None = None
     init: str = None
     convenience_init: str = None
+    source: Path
 
 
 
 class ObjcField(BaseModel):
     name: str
     comment: str | None = None
+    specifier: str | None = None
+    type_decl: str | None = None

@@ -8,7 +8,7 @@ typedef NS_ENUM(NSUInteger, {{ type_def.objc.typename }}) {
     {% if item.comment %}
     {{ item.objc.comment | indent(4) }}
     {% endif %}
-    {{ item.objc.name ~ ("," if not loop.last) }}
+    {{ type_def.objc.typename ~ item.objc.name ~ ("," if not loop.last) }}
 {% endfor %}
 };
 {% endblock %}

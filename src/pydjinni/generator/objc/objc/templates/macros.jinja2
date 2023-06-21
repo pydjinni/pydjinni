@@ -1,0 +1,27 @@
+{% macro comment(def, indentation=4) %}
+{%- if def.comment -%}
+{{ def.objc.comment | indent(indentation) }}
+{%- endif -%}
+{% endmacro %}
+
+{% macro value_def(value, type_def) %}
+{%- if value is string -%}@"{{ value }}"
+{%- elif value is number %}{{ value }}
+{%- elif value is boolean %}{{ "true" if value else "false" }}
+{%- else %}new {{ type_def.java.typename }}(
+{%- for field in type_def.fields -%}
+    {{ value_def(value.assignments[field.name].value, field.type_ref.type_def) ~ (", " if not loop.last) }}
+{%- endfor -%}
+)
+{%- endif -%}
+{% endmacro %}
+
+
+{% macro constant_declaration(type_def, constant) %}
+{{ comment(constant)}}
+extern const {{ constant.type_ref.type_def.objc.typename }} {{ type_def.objc.typename }}{{ constant.objc.name|title }};
+{% endmacro %}
+
+{% macro constant_definition(type_def, constant) %}
+const {{ constant.type_ref.type_def.objc.typename }} {{ type_def.objc.typename }}{{ constant.objc.name|title }} = {{ value_def(constant.value, constant.type_ref.type_def) }};
+{% endmacro %}

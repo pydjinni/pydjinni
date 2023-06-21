@@ -27,9 +27,9 @@ namespace pydjinni {
 } // namespace pydjinni
 
 #define DJINNI_UNIMPLEMENTED(msg) \
-    ::djinni::throwUnimplemented(__PRETTY_FUNCTION__, msg);
+    ::pydjinni::throwUnimplemented(__PRETTY_FUNCTION__, msg);
 
 #define DJINNI_TRANSLATE_EXCEPTIONS() \
     catch (const std::exception & e) { \
-        ::djinni::throwNSExceptionFromCurrent(__PRETTY_FUNCTION__); \
+        ::pydjinni::throwNSExceptionFromCurrent(__PRETTY_FUNCTION__); \
     }

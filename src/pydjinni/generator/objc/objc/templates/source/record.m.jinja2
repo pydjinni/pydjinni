@@ -1,0 +1,52 @@
+{% extends "base.jinja2" %}
+{% from "macros.jinja2" import constant_definition %}
+
+{% block header %}
+#import {{ type_def.objc.header | header }}
+{% endblock %}
+
+{% block content %}
+{% for constant in type_def.constants -%}
+{{ constant_definition(type_def, constant) }}
+{%- endfor %}
+
+@implementation {{ type_def.objc.typename }}
+
+- (nonnull instancetype){{ type_def.objc.init }}
+    {%- for field in type_def.fields -%}
+        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}({{ field.type_ref.type_def.objc.typename }}){{ field.objc.name }}
+    {%- endfor %} {
+    if(self = [super init]) {
+        {% for field in type_def.fields %}
+            _{{ field.objc.name }} = {{ field.objc.name }};
+        {% endfor %}
+    }
+    return self;
+}
+
++ (nonnull instancetype){{ type_def.objc.convenience_init }}
+    {%- for field in type_def.fields -%}
+        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}({{ field.type_ref.type_def.objc.typename }}){{ field.objc.name }}
+    {%- endfor %} {
+    return [({{ type_def.objc.typename }}*)[self alloc] {{ type_def.objc.init }}
+    {%- for field in type_def.fields -%}
+        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}{{ field.objc.name }}
+    {%- endfor -%}
+    ];
+}
+
+{% if type_def.deriving_str %}
+- (NSString *)description {
+    return [NSString stringWithFormat:@"<%@ %p
+    {%- for field in type_def.fields -%}
+        {{ " " ~ field.objc.name }}:%@
+    {%- endfor -%}
+    >", self.class, (void *)self
+    {%- for field in type_def.fields -%}
+        , @(self.{{ field.objc.name }})
+    {%- endfor -%}
+    ];
+}
+{% endif %}
+@end
+{% endblock %}

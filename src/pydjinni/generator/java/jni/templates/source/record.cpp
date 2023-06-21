@@ -29,7 +29,7 @@ auto {{ type_def.jni.name }}::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
     const auto& data = ::pydjinni::JniClass<{{ type_def.jni.name }}>::get();
     return {
     {% for field in type_def.fields %}
-        {{ field.type_ref.type_def.jni.translator }}::toCpp(jniEnv, jniEnv->{{ field.type_ref.type_def.jni.typename | get_field_accessor }}(j, data.field_{{ field.jni.name }})){{ "," if not loop.last }}
+        {{ field.type_ref.type_def.jni.translator }}::toCpp(jniEnv, jniEnv->{{ field.jni.field_accessor }}(j, data.field_{{ field.jni.name }})){{ "," if not loop.last }}
     {% endfor %}
     };
 }
