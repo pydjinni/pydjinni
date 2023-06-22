@@ -17,4 +17,10 @@ class TestRecord {
         assertEquals(Foo.BAZ, 5);
     }
 
+    @Test
+    void testToString() {
+        var foo = new Foo((byte)42);
+        assertEquals(foo.toString(), "test.record.Foo{bar=42}");
+    }
+
 }

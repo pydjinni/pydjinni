@@ -17,4 +17,9 @@
     XCTAssertEqual(FooBaz, 5, @"Unexpected constant value");
 }
 
+- (void)testDescription {
+    Foo* foo = [Foo fooWithBar:42];
+    XCTAssertEqualObjects([foo description], @"<Foo bar:42>", @"unexpected object description");
+}
+
 @end

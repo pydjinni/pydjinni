@@ -1,7 +1,7 @@
 foo = record {
     bar: i8;
     const baz: i8 = 5;
-}
+} deriving (str)
 
 helper = main interface +cpp {
     static get_foo(foo: foo): foo;

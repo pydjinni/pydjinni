@@ -37,11 +37,11 @@
 
 {% if type_def.deriving_str %}
 - (NSString *)description {
-    return [NSString stringWithFormat:@"<%@ %p
+    return [NSString stringWithFormat:@"<%@
     {%- for field in type_def.fields -%}
         {{ " " ~ field.objc.name }}:%@
     {%- endfor -%}
-    >", self.class, (void *)self
+    >", self.class
     {%- for field in type_def.fields -%}
         , @(self.{{ field.objc.name }})
     {%- endfor -%}
