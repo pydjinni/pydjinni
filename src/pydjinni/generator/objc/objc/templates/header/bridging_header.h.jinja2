@@ -8,6 +8,6 @@ FOUNDATION_EXPORT double bridgingheaderVersionNumber;
 FOUNDATION_EXPORT const unsigned char bridgingheaderVersionString[];
 
 {% for type_def in ast -%}
-#import "{{ type_def.objc.header }}"
+#import {{ type_def.objc.header | quote }}
 {% endfor %}
 {% endblock %}

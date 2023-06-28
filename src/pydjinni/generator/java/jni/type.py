@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 class NativeType(str, Enum):
     object = 'jobject'
+    string = 'jstring'
     boolean = 'jboolean'
     byte = 'jbyte'
     char = 'jchar'
@@ -23,10 +24,11 @@ class JniExternalType(BaseModel):
     header: Path
     typename: NativeType = Field(
         default=NativeType.object,
-        description="The Java native type as represented in JNI."
+        description="The Java native [`jvalue` union type](https://docs.oracle.com/en/java/javase/17/docs/specs/jni/types.html#the-value-type) as represented in JNI."
     )
     type_signature: str = Field(
-        examples=["(ILjava/lang/String;[I)J"]
+        examples=["(ILjava/lang/String;[I)J"],
+        description="[Java VM Type Signatures](https://docs.oracle.com/en/java/javase/17/docs/specs/jni/types.html#type-signatures)"
     )
 
 

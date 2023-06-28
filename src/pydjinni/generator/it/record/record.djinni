@@ -1,6 +1,20 @@
 foo = record {
-    bar: i8;
-    const baz: i8 = 5;
+    boolean_t: bool;
+    byte_t: i8;
+    short_t: i16;
+    int_t: i32;
+    long_t: i64;
+    float_t: f32;
+    double_t: f64;
+    string_t: string;
+
+    const boolean_c: bool = True;
+    const byte_c: i8 = 8;
+    const short_c: i16 = 16;
+    const int_c: i32 = 32;
+    const long_c: i64 = 64;
+    const float_c: f32 = 32.32;
+    const double_c: f64 = 64.64;
 } deriving (str)
 
 helper = main interface +cpp {

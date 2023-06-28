@@ -11,7 +11,6 @@ from pydjinni.defs import IDL_GRAMMAR_PATH
 from pydjinni.exceptions import FileNotFoundException, ApplicationException
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.generator.cpp.cpp.generator import CppGenerator
-from pydjinni.generator.marshal import Marshal
 from .ast import *
 from .base_models import Assignment, Constant, BaseExternalType, ObjectValue
 from .identifier import Identifier
@@ -26,7 +25,6 @@ class IdlParser(PTNodeVisitor):
     def __init__(
             self,
             resolver: Resolver,
-            marshals: list[Marshal],
             targets: list[str],
             include_dirs: list[Path],
             default_deriving: list[str],
@@ -38,7 +36,6 @@ class IdlParser(PTNodeVisitor):
         super().__init__(**kwargs)
         self.idl_parser = ParserPEG(IDL_GRAMMAR_PATH.read_text(), root_rule_name="idl")
         self.resolver = resolver
-        self.marshals = marshals
         self.targets = targets
         self.file_reader = file_reader
         self.include_dirs = include_dirs
@@ -67,9 +64,6 @@ class IdlParser(PTNodeVisitor):
     class StaticAndConstException(ParsingException):
         """method cannot be both static and const"""
 
-    class MarshallingException(ParsingException, code=153):
-        """Marshalling error"""
-
     class UnknownInterfaceTargetException(ParsingException, code=154):
         """Unknown interface target"""
 
@@ -93,18 +87,15 @@ class IdlParser(PTNodeVisitor):
             self.resolver.register(type_def)
         return imports + type_defs + namespaced_type_defs
 
-    def visit_type_def(self, node, children):
-        type_def = unpack(children)
-        for marshal in self.marshals:
-            marshal.marshal(type_def)
-        return type_def
+    def visit_type_def(self, node, children) -> BaseType:
+        return unpack(children)
 
-    def second_type_def(self, type_def):
-        match type_def:
-            case Record() | Interface():
-                for type_dep in type_def.constants:
-                    if type_dep.type_ref.type_def not in type_def.dependencies:
-                        type_def.dependencies.append(type_dep.type_ref.type_def)
+    def visit_class_type_def(self, node, children):
+        type_def: BaseClassType = unpack(children)
+        for type_dep in type_def.constants:
+            if type_dep.type_ref not in type_def.dependencies:
+                type_def.dependencies.append(type_dep.type_ref)
+        return type_def
 
     def visit_enum(self, node, children):
         return Enum(
@@ -131,38 +122,39 @@ class IdlParser(PTNodeVisitor):
             none=len(node) == 4 and node[2] == 'none'
         )
 
-    def second_flag(self, children):
-        for marshal in self.marshals:
-            marshal.marshal(children)
-
     def visit_interface(self, node, children):
-        targets = unpack(children.targets) or self.targets
+        targets: list[str] = unpack(children.targets) or self.targets
+        main: bool = type(children[1]) == str and children[1] == "main"
+        methods: list[Interface.Method] = children.method
+        properties: list[Interface.Property] = children.property
+        dependencies: list[TypeReference] = []
+        if main and targets != [CppGenerator.key]:
+            raise IdlParser.ParsingException(
+                self.idl, *self._get_context(node.position),
+                message="a 'main' interface can only be implemented in C++"
+            )
+        for method in methods:
+            if CppGenerator.key not in targets and method.static:
+                raise IdlParser.StaticNotAllowedException(self.idl, *self._get_context(method.position))
+            for param in method.parameters:
+                if param.type_ref not in dependencies:
+                    dependencies.append(param.type_ref)
+            if method.return_type_ref and method.return_type_ref not in dependencies:
+                dependencies.append(method.return_type_ref)
+        for property_def in properties:
+            if property_def.type_ref not in dependencies:
+                dependencies.append(property_def.type_ref)
         return Interface(
             name=unpack(children.identifier),
             position=node.position,
             comment=unpack(children.comment),
-            methods=children.method,
+            methods=methods,
             targets=targets,
             constants=children.constant,
-            properties=children.property,
-            main=type(children[1]) == str and children[1] == "main"
+            properties=properties,
+            main=main,
+            dependencies=dependencies
         )
-
-    def second_interface(self, type_def: Interface):
-        if type_def.main and type_def.targets != [CppGenerator.key]:
-            raise IdlParser.ParsingException(
-                self.idl, *self._get_context(type_def.position),
-                message="a 'main' interface can only be implemented in C++"
-            )
-        for method in type_def.methods:
-            if CppGenerator.key not in type_def.targets and method.static:
-                raise IdlParser.StaticNotAllowedException(self.idl, *self._get_context(method.position))
-            for param in method.parameters:
-                if param.type_ref.type_def not in type_def.dependencies:
-                    type_def.dependencies.append(param.type_ref.type_def)
-            if method.return_type_ref is not None:
-                if method.return_type_ref.type_def not in type_def.dependencies:
-                    type_def.dependencies.append(method.return_type_ref.type_def)
 
     def visit_deriving(self, node, children):
         return children.declaration
@@ -170,23 +162,24 @@ class IdlParser(PTNodeVisitor):
     def visit_record(self, node, children):
         targets = unpack(children.targets) or []
         deriving = unpack(children.deriving) or []
+        fields: list[Record.Field] = children.field
+        dependencies: list[TypeReference] = []
+        for type_dep in fields:
+            if type_dep.type_ref not in dependencies:
+                dependencies.append(type_dep.type_ref)
         return Record(
             name=unpack(children.identifier),
             position=node.position,
             comment=unpack(children.comment),
-            fields=children.field,
+            fields=fields,
             targets=targets,
             constants=children.constant,
+            dependencies=dependencies,
             deriving_eq='eq' in deriving or 'eq' in self.default_deriving,
             deriving_ord='ord' in deriving or 'ord' in self.default_deriving,
             deriving_json='json' in deriving or 'json' in self.default_deriving,
             deriving_str='str' in deriving or 'str' in self.default_deriving
         )
-
-    def second_record(self, type_def: Record):
-        for type_dep in type_def.fields:
-            if type_dep.type_ref.type_def not in type_def.dependencies:
-                type_def.dependencies.append(type_dep.type_ref.type_def)
 
     def visit_identifier(self, node, children):
         return Identifier(node.value)
@@ -217,10 +210,6 @@ class IdlParser(PTNodeVisitor):
             comment=unpack(children.comment)
         )
 
-    def second_item(self, children):
-        for marshal in self.marshals:
-            marshal.marshal(children)
-
     def visit_method(self, node, children):
         static = 'static' in children
         const = 'const' in children
@@ -236,10 +225,6 @@ class IdlParser(PTNodeVisitor):
             const='const' in children,
         )
 
-    def second_method(self, method: Interface.Method):
-        for marshal in self.marshals:
-            marshal.marshal(method)
-
     def visit_property(self, node, children):
         return Interface.Property(
             name=unpack(children.identifier),
@@ -247,12 +232,6 @@ class IdlParser(PTNodeVisitor):
             comment=unpack(children.comment),
             position=node.position
         )
-
-    def second_property(self, property_def: Interface.Property):
-        for marshal in self.marshals:
-            marshal.marshal(property_def)
-
-
 
     def visit_parameter(self, node, children):
         return Interface.Method.Parameter(
@@ -283,10 +262,6 @@ class IdlParser(PTNodeVisitor):
                 )
         return targets
 
-    def second_parameter(self, children):
-        for marshal in self.marshals:
-            marshal.marshal(children)
-
     def visit_field(self, node, children):
         return Record.Field(
             name=unpack(children.identifier),
@@ -294,10 +269,6 @@ class IdlParser(PTNodeVisitor):
             comment=unpack(children.comment),
             type_ref=unpack(children.data_type)
         )
-
-    def second_field(self, children):
-        for marshal in self.marshals:
-            marshal.marshal(children)
 
     def visit_comment(self, node, children):
         return [child[1:] for child in children]
@@ -318,6 +289,7 @@ class IdlParser(PTNodeVisitor):
 
     def visit_float(self, node, children) -> float:
         return float(node.value)
+
 
     def visit_bool(self, node, children) -> bool:
         return node.value == "True"
@@ -348,8 +320,6 @@ class IdlParser(PTNodeVisitor):
 
     def second_constant(self, children):
         self._check_const_assignment(children.name, children.type_ref.type_def, children.value, children.position)
-        for marshal in self.marshals:
-            marshal.marshal(children)
 
     def _check_const_assignment(self, name, type_def, value, position):
         match type_def:
@@ -357,6 +327,7 @@ class IdlParser(PTNodeVisitor):
                 primitive = type_def.primitive
                 if not ((primitive == BaseExternalType.Primitive.int and type(value) == int) or
                         (primitive == BaseExternalType.Primitive.float and type(value) == float) or
+                        (primitive == BaseExternalType.Primitive.double and type(value) == float) or
                         (primitive == BaseExternalType.Primitive.string and type(value) == str) or
                         (primitive == BaseExternalType.Primitive.bool and type(value) == bool)):
                     if type(value) == str:
@@ -414,7 +385,6 @@ class IdlParser(PTNodeVisitor):
     def visit_import_def(self, node, children):
         ast = IdlParser(
             resolver=self.resolver,
-            marshals=self.marshals,
             targets=self.targets,
             include_dirs=self.include_dirs,
             default_deriving=self.default_deriving,
@@ -443,7 +413,6 @@ class IdlParser(PTNodeVisitor):
 
         - Creates the AST from the given IDL file.
         - Tries to resolve all type references.
-        - Executes configured Marshals and extends the AST with the marshalled information.
 
         Args:
             idl: Path to the IDL file that should be parsed
@@ -456,7 +425,6 @@ class IdlParser(PTNodeVisitor):
             IdlParser.ParsingException       : When the input could not be parsed.
             IdlParser.TypeResolvingException : When a referenced type cannot be found.
             IdlParser.DuplicateTypeException : When a type is re-declared.
-            IdlParser.MarshalException       : When an error happened during marshalling.
         """
         try:
             parse_tree = self.idl_parser.parse(self.file_reader.read_idl(self.idl))
@@ -478,12 +446,6 @@ class IdlParser(PTNodeVisitor):
         except arpeggio.NoMatch as e:
             e.eval_attrs()
             raise IdlParser.ParsingException(self.idl, *self._get_context(e.position), message=e.message)
-        except Marshal.MarshalException as e:
-            raise IdlParser.MarshallingException(
-                self.idl,
-                *self._get_context(e.input_def.position),
-                message=f"'{e.input_def.name}' created {e}"
-            )
         except RecursionError:
             raise IdlParser.RecursiveImport(
                 self.idl,

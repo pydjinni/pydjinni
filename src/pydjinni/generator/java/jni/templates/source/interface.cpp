@@ -1,9 +1,9 @@
 {% extends "base.jinja2" %}
 
 {% block header %}
-#include "{{ type_def.jni.header }}"
-{% for dependency in type_def.dependencies %}
-#include {{ dependency.jni.header | header }}
+#include {{ type_def.jni.header | quote }}
+{% for header in type_def.dependencies | headers('jni') -%}
+#include {{ header }}
 {% endfor %}
 {% endblock %}
 

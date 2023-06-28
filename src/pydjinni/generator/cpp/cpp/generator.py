@@ -1,4 +1,4 @@
-from pydjinni.generator.filters import header
+from pydjinni.generator.filters import headers, quote
 from pydjinni.generator.generator import Generator
 from pydjinni.parser.ast import Interface, Record, Flags, Enum
 from .tests import shared_ptr
@@ -12,7 +12,7 @@ class CppGenerator(
     writes_header=True,
     writes_source=True,
     support_lib_commons=True,
-    filters=[header],
+    filters=[quote, headers],
     tests=[shared_ptr]
 ):
 

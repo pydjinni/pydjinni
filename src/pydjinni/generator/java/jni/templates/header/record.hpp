@@ -4,7 +4,7 @@
 #pragma once
 
 #include "pydjinni/jni/support.hpp"
-#include {{ type_def.cpp.header | header }}
+#include {{ type_def.cpp.header | quote }}
 {% endblock %}
 
 {% block content %}

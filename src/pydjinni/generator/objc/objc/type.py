@@ -8,7 +8,7 @@ from pydjinni.parser.base_models import BaseType, BaseExternalType
 class ObjcExternalType(BaseModel):
     typename: str = None
     boxed: str
-    header: Path
+    header: Path = None
     pointer: bool = True
 
 

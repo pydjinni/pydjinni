@@ -1,10 +1,10 @@
 {% extends "base.jinja2" %}
 
 {% block header %}
-{% for dependency in type_def.dependencies -%}
-#import {{ dependency.objcpp.header | header }}
+{% for header in type_def.dependencies | headers('objcpp') -%}
+#import {{ header }}
 {% endfor %}
-#include "{{ type_def.cpp.header }}"
+#include {{ type_def.cpp.header | quote }}
 #include <memory>
 static_assert(__has_feature(objc_arc), "Djinni requires ARC to be enabled for this file");
 

@@ -2,7 +2,7 @@ from pydjinni.generator.generator import Generator
 from pydjinni.parser.ast import Interface, Record, Flags, Enum
 from pydjinni.parser.base_models import BaseType
 from .marshal import ObjcMarshal
-from pydjinni.generator.filters import header
+from pydjinni.generator.filters import quote, headers
 
 
 class ObjcGenerator(
@@ -11,7 +11,7 @@ class ObjcGenerator(
     marshal=ObjcMarshal,
     writes_header=True,
     writes_source=True,
-    filters=[header]
+    filters=[quote, headers]
 ):
 
     def generate_enum(self, type_def: Enum):

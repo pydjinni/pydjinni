@@ -56,7 +56,6 @@ class CppMarshal(Marshal[CppConfig, CppExternalType], types=external_types):
         )
 
 
-
     def marshal_field(self, field_def: BaseField):
         comment = mistletoe.markdown(field_def.comment, DoxygenCommentRenderer) if field_def.comment else ''
         match field_def:

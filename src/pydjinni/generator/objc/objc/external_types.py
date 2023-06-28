@@ -1,19 +1,14 @@
 from pathlib import Path
 
 from .type import ObjcExternalType
-from pydjinni.generator.marshal import ExternalTypes
 
-external_types = ExternalTypes[ObjcExternalType](
-    i8=ObjcExternalType(
-        typename="int8_t",
-        boxed="NSNumber",
-        header=Path("<Foundation/Foundation.h>"),
-        pointer=False
-    ),
-    i16=ObjcExternalType(
-        typename="int16_t",
-        boxed="NSNumber",
-        header=Path("<Foundation/Foundation.h>"),
-        pointer=False
-    )
-)
+external_types: dict[str, ObjcExternalType] = {
+    "bool": ObjcExternalType(typename="BOOL", boxed="NSNumber", pointer=False),
+    "i8": ObjcExternalType(typename="int8_t", boxed="NSNumber", pointer=False),
+    "i16": ObjcExternalType(typename="int16_t", boxed="NSNumber", pointer=False),
+    "i32": ObjcExternalType(typename="int32_t", boxed="NSNumber", pointer=False),
+    "i64": ObjcExternalType(typename="int64_t", boxed="NSNumber", pointer=False),
+    "f32": ObjcExternalType(typename="float", boxed="NSNumber", pointer=False),
+    "f64": ObjcExternalType(typename="double", boxed="NSNumber", pointer=False),
+    "string": ObjcExternalType(typename="NSString", boxed="NSString")
+}

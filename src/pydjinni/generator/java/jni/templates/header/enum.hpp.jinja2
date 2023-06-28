@@ -4,8 +4,8 @@
 #pragma once
 
 #include "pydjinni/jni/support.hpp"
-{% for include in type_def.jni.includes -%}
-#include "{{ include | header }}"
+{% for header in type_def.dependencies | headers('jni') -%}
+#include {{ header }}
 {% endfor -%}
 {% endblock %}
 

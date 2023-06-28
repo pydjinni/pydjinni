@@ -1,14 +1,15 @@
 {% extends "base.jinja2" %}
 
 {% block header %}
-{% for dependency in type_def.dependencies -%}
-#import {{ dependency.objc.header | header }}
+{% for header in type_def.dependencies | headers('objc') -%}
+#import {{ header }}
 {% endfor %}
-#import "{{ type_def.objcpp.header }}"
-#import "{{ type_def.objc.header }}"
-#import "pydjinni/objc/marshal.h"
+{% for header in type_def.dependencies | headers('objcpp') -%}
+#include {{ header }}
+{% endfor %}
+#import {{ type_def.objcpp.header | quote }}
+#import {{ type_def.objc.header | quote }}
 #import "pydjinni/objc/error.h"
-#import "pydjinni/marshal.h"
 #import "pydjinni/cpp_wrapper_cache.h"
 #import "pydjinni/objc_wrapper_cache.h"
 #include <exception>

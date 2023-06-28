@@ -10,6 +10,7 @@ class BaseExternalType(BaseModel):
     class Primitive(str, Enum):
         int = 'int'
         float = 'float'
+        double = 'double'
         string = 'string'
         bool = 'bool'
         interface = 'interface'
@@ -37,13 +38,7 @@ class BaseType(BaseModel, extra='allow'):
     position: int = -1
     namespace: list[Identifier] = []
     comment: list[str] | None = None
-    dependencies: list[BaseType | BaseExternalType] = []
-
-
-class BaseField(BaseModel, extra='allow'):
-    name: Identifier
-    position: int = -1
-    comment: list[str] | None = None
+    dependencies: list[TypeReference] = []
 
 
 class TypeReference(BaseModel):
@@ -54,6 +49,13 @@ class TypeReference(BaseModel):
         default=None,
         repr=False
     )
+
+
+
+class BaseField(BaseModel, extra='allow'):
+    name: Identifier
+    position: int = -1
+    comment: list[str] | None = None
 
 
 class Assignment(BaseModel):

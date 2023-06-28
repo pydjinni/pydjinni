@@ -2,8 +2,8 @@
 {% from "macros.jinja2" import constant_declaration %}
 
 {% block header %}
-{% for dependency in type_def.dependencies -%}
-#import {{ dependency.objc.header | header }}
+{% for header in type_def.dependencies | headers('objc') -%}
+#import {{ header }}
 {% endfor %}
 {% endblock %}
 
@@ -13,17 +13,21 @@ NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
 @interface {{ type_def.objc.typename }} : NSObject
 - (nonnull instancetype){{ type_def.objc.init }}
     {%- for field in type_def.fields -%}
-        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}({{ field.type_ref.type_def.objc.typename }}){{ field.objc.name }}
+        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}{{ field.objc.type_decl }}{{ field.objc.name }}
     {%- endfor -%};
 + (nonnull instancetype){{ type_def.objc.convenience_init }}
     {%- for field in type_def.fields -%}
-        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}({{ field.type_ref.type_def.objc.typename }}){{ field.objc.name }}
+        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}{{ field.objc.type_decl }}{{ field.objc.name }}
     {%- endfor -%};
 {% for field in type_def.fields %}
 {% if field.comment %}
 {{ field.objc.comment }}
 {% endif %}
+{% if field.type_ref.type_def.objc.pointer %}
+@property (nonatomic, readonly, nonnull) {{ field.type_ref.type_def.objc.typename }} * {{ field.objc.name }};
+{% else %}
 @property (nonatomic, readonly) {{ field.type_ref.type_def.objc.typename }} {{ field.objc.name }};
+{% endif %}
 {% endfor %}
 @end
 

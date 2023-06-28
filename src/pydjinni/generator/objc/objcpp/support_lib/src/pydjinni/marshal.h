@@ -85,30 +85,6 @@ class F64 : public Primitive<F64, double> {
     static Boxed::ObjcType box(CppType x) noexcept { return [NSNumber numberWithDouble:x]; }
 };
 
-template<class CppEnum, class ObjcEnum>
-struct Enum {
-    using CppType = CppEnum;
-    using ObjcType = ObjcEnum;
-
-    static CppType toCpp(ObjcType e) noexcept { return static_cast<CppType>(e); }
-    static ObjcType fromCpp(CppType e) noexcept { return static_cast<ObjcType>(e); }
-
-    struct Boxed {
-        using ObjcType = NSNumber*;
-        static CppType toCpp(ObjcType x) noexcept { return toCpp(x, Tag<typename std::underlying_type<CppType>::type>()); }
-        static ObjcType fromCpp(CppType x) noexcept { return fromCpp(x, Tag<typename std::underlying_type<CppType>::type>()); }
-
-    private:
-        template<class T> struct Tag { };
-
-        static CppType toCpp(ObjcType x, Tag<int>) noexcept { return Enum::toCpp(static_cast<Enum::ObjcType>([x integerValue])); }
-        static ObjcType fromCpp(CppType x, Tag<int>) noexcept { return [NSNumber numberWithInteger:static_cast<NSInteger>(Enum::fromCpp(x))]; }
-
-        static CppType toCpp(ObjcType x, Tag<unsigned>) noexcept { return Enum::toCpp(static_cast<Enum::ObjcType>([x unsignedIntegerValue])); }
-        static ObjcType fromCpp(CppType x, Tag<unsigned>) noexcept { return [NSNumber numberWithUnsignedInteger:static_cast<NSUInteger>(Enum::fromCpp(x))]; }
-    };
-};
-
 struct String {
     using CppType = std::string;
     using ObjcType = NSString*;

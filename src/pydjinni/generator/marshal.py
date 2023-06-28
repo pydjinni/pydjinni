@@ -7,13 +7,14 @@ from pydantic import BaseModel
 
 from pydjinni.config.config_model_builder import ConfigModelBuilder
 from pydjinni.config.types import OutPaths, IdentifierStyle
-from pydjinni.exceptions import ConfigurationException
-from pydjinni.generator.external_types import ExternalTypes, ExternalTypeDef, ExternalTypesBuilder
+from pydjinni.exceptions import ConfigurationException, ApplicationException
+from pydjinni.generator.external_types import ExternalTypesBuilder
+from pydjinni.parser.ast import Record, Interface, Enum, Flags
 from pydjinni.parser.base_models import BaseType, BaseField
 from pydjinni.parser.type_model_builder import TypeModelBuilder
 
 ConfigModel = TypeVar("ConfigModel", bound=BaseModel)
-
+ExternalTypeDef = TypeVar("ExternalTypeDef", bound=BaseModel)
 
 class Marshal(ABC, Generic[ConfigModel, ExternalTypeDef]):
     """
@@ -23,12 +24,12 @@ class Marshal(ABC, Generic[ConfigModel, ExternalTypeDef]):
     Methods defined in the Marshal are supposed to be called from the Jinja template that renders the output.
     """
 
-    class MarshalException(Exception):
+    class MarshalException(ApplicationException, code=160):
         def __init__(self, input_def: BaseType | BaseField, message: str):
             super().__init__(message)
             self.input_def = input_def
 
-    def __init_subclass__(cls, types: ExternalTypes[ExternalTypeDef]) -> None:
+    def __init_subclass__(cls, types: dict[str, ExternalTypeDef]) -> None:
         cls._config_model, cls._external_type_def = get_args(cls.__orig_bases__[0])
         cls.types = types
 
@@ -89,15 +90,32 @@ class Marshal(ABC, Generic[ConfigModel, ExternalTypeDef]):
     def marshal_field(self, field_def: BaseField):
         raise NotImplementedError
 
-    def marshal(self, input_def: BaseType | BaseField):
+    def marshal(self, type_def: BaseType):
         if self.config:
             try:
-                match input_def:
-                    case BaseType():
-                        self.marshal_type(input_def)
-                    case BaseField():
-                        self.marshal_field(input_def)
+                self.marshal_type(type_def)
+                match type_def:
+                    case Record():
+                        for field_def in type_def.fields:
+                            self.marshal_field(field_def)
+                        for constant in type_def.constants:
+                            self.marshal_field(constant)
+                    case Interface():
+                        for method in type_def.methods:
+                            self.marshal_field(method)
+                            for parameter in method.parameters:
+                                self.marshal_field(parameter)
+                        for property_def in type_def.properties:
+                            self.marshal_field(property_def)
+                        for constant in type_def.constants:
+                            self.marshal_field(constant)
+                    case Enum():
+                        for item in type_def.items:
+                            self.marshal_field(item)
+                    case Flags():
+                        for flag in type_def.flags:
+                            self.marshal_field(flag)
             except pydantic.ValidationError as e:
-                raise Marshal.MarshalException(input_def, str(e))
+                raise Marshal.MarshalException(type_def, str(e))
         else:
             raise ConfigurationException(f"Missing configuration for 'generator.{self.key}'!")

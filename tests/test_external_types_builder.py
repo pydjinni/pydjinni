@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from pydjinni.generator.external_types import ExternalTypesBuilder, ExternalTypes
+from pydjinni.generator.external_types import ExternalTypesBuilder
 
 
 def test_register_external_types():
@@ -11,16 +11,16 @@ def test_register_external_types():
     # AND GIVEN an ExternalBaseType model
     class ExternalBaseType(BaseModel):
         name: str
-        my: MyExternalType
+        my: MyExternalType = None
 
     # AND GIVEN an ExternalTypesBuilder
     builder = ExternalTypesBuilder(external_base_type=ExternalBaseType)
 
-    # AND GIVEN an ExternalTypes instance
-    external_types = ExternalTypes[MyExternalType](
-        i8=MyExternalType(typename="foo"),
-        i16=MyExternalType(typename="bar")
-    )
+    # AND GIVEN MyExternalType definitions
+    external_types: dict[str, MyExternalType] = {
+        "i8": MyExternalType(typename="foo"),
+        "i16": MyExternalType(typename="bar")
+    }
 
     # WHEN registering an external type
     builder.register(key="my", external_types=external_types)
@@ -28,12 +28,8 @@ def test_register_external_types():
     # AND WHEN building the external types
     types = builder.build()
 
-    # THEN types should be a list with all the defined types
-    assert len(types) == len(ExternalTypes.model_fields)
-
-    # THEN the name of each type should be equivalent to its ExternalTypes attribute name
-    assert types[0].name == list(ExternalTypes.model_fields.keys())[0]
-
-    # THEN each type should contain a key 'my' with a MyExternalType object
-    assert types[0].my.typename == "foo"
+    # THEN the types that are given as MyExternalType definitions should by available for the `my` language
+    for external_type in types:
+        if external_type.my:
+            assert external_type.my == external_types[external_type.name]
 

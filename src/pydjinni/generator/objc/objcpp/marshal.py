@@ -13,10 +13,7 @@ class ObjcppMarshal(Marshal[ObjcppConfig, ObjcppExternalType], types=external_ty
     def marshal_type(self, type_def: BaseType):
         namespace = self.marshal_namespace(type_def, IdentifierStyle.Case.pascal, self.config.namespace)
         name = type_def.name.convert(IdentifierStyle.Case.pascal)
-        if isinstance(type_def, Enum) or isinstance(type_def, Flags):
-            translator = f"::pydjinni::translators::objc::Enum<{type_def.cpp.typename}, {type_def.objc.typename}>"
-        else:
-            translator = "::" + "::".join(namespace + [name])
+        translator = "::" + "::".join(namespace + [name])
         type_def.objcpp = ObjcppType(
             name=name,
             namespace="::".join(namespace),

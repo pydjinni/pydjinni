@@ -232,7 +232,6 @@ class API:
 
             parser = IdlParser(
                 resolver=self._resolver,
-                marshals=marshals,
                 targets=[key for key in self._generate_targets],
                 file_reader=self._file_reader_writer,
                 include_dirs=generate_config.include_dirs,
@@ -242,6 +241,11 @@ class API:
 
             # parsing the input IDL. The output is an AST that contains type definitions for each provided marshal
             ast = parser.parse()
+
+            for marshal in marshals:
+                for type_def in ast:
+                    marshal.marshal(type_def)
+
             return API.ConfiguredContext.GenerateContext(
                 generate_targets=self._generate_targets,
                 file_writer=self._file_reader_writer,

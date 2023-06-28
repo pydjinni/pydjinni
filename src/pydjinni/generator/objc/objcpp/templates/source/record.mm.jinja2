@@ -1,7 +1,7 @@
 {% extends "base.jinja2" %}
 
 {% block header %}
-#import "{{ type_def.objcpp.header }}"
+#import {{ type_def.objcpp.header | quote }}
 #import "pydjinni/marshal.h"
 #include <cassert>
 {% endblock %}

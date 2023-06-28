@@ -37,11 +37,12 @@ class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
             source=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.source_extension}"),
             namespace="::".join(namespace),
             type_signature='/'.join(java_path),
-            jni_prefix=self.marshal_jni_prefix(["Java"] + java_path)
+            jni_prefix=self.marshal_jni_prefix(["Java"] + java_path),
         )
 
     def _get_field_accessor(self, native_type: NativeType) -> str:
-        return f"Get{native_type[1:].capitalize()}Field"
+        type = NativeType.object if native_type is NativeType.string else native_type
+        return f"Get{type[1:].capitalize()}Field"
 
     def marshal_field(self, field_def: BaseField):
         match field_def:
@@ -60,5 +61,5 @@ class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
                     name=name,
                     jni_name=name,
                     type_signature=self._marshal_method_type_signature(field_def),
-                    routine_name=f"Call{field_def.return_type_ref.type_def.jni.typename[1:].capitalize()}Method" if field_def.return_type_ref else "CallVoidMethod"
+                    routine_name=f"Call{field_def.return_type_ref.type_def.jni.typename[1:].capitalize() if field_def.return_type_ref else 'Void'}Method"
                 )

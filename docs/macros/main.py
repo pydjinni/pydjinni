@@ -133,7 +133,8 @@ def define_env(env):
     def internal_types():
         output = ""
         for type_def in api.internal_types:
-            output += f"\n## {type_def.name}\n" \
+            output += f"\n## {type_def.name}\n\n" \
+                      f"{type_def.comment}\n\n" \
                       "| Target | Typename | Boxed |\n" \
                       "|--------|----------|-------|\n"
             for target in api.generation_targets:

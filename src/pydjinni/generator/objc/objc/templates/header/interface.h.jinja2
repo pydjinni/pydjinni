@@ -2,8 +2,8 @@
 {% from "macros.jinja2" import constant_declaration %}
 
 {% block header %}
-{% for dependency in type_def.dependencies -%}
-#import {{ dependency.objc.header | header }}
+{% for header in type_def.dependencies | headers('objc') -%}
+#import {{ header }}
 {% endfor %}
 {% endblock %}
 

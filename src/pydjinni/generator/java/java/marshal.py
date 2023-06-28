@@ -4,7 +4,7 @@ import mistletoe
 
 from pydjinni.generator.marshal import Marshal
 from pydjinni.parser.ast import Enum, Record, Interface, Flags
-from pydjinni.parser.base_models import BaseType, BaseField, Constant, BaseClassType
+from pydjinni.parser.base_models import BaseType, BaseField, Constant
 from pydjinni.parser.identifier import Identifier
 from .comment_renderer import JavaDocCommentRenderer
 from .config import JavaConfig

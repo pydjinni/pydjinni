@@ -8,14 +8,13 @@ import pytest
 from pydjinni.exceptions import FileNotFoundException
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.file.processed_files_model_builder import ProcessedFiles
-from pydjinni.generator.marshal import Marshal
 from pydjinni.parser.ast import Record, Enum, Flags, Interface, TypeReference
-from pydjinni.parser.base_models import BaseType, BaseField, BaseExternalType
+from pydjinni.parser.base_models import BaseType, BaseExternalType
 from pydjinni.parser.parser import IdlParser
 from pydjinni.parser.resolver import Resolver
 
 
-def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, MagicMock, MagicMock]:
+def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, MagicMock]:
     """
     Prepares the testing environment by initializing the parser and the file to be parsed.
 
@@ -29,7 +28,6 @@ def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, MagicMock, MagicMo
     reader = FileReaderWriter()
     reader.setup(ProcessedFiles)
     resolver_mock = MagicMock(spec=Resolver)
-    marshal_mock = MagicMock(spec=Marshal)
 
     # AND GIVEN an input file
     input_file = tmp_path / f"{uuid.uuid4()}.djinni"
@@ -38,7 +36,6 @@ def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, MagicMock, MagicMo
     # GIVEN a Parser instance
     parser = IdlParser(
         resolver=resolver_mock,
-        marshals=[marshal_mock],
         file_reader=reader,
         targets=['cpp', 'java'],
         include_dirs=[tmp_path],
@@ -46,7 +43,7 @@ def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, MagicMock, MagicMo
         idl=input_file
     )
 
-    return parser, resolver_mock, marshal_mock
+    return parser, resolver_mock
 
 
 TypeDef = TypeVar("TypeDef", bound=BaseType)
@@ -109,7 +106,7 @@ def record_resolve(name, field_name, field_typename, field_primitive):
 
 
 def test_parsing_enum(tmp_path: Path):
-    parser, _, _ = given(
+    parser, _ = given(
         tmp_path=tmp_path,
         input_idl="""
         foo = enum {
@@ -137,7 +134,7 @@ def assert_flag(flag: Flags.Flag, name: str, none: bool = False, all: bool = Fal
 
 
 def test_parsing_flags(tmp_path: Path):
-    parser, _, _ = given(
+    parser, _ = given(
         tmp_path=tmp_path,
         input_idl="""
         foo = flags {
@@ -167,7 +164,7 @@ def assert_field(field: Record.Field, name: str, typename: str):
 
 
 def test_parsing_record(tmp_path: Path):
-    parser, _, _ = given(
+    parser, _ = given(
         tmp_path=tmp_path,
         input_idl="""
         foo = record {
@@ -206,7 +203,7 @@ def test_parsing_record(tmp_path: Path):
 ])
 def test_parsing_record_deriving(tmp_path: Path, deriving, eq, ord, json, string):
     # GIVEN an idl file that defines a record that derives some extensions
-    parser, _, _ = given(
+    parser, _ = given(
         tmp_path=tmp_path,
         input_idl=f"""
             foo = record {{
@@ -226,7 +223,7 @@ def test_parsing_record_deriving(tmp_path: Path, deriving, eq, ord, json, string
 
 def test_parsing_base_record(tmp_path: Path):
     # GIVEN an idl file that defines a record will be extended in C++
-    parser, _, _ = given(
+    parser, _ = given(
         tmp_path=tmp_path,
         input_idl="""
                 foo = record +cpp {
@@ -259,7 +256,7 @@ def assert_method(method: Interface.Method, name: str, params: list[tuple[str, s
 
 
 def test_parsing_interface(tmp_path: Path):
-    parser, _, _ = given(
+    parser, _ = given(
         tmp_path=tmp_path,
         input_idl="""
             foo = interface +cpp {
@@ -314,7 +311,7 @@ def test_parsing_interface(tmp_path: Path):
 
 def test_parsing_interface_unknown_target(tmp_path: Path):
     # GIVEN an idl file that references an unknown target language for the defined interface
-    parser, _, _ = given(
+    parser, _ = given(
         tmp_path=tmp_path,
         input_idl="""
             foo = interface +foo {
@@ -330,7 +327,7 @@ def test_parsing_interface_unknown_target(tmp_path: Path):
 
 def test_parsing_interface_no_target(tmp_path: Path):
     # GIVEN an idl file that references no target language for the defined interface
-    parser, _, _ = given(
+    parser, _ = given(
         tmp_path=tmp_path,
         input_idl="""
             foo = interface {
@@ -348,7 +345,7 @@ def test_parsing_interface_no_target(tmp_path: Path):
 
 def test_parsing_interface_minus_target(tmp_path: Path):
     # GIVEN an idl file that only references the exclusion of a target from the defined interface
-    parser, _, _ = given(
+    parser, _ = given(
         tmp_path=tmp_path,
         input_idl="""
             foo = interface -cpp {
@@ -365,7 +362,7 @@ def test_parsing_interface_minus_target(tmp_path: Path):
 
 def test_parsing_interface_static_not_allowed(tmp_path):
     # GIVEN an idl file that defines an interface with a static method that is not targeting `cpp`
-    parser, resolver_mock, _ = given(
+    parser, resolver_mock = given(
         tmp_path=tmp_path,
         input_idl="""
             foo = interface -cpp {
@@ -381,7 +378,7 @@ def test_parsing_interface_static_not_allowed(tmp_path):
 
 def test_parsing_interface_static_and_const_not_allowed(tmp_path):
     # GIVEN an idl file that defines an interface with a static const method
-    parser, _, _ = given(
+    parser, _ = given(
         tmp_path=tmp_path,
         input_idl="""
             foo = interface +cpp {
@@ -397,7 +394,7 @@ def test_parsing_interface_static_and_const_not_allowed(tmp_path):
 
 def test_parsing_main_interface(tmp_path):
     # GIVEN an idl file that defines a main interface (code entrypoint)
-    parser, _, _ = given(
+    parser, _ = given(
         tmp_path=tmp_path,
         input_idl="""
             foo = main interface +cpp {}       
@@ -413,7 +410,7 @@ def test_parsing_main_interface(tmp_path):
 @pytest.mark.parametrize("targets", ["-cpp", "+cpp +java"])
 def test_parsing_main_interface_not_cpp(tmp_path, targets):
     # GIVEN an idl file that defines a main interface (code entrypoint)
-    parser, _, _ = given(
+    parser, _ = given(
         tmp_path=tmp_path,
         input_idl=f"""
             foo = main interface {targets} {{}}       
@@ -426,7 +423,7 @@ def test_parsing_main_interface_not_cpp(tmp_path, targets):
 
 
 def test_parsing_invalid_input(tmp_path: Path):
-    parser, _, _ = given(
+    parser, _ = given(
         tmp_path=tmp_path,
         input_idl="****",
     )
@@ -439,7 +436,7 @@ def test_parsing_invalid_input(tmp_path: Path):
 
 def test_parsing_missing_type(tmp_path):
     # GIVEN an input with an unknown type reference
-    parser, resolver_mock, _ = given(
+    parser, resolver_mock = given(
         tmp_path=tmp_path,
         input_idl="""
         foo = record {
@@ -461,7 +458,7 @@ def test_parsing_missing_type(tmp_path):
 
 def test_parsing_duplicate_type(tmp_path: Path):
     # GIVEN an input that redefines an existing type
-    parser, resolver_mock, _ = given(
+    parser, resolver_mock = given(
         tmp_path=tmp_path,
         input_idl="""
             i8 = record {
@@ -482,7 +479,7 @@ def test_parsing_duplicate_type(tmp_path: Path):
 
 
 def test_parsing_non_existing_file(tmp_path: Path):
-    parser, _, _ = given(
+    parser, _ = given(
         tmp_path=tmp_path,
         input_idl=""
     )
@@ -494,31 +491,9 @@ def test_parsing_non_existing_file(tmp_path: Path):
         parser.parse()
 
 
-def test_marshalling_error(tmp_path: Path):
-    # GIVEN input that cannot be marshalled by one of the registered Marshals
-    parser, _, marshal_mock = given(
-        tmp_path=tmp_path,
-        input_idl="""
-            i8 = record {
-                foo: i8;
-            }
-            """
-    )
-
-    def marshal(input_def: BaseType | BaseField):
-        raise Marshal.MarshalException(input_def, "")
-
-    marshal_mock.marshal.side_effect = marshal
-
-    # WHEN parsing the input
-    # THEN a IdlParser.MarshallingException should be raised
-    with pytest.raises(IdlParser.MarshallingException):
-        parser.parse()
-
-
 def test_import(tmp_path: Path):
     # GIVEN an idl file that imports another file
-    parser, _, _ = given(
+    parser, _ = given(
         tmp_path=tmp_path,
         input_idl="""
                 @import "foo.pydjinni"
@@ -542,7 +517,7 @@ def test_import(tmp_path: Path):
 
 def test_missing_import(tmp_path: Path):
     # GIVEN an idl file that imports another idl file that does not exist
-    parser, _, _ = given(
+    parser, _ = given(
         tmp_path=tmp_path,
         input_idl="""
                     @import "foo.pydjinni"
@@ -556,7 +531,7 @@ def test_missing_import(tmp_path: Path):
 
 def test_extern(tmp_path: Path):
     # GIVEN an idl file that references an extern type
-    parser, resolver_mock, _ = given(
+    parser, resolver_mock = given(
         tmp_path=tmp_path,
         input_idl="""
         @extern "extern.yaml"
@@ -580,7 +555,7 @@ def test_extern(tmp_path: Path):
 
 def test_missing_extern(tmp_path: Path):
     # GIVEN an idl file that references an extern type that does not exist
-    parser, resolver_mock, _ = given(
+    parser, resolver_mock = given(
         tmp_path=tmp_path,
         input_idl="""
             @extern "extern.yaml"
@@ -595,7 +570,7 @@ def test_missing_extern(tmp_path: Path):
 
 def test_namespace(tmp_path: Path):
     # GIVEN an idl file that defines namespaces
-    parser, _, _ = given(
+    parser, _ = given(
         tmp_path=tmp_path,
         input_idl="""
         namespace foo.bar {
@@ -633,7 +608,7 @@ def test_namespace(tmp_path: Path):
 ])
 def test_record_primitive_constant(tmp_path, typename, primitive, literal_value, value):
     # GIVEN an idl file that defines a record with a constant
-    parser, resolver_mock, _ = given(
+    parser, resolver_mock = given(
         tmp_path=tmp_path,
         input_idl=f"""
         foo = record {{
@@ -680,7 +655,7 @@ def test_record_primitive_constant(tmp_path, typename, primitive, literal_value,
 ])
 def test_record_wrong_primitive_constant(tmp_path, typename, primitive, literal_value):
     # GIVEN an idl file that defines a record with a constant
-    parser, resolver_mock, _ = given(
+    parser, resolver_mock = given(
         tmp_path=tmp_path,
         input_idl=f"""
             foo = record {{
@@ -709,7 +684,7 @@ def test_record_wrong_primitive_constant(tmp_path, typename, primitive, literal_
 ])
 def test_record_wrong_const_record_assignment(tmp_path, literal_value):
     # GIVEN an idl file that assigns a primitive value to a const record type
-    parser, resolver_mock, _ = given(
+    parser, resolver_mock = given(
         tmp_path=tmp_path,
         input_idl=f"""
                 bar = record {{
@@ -728,7 +703,7 @@ def test_record_wrong_const_record_assignment(tmp_path, literal_value):
 
 def test_record_wrong_const_unknown_field_assignment(tmp_path):
     # GIVEN an idl file that assigns an object with an unknown field to a const value
-    parser, resolver_mock, _ = given(
+    parser, resolver_mock = given(
         tmp_path=tmp_path,
         input_idl="""
                     bar = record {

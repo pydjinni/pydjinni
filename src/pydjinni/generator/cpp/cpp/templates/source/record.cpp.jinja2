@@ -2,7 +2,7 @@
 {% from "macros.jinja2" import constant_definition %}
 
 {% block header %}
-#include {{ type_def.cpp.header | header }}
+#include {{ type_def.cpp.header | quote }}
 {% endblock %}
 
 {% block content %}

@@ -1,4 +1,4 @@
-from pydjinni.generator.filters import header
+from pydjinni.generator.filters import quote, headers
 from pydjinni.generator.generator import Generator
 from pydjinni.parser.ast import Enum, Flags, Record, Interface
 from pydjinni.parser.base_models import BaseType
@@ -12,7 +12,7 @@ class JniGenerator(
     writes_header=True,
     writes_source=True,
     support_lib_commons=True,
-    filters=[header]
+    filters=[quote, headers]
 ):
 
     def generate_enum(self, type_def: Enum):

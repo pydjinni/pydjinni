@@ -2,7 +2,7 @@
 {% from "macros.jinja2" import constant_definition %}
 
 {% block header %}
-#import {{ type_def.objc.header | header }}
+#import {{ type_def.objc.header | quote }}
 {% endblock %}
 
 {% block content %}
@@ -14,7 +14,7 @@
 
 - (nonnull instancetype){{ type_def.objc.init }}
     {%- for field in type_def.fields -%}
-        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}({{ field.type_ref.type_def.objc.typename }}){{ field.objc.name }}
+        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}{{ field.objc.type_decl ~ field.objc.name }}
     {%- endfor %} {
     if(self = [super init]) {
         {% for field in type_def.fields %}
@@ -26,7 +26,7 @@
 
 + (nonnull instancetype){{ type_def.objc.convenience_init }}
     {%- for field in type_def.fields -%}
-        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}({{ field.type_ref.type_def.objc.typename }}){{ field.objc.name }}
+        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}{{ field.objc.type_decl ~ field.objc.name }}
     {%- endfor %} {
     return [({{ type_def.objc.typename }}*)[self alloc] {{ type_def.objc.init }}
     {%- for field in type_def.fields -%}
@@ -43,7 +43,13 @@
     {%- endfor -%}
     >", self.class
     {%- for field in type_def.fields -%}
-        , @(self.{{ field.objc.name }})
+        {%- if field.type_ref.type_def.primitive.value == "bool" -%}
+            , self.{{ field.objc.name }} ? @"YES" : @"NO"
+        {%- elif field.type_ref.type_def.objc.boxed == "NSNumber" -%}
+            , @(self.{{ field.objc.name }})
+        {%- else -%}
+            , self.{{ field.objc.name }}
+        {%- endif -%}
     {%- endfor -%}
     ];
 }

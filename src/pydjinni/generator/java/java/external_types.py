@@ -1,17 +1,12 @@
 from .type import JavaExternalType
-from pydjinni.generator.marshal import ExternalTypes
 
-external_types = ExternalTypes[JavaExternalType](
-    i8=JavaExternalType(
-        typename='byte',
-        boxed='Byte',
-        reference=False,
-        generic=False
-    ),
-    i16=JavaExternalType(
-        typename="short",
-        boxed="Short",
-        reference=False,
-        generic=False
-    )
-)
+external_types: dict[str, JavaExternalType] = {
+    "bool": JavaExternalType(typename="boolean", boxed="Boolean"),
+    "i8": JavaExternalType(typename='byte', boxed='Byte', reference=False),
+    "i16": JavaExternalType(typename="short", boxed="Short", reference=False),
+    "i32": JavaExternalType(typename="int", boxed="Integer", reference=False),
+    "i64": JavaExternalType(typename="long", boxed="Long", reference=False),
+    "f32": JavaExternalType(typename="float", boxed="Float", reference=False),
+    "f64": JavaExternalType(typename="double", boxed="Double", reference=False),
+    "string": JavaExternalType(typename="String", boxed="String", reference=False)
+}

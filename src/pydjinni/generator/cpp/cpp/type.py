@@ -10,7 +10,7 @@ class CppExternalType(BaseModel):
             "int8_t", "::some::Type"
         ]
     )
-    header: Path
+    header: Path = None
     by_value: bool = False
 
 

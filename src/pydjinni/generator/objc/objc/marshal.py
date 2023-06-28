@@ -58,7 +58,7 @@ class ObjcMarshal(Marshal[ObjcConfig, ObjcExternalType], types=external_types):
             case Record.Field() | Constant():
                 style = self.config.identifier.field
                 specifier = None
-                type_decl = None
+                type_decl = self._type_decl(field_def.type_ref.type_def)
             case Interface.Method.Parameter():
                 style = self.config.identifier.field
                 specifier = None
