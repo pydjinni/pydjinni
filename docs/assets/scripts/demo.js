@@ -153,7 +153,7 @@ async function main(version, localFallback) {
             reportInstalledPackages(micropip);
         }, 200);
         await micropip.install("pygments==2.15");
-        await micropip.install("https://github.com/pydantic/pydantic-core/releases/download/v0.23.1/pydantic_core-0.23.1-cp311-cp311-emscripten_3_1_32_wasm32.whl");
+        await micropip.install("https://github.com/pydantic/pydantic-core/releases/download/v0.39.0/pydantic_core-0.39.0-cp311-cp311-emscripten_3_1_32_wasm32.whl");
         if(localFallback) {
             await micropip.install(`http://localhost:8001/pydjinni-${version}-py3-none-any.whl`)
         } else {
@@ -169,37 +169,10 @@ async function main(version, localFallback) {
     }
 }
 
-/**
- * Visualizes the generated files for a specific target language.
- * @param {string} path The path where the generated files can be found. This should contain files that have already been
- *             rendered with Pygments.
- * @param {string} targetElementId The id of the container that the files should be visualized in.
- * @returns {Promise<void>}
- */
-async function visualizeResults(path, targetElementId) {
-    let pyodide = await pyodideReadyPromise;
-    const target_element = document.getElementById(targetElementId);
-    target_element.innerHTML = "";
-    const files = pyodide.FS.readdir(path)
-    files.forEach((file) => {
-        if(file !== ".." && file !== ".") {
-            const file_content = pyodide.FS.readFile(path + "/" + file, { encoding: 'utf8' })
-            const container = document.createElement("div");
-            container.className = "output_container"
-            const title = document.createElement("div");
-            title.className = "filename";
-            title.innerText = file;
-            container.appendChild(title);
-            const code = document.createElement("code");
-            code.innerHTML = file_content;
-            container.appendChild(code)
-            target_element.appendChild(container);
-        }
-    })
-}
 
 /**
- * takes IDL content and parses it with PyDjinni. Generates output files in the target languages C++, Java, Objective-C.
+ * takes IDL content and parses it with PyDjinni. Generates output files in the target languages C++, Java, Objective-C,
+ * and renders them to the DOM with syntax highlighting.
  * @param {string} idlContent
  * @param {string} configContent
  * @returns {Promise<void>}
@@ -212,6 +185,7 @@ async function generate(idlContent, configContent) {
     try {
         const result = pyodide.runPython(`
             import shutil
+            import js
             from pydjinni import API
             from pathlib import Path
             from pydjinni.exceptions import ApplicationException, ConfigurationException
@@ -262,18 +236,29 @@ async function generate(idlContent, configContent) {
                     }
                 }).parse("/input.djinni").generate("cpp", clean=True).generate("java", clean=True).generate("objc", clean=True)
                 
-                def highlight_generated_files(source_path: Path, target_path: Path, lexer):
-                    files = source_path.glob("*")
-                    shutil.rmtree(target_path, ignore_errors=True)
-                    target_path.mkdir(parents=True, exist_ok=True)
+                def render_generated_files(source_path: Path, target_path: Path, lexer, id: str):
+                    files = source_path.rglob("*")
+                    target_element = js.document.getElementById(id)
+                    target_element.innerHTML = ""
                     for file in files:
                         if file.is_file():
-                            output_file = target_path / file.name
-                            output_file.write_text(highlight(file.read_text(), lexer, HtmlFormatter()))
+                            relative_file = str(file.relative_to(source_path))
+                            output_content = highlight(file.read_text(), lexer, HtmlFormatter())
+                            container = js.document.createElement("div")
+                            container.className = "output_container"
+                            title = js.document.createElement("div")
+                            title.className = "filename"
+                            title.innerText = relative_file
+                            code = js.document.createElement("code")
+                            code.innerHTML = output_content;
+                            container.appendChild(title)
+                            container.appendChild(code)
+                            target_element.appendChild(container)
+                            
 
-                highlight_generated_files(cpp_header_path, cpp_html_path, CppLexer())
-                highlight_generated_files(java_source_path, java_html_path, JavaLexer())
-                highlight_generated_files(objc_source_path, objc_html_path, ObjectiveCLexer())
+                render_generated_files(cpp_header_path, cpp_html_path, CppLexer(), id="generated_cpp_files")
+                render_generated_files(java_source_path, java_html_path, JavaLexer(), id="generated_java_files")
+                render_generated_files(objc_source_path, objc_html_path, ObjectiveCLexer(), id="generated_objc_files")
                 result = (0, "success")
             except IdlParser.ParsingException as e:
                 result = (1, f"{e}")
@@ -297,9 +282,6 @@ async function generate(idlContent, configContent) {
             idlInputElement.className = ""
             configInputElement.className = ""
             reportSuccess(result.get(1));
-            await visualizeResults("/out/cpp/html", "generated_cpp_files");
-            await visualizeResults("/out/java/html", "generated_java_files");
-            await visualizeResults("/out/objc/html", "generated_objc_files");
         }
     } catch (err) {
         reportError(err)
@@ -340,7 +322,7 @@ function demoInit() {
     // this will be called once the Pyodide library is downloaded.
     pyodideScript.addEventListener("load", () => {
         const version = document.getElementById("pydjinni_version").innerText
-        const localFallback = location.hostname === "localhost"
+        const localFallback = location.hostname === "localhost" || location.hostname === "127.0.0.1"
         if(localFallback) {
             console.info("This demo has been detected to run on 'localhost'.")
             console.info("run 'python -m build && python -m http.server --directory ./dist 8001' before loading the demo.")
