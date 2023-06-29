@@ -3,6 +3,9 @@
 
 {% block header %}
 {% endblock %}
+{% if type_def.dependencies | needs_optional %}
+#include <optional>
+{% endif %}
 {% for header in type_def.dependencies | headers('cpp') -%}
 #include {{ header }}
 {% endfor %}

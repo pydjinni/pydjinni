@@ -89,6 +89,7 @@ nav:
       - IDL: idl.md
       - Configuration: config.md
       - Types: types.md
+      - Deriving: deriving.md
       - External Types: external_types.md
       - Processed Files: processed_files.md
       - CMake: cmake.md

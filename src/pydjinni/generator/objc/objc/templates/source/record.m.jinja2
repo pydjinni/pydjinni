@@ -45,7 +45,7 @@
     {%- for field in type_def.fields -%}
         {%- if field.type_ref.type_def.primitive.value == "bool" -%}
             , self.{{ field.objc.name }} ? @"YES" : @"NO"
-        {%- elif field.type_ref.type_def.objc.boxed == "NSNumber" -%}
+        {%- elif not field.type_ref.type_def.objc.pointer and not field.type_ref.optional -%}
             , @(self.{{ field.objc.name }})
         {%- else -%}
             , self.{{ field.objc.name }}

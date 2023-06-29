@@ -45,6 +45,7 @@ class TypeReference(BaseModel):
     name: Identifier
     position: int
     parameters: list[TypeReference]
+    optional: bool = False
     type_def: BaseExternalType | BaseType = Field(
         default=None,
         repr=False

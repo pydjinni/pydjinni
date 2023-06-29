@@ -18,6 +18,10 @@ Foo Helper::get_foo(const Foo& foo) {
     assert(foo.string_list.size() == 2);
     assert(foo.string_list[0] == "foo");
     assert(foo.string_list[1] == "bar");
+    assert(foo.int_optional.has_value());
+    assert(foo.int_optional.value() == 42);
+    assert(foo.string_optional.has_value());
+    assert(foo.string_optional.value() == "optional");
     return foo;
 }
 

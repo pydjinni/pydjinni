@@ -158,9 +158,10 @@ def test_parsing_flags(tmp_path: Path):
     assert_flag(flag_items[3], name="all_flags", all=True)
 
 
-def assert_field(field: Record.Field, name: str, typename: str):
+def assert_field(field: Record.Field, name: str, typename: str, optional: bool = False):
     assert field.name == name
     assert field.type_ref.name == typename
+    assert field.type_ref.optional == optional
 
 
 def test_parsing_record(tmp_path: Path):
@@ -169,7 +170,7 @@ def test_parsing_record(tmp_path: Path):
         input_idl="""
         foo = record {
             bar: i8;
-            baz: i8;
+            baz: i8?;
             const foobar: i8 = 5;
         }
         """
@@ -182,7 +183,7 @@ def test_parsing_record(tmp_path: Path):
     # THEN the record should have exactly 2 fields
     assert len(fields) == 2
     assert_field(fields[0], name="bar", typename="i8")
-    assert_field(fields[1], name="baz", typename="i8")
+    assert_field(fields[1], name="baz", typename="i8", optional=True)
     assert not record.targets
 
     # THEN the record should have the defined constant

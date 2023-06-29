@@ -4,7 +4,7 @@
 
 TEST_CASE("Cpp.RecordTest") {
     GIVEN("a Foo record instance") {
-        auto foo = test::record::Foo(true, 8, 16, 32, 64, 32.32, 64.64, "test string", {0, 1}, {"foo", "bar"});
+        auto foo = test::record::Foo(true, 8, 16, 32, 64, 32.32, 64.64, "test string", {0, 1}, {"foo", "bar"}, std::optional<int32_t>(42), std::optional<std::string>("optional"));
         WHEN("passing the record through a helper interface") {
             auto new_foo = test::record::Helper::get_foo(foo);
             THEN("the record should still be the same") {
@@ -24,6 +24,10 @@ TEST_CASE("Cpp.RecordTest") {
                 REQUIRE(new_foo.string_list.size() == 2);
                 REQUIRE(new_foo.string_list[0] == "foo");
                 REQUIRE(new_foo.string_list[1] == "bar");
+                REQUIRE(new_foo.int_optional.has_value());
+                REQUIRE(new_foo.int_optional.value() == 42);
+                REQUIRE(new_foo.string_optional.has_value());
+                REQUIRE(new_foo.string_optional.value() == "optional");
             }
         }
         THEN("the defined constant should be available") {

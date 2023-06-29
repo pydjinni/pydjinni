@@ -8,7 +8,7 @@
 @implementation RecordTests
 
 - (void)testGetRecord {
-    Foo* foo = [Foo fooWithBooleanT:YES byteT: 8 shortT: 16 intT: 32 longT: 64 floatT: 32.32f doubleT: 64.64 stringT: @"test string" intList: @[@0, @1] stringList: @[@"foo", @"bar"]];
+    Foo* foo = [Foo fooWithBooleanT:YES byteT: 8 shortT: 16 intT: 32 longT: 64 floatT: 32.32f doubleT: 64.64 stringT: @"test string" intList: @[@0, @1] stringList: @[@"foo", @"bar"] intOptional: @42 stringOptional: @"optional"];
     Foo* foo_result = [Helper getFoo:foo];
     XCTAssertEqual(foo_result.booleanT, YES);
     XCTAssertEqual(foo_result.byteT, 8);
@@ -26,6 +26,8 @@
     XCTAssertEqual(foo_result.stringList.count, 2);
     XCTAssertEqualObjects([foo_result.stringList objectAtIndex:0], @"foo");
     XCTAssertEqualObjects([foo_result.stringList objectAtIndex:1], @"bar");
+    XCTAssertEqualObjects(foo_result.intOptional, @42);
+    XCTAssertEqualObjects(foo_result.stringOptional, @"optional");
 }
 
 - (void)testConstValue {
@@ -41,8 +43,8 @@
 }
 
 - (void)testDescription {
-    Foo* foo = [Foo fooWithBooleanT:YES byteT: 8 shortT: 16 intT: 32 longT: 64 floatT: 32.32f doubleT: 64.64 stringT: @"test string" intList: @[@0, @1] stringList: @[@"foo", @"bar"]];
-    XCTAssertEqualObjects([foo description], @"<Foo booleanT:YES byteT:8 shortT:16 intT:32 longT:64 floatT:32.32 doubleT:64.64 stringT:test string intList:(\n    0,\n    1\n) stringList:(\n    foo,\n    bar\n)>", @"unexpected object description");
+    Foo* foo = [Foo fooWithBooleanT:YES byteT: 8 shortT: 16 intT: 32 longT: 64 floatT: 32.32f doubleT: 64.64 stringT: @"test string" intList: @[@0, @1] stringList: @[@"foo", @"bar"] intOptional: @42 stringOptional: @"optional"];
+    XCTAssertEqualObjects([foo description], @"<Foo booleanT:YES byteT:8 shortT:16 intT:32 longT:64 floatT:32.32 doubleT:64.64 stringT:test string intList:(\n    0,\n    1\n) stringList:(\n    foo,\n    bar\n) intOptional:42 stringOptional:optional>", @"unexpected object description");
 }
 
 @end

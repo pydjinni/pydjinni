@@ -25,7 +25,7 @@ def given() -> JniMarshal:
     )
 
 @pytest.mark.parametrize(
-    "config, type_def, translator, header, typename, type_signature, name, jni_prefix, source, namespace",
+    "config, type_def, translator, header, typename, type_signature, class_descriptor, name, jni_prefix, source, namespace",
     [
         (
                 JniConfig(out=Path("out/jni")),
@@ -35,7 +35,7 @@ def given() -> JniMarshal:
                     source=Path(),
                     package="foo.bar"
                 )),
-                "::Foo", "foo.hpp", "jobject", 'foo/bar/Foo', "Foo", "Java_foo_bar_Foo", "foo.cpp", ""
+                "::Foo", "foo.hpp", "jobject", 'Lfoo/bar/Foo;', 'foo/bar/Foo', "Foo", "Java_foo_bar_Foo", "foo.cpp", ""
         ),
     ]
 )
@@ -46,6 +46,7 @@ def test_marshal_type(
         header: str,
         typename: str,
         type_signature: str,
+        class_descriptor: str,
         name: str,
         jni_prefix: str,
         source: str,
@@ -64,6 +65,7 @@ def test_marshal_type(
     assert jni_type_def.header == Path(header)
     assert jni_type_def.typename == typename
     assert jni_type_def.type_signature == type_signature
+    assert jni_type_def.class_descriptor == class_descriptor
     assert jni_type_def.name == name
     assert jni_type_def.jni_prefix == jni_prefix
     assert jni_type_def.source == Path(source)

@@ -2,7 +2,7 @@ from pathlib import Path
 
 from pydjinni.generator.marshal import Marshal
 from pydjinni.parser.ast import Enum, Flags, Interface, Record
-from pydjinni.parser.base_models import BaseType, BaseField
+from pydjinni.parser.base_models import BaseType, BaseField, TypeReference
 from .config import JniConfig
 from .external_types import external_types
 from .type import JniField, JniType, JniExternalType, NativeType
@@ -18,17 +18,23 @@ class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
     def _marshal_method_type_signature(self, method: Interface.Method):
         parameter_type_signatures = ""
         for parameter in method.parameters:
-            if parameter.type_ref.type_def.jni.typename is NativeType.object:
-                parameter_type_signatures += f"L{parameter.type_ref.type_def.jni.type_signature};"
+            if parameter.type_ref.optional:
+                parameter_type_signatures += parameter.type_ref.type_def.jni.boxed_type_signature
             else:
                 parameter_type_signatures += parameter.type_ref.type_def.jni.type_signature
-        return_type_signature = method.return_type_ref.type_def.jni.type_signature if method.return_type_ref else ""
+        return_type_signature = ""
+        if method.return_type_ref:
+            if method.return_type_ref.optional:
+                return_type_signature = method.return_type_ref.type_def.jni.boxed_type_signature
+            else:
+                return_type_signature = method.return_type_ref.type_def.jni.type_signature
         return f"({parameter_type_signatures}){return_type_signature}"
 
     def marshal_type(self, type_def: BaseType):
         namespace = self.marshal_namespace(type_def, self.config.identifier.namespace, self.config.namespace)
         name = type_def.name.convert(self.config.identifier.class_name)
         java_path = type_def.java.package.split('.') + [name]
+        class_descriptor = '/'.join(java_path)
         type_def.jni = JniType(
             name=name,
             translator="::" + "::".join(namespace + [name]),
@@ -36,13 +42,25 @@ class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
             header=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.header_extension}"),
             source=Path(f"{type_def.name.convert(self.config.identifier.file)}.{self.config.source_extension}"),
             namespace="::".join(namespace),
-            type_signature='/'.join(java_path),
+            type_signature=f"L{class_descriptor};",
+            boxed_type_signature=f"L{class_descriptor};",
+            class_descriptor=class_descriptor,
             jni_prefix=self.marshal_jni_prefix(["Java"] + java_path),
         )
 
-    def _get_field_accessor(self, native_type: NativeType) -> str:
-        type = NativeType.object if native_type is NativeType.string else native_type
+    def _get_field_accessor(self, type_ref: TypeReference) -> str:
+        native_type = type_ref.type_def.jni.typename
+        type = NativeType.object if native_type is NativeType.string or type_ref.optional else native_type
         return f"Get{type[1:].capitalize()}Field"
+
+    def _get_typename(self, type_ref: TypeReference) -> str:
+        if type_ref:
+            if type_ref.optional and type_ref.type_def.jni.typename is not NativeType.string:
+                return NativeType.object.value
+            else:
+                return type_ref.type_def.jni.typename.value
+        else:
+            return ""
 
     def marshal_field(self, field_def: BaseField):
         match field_def:
@@ -53,7 +71,8 @@ class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
             case Record.Field() | Interface.Method.Parameter():
                 field_def.jni = JniField(
                     name=field_def.name.convert(self.config.identifier.field),
-                    field_accessor=self._get_field_accessor(field_def.type_ref.type_def.jni.typename)
+                    field_accessor=self._get_field_accessor(field_def.type_ref),
+                    typename= self._get_typename(field_def.type_ref)
                 )
             case Interface.Method():
                 name = field_def.name.convert(self.config.identifier.method)

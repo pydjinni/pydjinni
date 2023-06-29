@@ -11,8 +11,6 @@ def headers(dependencies: list[TypeReference], target: str) -> list[str]:
     header_paths: list[Path] = []
     for dependency_def in dependencies:
         header_path = getattr(dependency_def.type_def, target).header
-        if header_path:
+        if header_path and (header_path not in header_paths):
             header_paths.append(header_path)
-    return list(
-        set([quote(header) for header in
-             header_paths]))
+    return [quote(header) for header in header_paths]

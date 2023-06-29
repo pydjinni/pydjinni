@@ -11,6 +11,9 @@ foo = record {
     int_list: list<i32>;
     string_list: list<string>;
 
+    int_optional: i32?;
+    string_optional: string?;
+
     const boolean_c: bool = True;
     const byte_c: i8 = 8;
     const short_c: i16 = 16;

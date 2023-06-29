@@ -178,7 +178,12 @@ class IdlParser(PTNodeVisitor):
 
     def visit_data_type(self, node, children):
         parameters = children.data_type or []
-        return TypeReference(name=str(node[0]), parameters=parameters, position=node.position)
+        return TypeReference(
+            name=str(node[0]),
+            parameters=parameters,
+            position=node.position,
+            optional='optional' in children.results
+        )
 
     def second_data_type(self, type_ref: TypeReference):
         self.resolver.resolve(type_ref)

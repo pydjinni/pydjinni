@@ -42,9 +42,10 @@ class ObjcMarshal(Marshal[ObjcConfig, ObjcExternalType], types=external_types):
     def _type_decl(self, type_ref: TypeReference, parameter: bool = False, boxed: bool = False) -> str:
         type_def: BaseExternalType | BaseType = type_ref.type_def
         annotation = ""
-        typename = type_def.objc.boxed if boxed else type_def.objc.typename
-        pointer = type_def.objc.pointer
         generic_types = ""
+        pointer = type_def.objc.pointer
+        optional = type_ref.optional
+        typename = type_def.objc.boxed if boxed or optional else type_def.objc.typename
         if type_ref.parameters:
             generic_types = "<"
             for parameter_ref in type_ref.parameters:
@@ -59,15 +60,16 @@ class ObjcMarshal(Marshal[ObjcConfig, ObjcExternalType], types=external_types):
                 typename = f"id<{typename}>"
                 pointer = False
 
-        return f"{typename}{generic_types}{' *' if pointer or boxed else ''}"
+        return f"{typename}{generic_types}{' *' if pointer or boxed or optional else ''}"
 
     def _annotation(self, type_ref: TypeReference):
-        if type_ref and (isinstance(type_ref.type_def, Interface) or
-                         isinstance(type_ref.type_def, BaseExternalType) and
-                         type_ref.type_def.primitive == BaseExternalType.Primitive.interface):
-            return "nullable "
+        if type_ref and ((isinstance(type_ref.type_def, Interface) or
+                          (isinstance(type_ref.type_def, BaseExternalType) and
+                          type_ref.type_def.primitive == BaseExternalType.Primitive.interface)) or
+                         type_ref.optional):
+            return "nullable"
         elif type_ref and type_ref.type_def.objc.pointer:
-            return "nonnull "
+            return "nonnull"
         else:
             return ""
 

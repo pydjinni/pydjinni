@@ -13,21 +13,17 @@ NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
 @interface {{ type_def.objc.typename }} : NSObject
 - (nonnull instancetype){{ type_def.objc.init }}
     {%- for field in type_def.fields -%}
-        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}({{ field.objc.annotation ~ field.objc.type_decl }}){{ field.objc.name }}
+        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}({{ (field.objc.annotation ~ " ") if field.objc.annotation }}{{ field.objc.type_decl }}){{ field.objc.name }}
     {%- endfor -%};
 + (nonnull instancetype){{ type_def.objc.convenience_init }}
     {%- for field in type_def.fields -%}
-        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}({{ field.objc.annotation ~ field.objc.type_decl }}){{ field.objc.name }}
+        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}({{ (field.objc.annotation ~ " ") if field.objc.annotation }}{{field.objc.type_decl }}){{ field.objc.name }}
     {%- endfor -%};
 {% for field in type_def.fields %}
 {% if field.comment %}
 {{ field.objc.comment }}
 {% endif %}
-{% if field.type_ref.type_def.objc.pointer %}
-@property (nonatomic, readonly, nonnull) {{ field.objc.type_decl }} {{ field.objc.name }};
-{% else %}
-@property (nonatomic, readonly) {{ field.objc.type_decl }} {{ field.objc.name }};
-{% endif %}
+@property (nonatomic, readonly{{ ", " ~ field.objc.annotation if field.objc.annotation }}) {{ field.objc.type_decl }} {{ field.objc.name }};
 {% endfor %}
 @end
 

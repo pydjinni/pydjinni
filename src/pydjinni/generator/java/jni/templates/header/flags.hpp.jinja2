@@ -20,7 +20,7 @@ public:
     static ::pydjinni::LocalRef<JniType> fromCpp(JNIEnv* jniEnv, CppType c) { return ::pydjinni::JniClass<Type>::get().create(jniEnv, static_cast<unsigned>(c), {{ type_def.flags | length }}); }
 
 private:
-    {{ type_def.jni.name }}() : JniFlags("{{ type_def.jni.type_signature }}") {}
+    {{ type_def.jni.name }}() : JniFlags("{{ type_def.jni.class_descriptor }}") {}
     friend ::pydjinni::JniClass<Type>;
 };
 {% endblock %}

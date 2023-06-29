@@ -13,7 +13,7 @@
 {% endmacro %}
 
 {% block content %}
-{{ type_def.jni.name }}::{{ type_def.jni.name }}() : ::pydjinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.name }}>("{{ type_def.jni.type_signature }}$CppProxy") {}
+{{ type_def.jni.name }}::{{ type_def.jni.name }}() : ::pydjinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.name }}>("{{ type_def.jni.class_descriptor }}$CppProxy") {}
 {{ type_def.jni.name }}::~{{ type_def.jni.name }}() = default;
 
 {% if 'java' in type_def.targets %}
@@ -29,7 +29,11 @@
     auto jniEnv = ::pydjinni::jniGetThreadEnv();
     ::pydjinni::JniLocalScope jscope(jniEnv, 10);
     const auto& data = ::pydjinni::JniClass<{{ type_def.jni.translator }}>::get();
-    {{ "auto jret = " if method.return_type_ref }} jniEnv->{{ method.jni.routine_name }}(Handle::get().get(), data.method_{{ method.java.name }});
+    {{ "auto jret = " if method.return_type_ref }} jniEnv->{{ method.jni.routine_name }}(Handle::get().get(), data.method_{{ method.java.name }}
+    {%- for parameter in method.parameters -%}
+        , ::pydjinni::get({{ translator(parameter.type_ref) }}::fromCpp(jniEnv, {{ parameter.cpp.name }}))
+    {%- endfor -%}
+    );
     ::pydjinni::jniExceptionCheck(jniEnv);
     {% if method.return_type_ref %}
     return {{ translator(method.return_type_ref) }}::toCpp(jniEnv, jret);
@@ -38,6 +42,7 @@
 {% endfor %}
 {% endif %}
 
+{% if 'cpp' in type_def.targets %}
 CJNIEXPORT void JNICALL {{ type_def.jni.jni_prefix }}_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef)
 {
     ::pydjinni::translate_exceptions(jniEnv, [&](){
@@ -68,4 +73,5 @@ CJNIEXPORT {{ return_type(method) }} JNICALL {{ type_def.jni.jni_prefix }}_00024
     });
 }
 {% endfor %}
+{% endif %}
 {% endblock %}

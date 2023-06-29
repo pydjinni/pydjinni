@@ -1,4 +1,7 @@
 {% macro translator(type_ref) %}
+{%- if type_ref.optional -%}
+::pydjinni::jni::translator::Optional<std::optional,
+{%- endif -%}
 {{ type_ref.type_def.jni.translator }}
 {%- if type_ref.parameters -%}
     <
@@ -6,5 +9,8 @@
         {{ translator(parameter) }}
     {%- endfor -%}
     >
+{%- endif -%}
+{%- if type_ref.optional -%}
+>
 {%- endif -%}
 {% endmacro %}

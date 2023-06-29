@@ -24,7 +24,8 @@ property       = comment? 'property' identifier ':' data_type ';'
 item           = comment? identifier ';'
 flag           = comment? identifier ('=' ('all'/'none'))? ';'
 identifier     = r'[\w]+'
-data_type      = r'[\.\w]+' ('<' (data_type ',')* data_type '>')?
+data_type      = r'[\.\w]+' ('<' (data_type ',')* data_type '>')? optional?
+optional       = '?'
 filepath       = r'".*"'
 import_def     = '@import' filepath
 extern         = '@extern' filepath

@@ -15,16 +15,19 @@ class CppMarshal(Marshal[CppConfig, CppExternalType], types=external_types):
 
     def _type_specifier(self, type_ref: TypeReference):
         output = type_ref.type_def.cpp.typename if type_ref else "void"
-        if type_ref and type_ref.parameters:
-            parameter_output = ""
-            for parameter in type_ref.parameters:
-                if parameter_output:
-                    parameter_output += ", "
-                parameter_output += self._type_specifier(parameter)
-            output += f"<{parameter_output}>"
-        if type_ref and ((isinstance(type_ref.type_def, BaseExternalType) and type_ref.type_def.primitive == BaseExternalType.Primitive.interface) or \
-                isinstance(type_ref.type_def, Interface)):
-            output = f"std::shared_ptr<{output}>"
+        if type_ref:
+            if type_ref.parameters:
+                parameter_output = ""
+                for parameter in type_ref.parameters:
+                    if parameter_output:
+                        parameter_output += ", "
+                    parameter_output += self._type_specifier(parameter)
+                output += f"<{parameter_output}>"
+            if (isinstance(type_ref.type_def, BaseExternalType) and type_ref.type_def.primitive == BaseExternalType.Primitive.interface) or \
+                    isinstance(type_ref.type_def, Interface):
+                output = f"std::shared_ptr<{output}>"
+            elif type_ref.optional:
+                output = f"std::optional<{output}>"
         return output
 
     def _parameter_type_specifier(self, type_ref: TypeReference):

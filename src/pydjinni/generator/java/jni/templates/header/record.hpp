@@ -23,14 +23,14 @@ private:
     {{ type_def.jni.name }}();
     friend ::pydjinni::JniClass<{{ type_def.jni.name }}>;
 
-    const ::pydjinni::GlobalRef<jclass> clazz { ::pydjinni::jniFindClass("{{ type_def.jni.type_signature }}") };
+    const ::pydjinni::GlobalRef<jclass> clazz { ::pydjinni::jniFindClass("{{ type_def.jni.class_descriptor }}") };
     const jmethodID jconstructor { ::pydjinni::jniGetMethodID(clazz.get(), "<init>", "(
     {%- for field in type_def.fields -%}
-    {{ field.type_ref.type_def.jni.type_signature }}
+    {{ field.type_ref.type_def.jni.boxed_type_signature if field.type_ref.optional else field.type_ref.type_def.jni.type_signature }}
     {%- endfor -%}
     )V") };
     {% for field in type_def.fields %}
-    const jfieldID field_{{ field.jni.name }} { ::pydjinni::jniGetFieldID(clazz.get(), "{{ field.java.name }}", "{{ field.type_ref.type_def.jni.type_signature }}") };
+    const jfieldID field_{{ field.jni.name }} { ::pydjinni::jniGetFieldID(clazz.get(), "{{ field.java.name }}", "{{ field.type_ref.type_def.jni.boxed_type_signature if field.type_ref.optional else field.type_ref.type_def.jni.type_signature }}") };
     {% endfor %}
 };
 {% endblock %}

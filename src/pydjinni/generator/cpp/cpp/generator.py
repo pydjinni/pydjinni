@@ -1,8 +1,8 @@
 from pydjinni.generator.filters import headers, quote
 from pydjinni.generator.generator import Generator
 from pydjinni.parser.ast import Interface, Record, Flags, Enum
-from .tests import shared_ptr
 from .marshal import CppMarshal
+from .filters import needs_optional
 
 
 class CppGenerator(
@@ -12,8 +12,7 @@ class CppGenerator(
     writes_header=True,
     writes_source=True,
     support_lib_commons=True,
-    filters=[quote, headers],
-    tests=[shared_ptr]
+    filters=[quote, headers, needs_optional]
 ):
 
     def generate_enum(self, type_def: Enum):

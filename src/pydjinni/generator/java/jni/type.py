@@ -27,8 +27,12 @@ class JniExternalType(BaseModel):
         description="The Java native [`jvalue` union type](https://docs.oracle.com/en/java/javase/17/docs/specs/jni/types.html#the-value-type) as represented in JNI."
     )
     type_signature: str = Field(
-        examples=["(ILjava/lang/String;[I)J"],
+        examples=["I"],
         description="[Java VM Type Signatures](https://docs.oracle.com/en/java/javase/17/docs/specs/jni/types.html#type-signatures)"
+    )
+    boxed_type_signature: str = Field(
+        examples=["Ljava/lang/Integer;"],
+        description="Type signature of the boxed Java type. If the type is always boxed, both `type_signature` and `boxed_type_signature` should contain the same value."
     )
 
 
@@ -37,6 +41,7 @@ class JniType(JniExternalType):
     jni_prefix: str = None
     source: Path
     namespace: str
+    class_descriptor: str
 
 
 class JniField(BaseModel):
@@ -45,3 +50,4 @@ class JniField(BaseModel):
     type_signature: str = None
     routine_name: str = None
     field_accessor: str = None
+    typename: str = None

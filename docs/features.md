@@ -13,9 +13,32 @@ namespace foo {
 This will define a record inside a namespace. The namespace is applied on top of the package/namespace defined by
 the configuration.
 
+## Types
+
+### Optional types { .new-badge }
+
+Suffixing a type with a `?` marks it as optional. Optional values may be null.
+
+```djinni
+foo = record {
+    bar: i32?;
+}
+```
+
 ## Record
 
+### Deriving
 
+For record types, Haskell-style "deriving" declarations are supported to generate some common methods.
+This way for example equality and order comparators or a method for giving a string representation of the record
+can be added. Not all features may be available in all target languages. 
+Consult the [Reference](deriving.md) for a full list of available declarations.
+
+```djinni
+foo = record {
+    bar: i32;
+} deriving (str, eq, ord)
+```
 
 ## Interface 
 
