@@ -1,4 +1,5 @@
 {% extends "base.jinja2" %}
+{% from "macros.jinja2" import translator %}
 
 {% block header %}
 {% for header in type_def.dependencies | headers('objc') -%}
@@ -43,9 +44,9 @@ static_assert(__has_feature(objc_arc), "PyDjinni requires ARC to be enabled for 
 }
 
 {% for method in type_def.methods %}
-{{ method.objc.specifier }} {{ method.objc.type_decl ~ method.objc.name }}
+{{ method.objc.specifier }} ({{ method.objc.type_decl}}){{ method.objc.name }}
     {%- for parameter in method.parameters -%}
-        {{ ":" if loop.first else (" " ~ parameter.objc.name ~ ":") }}{{ parameter.objc.type_decl ~ parameter.objc.name }}
+        {{ ":" if loop.first else (" " ~ parameter.objc.name ~ ":") }}({{ parameter.objc.type_decl}}){{ parameter.objc.name }}
     {% endfor %}
     {
     try {
@@ -57,11 +58,11 @@ static_assert(__has_feature(objc_arc), "PyDjinni requires ARC to be enabled for 
         {%- endif -%}
         {{ method.cpp.name }}(
         {%- for parameter in method.parameters -%}
-            {{ parameter.type_ref.type_def.objcpp.translator }}::toCpp({{ parameter.objc.name }}){{ ", " if not loop.last }}
+            {{ translator(parameter.type_ref) }}::toCpp({{ parameter.objc.name }}){{ ", " if not loop.last }}
         {%- endfor -%}
         );
         {% if method.return_type_ref %}
-        return {{ method.return_type_ref.type_def.objcpp.translator }}::fromCpp(objcpp_result_);
+        return {{ translator(method.return_type_ref) }}::fromCpp(objcpp_result_);
         {% endif %}
     } DJINNI_TRANSLATE_EXCEPTIONS()
 }
@@ -103,11 +104,11 @@ public:
         @autoreleasepool {
             auto objcpp_result_ = [djinni_private_get_proxied_objc_object() {{ method.objc.name }}
             {%- for parameter in method.parameters -%}
-                {{ " " ~ parameter.objc.name if not loop.first }}:({{ parameter.type_ref.type_def.objcpp.translator }}::fromCpp({{ parameter.cpp.name }}))
+                {{ " " ~ parameter.objc.name if not loop.first }}:({{ translator(parameter.type_ref) }}::fromCpp({{ parameter.cpp.name }}))
             {%- endfor -%}
             ];
             {% if method.return_type_ref.type_def %}
-            return {{ method.return_type_ref.type_def.objcpp.translator }}::toCpp(objcpp_result_);
+            return {{ translator(method.return_type_ref) }}::toCpp(objcpp_result_);
             {% endif %}
         }
     }

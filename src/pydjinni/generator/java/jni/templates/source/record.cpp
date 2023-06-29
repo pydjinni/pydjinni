@@ -1,4 +1,5 @@
 {% extends "base.jinja2" %}
+{% from "macros.jinja2" import translator %}
 
 {% block header %}
 #include {{ type_def.jni.header | quote }}
@@ -16,7 +17,7 @@ auto {{ type_def.jni.name }}::fromCpp(JNIEnv* jniEnv, const CppType& c) -> ::pyd
     auto r = ::pydjinni::LocalRef<JniType>{jniEnv->NewObject(
         data.clazz.get(), data.jconstructor,
         {% for field in type_def.fields %}
-        ::pydjinni::get({{ field.type_ref.type_def.jni.translator }}::fromCpp(jniEnv, c.{{ field.cpp.name }})){{ "," if not loop.last }}
+        ::pydjinni::get({{ translator(field.type_ref) }}::fromCpp(jniEnv, c.{{ field.cpp.name }})){{ "," if not loop.last }}
         {% endfor %}
     )};
     ::pydjinni::jniExceptionCheck(jniEnv);
@@ -29,7 +30,7 @@ auto {{ type_def.jni.name }}::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
     const auto& data = ::pydjinni::JniClass<{{ type_def.jni.name }}>::get();
     return {
     {% for field in type_def.fields %}
-        {{ field.type_ref.type_def.jni.translator }}::toCpp(jniEnv, ({{ field.type_ref.type_def.jni.typename.value }})jniEnv->{{ field.jni.field_accessor }}(j, data.field_{{ field.jni.name }})){{ "," if not loop.last }}
+        {{ translator(field.type_ref) }}::toCpp(jniEnv, ({{ field.type_ref.type_def.jni.typename.value }})jniEnv->{{ field.jni.field_accessor }}(j, data.field_{{ field.jni.name }})){{ "," if not loop.last }}
     {% endfor %}
     };
 }

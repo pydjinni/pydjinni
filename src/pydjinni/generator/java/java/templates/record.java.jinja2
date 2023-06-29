@@ -1,5 +1,5 @@
 {% include "base.jinja2" %}
-{% from "macros.jinja2" import comment, constant_def %}
+{% from "macros.jinja2" import comment, constant_def, data_type %}
 
 {% block content %}
 {{ comment(type_def, indentation=0) }}
@@ -10,11 +10,11 @@
 
 {% for field in type_def.fields %}
     {{ comment(field) }}
-    {{ "final" if config.use_final_for_record }} {{ field.type_ref.type_def.java.typename }} {{ field.java.name }};
+    {{ "final" if config.use_final_for_record }} {{ data_type(field.type_ref) }} {{ field.java.name }};
 {% endfor %}
     public {{ type_def.java.name }}(
     {% for field in type_def.fields %}
-        {{ field.type_ref.type_def.java.typename }} {{ field.java.name ~ ("," if not loop.last) }}
+        {{ data_type(field.type_ref) }} {{ field.java.name ~ ("," if not loop.last) }}
     {% endfor %}
     ) {
     {% for field in type_def.fields %}
@@ -23,7 +23,7 @@
     }
 
 {% for field in type_def.fields %}
-    public {{ field.type_ref.type_def.java.typename }} {{ field.java.getter }}() { return {{ field.java.name }}; }
+    public {{ data_type(field.type_ref) }} {{ field.java.getter }}() { return {{ field.java.name }}; }
 {% endfor %}
 
 {% if type_def.deriving_str %}

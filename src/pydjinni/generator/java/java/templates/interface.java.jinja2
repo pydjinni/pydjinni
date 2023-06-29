@@ -1,5 +1,5 @@
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import comment, constant_def %}
+{% from "macros.jinja2" import comment, constant_def, data_type %}
 
 {% block header %}
 {% if type_def.cpp.proxy -%}
@@ -8,12 +8,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 {% endblock %}
 
 {%- macro return_type(type_ref) -%}
-{{ type_ref.type_def.java.typename if type_ref else "void" }}
+{{ data_type(type_ref) if type_ref else "void" }}
 {%- endmacro -%}
 
 {% macro parameters(method, with_types = True) %}
 {%- for parameter in method.parameters -%}
-    {{ (parameter.type_ref.type_def.java.typename ~ " ") if with_types }}{{ parameter.java.name ~ (", " if not loop.last) }}
+    {{ (data_type(parameter.type_ref) ~ " ") if with_types }}{{ parameter.java.name ~ (", " if not loop.last) }}
 {%- endfor -%}
 {% endmacro %}
 

@@ -12,6 +12,12 @@ Foo Helper::get_foo(const Foo& foo) {
     assert(foo.float_t > 32 && foo.float_t < 33);
     assert(foo.double_t > 64 && foo.double_t < 65);
     assert(foo.string_t == "test string");
+    assert(foo.int_list.size() == 2);
+    assert(foo.int_list[0] == 0);
+    assert(foo.int_list[1] == 1);
+    assert(foo.string_list.size() == 2);
+    assert(foo.string_list[0] == "foo");
+    assert(foo.string_list[1] == "bar");
     return foo;
 }
 

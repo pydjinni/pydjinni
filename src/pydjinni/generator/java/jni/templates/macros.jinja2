@@ -1,0 +1,10 @@
+{% macro translator(type_ref) %}
+{{ type_ref.type_def.jni.translator }}
+{%- if type_ref.parameters -%}
+    <
+    {%- for parameter in type_ref.parameters -%}
+        {{ translator(parameter) }}
+    {%- endfor -%}
+    >
+{%- endif -%}
+{% endmacro %}

@@ -1,4 +1,5 @@
 import json
+import html
 import logging
 from collections import OrderedDict
 from pathlib import Path
@@ -133,14 +134,25 @@ def define_env(env):
     def internal_types():
         output = ""
         for type_def in api.internal_types:
-            output += f"\n## {type_def.name}\n\n" \
+            generic_params = ""
+            if type_def.params:
+                generic_params += "<"
+                first = True
+                for param in type_def.params:
+                    if first:
+                        first = False
+                    else:
+                        generic_params += ", "
+                    generic_params += param
+                generic_params += ">"
+            output += f"\n## {type_def.name}{html.escape(generic_params)}\n\n" \
                       f"{type_def.comment}\n\n" \
                       "| Target | Typename | Boxed |\n" \
                       "|--------|----------|-------|\n"
             for target in api.generation_targets:
                 target_type = getattr(type_def, target)
-                typename = f"`{target_type.typename}`"
-                boxed_typename = f"`{target_type.boxed}`" if 'boxed' in target_type.model_fields_set else ''
+                typename = f"`{target_type.typename}{generic_params}`" if target_type else "N/A"
+                boxed_typename = f"`{target_type.boxed}`" if target_type and 'boxed' in target_type.model_fields_set else ''
                 output += f"| {target} | {typename} | {boxed_typename} |\n"
         return output
 

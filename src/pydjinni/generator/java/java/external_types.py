@@ -8,5 +8,8 @@ external_types: dict[str, JavaExternalType] = {
     "i64": JavaExternalType(typename="long", boxed="Long", reference=False),
     "f32": JavaExternalType(typename="float", boxed="Float", reference=False),
     "f64": JavaExternalType(typename="double", boxed="Double", reference=False),
-    "string": JavaExternalType(typename="String", boxed="String", reference=False)
+    "string": JavaExternalType(typename="String", boxed="String", reference=False),
+    "list": JavaExternalType(typename="java.util.ArrayList"),
+    "set": JavaExternalType(typename="java.util.HashSet"),
+    "map": JavaExternalType(typename="java.util.HashMap"),
 }

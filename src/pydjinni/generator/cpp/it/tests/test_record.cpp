@@ -4,7 +4,7 @@
 
 TEST_CASE("Cpp.RecordTest") {
     GIVEN("a Foo record instance") {
-        auto foo = test::record::Foo(true, 8, 16, 32, 64, 32.32, 64.64, "test string");
+        auto foo = test::record::Foo(true, 8, 16, 32, 64, 32.32, 64.64, "test string", {0, 1}, {"foo", "bar"});
         WHEN("passing the record through a helper interface") {
             auto new_foo = test::record::Helper::get_foo(foo);
             THEN("the record should still be the same") {
@@ -18,6 +18,12 @@ TEST_CASE("Cpp.RecordTest") {
                 REQUIRE(new_foo.double_t > 64);
                 REQUIRE(new_foo.double_t < 65);
                 REQUIRE(new_foo.string_t == "test string");
+                REQUIRE(new_foo.int_list.size() == 2);
+                REQUIRE(new_foo.int_list[0] == 0);
+                REQUIRE(new_foo.int_list[1] == 1);
+                REQUIRE(new_foo.string_list.size() == 2);
+                REQUIRE(new_foo.string_list[0] == "foo");
+                REQUIRE(new_foo.string_list[1] == "bar");
             }
         }
         THEN("the defined constant should be available") {

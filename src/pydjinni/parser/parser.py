@@ -92,9 +92,7 @@ class IdlParser(PTNodeVisitor):
 
     def visit_class_type_def(self, node, children):
         type_def: BaseClassType = unpack(children)
-        for type_dep in type_def.constants:
-            if type_dep.type_ref not in type_def.dependencies:
-                type_def.dependencies.append(type_dep.type_ref)
+        type_def.dependencies += self._dependencies([constant.type_ref for constant in type_def.constants])
         return type_def
 
     def visit_enum(self, node, children):
@@ -137,13 +135,11 @@ class IdlParser(PTNodeVisitor):
             if CppGenerator.key not in targets and method.static:
                 raise IdlParser.StaticNotAllowedException(self.idl, *self._get_context(method.position))
             for param in method.parameters:
-                if param.type_ref not in dependencies:
-                    dependencies.append(param.type_ref)
-            if method.return_type_ref and method.return_type_ref not in dependencies:
+                dependencies.append(param.type_ref)
+            if method.return_type_ref:
                 dependencies.append(method.return_type_ref)
         for property_def in properties:
-            if property_def.type_ref not in dependencies:
-                dependencies.append(property_def.type_ref)
+            dependencies.append(property_def.type_ref)
         return Interface(
             name=unpack(children.identifier),
             position=node.position,
@@ -153,7 +149,7 @@ class IdlParser(PTNodeVisitor):
             constants=children.constant,
             properties=properties,
             main=main,
-            dependencies=dependencies
+            dependencies=self._dependencies(dependencies)
         )
 
     def visit_deriving(self, node, children):
@@ -163,10 +159,6 @@ class IdlParser(PTNodeVisitor):
         targets = unpack(children.targets) or []
         deriving = unpack(children.deriving) or []
         fields: list[Record.Field] = children.field
-        dependencies: list[TypeReference] = []
-        for type_dep in fields:
-            if type_dep.type_ref not in dependencies:
-                dependencies.append(type_dep.type_ref)
         return Record(
             name=unpack(children.identifier),
             position=node.position,
@@ -174,7 +166,7 @@ class IdlParser(PTNodeVisitor):
             fields=fields,
             targets=targets,
             constants=children.constant,
-            dependencies=dependencies,
+            dependencies=self._dependencies([field.type_ref for field in fields]),
             deriving_eq='eq' in deriving or 'eq' in self.default_deriving,
             deriving_ord='ord' in deriving or 'ord' in self.default_deriving,
             deriving_json='json' in deriving or 'json' in self.default_deriving,
@@ -290,7 +282,6 @@ class IdlParser(PTNodeVisitor):
     def visit_float(self, node, children) -> float:
         return float(node.value)
 
-
     def visit_bool(self, node, children) -> bool:
         return node.value == "True"
 
@@ -320,6 +311,13 @@ class IdlParser(PTNodeVisitor):
 
     def second_constant(self, children):
         self._check_const_assignment(children.name, children.type_ref.type_def, children.value, children.position)
+
+    def _dependencies(self, type_refs: list[TypeReference]) -> list[TypeReference]:
+        output: list[TypeReference] = []
+        for type_ref in type_refs:
+            output.append(type_ref)
+            output += self._dependencies(type_ref.parameters)
+        return output
 
     def _check_const_assignment(self, name, type_def, value, position):
         match type_def:

@@ -26,3 +26,4 @@ class ObjcField(BaseModel):
     comment: str | None = None
     specifier: str | None = None
     type_decl: str | None = None
+    annotation: str | None = None

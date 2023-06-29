@@ -10,5 +10,8 @@ external_types: dict[str, ObjcExternalType] = {
     "i64": ObjcExternalType(typename="int64_t", boxed="NSNumber", pointer=False),
     "f32": ObjcExternalType(typename="float", boxed="NSNumber", pointer=False),
     "f64": ObjcExternalType(typename="double", boxed="NSNumber", pointer=False),
-    "string": ObjcExternalType(typename="NSString", boxed="NSString")
+    "string": ObjcExternalType(typename="NSString", boxed="NSString"),
+    "list": ObjcExternalType(typename="NSArray", boxed="NSArray"),
+    "set": ObjcExternalType(typename="NSSet", boxed="NSSet"),
+    "map": ObjcExternalType(typename="NSDictionary", boxed="NSDictionary"),
 }

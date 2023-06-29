@@ -8,7 +8,7 @@ class JavaExternalType(BaseModel):
     typename: str = Field(
         default=None
     )
-    boxed: str = Field()
+    boxed: str = ""
     reference: bool = True
     generic: bool = False
 

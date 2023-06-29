@@ -14,7 +14,7 @@
 
 - (nonnull instancetype){{ type_def.objc.init }}
     {%- for field in type_def.fields -%}
-        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}{{ field.objc.type_decl ~ field.objc.name }}
+        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}({{ field.objc.type_decl}}){{ field.objc.name }}
     {%- endfor %} {
     if(self = [super init]) {
         {% for field in type_def.fields %}
@@ -26,7 +26,7 @@
 
 + (nonnull instancetype){{ type_def.objc.convenience_init }}
     {%- for field in type_def.fields -%}
-        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}{{ field.objc.type_decl ~ field.objc.name }}
+        {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}({{ field.objc.type_decl}}){{ field.objc.name }}
     {%- endfor %} {
     return [({{ type_def.objc.typename }}*)[self alloc] {{ type_def.objc.init }}
     {%- for field in type_def.fields -%}

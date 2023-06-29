@@ -15,12 +15,12 @@ struct {{ type_def.cpp.name }} final {
 {%- endfor %}
 {% for field in type_def.fields %}
     {{ comment(field) }}
-    {{ field.type_ref.type_def.cpp.typename ~ " " ~ field.cpp.name }};
+    {{ field.cpp.type_spec }} {{ field.cpp.name }};
 {% endfor %}
 
     {{ type_def.cpp.name }}(
     {%- for field in type_def.fields %}
-        {{- field.type_ref.type_def.cpp.typename ~ " " ~ field.cpp.name ~ "_" ~ (", " if not loop.last) }}
+        {{- field.cpp.type_spec }} {{ field.cpp.name ~ "_" ~ (", " if not loop.last) }}
     {%- endfor %})
     {% for field in type_def.fields %}
     {{ (": " if loop.first else ', ') ~ field.cpp.name }}(std::move({{ field.cpp.name }}_))

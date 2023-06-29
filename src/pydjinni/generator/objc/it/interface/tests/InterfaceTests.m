@@ -19,12 +19,16 @@
     XCTAssertEqual(CalculatorA, 5, @"The constant does not have the expected value");
 }
 
-
 - (void)testPlatformImplementation {
     Calculator* calculator = [Calculator getInstance];
     PlatformImplementation* implementation = [[PlatformImplementation alloc] init];
     int8_t result = [calculator getPlatformValue:implementation];
     XCTAssertEqual(result, 5, @"The result from the Objective-C implementation was not as expected");
+}
+
+- (void)testMethodNoParametersNoReturn {
+    Calculator* calculator = [Calculator getInstance];
+    [calculator noParametersNoReturn];
 }
 
 @end

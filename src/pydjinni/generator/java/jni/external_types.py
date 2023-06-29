@@ -50,5 +50,23 @@ external_types: dict[str, JniExternalType] = {
         header=Path("pydjinni/jni/marshal.hpp"),
         typename=NativeType.string,
         type_signature="Ljava/lang/String;"
+    ),
+    "list": JniExternalType(
+        translator="::pydjinni::jni::translator::List",
+        header=Path("pydjinni/jni/marshal.hpp"),
+        typename=NativeType.object,
+        type_signature="Ljava/util/ArrayList;"
+    ),
+    "set": JniExternalType(
+        translator="::pydjinni::jni::translator::Set",
+        header=Path("pydjinni/jni/marshal.hpp"),
+        typename=NativeType.object,
+        type_signature="Ljava/util/HashSet;"
+    ),
+    "map": JniExternalType(
+        translator="::pydjinni::jni::translator::Map",
+        header=Path("pydjinni/jni/marshal.hpp"),
+        typename=NativeType.object,
+        type_signature="Ljava/util/HashMap;"
     )
 }

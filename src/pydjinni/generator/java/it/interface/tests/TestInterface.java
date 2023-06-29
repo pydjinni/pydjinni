@@ -28,4 +28,10 @@ class TestInterface {
         });
     }
 
+    @Test
+    void testMethodNoParametersNoReturn() {
+        var calculator = Calculator.getInstance();
+        calculator.noParametersNoReturn();
+    }
+
 }

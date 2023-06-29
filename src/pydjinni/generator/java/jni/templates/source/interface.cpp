@@ -1,4 +1,5 @@
 {% extends "base.jinja2" %}
+{% from "macros.jinja2" import translator %}
 
 {% block header %}
 #include {{ type_def.jni.header | quote }}
@@ -31,7 +32,7 @@
     {{ "auto jret = " if method.return_type_ref }} jniEnv->{{ method.jni.routine_name }}(Handle::get().get(), data.method_{{ method.java.name }});
     ::pydjinni::jniExceptionCheck(jniEnv);
     {% if method.return_type_ref %}
-    return {{ method.return_type_ref.type_def.jni.translator }}::toCpp(jniEnv, jret);
+    return {{ translator(method.return_type_ref) }}::toCpp(jniEnv, jret);
     {% endif %}
 }
 {% endfor %}
@@ -58,11 +59,11 @@ CJNIEXPORT {{ return_type(method) }} JNICALL {{ type_def.jni.jni_prefix }}_00024
         {{ "auto r = " if method.return_type_ref }}ref->{{ method.cpp.name }}(
         {%- endif -%}
         {%- for parameter in method.parameters -%}
-        {{ parameter.type_ref.type_def.jni.translator }}::toCpp(jniEnv, {{ parameter.jni.name }}){{ ", " if not loop.last }}
+        {{ translator(parameter.type_ref) }}::toCpp(jniEnv, {{ parameter.jni.name }}){{ ", " if not loop.last }}
         {%- endfor -%}
         );
         {% if method.return_type_ref %}
-        return ::pydjinni::release({{ method.return_type_ref.type_def.jni.translator }}::fromCpp(jniEnv, r));
+        return ::pydjinni::release({{ translator(method.return_type_ref) }}::fromCpp(jniEnv, r));
         {% endif %}
     });
 }

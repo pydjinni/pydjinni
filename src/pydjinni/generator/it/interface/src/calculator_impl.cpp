@@ -3,7 +3,7 @@
 
 using namespace test::interface;
 
-int8_t CalculatorImpl::add(const int8_t& a, const int8_t& b) {
+int8_t CalculatorImpl::add(int8_t a, int8_t b) {
     return a + b;
 }
 
@@ -12,3 +12,5 @@ int8_t CalculatorImpl::get_platform_value(const std::shared_ptr<PlatformInterfac
     assert(val == 5);
     return val;
 }
+
+void CalculatorImpl::no_parameters_no_return() {}

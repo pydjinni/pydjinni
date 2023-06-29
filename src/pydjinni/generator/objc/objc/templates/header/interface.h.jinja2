@@ -19,9 +19,9 @@ NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
 {% if method.comment %}
 {{ method.objc.comment }}
 {% endif %}
-{{ method.objc.specifier }} {{ method.objc.type_decl ~ method.objc.name }}
+{{ method.objc.specifier }} ({{ method.objc.type_decl }}){{ method.objc.name }}
 {%- for parameter in method.parameters -%}
-{{ ":" if loop.first else (" " ~ parameter.objc.name ~ ":") }}{{ parameter.objc.type_decl ~ parameter.objc.name }}
+{{ ":" if loop.first else (" " ~ parameter.objc.name ~ ":") }}({{ parameter.objc.type_decl}}){{ parameter.objc.name }}
 {% endfor %}
   __attribute__((swift_name("{{ method.objc.name }}(
 {%- for parameter in method.parameters -%}

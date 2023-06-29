@@ -21,3 +21,13 @@
     public static final {{ constant.type_ref.type_def.java.typename }} {{ constant.java.name }} = {{ value_def(constant.value, constant.type_ref.type_def) }};
 {% endmacro %}
 
+{% macro data_type(type_ref, boxed=False) %}
+{{ type_ref.type_def.java.boxed if boxed else type_ref.type_def.java.typename }}
+{%- if type_ref.parameters -%}
+    <
+    {%- for parameter in type_ref.parameters -%}
+        {{ data_type(parameter, boxed=True) }}
+    {%- endfor -%}
+    >
+{%- endif -%}
+{% endmacro %}

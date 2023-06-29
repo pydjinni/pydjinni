@@ -1,4 +1,5 @@
 {% extends "base.jinja2" %}
+{% from "macros.jinja2" import translator %}
 
 {% block header %}
 #import {{ type_def.objcpp.header | quote }}
@@ -11,7 +12,7 @@ auto {{ type_def.objcpp.name }}::toCpp(ObjcType obj) -> CppType {
     assert(obj);
     return {
     {% for field in type_def.fields %}
-        {{ field.type_ref.type_def.objcpp.translator }}::toCpp(obj.{{ field.objc.name }}){{ "," if not loop.last }}
+        {{ translator(field.type_ref) }}::toCpp(obj.{{ field.objc.name }}){{ "," if not loop.last }}
     {% endfor %}
     };
 }
@@ -19,7 +20,7 @@ auto {{ type_def.objcpp.name }}::toCpp(ObjcType obj) -> CppType {
 auto {{ type_def.objcpp.name }}::fromCpp(const CppType& cpp) -> ObjcType {
     return [[::{{ type_def.objc.typename }} alloc] {{ type_def.objc.init }}
     {%- for field in type_def.fields -%}
-        {{ " " ~ field.objc.name if not loop.first }}:({{ field.type_ref.type_def.objcpp.translator }}::fromCpp(cpp.{{ field.cpp.name }}))
+        {{ " " ~ field.objc.name if not loop.first }}:({{ translator(field.type_ref) }}::fromCpp(cpp.{{ field.cpp.name }}))
     {%- endfor -%}
     ];
 }

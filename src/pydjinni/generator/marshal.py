@@ -25,6 +25,7 @@ class Marshal(ABC, Generic[ConfigModel, ExternalTypeDef]):
     """
 
     class MarshalException(ApplicationException, code=160):
+        """Marshalling error"""
         def __init__(self, input_def: BaseType | BaseField, message: str):
             super().__init__(message)
             self.input_def = input_def

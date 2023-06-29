@@ -44,6 +44,26 @@ class ExternalTypesBuilder:
             name='string',
             primitive=BaseExternalType.Primitive.string,
             comment="string"
+        ),
+        "list": BaseExternalType(
+            name='list',
+            comment="a list of items of type T",
+            primitive=BaseExternalType.Primitive.record,
+            params=["T"]
+
+        ),
+        "set": BaseExternalType(
+            name='set',
+            comment="a set of unique items of type T",
+            primitive=BaseExternalType.Primitive.record,
+            params=["T"]
+
+        ),
+        "map": BaseExternalType(
+            name='map',
+            comment="a map of key-value pairs of type K, V",
+            primitive=BaseExternalType.Primitive.record,
+            params=["K", "V"]
         )
     }
 

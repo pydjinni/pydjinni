@@ -51,7 +51,6 @@ class TypeReference(BaseModel):
     )
 
 
-
 class BaseField(BaseModel, extra='allow'):
     name: Identifier
     position: int = -1
