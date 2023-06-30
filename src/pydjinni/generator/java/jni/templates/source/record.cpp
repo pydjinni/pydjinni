@@ -15,9 +15,9 @@
 auto {{ type_def.jni.name }}::fromCpp(JNIEnv* jniEnv, const CppType& c) -> ::pydjinni::LocalRef<JniType> {
     const auto& data = ::pydjinni::JniClass<{{ type_def.jni.name }}>::get();
     auto r = ::pydjinni::LocalRef<JniType>{jniEnv->NewObject(
-        data.clazz.get(), data.jconstructor,
+        data.clazz.get(), data.jconstructor
         {% for field in type_def.fields %}
-        ::pydjinni::get({{ translator(field.type_ref) }}::fromCpp(jniEnv, c.{{ field.cpp.name }})){{ "," if not loop.last }}
+        , ::pydjinni::get({{ translator(field.type_ref) }}::fromCpp(jniEnv, c.{{ field.cpp.name }}))
         {% endfor %}
     )};
     ::pydjinni::jniExceptionCheck(jniEnv);

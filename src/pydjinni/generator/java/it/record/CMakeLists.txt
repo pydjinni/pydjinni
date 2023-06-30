@@ -5,5 +5,8 @@ java_test_case(RecordTest
         generate.jni.identifier.file.style:snake_case
         generate.jni.namespace:test::record::jni
     SOURCES
-        tests/TestRecord.java
+        tests/TestPrimitiveTypes.java
+        tests/TestCollectionTypes.java
+        tests/TestOptionalTypes.java
+        tests/TestConstantTypes.java
 )

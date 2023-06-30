@@ -1,4 +1,4 @@
-foo = record {
+primitive_types = record {
     boolean_t: bool;
     byte_t: i8;
     short_t: i16;
@@ -7,13 +7,22 @@ foo = record {
     float_t: f32;
     double_t: f64;
     string_t: string;
+} deriving (str)
 
+collection_types = record {
     int_list: list<i32>;
     string_list: list<string>;
 
+    int_set: set<i32>;
+    string_set: set<string>;
+} deriving (str)
+
+optional_types = record {
     int_optional: i32?;
     string_optional: string?;
+} deriving (str)
 
+constant_types = record {
     const boolean_c: bool = True;
     const byte_c: i8 = 8;
     const short_c: i16 = 16;
@@ -21,8 +30,10 @@ foo = record {
     const long_c: i64 = 64;
     const float_c: f32 = 32.32;
     const double_c: f64 = 64.64;
-} deriving (str)
+}
 
 helper = main interface +cpp {
-    static get_foo(foo: foo): foo;
+    static get_primitive_types(record: primitive_types): primitive_types;
+    static get_collection_types(record: collection_types): collection_types;
+    static get_optional_types(record: optional_types): optional_types;
 }
