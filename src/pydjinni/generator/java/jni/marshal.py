@@ -50,12 +50,21 @@ class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
 
     def _get_field_accessor(self, type_ref: TypeReference) -> str:
         native_type = type_ref.type_def.jni.typename
-        type = NativeType.object if native_type is NativeType.string or type_ref.optional else native_type
+        type = NativeType.object if native_type in [NativeType.string, NativeType.byte_array] or type_ref.optional else native_type
         return f"Get{type[1:].capitalize()}Field"
+
+    def _get_routine_name(self, type_ref: TypeReference) -> str:
+        if type_ref:
+            native_type = type_ref.type_def.jni.typename
+            if native_type in [NativeType.string, NativeType.byte_array] or type_ref.optional:
+                native_type = NativeType.object
+        else:
+            native_type = "Void"
+        return f"Call{native_type[1:].capitalize()}Method"
 
     def _get_typename(self, type_ref: TypeReference) -> str:
         if type_ref:
-            if type_ref.optional and type_ref.type_def.jni.typename is not NativeType.string:
+            if type_ref.optional and type_ref.type_def.jni.typename not in [NativeType.string, NativeType.byte_array]:
                 return NativeType.object.value
             else:
                 return type_ref.type_def.jni.typename.value
@@ -80,5 +89,5 @@ class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
                     name=name,
                     jni_name=name,
                     type_signature=self._marshal_method_type_signature(field_def),
-                    routine_name=f"Call{field_def.return_type_ref.type_def.jni.typename[1:].capitalize() if field_def.return_type_ref else 'Void'}Method"
+                    routine_name=self._get_routine_name(field_def.return_type_ref)
                 )

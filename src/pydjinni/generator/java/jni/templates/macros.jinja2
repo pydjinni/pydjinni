@@ -6,7 +6,7 @@
 {%- if type_ref.parameters -%}
     <
     {%- for parameter in type_ref.parameters -%}
-        {{ translator(parameter) }}
+        {{ translator(parameter) ~ (", " if not loop.last) }}
     {%- endfor -%}
     >
 {%- endif -%}

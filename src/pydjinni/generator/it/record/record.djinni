@@ -15,6 +15,9 @@ collection_types = record {
 
     int_set: set<i32>;
     string_set: set<string>;
+
+    int_int_map: map<i32, i32>;
+    string_string_map: map<string, string>;
 } deriving (str)
 
 optional_types = record {

@@ -29,7 +29,13 @@ TEST_CASE("Cpp.RecordTest") {
                 {0, 1},
                 {"foo", "bar"},
                 {0, 1},
-                {"foo", "bar"}
+                {"foo", "bar"},
+                {
+                        {0, 1},
+                },
+                {
+                        {"foo", "bar"}
+                }
         );
         WHEN("passing the record through a helper interface") {
             const auto returned_record = test::record::Helper::get_collection_types(record);
@@ -37,15 +43,24 @@ TEST_CASE("Cpp.RecordTest") {
                 REQUIRE(returned_record.int_list.size() == 2);
                 REQUIRE(returned_record.int_list[0] == 0);
                 REQUIRE(returned_record.int_list[1] == 1);
+
                 REQUIRE(returned_record.string_list.size() == 2);
                 REQUIRE(returned_record.string_list[0] == "foo");
                 REQUIRE(returned_record.string_list[1] == "bar");
+
                 REQUIRE(returned_record.int_set.size() == 2);
                 REQUIRE(returned_record.int_set.contains(0));
                 REQUIRE(returned_record.int_set.contains(1));
+
                 REQUIRE(returned_record.string_set.size() == 2);
                 REQUIRE(returned_record.string_set.contains("foo"));
                 REQUIRE(returned_record.string_set.contains("bar"));
+
+                REQUIRE(returned_record.int_int_map.size() == 1);
+                REQUIRE(returned_record.int_int_map.at(0) == 1);
+
+                REQUIRE(returned_record.string_string_map.size() == 1);
+                REQUIRE(returned_record.string_string_map.at("foo") == "bar");
             }
         }
     }

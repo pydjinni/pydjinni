@@ -29,7 +29,7 @@
     auto jniEnv = ::pydjinni::jniGetThreadEnv();
     ::pydjinni::JniLocalScope jscope(jniEnv, 10);
     const auto& data = ::pydjinni::JniClass<{{ type_def.jni.translator }}>::get();
-    {{ "auto jret = " if method.return_type_ref }} jniEnv->{{ method.jni.routine_name }}(Handle::get().get(), data.method_{{ method.java.name }}
+    {{ "auto jret = " if method.return_type_ref }}jniEnv->{{ method.jni.routine_name }}(Handle::get().get(), data.method_{{ method.java.name }}
     {%- for parameter in method.parameters -%}
         , ::pydjinni::get({{ translator(parameter.type_ref) }}::fromCpp(jniEnv, {{ parameter.cpp.name }}))
     {%- endfor -%}
