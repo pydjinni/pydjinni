@@ -80,7 +80,7 @@ TEST_CASE("Cpp.RecordTest") {
         }
     }
     GIVEN("A BinaryTypes record instance") {
-        const auto record = test::record::BinaryTypes(std::vector<uint8_t>{0x8F}, std::optional<std::vector<uint8_t>>({0x8F}));
+        const auto record = test::record::BinaryTypes(std::vector<uint8_t>{0x8F}, std::make_optional<std::vector<uint8_t>>({0x8F}));
         WHEN("passing the record through a helper interface") {
             const auto returned_record = test::record::Helper::get_binary_types(record);
             THEN("the record should still contain the same data") {
