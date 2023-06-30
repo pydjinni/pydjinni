@@ -8,6 +8,7 @@ from pydjinni.parser.identifier import Identifier
 
 class BaseExternalType(BaseModel):
     class Primitive(str, Enum):
+        none = 'none'
         int = 'int'
         float = 'float'
         double = 'double'
@@ -27,6 +28,7 @@ class BaseExternalType(BaseModel):
         description="Optional namespace that the type lives in"
     )
     primitive: Primitive = Field(
+        default=Primitive.none,
         description="The underlying primitive type"
     )
     params: list[str] = []

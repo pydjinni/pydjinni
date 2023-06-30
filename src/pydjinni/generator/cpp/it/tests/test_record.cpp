@@ -79,6 +79,17 @@ TEST_CASE("Cpp.RecordTest") {
             }
         }
     }
+    GIVEN("A BinaryTypes record instance") {
+        const auto record = test::record::BinaryTypes({0x8F}, std::optional<std::vector<uint8_t>>({0x8F}));
+        WHEN("passing the record through a helper interface") {
+            const auto returned_record = test::record::Helper::get_binary_types(record);
+            THEN("the record should still contain the same data") {
+                REQUIRE(returned_record.binary_t == std::vector<uint8_t>{0x8F});
+                REQUIRE(returned_record.binary_optional.has_value());
+                REQUIRE(returned_record.binary_optional.value() == std::vector<uint8_t>{0x8F});
+            }
+        }
+    }
     GIVEN("A ConstantTypes record instance") {
         const auto record = test::record::ConstantTypes();
         THEN("the defined constants should be available via the class instance") {

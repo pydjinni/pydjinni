@@ -35,6 +35,10 @@ external_types: dict[str, ObjcppExternalType] = {
         translator="::pydjinni::translators::objc::String",
         header=Path("pydjinni/marshal.h")
     ),
+    "binary": ObjcppExternalType(
+        translator="::pydjinni::translators::objc::Binary",
+        header=Path("pydjinni/marshal.h")
+    ),
     "list": ObjcppExternalType(
         translator="::pydjinni::translators::objc::List",
         header=Path("pydjinni/marshal.h")

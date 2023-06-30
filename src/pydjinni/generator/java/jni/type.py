@@ -15,6 +15,7 @@ class NativeType(str, Enum):
     long = 'jlong'
     float = 'jfloat'
     double = 'jdouble'
+    byte_array = 'jbyteArray'
 
 
 class JniExternalType(BaseModel):

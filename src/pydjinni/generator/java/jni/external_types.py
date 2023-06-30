@@ -59,6 +59,13 @@ external_types: dict[str, JniExternalType] = {
         type_signature="Ljava/lang/String;",
         boxed_type_signature="Ljava/lang/String;"
     ),
+    "binary": JniExternalType(
+        translator="::pydjinni::jni::translator::Binary",
+        header=Path("pydjinni/jni/marshal.hpp"),
+        typename=NativeType.byte_array,
+        type_signature="[B",
+        boxed_type_signature="[B"
+    ),
     "list": JniExternalType(
         translator="::pydjinni::jni::translator::List",
         header=Path("pydjinni/jni/marshal.hpp"),

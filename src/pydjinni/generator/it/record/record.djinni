@@ -25,6 +25,11 @@ optional_types = record {
     string_optional: string?;
 } deriving (str)
 
+binary_types = record {
+    binary_t: binary;
+    binary_optional: binary?;
+}
+
 constant_types = record {
     const boolean_c: bool = True;
     const byte_c: i8 = 8;
@@ -39,4 +44,5 @@ helper = main interface +cpp {
     static get_primitive_types(record: primitive_types): primitive_types;
     static get_collection_types(record: collection_types): collection_types;
     static get_optional_types(record: optional_types): optional_types;
+    static get_binary_types(record: binary_types): binary_types;
 }

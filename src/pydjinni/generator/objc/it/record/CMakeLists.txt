@@ -5,5 +5,6 @@ objc_test_case(RecordTest
         tests/PrimitiveTypesTests.m
         tests/CollectionTypesTests.m
         tests/OptionalTypesTests.m
+        tests/BinaryTypesTests.m
         tests/ConstantTypesTests.m
 )

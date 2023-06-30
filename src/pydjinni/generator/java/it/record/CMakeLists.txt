@@ -8,5 +8,6 @@ java_test_case(RecordTest
         tests/TestPrimitiveTypes.java
         tests/TestCollectionTypes.java
         tests/TestOptionalTypes.java
+        tests/TestBinaryTypes.java
         tests/TestConstantTypes.java
 )

@@ -10,7 +10,14 @@
 @implementation PrimitiveTypesTests
 
 - (void)setUp {
-    self.record = [PrimitiveTypes primitiveTypesWithBooleanT: YES byteT: 8 shortT: 16 intT: 32 longT: 64 floatT: 32.32f doubleT: 64.64 stringT: @"test string"];
+    self.record = [PrimitiveTypes primitiveTypesWithBooleanT:YES
+                                                       byteT:8
+                                                      shortT:16
+                                                        intT:32
+                                                       longT:64
+                                                      floatT:32.32f
+                                                     doubleT:64.64
+                                                     stringT:@"test string"];
 }
 
 - (void)testPrimitiveTypes {
