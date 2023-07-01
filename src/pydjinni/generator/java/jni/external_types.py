@@ -66,6 +66,12 @@ external_types: dict[str, JniExternalType] = {
         type_signature="[B",
         boxed_type_signature="[B"
     ),
+    "date": JniExternalType(
+        translator="::pydjinni::jni::translator::Date",
+        header=Path("pydjinni/jni/marshal.hpp"),
+        type_signature="Ljava/time/Instant;",
+        boxed_type_signature="Ljava/time/Instant;"
+    ),
     "list": JniExternalType(
         translator="::pydjinni::jni::translator::List",
         header=Path("pydjinni/jni/marshal.hpp"),

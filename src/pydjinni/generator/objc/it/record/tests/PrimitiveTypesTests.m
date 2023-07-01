@@ -17,7 +17,8 @@
                                                        longT:64
                                                       floatT:32.32f
                                                      doubleT:64.64
-                                                     stringT:@"test string"];
+                                                     stringT:@"test string"
+                                                       dateT:[NSDate dateWithTimeIntervalSince1970:1688213309]];
 }
 
 - (void)testPrimitiveTypes {
@@ -33,10 +34,11 @@
     XCTAssertGreaterThan(returned_record.doubleT, 64);
     XCTAssertLessThan(returned_record.doubleT, 65);
     XCTAssertEqualObjects(returned_record.stringT, @"test string");
+    XCTAssertEqualObjects(returned_record.dateT, [NSDate dateWithTimeIntervalSince1970:1688213309]);
 }
 
 - (void)testDescription {
-    XCTAssertEqualObjects([self.record description], @"<PrimitiveTypes booleanT:YES byteT:8 shortT:16 intT:32 longT:64 floatT:32.32 doubleT:64.64 stringT:test string>");
+    XCTAssertEqualObjects([self.record description], @"<PrimitiveTypes booleanT:YES byteT:8 shortT:16 intT:32 longT:64 floatT:32.32 doubleT:64.64 stringT:test string dateT:2023-07-01 12:08:29 +0000>");
 }
 
 @end

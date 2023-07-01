@@ -6,7 +6,8 @@ TEST_CASE("Cpp.RecordTest") {
     GIVEN("a PrimitiveTypes record instance") {
         const auto record = test::record::PrimitiveTypes(
                 true, 8, 16, 32, 64, 32.32, 64.64,
-                "test string"
+                "test string",
+                std::chrono::time_point<std::chrono::system_clock>(std::chrono::seconds(1688213309))
         );
         WHEN("passing the record through a helper interface") {
             const auto returned_record = test::record::Helper::get_primitive_types(record);
@@ -21,6 +22,7 @@ TEST_CASE("Cpp.RecordTest") {
                 REQUIRE(returned_record.double_t > 64);
                 REQUIRE(returned_record.double_t < 65);
                 REQUIRE(returned_record.string_t == "test string");
+                REQUIRE(returned_record.date_t == std::chrono::time_point<std::chrono::system_clock>(std::chrono::seconds(1688213309)));
             }
         }
     }

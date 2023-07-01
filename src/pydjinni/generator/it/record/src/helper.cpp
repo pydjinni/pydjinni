@@ -12,6 +12,7 @@ PrimitiveTypes Helper::get_primitive_types(const ::test::record::PrimitiveTypes 
     assert(record.float_t > 32 && record.float_t < 33);
     assert(record.double_t > 64 && record.double_t < 65);
     assert(record.string_t == "test string");
+    assert(record.date_t == std::chrono::time_point<std::chrono::system_clock>(std::chrono::seconds(1688213309)));
     return record;
 }
 
@@ -37,6 +38,7 @@ CollectionTypes Helper::get_collection_types(const ::test::record::CollectionTyp
 
     assert(record.string_string_map.size() == 1);
     assert(record.string_string_map.at("foo") == "bar");
+
     return record;
 }
 

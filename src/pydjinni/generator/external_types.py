@@ -49,6 +49,10 @@ class ExternalTypesBuilder:
             name='binary',
             comment="binary data"
         ),
+        "date": BaseExternalType(
+            name='date',
+            comment="point in time without timezone information in millisecond precision"
+        ),
         "list": BaseExternalType(
             name='list',
             comment="a list of items of type T",

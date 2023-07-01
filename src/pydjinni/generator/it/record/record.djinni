@@ -7,6 +7,7 @@ primitive_types = record {
     float_t: f32;
     double_t: f64;
     string_t: string;
+    date_t: date;
 } deriving (str)
 
 collection_types = record {

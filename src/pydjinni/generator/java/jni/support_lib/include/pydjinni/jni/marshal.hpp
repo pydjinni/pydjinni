@@ -268,7 +268,7 @@ namespace pydjinni::jni::translator
             assert(j != nullptr);
             const auto & data = ::pydjinni::JniClass<Date>::get();
             assert(jniEnv->IsInstanceOf(j, data.clazz.get()));
-            auto time_millis = jniEnv->CallLongMethod(j, data.method_get_time);
+            auto time_millis = jniEnv->CallLongMethod(j, data.method_get_milli);
             ::pydjinni::jniExceptionCheck(jniEnv);
             return POSIX_EPOCH + std::chrono::milliseconds{time_millis};
         }
@@ -278,8 +278,8 @@ namespace pydjinni::jni::translator
             static const auto POSIX_EPOCH = std::chrono::system_clock::from_time_t(0);
             const auto & data = ::pydjinni::JniClass<Date>::get();
             const auto cpp_millis = std::chrono::duration_cast<std::chrono::milliseconds>(c - POSIX_EPOCH);
-            const jlong millis = static_cast<jlong>(cpp_millis.count());
-            auto j = ::pydjinni::LocalRef<jobject>(jniEnv, jniEnv->NewObject(data.clazz.get(), data.constructor, millis));
+            const auto millis = static_cast<jlong>(cpp_millis.count());
+            auto j = ::pydjinni::LocalRef<jobject>(jniEnv, jniEnv->CallStaticObjectMethod(data.clazz.get(), data.factory, millis));
             ::pydjinni::jniExceptionCheck(jniEnv);
             return j;
         }
@@ -288,9 +288,9 @@ namespace pydjinni::jni::translator
         Date() = default;
         friend ::pydjinni::JniClass<Date>;
 
-        const ::pydjinni::GlobalRef<jclass> clazz { ::pydjinni::jniFindClass("java/util/Date") };
-        const jmethodID constructor { ::pydjinni::jniGetMethodID(clazz.get(), "<init>", "(J)V") };
-        const jmethodID method_get_time { ::pydjinni::jniGetMethodID(clazz.get(), "getTime", "()J") };
+        const ::pydjinni::GlobalRef<jclass> clazz { ::pydjinni::jniFindClass("java/time/Instant") };
+        const jmethodID factory { ::pydjinni::jniGetStaticMethodID(clazz.get(), "ofEpochMilli", "(J)Ljava/time/Instant;") };
+        const jmethodID method_get_milli { ::pydjinni::jniGetMethodID(clazz.get(), "toEpochMilli", "()J") };
     };
 
     template <template <class> class OptionalType, class T>
