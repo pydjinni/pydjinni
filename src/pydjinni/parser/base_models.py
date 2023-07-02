@@ -2,7 +2,7 @@ from __future__ import annotations
 try:
     from enum import StrEnum
 except ImportError:
-    from strenum import LowercaseStrEnum as StrEnum
+    from strenum import StrEnum
 from enum import Enum, auto
 from pydantic import BaseModel, Field
 
@@ -19,16 +19,16 @@ class DocStrEnum(StrEnum):
 
 class BaseExternalType(BaseModel):
     class Primitive(StrEnum):
-        none = auto()
-        int = auto()
-        float = auto()
-        double = auto()
-        string = auto()
-        bool = auto()
-        interface = auto()
-        record = auto()
-        enum = auto()
-        flags = auto()
+        none = 'none'
+        int = 'int'
+        float = 'float'
+        double = 'double'
+        string = 'string'
+        bool = 'bool'
+        interface = 'interface'
+        record = 'record'
+        enum = 'enum'
+        flags = 'flags'
 
     name: str = Field(
         description="Name of the type in the IDL"
