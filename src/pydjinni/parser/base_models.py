@@ -1,7 +1,7 @@
 from __future__ import annotations
 try:
     from enum import StrEnum
-except ModuleNotFoundError:
+except ImportError:
     from strenum import LowercaseStrEnum as StrEnum
 from enum import Enum, auto
 from pydantic import BaseModel, Field
