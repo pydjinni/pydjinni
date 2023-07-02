@@ -180,7 +180,7 @@ def define_env(env):
         output = ""
         targets = API().generation_targets
         for item in Record.Deriving:
-            output += f"## {item.name}\n{item.__doc__}\n\n"
+            output += f"## {item}\n{item.__doc__}\n\n"
             output += f"| { ' | '.join(targets.keys()) } |\n"
             output += f"| { '-------|' * len(targets) }\n| "
             for target in targets.values():
