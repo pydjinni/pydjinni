@@ -26,7 +26,7 @@
     public {{ data_type(field.type_ref) }} {{ field.java.getter }}() { return {{ field.java.name }}; }
 {% endfor %}
 
-{% if type_def.deriving_str %}
+{% if 'str' in type_def.deriving %}
     @Override
     public String toString() {
         return "{{ type_def.java.typename }}{" +

@@ -1,9 +1,17 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import Enum, StrEnum
 from pydantic import BaseModel, Field
 
 from pydjinni.parser.identifier import Identifier
+
+
+class DocStrEnum(StrEnum):
+    def __new__(cls, value, doc=None):
+        member = str.__new__(cls, value)
+        member._value_ = value
+        member.__doc__ = doc.strip()
+        return member
 
 
 class BaseExternalType(BaseModel):

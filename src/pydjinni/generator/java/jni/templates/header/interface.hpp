@@ -45,7 +45,7 @@ private:
         friend ::pydjinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.translator }}>;
     };
 
-    const ::pydjinni::GlobalRef<jclass> clazz { ::pydjinni::jniFindClass("{{ type_def.jni.type_signature }}") };
+    const ::pydjinni::GlobalRef<jclass> clazz { ::pydjinni::jniFindClass("{{ type_def.jni.class_descriptor }}") };
     {% for method in type_def.methods %}
     const jmethodID method_{{ method.jni.name }} { ::pydjinni::jniGetMethodID(clazz.get(), "{{ method.java.name }}", "{{ method.jni.type_signature }}") };
     {% endfor %}

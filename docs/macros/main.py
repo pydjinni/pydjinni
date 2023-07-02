@@ -13,6 +13,7 @@ from mkdocs_click._extension import load_command
 
 from pydjinni.api import API
 from pydjinni.exceptions import return_codes
+from pydjinni.parser.ast import Record
 
 
 def render_config_schema_table(element, indent: int, render_defaults=True):
@@ -172,3 +173,20 @@ def define_env(env):
     @env.macro
     def pydjinni_version():
         return get_version()
+
+
+    @env.macro
+    def record_deriving():
+        output = ""
+        targets = API().generation_targets
+        for item in Record.Deriving:
+            output += f"## {item.name}\n{item.__doc__}\n\n"
+            output += f"| { ' | '.join(targets.keys()) } |\n"
+            output += f"| { '-------|' * len(targets) }\n| "
+            for target in targets.values():
+                if item in target.supported_deriving:
+                    output += "☑️ | "
+                else:
+                    output += "✖️ | "
+            output += "\n\n"
+        return output

@@ -35,7 +35,7 @@
     ];
 }
 
-{% if type_def.deriving_str %}
+{% if 'str' in type_def.deriving %}
 - (NSString *)description {
     return [NSString stringWithFormat:@"<%@
     {%- for field in type_def.fields -%}

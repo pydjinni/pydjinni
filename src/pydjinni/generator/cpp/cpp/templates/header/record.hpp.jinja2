@@ -27,7 +27,7 @@ struct {{ type_def.cpp.name }} final {
     {% endfor %}
     {}
 
-{% if config.default_record_constructor and type_def.fields %}
+{% if 'init' in type_def.deriving and type_def.fields %}
     {{ type_def.cpp.name }}()
     {% for field in type_def.fields %}
     {{ (": " if loop.first else ', ') ~ field.cpp.name }}()

@@ -39,7 +39,7 @@ def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, MagicMock]:
         file_reader=reader,
         targets=['cpp', 'java'],
         include_dirs=[tmp_path],
-        default_deriving=[],
+        default_deriving=set(),
         idl=input_file
     )
 
@@ -96,10 +96,7 @@ def record_resolve(name, field_name, field_typename, field_primitive):
             )],
             constants=[],
             targets=[],
-            deriving_eq=False,
-            deriving_ord=False,
-            deriving_json=False,
-            deriving_str=False
+            deriving=set()
         )
 
     return resolve
@@ -195,14 +192,12 @@ def test_parsing_record(tmp_path: Path):
     assert type(constant.value) is int
 
 
-@pytest.mark.parametrize("deriving,eq,ord,json,string", [
-    ('eq', True, False, False, False),
-    ('eq, ord', True, True, False, False),
-    ('eq, ord, json', True, True, True, False),
-    ('eq, ord, json, str', True, True, True, True),
-    ('json', False, False, True, False)
+@pytest.mark.parametrize("deriving,expected", [
+    ('eq', {Record.Deriving.eq}),
+    ('eq, ord', {Record.Deriving.eq, Record.Deriving.ord}),
+    ('eq, ord, str', {Record.Deriving.eq, Record.Deriving.ord, Record.Deriving.str}),
 ])
-def test_parsing_record_deriving(tmp_path: Path, deriving, eq, ord, json, string):
+def test_parsing_record_deriving(tmp_path: Path, deriving, expected: set[Record.Deriving]):
     # GIVEN an idl file that defines a record that derives some extensions
     parser, _ = given(
         tmp_path=tmp_path,
@@ -216,10 +211,7 @@ def test_parsing_record_deriving(tmp_path: Path, deriving, eq, ord, json, string
     record = when(parser, Record, "foo")
 
     # THEN only the derived extensions should be enabled
-    assert record.deriving_eq == eq
-    assert record.deriving_ord == ord
-    assert record.deriving_json == json
-    assert record.deriving_str == string
+    assert record.deriving == expected
 
 
 def test_parsing_base_record(tmp_path: Path):

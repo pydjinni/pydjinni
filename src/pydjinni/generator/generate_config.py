@@ -3,15 +3,10 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field
 
+from pydjinni.parser.ast import Record
+
 
 class GenerateBaseConfig(BaseModel):
-    class DerivingType(str, Enum):
-        eq = 'eq'
-        ord = 'ord'
-        str = 'str'
-        json = 'json'
-        parcellable = 'parcellable'
-
     list_processed_files: Path = Field(
         default=None,
         description="File that reports all the parsed and generated files. "
@@ -22,7 +17,7 @@ class GenerateBaseConfig(BaseModel):
         default=[],
         description="Include directories that are searched for `@import` and `@extern` directives."
     )
-    default_deriving: list[DerivingType] = Field(
+    default_deriving: set[Record.Deriving] = Field(
         default=[],
         description="Deriving functionality that should be added to every record by default."
     )

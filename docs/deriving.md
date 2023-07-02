@@ -1,3 +1,3 @@
 # Record Deriving
 
-ffoo
+{{ record_deriving() }}

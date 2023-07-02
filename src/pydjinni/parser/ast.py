@@ -1,4 +1,6 @@
-from pydjinni.parser.base_models import BaseType, BaseField, BaseClassType, TypeReference
+from enum import auto
+
+from pydjinni.parser.base_models import BaseType, BaseField, BaseClassType, TypeReference, DocStrEnum
 
 
 class Enum(BaseType):
@@ -38,8 +40,25 @@ class Record(BaseClassType):
     class Field(BaseField):
         type_ref: TypeReference
 
+    class Deriving(DocStrEnum):
+        init = auto(), """
+        Generate a default record constructor
+        """
+        eq = auto(), """
+        Equality operator. 
+        All fields in the record are compared in the order they appear in the record declaration. 
+        If you need to add a field later, make sure the order is correct.
+        """
+        ord = auto(), """
+        Ordering comparison.
+        Is not supported for collection types, optionals, and booleans.
+        """
+        str = auto(), """
+        String representation of a record instance.
+        """
+        parcelable = auto(), """
+        Instances can be written to and restored from a Parcel (Android)
+        """
+
     fields: list[Field] = []
-    deriving_eq: bool = False
-    deriving_ord: bool = False
-    deriving_json: bool = False
-    deriving_str: bool = False
+    deriving: set[Deriving] = set()

@@ -1,9 +1,14 @@
 from .objc.generator import ObjcGenerator
 from .objcpp.generator import ObjcppGenerator
 from pydjinni.generator.target import Target
+from pydjinni.parser.ast import Record
 
 
-class ObjcTarget(Target, key="objc", generators=[ObjcGenerator, ObjcppGenerator]):
+class ObjcTarget(
+    Target,
+    key="objc",
+    generators=[ObjcGenerator, ObjcppGenerator],
+    supported_deriving={Record.Deriving.eq, Record.Deriving.ord, Record.Deriving.str}):
     """
     Generate Objective-C interface and Objective-C++ gluecode.
 

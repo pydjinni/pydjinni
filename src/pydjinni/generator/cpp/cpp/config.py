@@ -36,8 +36,4 @@ class CppConfig(BaseModel):
         default="cpp",
         description="The filename extension for C++ files"
     )
-    default_record_constructor: bool = Field(
-        default=True,
-        description="Generate a default constructor for records in C++"
-    )
     identifier: CppIdentifier = CppIdentifier()

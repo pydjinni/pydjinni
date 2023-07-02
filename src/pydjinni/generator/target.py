@@ -8,6 +8,7 @@ from pydjinni.parser.base_models import BaseType
 from pydjinni.parser.type_model_builder import TypeModelBuilder
 from .generator import Generator
 from .marshal import Marshal
+from pydjinni.parser.ast import Record
 
 
 class Target(ABC):
@@ -16,8 +17,15 @@ class Target(ABC):
     E.g. to allow Java interop, both a Java and JNI generator are required.
     """
 
-    def __init_subclass__(cls, key: str, generators: list[type[Generator]]) -> None:
+    def __init_subclass__(cls, key: str, generators: list[type[Generator]], supported_deriving: set[Record.Deriving]) -> None:
+        """
+        Args:
+            key: The key that is used by the API/CLI to select the generator.
+            generators: The list of generators that is related to this target.
+            supported_deriving: A set of supported record deriving. For documentation purposes only.
+        """
         cls._generator_types = generators
+        cls.supported_deriving = supported_deriving
         cls.key = key
 
     def __init__(

@@ -27,7 +27,7 @@ class IdlParser(PTNodeVisitor):
             resolver: Resolver,
             targets: list[str],
             include_dirs: list[Path],
-            default_deriving: list[str],
+            default_deriving: set[Record.Deriving],
             file_reader: FileReaderWriter,
             idl: Path,
             position: int = 0,
@@ -153,12 +153,21 @@ class IdlParser(PTNodeVisitor):
         )
 
     def visit_deriving(self, node, children):
-        return children.declaration
+        return set(children.declaration)
+
+    def visit_declaration(self, node, children):
+        try:
+            return Record.Deriving(node.value)
+        except ValueError:
+            raise IdlParser.ParsingException(
+                self.idl,
+                *self._get_context(node.position),
+                message=f"{node.value} is not a valid record deriving")
 
     def visit_record(self, node, children):
         targets = unpack(children.targets) or []
-        deriving = unpack(children.deriving) or []
         fields: list[Record.Field] = children.field
+        deriving = unpack(children.deriving) or set()
         return Record(
             name=unpack(children.identifier),
             position=node.position,
@@ -167,10 +176,7 @@ class IdlParser(PTNodeVisitor):
             targets=targets,
             constants=children.constant,
             dependencies=self._dependencies([field.type_ref for field in fields]),
-            deriving_eq='eq' in deriving or 'eq' in self.default_deriving,
-            deriving_ord='ord' in deriving or 'ord' in self.default_deriving,
-            deriving_json='json' in deriving or 'json' in self.default_deriving,
-            deriving_str='str' in deriving or 'str' in self.default_deriving
+            deriving=deriving | self.default_deriving
         )
 
     def visit_identifier(self, node, children):
