@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydjinni.generator.generator import Generator
 from pydjinni.parser.ast import Enum, Flags, Record, Interface
 from pydjinni.parser.base_models import BaseType
@@ -7,40 +9,25 @@ from .marshal import JavaMarshal
 class JavaGenerator(Generator, key="java", marshal=JavaMarshal, writes_source=True):
 
     def generate_enum(self, type_def: Enum):
-        self.write_source(
-            template="enum.java.jinja2",
-            path=self.marshal.source_path() / type_def.java.source,
-            type_def=type_def)
+        self.write_source("enum.java.jinja2", type_def=type_def)
 
     def generate_flags(self, type_def: Flags):
-        self.write_source(
-            template="flags.java.jinja2",
-            path=self.marshal.source_path() / type_def.java.source,
-            type_def=type_def
-        )
+        self.write_source("flags.java.jinja2", type_def=type_def)
 
     def generate_record(self, type_def: Record):
-        self.write_source(
-            template="record.java.jinja2",
-            path=self.marshal.source_path() / type_def.java.source,
-            type_def=type_def
-        )
+        self.write_source("record.java.jinja2", type_def=type_def)
 
     def generate_interface(self, type_def: Interface):
-        self.write_source(
-            template="interface.java.jinja2",
-            path=self.marshal.source_path() / type_def.java.source,
-            type_def=type_def
-        )
+        self.write_source("interface.java.jinja2", type_def=type_def)
 
     def generate_loader(self):
         if self.marshal.config.native_lib:
             loader = f"{self.marshal.config.native_lib}Loader"
-            package = self.marshal.config.package + ".native_lib"
-            package_path = "/".join(package.split("."))
+            package = '.'.join(self.marshal.config.package + ["native_lib"])
+            package_path = Path("/".join(package.split(".")))
             self.write_source(
                 template="loader.java.jinja2",
-                path=self.marshal.source_path() / package_path / f"{loader}.java",
+                filename=package_path / f"{loader}.java",
                 loader=loader,
                 package=package
             )

@@ -1,21 +1,19 @@
-from abc import ABC, abstractmethod
-from pathlib import Path
+import re
+from abc import ABC
 from typing import TypeVar, Generic, get_args
 
 import pydantic
 from pydantic import BaseModel
 
 from pydjinni.config.config_model_builder import ConfigModelBuilder
-from pydjinni.config.types import OutPaths, IdentifierStyle
-from pydjinni.exceptions import ConfigurationException, ApplicationException
+from pydjinni.exceptions import ConfigurationException
 from pydjinni.generator.external_types import ExternalTypesBuilder
-from pydjinni.parser.ast import Record, Interface, Enum, Flags
-from pydjinni.parser.base_models import BaseType, BaseField
+from pydjinni.parser.ast import Record, Interface, Enum, Flags, Function, Parameter
+from pydjinni.parser.base_models import BaseType, BaseField, BaseClassType, Constant, BaseExternalType
 from pydjinni.parser.type_model_builder import TypeModelBuilder
 
 ConfigModel = TypeVar("ConfigModel", bound=BaseModel)
 ExternalTypeDef = TypeVar("ExternalTypeDef", bound=BaseModel)
-
 
 class Marshal(ABC, Generic[ConfigModel, ExternalTypeDef]):
     """
@@ -25,7 +23,7 @@ class Marshal(ABC, Generic[ConfigModel, ExternalTypeDef]):
     Methods defined in the Marshal are supposed to be called from the Jinja template that renders the output.
     """
 
-    class MarshalException(ApplicationException, code=160):
+    class MarshalException(Exception):
         """Marshalling error"""
 
         def __init__(self, input_def: BaseType | BaseField, message: str):
@@ -53,72 +51,96 @@ class Marshal(ABC, Generic[ConfigModel, ExternalTypeDef]):
     def configure(self, config: ConfigModel):
         self.config = config
 
-    def header_path(self) -> Path:
+    def marshal(self, type_defs: list[BaseType]):
         """
-        :return: the path where generated header files should be written.
+        Marshals the provided type and all the fields that belong to it.
+
+        Uses the Visitor pattern to visit each relevant element in the AST and searches for a matching method to
+        do the marshalling.
+
+        Valid marshalling functions are named by the type definitions full class name prefixed with `marshal_`.
+        Type definitions can optionally be marshalled a second time to circumvent cyclic dependencies.
+        The second marshalling method is prefixed with `second_`.
+
+        The hierarchy of the given type is tarversed all the way up to its common pydantic superclass `BaseModel`,
+        until a matching method can be found.
+
+        Examples:
+            - Type `Interface`: `marshal_interface`, `second_interface` in the second run.
+            - Field `Interface.Method`: `marshal_interface_method`, `marshal_base_field` if not found.
+
+        Args:
+            type_def: Type definition that should be marshalled.
+
+
+        Raises:
+            Marshal.MarshalException: - if marshalling results in an output that would not be valid in the target language
+                                        (e.g. because it contains a reserved keyword).
+                                      - if no matching marshal method can be found in the first run. This means that
+                                        the feature is not implemented for the current language and processing must be
+                                        stopped.
+
+
         """
-        out = self.config.out
-        if type(out) is OutPaths:
-            return out.header
-        else:
-            return out
 
-    def source_path(self) -> Path:
-        """
-        :return: the path where generated source files should be written
-        """
-        out = self.config.out
-        if type(out) is OutPaths:
-            return out.source
-        else:
-            return out
+        def call_marshal_method(definition: BaseModel, second: bool = False):
+            def traverse_hierarchy(def_class, definition):
+                if def_class in [BaseExternalType, BaseModel] and not second:
+                    raise Marshal.MarshalException(
+                        definition,
+                        f"Language feature '{definition.__class__.__qualname__}' is not supported for the target '{self.key}'"
+                    )
+                qualifier = '_'.join([word.lower() for word in re.findall(r'[A-Z][a-z0-9]*', def_class.__qualname__)])
+                method_name = f"second_{qualifier}" if second else f"marshal_{qualifier}"
+                if hasattr(self, method_name):
+                    getattr(self, method_name)(definition)
+                else:
+                    for base in def_class.__bases__:
+                        traverse_hierarchy(base, definition)
 
-    def marshal_namespace(
-            self,
-            type_def: BaseType,
-            identifier_style: IdentifierStyle | IdentifierStyle.Case,
-            config_namespace: str = None,
-            separator: str = "::"
-    ) -> list[str]:
-        namespace = [namespace.convert(identifier_style) for namespace in type_def.namespace]
-        if config_namespace:
-            namespace = config_namespace.split(separator) + namespace
-        return namespace
+            traverse_hierarchy(definition.__class__, definition)
 
-    @abstractmethod
-    def marshal_type(self, type_def: BaseType):
-        raise NotImplementedError
+        def marshal_types(type_defs: list[BaseType], second: bool = False):
+            for type_def in type_defs:
+                try:
+                    call_marshal_method(type_def, second)
+                except pydantic.ValidationError as e:
+                    raise Marshal.MarshalException(type_def, str(e))
 
-    @abstractmethod
-    def marshal_field(self, field_def: BaseField):
-        raise NotImplementedError
+        def marshal_fields(type_defs: list[BaseType], second: bool = False):
+            for type_def in type_defs:
+                try:
+                    match type_def:
+                        case Function():
+                            for parameter in type_def.parameters:
+                                call_marshal_method(parameter, second)
+                        case Record():
+                            for field_def in type_def.fields:
+                                call_marshal_method(field_def, second)
+                            for constant in type_def.constants:
+                                call_marshal_method(constant, second)
+                        case Interface():
+                            for method in type_def.methods:
+                                for parameter in method.parameters:
+                                    call_marshal_method(parameter, second)
+                                call_marshal_method(method, second)
+                            for property_def in type_def.properties:
+                                call_marshal_method(property_def, second)
+                            for constant in type_def.constants:
+                                call_marshal_method(constant, second)
+                        case Enum():
+                            for item in type_def.items:
+                                call_marshal_method(item, second)
+                        case Flags():
+                            for flag in type_def.flags:
+                                call_marshal_method(flag, second)
+                except pydantic.ValidationError as e:
+                    raise Marshal.MarshalException(type_def, str(e))
 
-    def marshal(self, type_def: BaseType):
         if self.config:
-            try:
-                self.marshal_type(type_def)
-                match type_def:
-                    case Record():
-                        for field_def in type_def.fields:
-                            self.marshal_field(field_def)
-                        for constant in type_def.constants:
-                            self.marshal_field(constant)
-                    case Interface():
-                        for method in type_def.methods:
-                            self.marshal_field(method)
-                            for parameter in method.parameters:
-                                self.marshal_field(parameter)
-                        for property_def in type_def.properties:
-                            self.marshal_field(property_def)
-                        for constant in type_def.constants:
-                            self.marshal_field(constant)
-                    case Enum():
-                        for item in type_def.items:
-                            self.marshal_field(item)
-                    case Flags():
-                        for flag in type_def.flags:
-                            self.marshal_field(flag)
-            except pydantic.ValidationError as e:
-                raise Marshal.MarshalException(type_def, str(e))
+            marshal_types(type_defs)
+            marshal_types(type_defs, second=True)
+            marshal_fields(type_defs)
+            marshal_fields(type_defs, second=True)
         else:
             raise ConfigurationException(f"Missing configuration for 'generator.{self.key}'!")

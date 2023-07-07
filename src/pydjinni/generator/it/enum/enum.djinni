@@ -5,5 +5,5 @@ example_enum = enum {
 }
 
 helper = main interface +cpp {
-    static get_enum(example_enum: example_enum): example_enum;
+    static get_enum(example_enum: example_enum) -> example_enum;
 }

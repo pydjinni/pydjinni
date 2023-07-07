@@ -15,47 +15,25 @@ class ObjcGenerator(
 ):
 
     def generate_enum(self, type_def: Enum):
-        self.write_header(
-            template="header/enum.h.jinja2",
-            path=self.marshal.header_path() / type_def.objc.header,
-            type_def=type_def)
+        self.write_header("header/enum.h.jinja2", type_def=type_def)
 
     def generate_flags(self, type_def: Flags):
-        self.write_header(
-            template="header/flags.h.jinja2",
-            path=self.marshal.header_path() / type_def.objc.header,
-            type_def=type_def)
+        self.write_header("header/flags.h.jinja2", type_def=type_def)
 
     def generate_record(self, type_def: Record):
-        self.write_header(
-            template="header/record.h.jinja2",
-            path=self.marshal.header_path() / type_def.objc.header,
-            type_def=type_def
-        )
-        self.write_source(
-            template="source/record.m.jinja2",
-            path=self.marshal.source_path() / type_def.objc.source,
-            type_def=type_def
-        )
+        self.write_header("header/record.h.jinja2", type_def=type_def)
+        self.write_source("source/record.m.jinja2", type_def=type_def)
 
     def generate_interface(self, type_def: Interface):
-        self.write_header(
-            template="header/interface.h.jinja2",
-            path=self.marshal.header_path() / type_def.objc.header,
-            type_def=type_def)
+        self.write_header("header/interface.h.jinja2", type_def=type_def)
         if type_def.constants:
-            self.write_source(
-                template="source/interface.m.jinja2",
-                path=self.marshal.source_path() / type_def.objc.source,
-                type_def=type_def
-            )
+            self.write_source("source/interface.m.jinja2", type_def=type_def)
 
     def generate_bridging_header(self, ast: list[BaseType]):
         if self.marshal.config.swift.bridging_header:
-            path = self.marshal.header_path() / self.marshal.config.swift.bridging_header
             self.write_header(
                 template="header/bridging_header.h.jinja2",
-                path=path,
+                filename=self.marshal.config.swift.bridging_header,
                 ast=ast
             )
 

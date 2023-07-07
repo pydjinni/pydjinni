@@ -15,10 +15,10 @@ class CppExternalType(BaseModel):
 
 
 class CppType(CppExternalType):
-    name: str
-    source: Path
+    name: str  = None
+    source: Path = None
     comment: str | None
-    namespace: str
+    namespace: str = None
     proxy: bool = False
 
 

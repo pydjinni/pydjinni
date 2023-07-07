@@ -15,6 +15,7 @@ from .ast import *
 from .base_models import Assignment, Constant, BaseExternalType, ObjectValue
 from .identifier import Identifier
 from .resolver import Resolver
+from pydjinni.generator.marshal import Marshal
 
 
 def unpack(list_input: []):
@@ -29,6 +30,7 @@ class IdlParser(PTNodeVisitor):
             include_dirs: list[Path],
             default_deriving: set[Record.Deriving],
             file_reader: FileReaderWriter,
+            marshals: list[Marshal],
             idl: Path,
             position: int = 0,
             **kwargs
@@ -40,8 +42,12 @@ class IdlParser(PTNodeVisitor):
         self.file_reader = file_reader
         self.include_dirs = include_dirs
         self.default_deriving = default_deriving
+        self.marshals = marshals
         self.idl = idl
         self.position = position
+        self.type_defs: list[BaseType] = []
+        self.current_namespace: list[Identifier] = []
+        self.current_namespace_stack_size: list[int] = []
 
     class ParsingException(ApplicationException, code=150):
         """IDL Parsing error"""
@@ -79,16 +85,11 @@ class IdlParser(PTNodeVisitor):
     class InvalidAssignmentException(ParsingException):
         """Exception raised when a const record assignment defined an unknown value"""
 
-    def visit_idl(self, node, children):
-        imports = unpack(children.import_def) or []
-        type_defs = children.type_def or []
-        namespaced_type_defs = unpack(children.namespace) or []
-        for type_def in type_defs + namespaced_type_defs:
-            self.resolver.register(type_def)
-        return imports + type_defs + namespaced_type_defs
-
     def visit_type_def(self, node, children) -> BaseType:
-        return unpack(children)
+        type_def = unpack(children)
+        self.resolver.register(type_def)
+        self.type_defs.append(type_def)
+        return type_def
 
     def visit_class_type_def(self, node, children):
         type_def: BaseClassType = unpack(children)
@@ -96,36 +97,48 @@ class IdlParser(PTNodeVisitor):
         return type_def
 
     def visit_enum(self, node, children):
-        return Enum(
+        enum = Enum(
             name=unpack(children.identifier),
             position=node.position,
-            comment=unpack(children.comment),
-            items=children.item
+            items=children.item,
+            namespace=self.current_namespace
         )
+        if children.comment:
+            enum.comment = unpack(children.comment)
+        return enum
 
     def visit_flags(self, node, children):
-        return Flags(
+        flags = Flags(
             name=unpack(children.identifier),
             position=node.position,
-            comment=unpack(children.comment),
-            flags=children.flag
+            flags=children.flag,
+            namespace=self.current_namespace
         )
+        if children.comment:
+            flags.comment = unpack(children.comment)
+        return flags
 
     def visit_flag(self, node, children):
+        all = unpack(children.flag_modifier) == 'all' if children.flag_modifier else False
+        none = unpack(children.flag_modifier) == 'none' if children.flag_modifier else False
         return Flags.Flag(
             name=unpack(children.identifier),
             position=node.position,
             comment=unpack(children.comment),
-            all=len(node) == 4 and node[2] == 'all',
-            none=len(node) == 4 and node[2] == 'none'
+            all=all,
+            none=none
         )
+
+    def visit_flag_modifier(self, node, children):
+        return children[0]
 
     def visit_interface(self, node, children):
         targets: list[str] = unpack(children.targets) or self.targets
-        main: bool = type(children[1]) == str and children[1] == "main"
+        main: bool = 'main' in children.results
         methods: list[Interface.Method] = children.method
         properties: list[Interface.Property] = children.property
         dependencies: list[TypeReference] = []
+
         if main and targets != [CppGenerator.key]:
             raise IdlParser.ParsingException(
                 self.idl, *self._get_context(node.position),
@@ -140,16 +153,38 @@ class IdlParser(PTNodeVisitor):
                 dependencies.append(method.return_type_ref)
         for property_def in properties:
             dependencies.append(property_def.type_ref)
-        return Interface(
+        interface = Interface(
             name=unpack(children.identifier),
             position=node.position,
-            comment=unpack(children.comment),
             methods=methods,
             targets=targets,
             constants=children.constant,
             properties=properties,
             main=main,
+            namespace=self.current_namespace,
             dependencies=self._dependencies(dependencies)
+        )
+        if children.comment:
+            interface.comment = unpack(children.comment)
+        return interface
+
+    def visit_named_function(self, node, children):
+        function = unpack(children.function)
+        function.name = unpack(children.identifier)
+        if children.comment:
+            function.comment = unpack(children.comment)
+        function.position = node.position
+        return function
+
+    def visit_function(self, node, children):
+        targets: list[str] = unpack(children.targets) or self.targets
+        return Function(
+            name="<anonymous>",
+            position=node.position,
+            parameters=children.parameter,
+            targets=targets,
+            namespace=self.current_namespace,
+            return_type_ref=unpack(children.data_type)
         )
 
     def visit_deriving(self, node, children):
@@ -168,43 +203,56 @@ class IdlParser(PTNodeVisitor):
         targets = unpack(children.targets) or []
         fields: list[Record.Field] = children.field
         deriving = unpack(children.deriving) or set()
-        return Record(
+        record = Record(
             name=unpack(children.identifier),
             position=node.position,
-            comment=unpack(children.comment),
             fields=fields,
             targets=targets,
             constants=children.constant,
+            namespace=self.current_namespace,
             dependencies=self._dependencies([field.type_ref for field in fields]),
             deriving=deriving | self.default_deriving
         )
-
-    def visit_identifier(self, node, children):
-        return Identifier(node.value)
+        if children.comment:
+            record.comment = unpack(children.comment)
+        return record
 
     def visit_data_type(self, node, children):
-        parameters = children.data_type or []
-        return TypeReference(
-            name=str(node[0]),
-            parameters=parameters,
-            position=node.position,
-            optional='optional' in children.results
-        )
+        if children.function:
+            type_def = unpack(children.function)
+            self.type_defs.append(type_def)
+            type_ref = TypeReference(
+                name="<function>",
+                position=node.position,
+                type_def=type_def,
+                namespace=self.current_namespace
+            )
+        else:
+            parameters = children.data_type or []
+            type_ref = TypeReference(
+                name=str(node[0]),
+                parameters=parameters,
+                position=node.position,
+                namespace=self.current_namespace,
+                optional='optional' in children.results
+            )
+        return type_ref
 
     def second_data_type(self, type_ref: TypeReference):
-        self.resolver.resolve(type_ref)
-        if type_ref.parameters and not type_ref.type_def.params:
-            raise IdlParser.TypeResolvingException(
-                self.idl,
-                *self._get_context(type_ref.position),
-                message=f"Type '{type_ref.name}' does not accept generic parameters")
-        elif type_ref.parameters and len(type_ref.type_def.params) != len(type_ref.parameters):
-            expected_parameters = ", ".join(type_ref.type_def.params)
-            raise IdlParser.TypeResolvingException(
-                self.idl,
-                *self._get_context(type_ref.position),
-                message=f"Invalid number of generic parameters given to '{type_ref.name}'. "
-                        f"Expects {len(type_ref.type_def.params)} ({expected_parameters}), but {len(type_ref.parameters)} where given.")
+        if not type_ref.type_def:
+            self.resolver.resolve(type_ref)
+            if type_ref.parameters and not type_ref.type_def.params:
+                raise IdlParser.TypeResolvingException(
+                    self.idl,
+                    *self._get_context(type_ref.position),
+                    message=f"Type '{type_ref.name}' does not accept generic parameters")
+            elif type_ref.parameters and len(type_ref.type_def.params) != len(type_ref.parameters):
+                expected_parameters = ", ".join(type_ref.type_def.params)
+                raise IdlParser.TypeResolvingException(
+                    self.idl,
+                    *self._get_context(type_ref.position),
+                    message=f"Invalid number of generic parameters given to '{type_ref.name}'. "
+                            f"Expects {len(type_ref.type_def.params)} ({expected_parameters}), but {len(type_ref.parameters)} where given.")
 
     def visit_item(self, node, children):
         return Enum.Item(
@@ -237,7 +285,7 @@ class IdlParser(PTNodeVisitor):
         )
 
     def visit_parameter(self, node, children):
-        return Interface.Method.Parameter(
+        return Parameter(
             name=unpack(children.identifier),
             comment=unpack(children.comment),
             position=node.position,
@@ -273,8 +321,16 @@ class IdlParser(PTNodeVisitor):
             type_ref=unpack(children.data_type)
         )
 
+    def second_field(self, field: Record.Field):
+        if isinstance(field.type_ref.type_def, Function):
+            raise IdlParser.ParsingException(
+                self.idl,
+                *self._get_context(field.position),
+                message="functions are not allowed as record field type."
+            )
+
     def visit_comment(self, node, children):
-        return [child[1:] for child in children]
+        return "\n".join([child[1:] for child in children])
 
     def visit_filepath(self, node, children):
         path = Path(node.value[1:-1])
@@ -311,7 +367,7 @@ class IdlParser(PTNodeVisitor):
             assignments={assignment.key: assignment for assignment in children.assignment}
         )
 
-    def visit_constant(self, node, children):
+    def visit_constant(self, node, children) -> Constant:
         return Constant(
             name=unpack(children.identifier),
             type_ref=unpack(children.data_type),
@@ -320,8 +376,14 @@ class IdlParser(PTNodeVisitor):
             comment=unpack(children.comment)
         )
 
-    def second_constant(self, children):
-        self._check_const_assignment(children.name, children.type_ref.type_def, children.value, children.position)
+    def second_constant(self, constant: Constant):
+        if isinstance(constant.type_ref.type_def, Function):
+            raise IdlParser.ParsingException(
+                self.idl,
+                *self._get_context(constant.position),
+                message="functions are not allowed as constant field type."
+            )
+        self._check_const_assignment(constant.name, constant.type_ref.type_def, constant.value, constant.position)
 
     def _dependencies(self, type_refs: list[TypeReference]) -> list[TypeReference]:
         output: list[TypeReference] = []
@@ -332,24 +394,6 @@ class IdlParser(PTNodeVisitor):
 
     def _check_const_assignment(self, name, type_def, value, position):
         match type_def:
-            case BaseExternalType():
-                primitive = type_def.primitive
-                if not ((primitive == BaseExternalType.Primitive.int and type(value) == int) or
-                        (primitive == BaseExternalType.Primitive.float and type(value) == float) or
-                        (primitive == BaseExternalType.Primitive.double and type(value) == float) or
-                        (primitive == BaseExternalType.Primitive.string and type(value) == str) or
-                        (primitive == BaseExternalType.Primitive.bool and type(value) == bool)):
-                    if type(value) == str:
-                        value_description = f'string value "{value}"'
-                    elif type(value) in [int, float, bool]:
-                        value_description = f"primitive value '{value}'"
-                    else:
-                        value_description = f"value"
-                    raise IdlParser.InvalidAssignmentException(
-                        self.idl,
-                        *self._get_context(position),
-                        message=f"Invalid {value_description} assigned to const '{name}' of type '{type_def.name}'"
-                    )
             case Flags() | Enum():
                 fields = [item.name for item in (type_def.items or type_def.flags)]
                 if value not in fields:
@@ -391,6 +435,24 @@ class IdlParser(PTNodeVisitor):
                         message=f"Invalid primitive value '{str(value)}' assigned to const record type '{type_def.name}'"
                     )
 
+            case BaseExternalType():
+                primitive = type_def.primitive
+                if not ((primitive == BaseExternalType.Primitive.int and type(value) == int) or
+                        (primitive == BaseExternalType.Primitive.float and type(value) == float) or
+                        (primitive == BaseExternalType.Primitive.double and type(value) == float) or
+                        (primitive == BaseExternalType.Primitive.string and type(value) == str) or
+                        (primitive == BaseExternalType.Primitive.bool and type(value) == bool)):
+                    if type(value) == str:
+                        value_description = f'string value "{value}"'
+                    elif type(value) in [int, float, bool]:
+                        value_description = f"primitive value '{value}'"
+                    else:
+                        value_description = f"value"
+                    raise IdlParser.InvalidAssignmentException(
+                        self.idl,
+                        *self._get_context(position),
+                        message=f"Invalid {value_description} assigned to const '{name}' of type '{type_def.name}'"
+                    )
     def visit_import_def(self, node, children):
         ast = IdlParser(
             resolver=self.resolver,
@@ -398,18 +460,23 @@ class IdlParser(PTNodeVisitor):
             include_dirs=self.include_dirs,
             default_deriving=self.default_deriving,
             file_reader=self.file_reader,
+            marshals=self.marshals,
             idl=unpack(children.filepath),
             position=node.position).parse()
+        self.type_defs += ast
         return ast
 
     def visit_extern(self, node, children):
         self.resolver.load_external(unpack(children.filepath))
 
-    def visit_namespace(self, node, children):
-        namespaced_type_defs = unpack(children.namespace) or []
-        for type_def in children.type_def + namespaced_type_defs:
-            type_def.namespace = children.identifier + type_def.namespace
-        return children.type_def + namespaced_type_defs
+    def visit_begin_namespace(self, node, children):
+        self.current_namespace += children.identifier
+        self.current_namespace_stack_size.append(len(children.identifier))
+
+    def visit_end_namespace(self, node, children):
+        for _ in range(self.current_namespace_stack_size.pop()):
+            self.current_namespace.pop()
+
 
     def _get_context(self, position) -> tuple[int, int, str]:
         line, col = self.idl_parser.pos_to_linecol(position)
@@ -437,7 +504,10 @@ class IdlParser(PTNodeVisitor):
         """
         try:
             parse_tree = self.idl_parser.parse(self.file_reader.read_idl(self.idl))
-            return visit_parse_tree(parse_tree, self)
+            visit_parse_tree(parse_tree, self)
+            for marshal in self.marshals:
+                marshal.marshal(self.type_defs)
+            return self.type_defs
         except FileNotFoundError as e:
             raise FileNotFoundException(self.idl)
         except Resolver.TypeResolvingException as e:
@@ -461,3 +531,5 @@ class IdlParser(PTNodeVisitor):
                 *self._get_context(self.position),
                 message=f"file imports itself"
             )
+        except Marshal.MarshalException as e:
+            raise IdlParser.ParsingException(self.idl, *self._get_context(e.input_def.position), message=str(e))

@@ -6,7 +6,6 @@ import yaml
 from pydjinni.exceptions import InputParsingException
 from pydjinni.parser.ast import TypeReference
 from pydjinni.parser.base_models import BaseType, BaseExternalType
-from pydjinni.parser.identifier import Identifier
 from pydjinni.parser.resolver import Resolver
 
 
@@ -15,10 +14,10 @@ def internal_given() -> tuple[Resolver, BaseType, TypeReference]:
     resolver = Resolver(BaseExternalType)
 
     # AND GIVEN a type that should be registered
-    new_type = BaseType(name=Identifier("foo"), position=0)
+    new_type = BaseType(name="foo", position=0, namespace=[])
 
     # AND GIVEN a type reference to the same type
-    type_ref = TypeReference(name=Identifier("foo"), position=2, parameters=[])
+    type_ref = TypeReference(name="foo", position=2, parameters=[], namespace=[])
 
     return resolver, new_type, type_ref
 
@@ -28,10 +27,10 @@ def external_given() -> tuple[Resolver, BaseExternalType, TypeReference]:
     resolver = Resolver(BaseExternalType)
 
     # AND GIVEN a type that should be registered
-    new_type = BaseExternalType(name="foo", primitive='record')
+    new_type = BaseExternalType(name="foo", primitive='record', namespace=[])
 
     # AND GIVEN a type reference to the same type
-    type_ref = TypeReference(name=Identifier("foo"), position=2, parameters=[])
+    type_ref = TypeReference(name="foo", position=2, parameters=[], namespace=[])
 
     return resolver, new_type, type_ref
 
@@ -100,7 +99,7 @@ def test_load_external_type(tmp_path: Path):
     }))
 
     # AND GIVEN a type reference to the external type
-    type_ref = TypeReference(name=Identifier("bar"), position=2, parameters=[])
+    type_ref = TypeReference(name="bar", position=2, parameters=[], namespace=[])
 
     # WHEN loading the type definition from the file
     resolver.load_external(file)
@@ -125,7 +124,7 @@ def test_load_invalid_external_type(tmp_path: Path):
     }))
 
     # AND GIVEN a type reference to the external type
-    TypeReference(name=Identifier("bar"), position=2, parameters=[])
+    TypeReference(name="bar", position=2, parameters=[])
 
     # WHEN loading the type definition from the file
     # THEN an InputParsingException should be raised
@@ -133,21 +132,24 @@ def test_load_invalid_external_type(tmp_path: Path):
         resolver.load_external(file)
 
 
-def test_register_namespaced_type(tmp_path: Path):
+@pytest.mark.parametrize("type_ref,type_def,wrong_type_def", [
+    (TypeReference(name="foo.bar"), BaseType(name="bar", namespace="foo"), None),
+    (TypeReference(name="foo.bar", namespace="foo"), BaseType(name="bar", namespace="foo"), None),
+    (TypeReference(name="bar", namespace="foo"), BaseType(name="bar"), None),
+    (TypeReference(name=".bar", namespace="foo"), BaseType(name="bar"), BaseType(name="bar", namespace="foo"))
+])
+def test_register_namespaced_type(tmp_path: Path, type_ref: TypeReference, type_def: BaseType, wrong_type_def: BaseType):
     # GIVEN a resolver instance
     resolver = Resolver(BaseExternalType)
 
-    # AND GIVEN a type with a namespace that should be registered
-    new_type = BaseType(name=Identifier("bar"), namespace=[Identifier("foo")], position=0)
-
-    # AND GIVEN a type reference to the same type
-    type_ref = TypeReference(name=Identifier("foo.bar"), position=2, parameters=[])
-
     # WHEN registering the new type
-    resolver.register(new_type)
+    resolver.register(type_def)
+    # AND WHEN (optionally) registering a wrong type that we are not looking for
+    if wrong_type_def:
+        resolver.register(wrong_type_def)
 
     # AND WHEN resolving the registered type from a provided type reference
     resolver.resolve(type_ref)
 
     # THEN the type_ref should now contain a reference to the new type
-    assert type_ref.type_def == new_type
+    assert type_ref.type_def == type_def

@@ -1,3 +1,4 @@
+import copy
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -53,6 +54,15 @@ class Resolver:
         self.registry[registry_name] = type_definition
 
     def resolve(self, type_reference: TypeReference):
-        type_reference.type_def = self.registry.get(type_reference.name)
+        if type_reference.name.startswith('.'):  # absolute reference. No need to search for the type
+            type_reference.type_def = self.registry.get(type_reference.name[1:])
+        else:  # relative type. Search in current and all above namespaces until a matching type is found
+            namespace_copy = copy.deepcopy(type_reference.namespace)
+            while type_reference.type_def is None:
+                type_reference.type_def = self.registry.get('.'.join(namespace_copy + [type_reference.name]))
+                if namespace_copy:
+                    namespace_copy.pop()
+                else:
+                    break
         if type_reference.type_def is None:
             raise Resolver.TypeResolvingException(type_reference=type_reference, position=type_reference.position)

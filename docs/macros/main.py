@@ -58,6 +58,8 @@ def render_config_schema_table(element, indent: int, render_defaults=True):
 
                 if "description" in value:
                     result += f"{value['description']}<br>"
+                if "default" in value and value["default"] in [None, ""]:
+                    result += "(*Optional*)"
                 if "enum" in value:
                     result += f"One of `{'`, `'.join(value['enum'])}`<br>"
                 if "examples" in value:

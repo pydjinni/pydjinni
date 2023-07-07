@@ -16,11 +16,12 @@ class Flags(BaseType):
     flags: list[Flag]
 
 
+class Parameter(BaseField):
+    type_ref: TypeReference
+
+
 class Interface(BaseClassType):
     class Method(BaseField):
-        class Parameter(BaseField):
-            type_ref: TypeReference
-
         parameters: list[Parameter] = []
         return_type_ref: TypeReference | None = None
         static: bool = False
@@ -32,6 +33,12 @@ class Interface(BaseClassType):
     main: bool = False
     methods: list[Method] = []
     properties: list[Property] = []
+
+
+class Function(BaseType):
+    parameters: list[Parameter] = []
+    return_type_ref: TypeReference | None = None
+    targets: list[str] = []
 
 
 class Record(BaseClassType):

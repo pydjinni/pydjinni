@@ -1,7 +1,7 @@
 import pytest
 
 from pydjinni.config.types import IdentifierStyle
-from pydjinni.parser.identifier import Identifier
+from pydjinni.parser.identifier import IdentifierType as Identifier
 
 testdata = [
     ("foo_bar", IdentifierStyle.Case.none, "foo_bar"),

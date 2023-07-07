@@ -1,6 +1,7 @@
 from pathlib import Path
+from typing import Annotated
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, AfterValidator, PlainSerializer, WithJsonSchema
 
 from pydjinni.config.types import OutPaths, IdentifierStyle
 
@@ -15,13 +16,21 @@ class CppIdentifier(BaseModel):
     const: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.train
 
 
+CppNamespace = Annotated[
+    str,
+    AfterValidator(lambda x: x.split('::')),
+    PlainSerializer(lambda x: '::'.join(x), return_type=str),
+    WithJsonSchema({'type': 'string', 'pattern': r"^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))+[a-zA-Z][a-zA-Z0-9_]*$"},
+                   mode='validation')
+]
+
+
 class CppConfig(BaseModel):
     out: Path | OutPaths = Field(
         description="The output folder for the generated files. Separate folders for `source` and `header` files can be specified."
     )
-    namespace: str = Field(
-        default=None,
-        pattern=r"^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))+[a-zA-Z][a-zA-Z0-9_]*$",
+    namespace: CppNamespace | list[str] = Field(
+        default=[],
         description="The namespace name to use for generated C++ classes"
     )
     include_prefix: Path = Field(

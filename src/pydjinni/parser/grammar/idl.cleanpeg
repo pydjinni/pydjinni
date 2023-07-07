@@ -1,32 +1,38 @@
-idl            = (import_def/extern)* (type_def/namespace)* EOF
-comment        = r'#.*$'+
-type_def       = enum/flags/class_type_def
-enum           = comment? identifier '=' 'enum' '{' item* '}'
-flags          = comment? identifier '=' 'flags' '{' flag* '}'
-declaration    = r'[\w]+'
-deriving       = 'deriving' '(' ((declaration ',')* declaration)? ')'
-class_type_def = record/interface
-record         = comment? identifier '=' 'record' targets? '{' (field/constant)* '}' deriving?
-interface      = comment? identifier '=' 'main'? 'interface' targets '{' (method/constant/property)* '}'
-constant       = comment? 'const' identifier ':' data_type '=' value ';'
-value          = (string/float/integer/bool/identifier/object)
-string         = r'".*"'
-integer        = r'\d+'
-float          = r'\d*\.\d+'
-bool           = 'True'/'False'
-object         = '{' ((assignment ',')* assignment)? '}'
-assignment     = identifier '=' value
-field          = comment? identifier ':' data_type ';'
-method         = comment? 'static'? 'const'? identifier '(' ((parameter ',')* parameter)? ')' (':' data_type)? ';'
-parameter      = identifier ':' data_type
-targets        = (r'\+[a-z]+'/r'-[a-z]+')*
-property       = comment? 'property' identifier ':' data_type ';'
-item           = comment? identifier ';'
-flag           = comment? identifier ('=' ('all'/'none'))? ';'
-identifier     = r'[\w]+'
-data_type      = r'[\.\w]+' ('<' (data_type ',')* data_type '>')? optional?
-optional       = '?'
-filepath       = r'".*"'
-import_def     = '@import' filepath
-extern         = '@extern' filepath
-namespace      = 'namespace' (identifier '.')* identifier '{' (type_def/namespace)* '}'
+idl             = (import_def/extern)* (type_def/namespace)* EOF
+comment         = r'#.*$'+
+type_def        = enum/flags/class_type_def/named_function
+enum            = comment? identifier '=' 'enum' '{' item* '}'
+flags           = comment? identifier '=' 'flags' '{' flag* '}'
+declaration     = r'[\w]+'
+deriving        = 'deriving' '(' ((declaration ',')* declaration)? ')'
+class_type_def  = record/interface
+record          = comment? identifier '=' 'record' targets? '{' (field/constant)* '}' deriving?
+interface       = comment? identifier '=' main? 'interface' targets? '{' (method/constant/property)* '}'
+main            = 'main'
+named_function  = comment? identifier '=' function ';'
+function        = ('function' targets?)? '(' ((parameter ',')* parameter)? ')' ('->' data_type)?
+constant        = comment? 'const' identifier ':' data_type '=' value ';'
+value           = (string/float/integer/bool/identifier/object)
+string          = r'".*"'
+integer         = r'\d+'
+float           = r'\d*\.\d+'
+bool            = 'True'/'False'
+object          = '{' ((assignment ',')* assignment)? '}'
+assignment      = identifier '=' value
+field           = comment? identifier ':' data_type ';'
+method          = comment? 'static'? 'const'? identifier '(' ((parameter ',')* parameter)? ')' ('->' data_type)? ';'
+parameter       = comment? identifier ':' data_type
+targets         = (r'\+[a-z]+'/r'-[a-z]+')+
+property        = comment? 'property' identifier ':' data_type ';'
+item            = comment? identifier ';'
+flag            = comment? identifier flag_modifier? ';'
+flag_modifier   = '=' ('all'/'none')
+identifier      = r'[\w]+'
+data_type       = (function/(r'[\.\w]+' ('<' (data_type ',')* data_type '>')? optional?))
+optional        = '?'
+filepath        = r'".*"'
+import_def      = '@import' filepath
+extern          = '@extern' filepath
+namespace       = begin_namespace (type_def/namespace)* end_namespace
+begin_namespace = 'namespace' (identifier '.')* identifier '{'
+end_namespace   = '}'

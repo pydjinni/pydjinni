@@ -98,5 +98,6 @@ nav:
   - Development:
       - Setup: dev_setup.md
       - Architecture: architecture.md
-      - Plugins: plugins.md
+      - Plugins:
+          - Generator Plugin: generator_plugin.md
 

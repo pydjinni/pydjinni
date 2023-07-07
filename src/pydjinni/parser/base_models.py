@@ -1,4 +1,8 @@
 from __future__ import annotations
+
+from pydjinni.parser.identifier import Identifier
+from pydjinni.parser.namespace import Namespace
+
 try:
     from enum import StrEnum
 except ImportError:
@@ -6,7 +10,6 @@ except ImportError:
 from enum import Enum, auto
 from pydantic import BaseModel, Field
 
-from pydjinni.parser.identifier import Identifier
 
 
 class DocStrEnum(StrEnum):
@@ -17,7 +20,7 @@ class DocStrEnum(StrEnum):
         return member
 
 
-class BaseExternalType(BaseModel):
+class BaseExternalType(BaseModel, validate_assignment=True):
     class Primitive(StrEnum):
         none = 'none'
         int = 'int'
@@ -29,13 +32,13 @@ class BaseExternalType(BaseModel):
         record = 'record'
         enum = 'enum'
         flags = 'flags'
+        function = 'function'
 
-    name: str = Field(
+    name: Identifier = Field(
         description="Name of the type in the IDL"
     )
-    namespace: str = Field(
-        default=None,
-        pattern=r"[_\.\w]+",
+    namespace: Namespace | list[Identifier] = Field(
+        default=[],
         description="Optional namespace that the type lives in"
     )
     primitive: Primitive = Field(
@@ -43,23 +46,21 @@ class BaseExternalType(BaseModel):
         description="The underlying primitive type"
     )
     params: list[str] = []
-    comment: str | None = None
+    comment: str = None
 
 
-class BaseType(BaseModel, extra='allow'):
-    name: Identifier
+class BaseType(BaseExternalType, extra='allow'):
     position: int = -1
-    namespace: list[Identifier] = []
-    comment: list[str] | None = None
     dependencies: list[TypeReference] = []
 
 
 class TypeReference(BaseModel):
     name: Identifier
-    position: int
-    parameters: list[TypeReference]
+    namespace: Namespace | list[Identifier] = []
+    position: int = -1
+    parameters: list[TypeReference] = []
     optional: bool = False
-    type_def: BaseExternalType | BaseType = Field(
+    type_def: BaseExternalType = Field(
         default=None,
         repr=False
     )
@@ -72,7 +73,7 @@ class BaseField(BaseModel, extra='allow'):
 
 
 class Assignment(BaseModel):
-    key: Identifier
+    key: str
     position: int
     value: int | float | str | bool | Identifier | ObjectValue
 

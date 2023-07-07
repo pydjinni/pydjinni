@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 {{ config.class_access_modifier.value }} abstract class {{ type_def.java.name }} {
     {% if type_def.main and config.native_lib %}
     static {
-        new {{ config.package }}.native_lib.{{ config.native_lib }}Loader();
+        new {{ config.package|join('.') }}.native_lib.{{ config.native_lib }}Loader();
     }
     {% endif %}
     {%- for constant in type_def.constants -%}

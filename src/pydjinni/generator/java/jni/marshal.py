@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from pydjinni.generator.marshal import Marshal
-from pydjinni.parser.ast import Enum, Flags, Interface, Record
+from pydjinni.parser.ast import Enum, Flags, Interface, Record, Parameter
 from pydjinni.parser.base_models import BaseType, BaseField, TypeReference
 from .config import JniConfig
 from .external_types import external_types
@@ -30,8 +30,8 @@ class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
                 return_type_signature = method.return_type_ref.type_def.jni.type_signature
         return f"({parameter_type_signatures}){return_type_signature}"
 
-    def marshal_type(self, type_def: BaseType):
-        namespace = self.marshal_namespace(type_def, self.config.identifier.namespace, self.config.namespace)
+    def marshal_base_type(self, type_def: BaseType):
+        namespace = self.config.namespace + [identifier.convert(self.config.identifier.namespace) for identifier in type_def.namespace]
         name = type_def.name.convert(self.config.identifier.class_name)
         java_path = type_def.java.package.split('.') + [name]
         class_descriptor = '/'.join(java_path)
@@ -71,13 +71,13 @@ class JniMarshal(Marshal[JniConfig, JniExternalType], types=external_types):
         else:
             return ""
 
-    def marshal_field(self, field_def: BaseField):
+    def marshal_base_field(self, field_def: BaseField):
         match field_def:
             case Enum.Item() | Flags.Flag():
                 field_def.jni = JniField(
                     name=field_def.name.convert(self.config.identifier.enum)
                 )
-            case Record.Field() | Interface.Method.Parameter():
+            case Record.Field() | Parameter():
                 field_def.jni = JniField(
                     name=field_def.name.convert(self.config.identifier.field),
                     field_accessor=self._get_field_accessor(field_def.type_ref),

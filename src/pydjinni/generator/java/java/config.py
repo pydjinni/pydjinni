@@ -1,9 +1,11 @@
 from enum import Enum
 from pathlib import Path
+from typing import Annotated
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, AfterValidator, PlainSerializer, WithJsonSchema
 
 from pydjinni.config.types import IdentifierStyle
+from pydjinni.parser.identifier import Identifier
 
 
 class JavaIdentifierStyle(BaseModel):
@@ -13,6 +15,14 @@ class JavaIdentifierStyle(BaseModel):
     method: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.camel
     package: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.snake
     const: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.train
+
+
+Package = Annotated[
+    str,
+    AfterValidator(lambda x: x.split('.')),
+    PlainSerializer(lambda x: '.'.join(x), return_type=str),
+    WithJsonSchema({'type': 'string', 'pattern': r"^[a-z][a-z0-9_]*([.][a-z0-9_]+)+[0-9a-z_]$"}, mode='validation')
+]
 
 
 class JavaConfig(BaseModel):
@@ -28,9 +38,8 @@ class JavaConfig(BaseModel):
         public = 'public'
         package = 'package'
 
-    package: str = Field(
-        default=None,
-        pattern=r"^[a-z][a-z0-9_]*([.][a-z0-9_]+)+[0-9a-z_]$",
+    package: Package | list[Identifier] = Field(
+        default=[],
         examples=["my.package.name", "other.package.name"],
         description="The package name to use for generated Java classes"
     )
@@ -62,5 +71,9 @@ class JavaConfig(BaseModel):
         description="Name of the native library containing the JNI interface. "
                     "If this option is set and an interface is marked as `main`, a static block will be "
                     "added to the interface, that loads the native library."
+    )
+    function_prefix: str = Field(
+        default="Functional",
+        description="Prefix for generated functional interfaces."
     )
     identifier: JavaIdentifierStyle = JavaIdentifierStyle()

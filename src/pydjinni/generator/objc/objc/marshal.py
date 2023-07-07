@@ -3,9 +3,9 @@ from pathlib import Path
 import mistletoe
 
 from pydjinni.generator.marshal import Marshal
-from pydjinni.parser.ast import Enum, Flags, Record, Interface
+from pydjinni.parser.ast import Enum, Flags, Record, Interface, Parameter
 from pydjinni.parser.base_models import BaseField, BaseType, Constant, BaseExternalType, BaseClassType, TypeReference
-from pydjinni.parser.identifier import Identifier
+from pydjinni.parser.identifier import IdentifierType as Identifier
 from .comment_renderer import DocCCommentRenderer
 from .external_types import external_types
 from .type import ObjcExternalType, ObjcType, ObjcField
@@ -13,8 +13,8 @@ from .config import ObjcConfig
 
 
 class ObjcMarshal(Marshal[ObjcConfig, ObjcExternalType], types=external_types):
-    def marshal_type(self, type_def: BaseType):
-        namespace = self.marshal_namespace(type_def, self.config.identifier.type)
+    def marshal_base_type(self, type_def: BaseType):
+        namespace = [identifier.convert(self.config.identifier.type) for identifier in type_def.namespace]
         prefix = self.config.type_prefix if self.config.type_prefix else ""
         typename = f"{prefix}{''.join(namespace)}{type_def.name.convert(self.config.identifier.type)}"
         kwargs = dict()
@@ -73,7 +73,7 @@ class ObjcMarshal(Marshal[ObjcConfig, ObjcExternalType], types=external_types):
         else:
             return ""
 
-    def marshal_field(self, field_def: BaseField):
+    def marshal_base_field(self, field_def: BaseField):
         comment = mistletoe.markdown(field_def.comment, DocCCommentRenderer) if field_def.comment else ''
         match field_def:
             case Enum.Item() | Flags.Flag():
@@ -86,7 +86,7 @@ class ObjcMarshal(Marshal[ObjcConfig, ObjcExternalType], types=external_types):
                 specifier = None
                 annotation = self._annotation(field_def.type_ref)
                 type_decl = self._type_decl(field_def.type_ref)
-            case Interface.Method.Parameter():
+            case Parameter():
                 style = self.config.identifier.field
                 specifier = None
                 annotation = self._annotation(field_def.type_ref)

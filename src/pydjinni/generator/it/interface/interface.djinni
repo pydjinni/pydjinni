@@ -1,11 +1,11 @@
 platform_interface = interface {
-    get_value(): i8;
+    get_value() -> i8;
 }
 
 calculator = main interface +cpp {
-    static get_instance(): calculator;
-    add(a: i8, b: i8): i8;
+    static get_instance() -> calculator;
+    add(a: i8, b: i8) -> i8;
     const a: i8 = 5;
-    get_platform_value(platform: platform_interface): i8;
+    get_platform_value(platform: platform_interface) -> i8;
     no_parameters_no_return();
 }

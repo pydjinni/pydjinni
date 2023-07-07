@@ -8,7 +8,7 @@ import pytest
 from pydjinni.exceptions import FileNotFoundException
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.file.processed_files_model_builder import ProcessedFiles
-from pydjinni.parser.ast import Record, Enum, Flags, Interface, TypeReference
+from pydjinni.parser.ast import Record, Enum, Flags, Interface, TypeReference, Function
 from pydjinni.parser.base_models import BaseType, BaseExternalType
 from pydjinni.parser.parser import IdlParser
 from pydjinni.parser.resolver import Resolver
@@ -39,6 +39,7 @@ def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, MagicMock]:
         file_reader=reader,
         targets=['cpp', 'java'],
         include_dirs=[tmp_path],
+        marshals=[],
         default_deriving=set(),
         idl=input_file
     )
@@ -49,7 +50,7 @@ def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, MagicMock]:
 TypeDef = TypeVar("TypeDef", bound=BaseType)
 
 
-def when(parser: IdlParser, type_type: type[TypeDef], type_name: str) -> TypeDef:
+def when(parser: IdlParser, type_type: type[TypeDef], type_name: str = None) -> TypeDef:
     """
     parses the given input and asserts that the result is an AST with exactly one element
     of the expected type and name.
@@ -256,9 +257,9 @@ def test_parsing_interface(tmp_path: Path):
                 method();
                 static static_method();
                 const const_method();
-                method_with_return(): i8;
+                method_with_return() -> i8;
                 method_with_parameter(param: i8);
-                method_with_parameters_and_return(param: i8, param2: i8): i8;
+                method_with_parameters_and_return(param: i8, param2: i8) -> i8;
                 property a: i8;
                 const b: i8 = 5;
             }
@@ -414,6 +415,75 @@ def test_parsing_main_interface_not_cpp(tmp_path, targets):
     with pytest.raises(IdlParser.ParsingException):
         parser.parse()
 
+
+def test_parsing_function(tmp_path):
+    # GIVEN a named function definition
+    parser, _ = given(
+        tmp_path=tmp_path,
+        input_idl="foo = function (param: i8) -> bool;"
+    )
+
+    function = when(parser, Function, "foo")
+
+    # THEN the function should have the expected parameters and return type
+    assert len(function.parameters) == 1
+    assert function.parameters[0].name == "param"
+    assert function.parameters[0].type_ref.name == "i8"
+    assert function.return_type_ref.name == "bool"
+
+
+def test_parsing_inline_function(tmp_path):
+    # GIVEN an interface with an inline function definition
+    parser, _ = given(
+        tmp_path=tmp_path,
+        input_idl="""
+        foo = interface {
+            method(callback: function (var: i8));
+        }
+        """
+    )
+    # WHEN parsing the input
+    ast = parser.parse()
+
+    # THEN the anonymous type should be registered in the output AST
+    assert len(ast) == 2
+    assert isinstance(ast[0], Function)
+    assert isinstance(ast[1], Interface)
+
+    # THEN the method should reference an anonymous (nameless) function
+    interface: Interface = ast[1]
+    function = interface.methods[0].parameters[0].type_ref.type_def
+    assert isinstance(function, Function)
+    assert function.parameters[0].name == "var"
+    assert function.return_type_ref is None
+
+
+@pytest.mark.parametrize("input", [
+    """
+    foo = record {
+        field: ();
+    }
+    """,
+    """
+    foo = record {
+        const field: () = 0;
+    }""",
+    """
+    foo = interface {
+        const field: () = 0;
+    }
+    """
+])
+def test_parsing_anonymous_function_not_allowed(tmp_path: Path, input):
+    parser, _ = given(
+        tmp_path=tmp_path,
+        input_idl=input
+    )
+
+    # WHEN parsing the input
+    # THEN a ParsingException should be raised because functions are not allowed in the given context
+    with pytest.raises(IdlParser.ParsingException, match="functions are not allowed"):
+        parser.parse()
 
 def test_parsing_invalid_input(tmp_path: Path):
     parser, _ = given(
@@ -708,6 +778,6 @@ def test_record_wrong_const_unknown_field_assignment(tmp_path):
     resolver_mock.resolve.side_effect = record_resolve("foo", "a", "i8", BaseExternalType.Primitive.int)
 
     # WHEN parsing the file
-    # THEN a InvalidAssignmentException should be raised
+    # THEN a UnknownFieldException should be raised
     with pytest.raises(IdlParser.UnknownFieldException):
         parser.parse()
