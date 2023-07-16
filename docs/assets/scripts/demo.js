@@ -191,7 +191,7 @@ async function generate(idlContent, configContent) {
             from pydjinni.exceptions import ApplicationException, ConfigurationException
             from pydjinni.parser.parser import IdlParser
             from pygments import highlight
-            from pygments.lexers import CppLexer, JavaLexer
+            from pygments.lexers import CppLexer, JavaLexer, YamlLexer
             from pygments.lexers.objective import ObjectiveCLexer
             from pygments.formatters import HtmlFormatter
 
@@ -203,6 +203,8 @@ async function generate(idlContent, configContent) {
             java_html_path = Path("/out/java/html")
             objc_source_path = Path("/out/objc/header")
             objc_html_path = Path("/out/objc/html")
+            yaml_source_path = Path("/out/yaml")
+            yaml_html_path = Path("/out/yaml/html")
             try:
                 api = API().configure("/pydjinni.yaml", options={
                     "generate": {
@@ -232,9 +234,12 @@ async function generate(idlContent, configContent) {
                                 "header": "/out/objcpp/header",
                                 "source": "/out/objcpp/source"
                             }
+                        },
+                        "yaml": {
+                            "out": "/out/yaml"
                         }
                     }
-                }).parse("/input.djinni").generate("cpp", clean=True).generate("java", clean=True).generate("objc", clean=True)
+                }).parse("/input.djinni").generate("cpp", clean=True).generate("java", clean=True).generate("objc", clean=True).generate("yaml", clean=True)
                 
                 def render_generated_files(source_path: Path, target_path: Path, lexer, id: str):
                     files = source_path.rglob("*")
@@ -259,6 +264,7 @@ async function generate(idlContent, configContent) {
                 render_generated_files(cpp_header_path, cpp_html_path, CppLexer(), id="generated_cpp_files")
                 render_generated_files(java_source_path, java_html_path, JavaLexer(), id="generated_java_files")
                 render_generated_files(objc_source_path, objc_html_path, ObjectiveCLexer(), id="generated_objc_files")
+                render_generated_files(yaml_source_path, yaml_html_path, YamlLexer(), id="generated_yaml_files")
                 result = (0, "success")
             except IdlParser.ParsingException as e:
                 result = (1, f"{e}")

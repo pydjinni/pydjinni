@@ -60,6 +60,12 @@ hide:
         <span class="teaser">:material-file-code:<br>Generated Objective-C interfaces will be displayed here.</span>
     </span>
 
+=== "YAML"
+
+    <span id="generated_yaml_files" class="generated_listing" markdown>
+        <span class="teaser">:material-file-code:<br>Generated export YAML will be displayed here.</span>
+    </span>
+
 </div>
 
 </div>
