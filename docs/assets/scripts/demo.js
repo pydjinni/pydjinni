@@ -314,7 +314,7 @@ function demoInit() {
     // a simple way to set attributes according to me
     Object.assign(pyodideScript, {
         id: "pyodide",
-        src: "https://cdn.jsdelivr.net/pyodide/v0.23.1/full/pyodide.js",
+        src: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js",
     });
 
     let edit_button = document.getElementsByClassName("md-content__button")[0]
