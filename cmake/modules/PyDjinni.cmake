@@ -67,7 +67,7 @@ function(pydjinni_generate IDL)
     endforeach()
 
     # generate c++ interface
-   execute_process(COMMAND ${DJINNI_EXECUTABLE}
+    execute_process(COMMAND ${DJINNI_EXECUTABLE}
             ${ADDITIONAL_OPTIONS}
             --option generate.list_processed_files:${DJINNI_PROCESSED_FILES_OUTFILE}
             generate ${ADDITIONAL_GENERATE_OPTIONS} ${IDL} ${DJINNI_LANGUAGES}
@@ -137,7 +137,7 @@ function(pydjinni_generate IDL)
 
     foreach(LANGUAGE ${GENERATED_LANGUAGES})
         get_generated_files(${LANGUAGE} header)
-        set(${LANGUAGE}_GENERATED_HEADERS ${${LANGUAGE}_GENERATED_HEADERS} PARENT_SCOPE)
+        set(${LANGUAGE}_GENERATED_HEADERS "${${LANGUAGE}_GENERATED_HEADERS}" PARENT_SCOPE)
         string(JSON INCLUDE_DIR
             ERROR_VARIABLE INCLUDE_DIR_JSON_ERROR
             GET ${PROCESSED_FILES} generated ${LANGUAGE} include_dir)
@@ -153,7 +153,7 @@ function(pydjinni_generate IDL)
             set(${LANGUAGE}_SOURCE_DIR ${CMAKE_SOURCE_DIR} PARENT_SCOPE)
         endif()
         get_generated_files(${LANGUAGE} source)
-        set(${LANGUAGE}_GENERATED_SOURCES ${${LANGUAGE}_GENERATED_SOURCES} PARENT_SCOPE)
+        set(${LANGUAGE}_GENERATED_SOURCES "${${LANGUAGE}_GENERATED_SOURCES}" PARENT_SCOPE)
     endforeach()
 
     # trigger re-generation if IDL file or config changes

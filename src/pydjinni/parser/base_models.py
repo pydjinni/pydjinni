@@ -1,15 +1,16 @@
 from __future__ import annotations
 
+from functools import cached_property
+from pathlib import Path
+
 from pydjinni.parser.identifier import Identifier
 from pydjinni.parser.namespace import Namespace
 
 try:
     from enum import StrEnum
 except ImportError:
-    from strenum import StrEnum
-from enum import Enum, auto
-from pydantic import BaseModel, Field
-
+    from strenum import StrEnum  # Fallback for python < 3.11
+from pydantic import BaseModel, Field, computed_field
 
 
 class DocStrEnum(StrEnum):
@@ -20,7 +21,17 @@ class DocStrEnum(StrEnum):
         return member
 
 
-class BaseExternalType(BaseModel, validate_assignment=True):
+class Position(BaseModel):
+    start: int = None
+    end: int = None
+    file: Path = None
+
+    @computed_field
+    @cached_property
+    def length(self) -> int: return self.end - self.start if self.end else None
+
+
+class BaseExternalType(BaseModel):
     class Primitive(StrEnum):
         none = 'none'
         int = 'int'
@@ -48,16 +59,10 @@ class BaseExternalType(BaseModel, validate_assignment=True):
     params: list[str] = []
     comment: str = None
 
-
-class BaseType(BaseExternalType, extra='allow'):
-    position: int = -1
-    dependencies: list[TypeReference] = []
-
-
 class TypeReference(BaseModel):
     name: Identifier
     namespace: Namespace | list[Identifier] = []
-    position: int = -1
+    position: Position = Position()
     parameters: list[TypeReference] = []
     optional: bool = False
     type_def: BaseExternalType = Field(
@@ -66,15 +71,20 @@ class TypeReference(BaseModel):
     )
 
 
+class BaseType(BaseExternalType, extra='allow'):
+    position: Position = Position()
+    dependencies: list[TypeReference] = []
+
+
 class BaseField(BaseModel, extra='allow'):
     name: Identifier
-    position: int = -1
+    position: Position = Position()
     comment: list[str] | None = None
 
 
 class Assignment(BaseModel):
     key: str
-    position: int
+    position: Position = Position()
     value: int | float | str | bool | Identifier | ObjectValue
 
 
@@ -87,6 +97,14 @@ class Constant(BaseField):
     value: int | float | str | bool | Identifier | ObjectValue = None
 
 
-class BaseClassType(BaseType):
+class ClassType(BaseType):
     constants: list[Constant] = []
     targets: list[str] = []
+
+
+class SymbolicConstantField(BaseField):
+    pass
+
+
+class SymbolicConstantType(BaseType):
+    pass

@@ -14,10 +14,10 @@ def internal_given() -> tuple[Resolver, BaseType, TypeReference]:
     resolver = Resolver(BaseExternalType)
 
     # AND GIVEN a type that should be registered
-    new_type = BaseType(name="foo", position=0, namespace=[])
+    new_type = BaseType(name="foo", namespace=[])
 
     # AND GIVEN a type reference to the same type
-    type_ref = TypeReference(name="foo", position=2, parameters=[], namespace=[])
+    type_ref = TypeReference(name="foo", parameters=[], namespace=[])
 
     return resolver, new_type, type_ref
 
@@ -30,7 +30,7 @@ def external_given() -> tuple[Resolver, BaseExternalType, TypeReference]:
     new_type = BaseExternalType(name="foo", primitive='record', namespace=[])
 
     # AND GIVEN a type reference to the same type
-    type_ref = TypeReference(name="foo", position=2, parameters=[], namespace=[])
+    type_ref = TypeReference(name="foo", parameters=[], namespace=[])
 
     return resolver, new_type, type_ref
 
@@ -99,7 +99,7 @@ def test_load_external_type(tmp_path: Path):
     }))
 
     # AND GIVEN a type reference to the external type
-    type_ref = TypeReference(name="bar", position=2, parameters=[], namespace=[])
+    type_ref = TypeReference(name="bar", parameters=[], namespace=[])
 
     # WHEN loading the type definition from the file
     resolver.load_external(file)
@@ -124,7 +124,7 @@ def test_load_invalid_external_type(tmp_path: Path):
     }))
 
     # AND GIVEN a type reference to the external type
-    TypeReference(name="bar", position=2, parameters=[])
+    TypeReference(name="bar", parameters=[])
 
     # WHEN loading the type definition from the file
     # THEN an InputParsingException should be raised

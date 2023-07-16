@@ -1,18 +1,51 @@
 from pydjinni.generator.generator import Generator
-from pydjinni.parser.ast import Interface, Record, Flags, Enum
-from pydjinni.parser.base_models import BaseType
-from .marshal import ObjcMarshal
+from pydjinni.parser.ast import (
+    Interface,
+    Record,
+    Flags,
+    Enum,
+    Parameter
+)
+from pydjinni.parser.base_models import (
+    BaseType,
+    BaseField,
+    SymbolicConstantField,
+    Constant
+)
+from .config import ObjcConfig
 from pydjinni.generator.filters import quote, headers
+from .type import (
+    ObjcExternalType,
+    ObjcBaseType,
+    ObjcBaseField,
+    ObjcInterface,
+    ObjcSymbolicConstantField,
+    ObjcConstantObjcField,
+    ObjcRecord,
+    ObjcParameter
+)
+from .external_types import external_types
 
 
-class ObjcGenerator(
-    Generator,
-    key="objc",
-    marshal=ObjcMarshal,
-    writes_header=True,
-    writes_source=True,
-    filters=[quote, headers]
-):
+class ObjcGenerator(Generator):
+    key = "objc"
+    config_model = ObjcConfig
+    external_type_model = ObjcExternalType
+    external_types = external_types
+    marshal_models = {
+        BaseType: ObjcBaseType,
+        BaseField: ObjcBaseField,
+        Interface: ObjcInterface,
+        Interface.Method: ObjcInterface.ObjcMethod,
+        SymbolicConstantField: ObjcSymbolicConstantField,
+        Constant: ObjcConstantObjcField,
+        Record: ObjcRecord,
+        Record.Field: ObjcConstantObjcField,
+        Parameter: ObjcParameter
+    }
+    writes_header = True
+    writes_source = True
+    filters = [quote, headers]
 
     def generate_enum(self, type_def: Enum):
         self.write_header("header/enum.h.jinja2", type_def=type_def)
@@ -30,10 +63,10 @@ class ObjcGenerator(
             self.write_source("source/interface.m.jinja2", type_def=type_def)
 
     def generate_bridging_header(self, ast: list[BaseType]):
-        if self.marshal.config.swift.bridging_header:
+        if self.config.swift.bridging_header:
             self.write_header(
                 template="header/bridging_header.h.jinja2",
-                filename=self.marshal.config.swift.bridging_header,
+                filename=self.config.swift.bridging_header,
                 ast=ast
             )
 

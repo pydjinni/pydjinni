@@ -1,15 +1,24 @@
-from pydjinni.parser.base_models import BaseType, BaseField, BaseClassType, TypeReference, DocStrEnum
+from pydjinni.parser.base_models import (
+    BaseType,
+    BaseField,
+    ClassType,
+    TypeReference,
+    DocStrEnum,
+    SymbolicConstantField,
+    SymbolicConstantType
+
+)
 
 
-class Enum(BaseType):
-    class Item(BaseField):
+class Enum(SymbolicConstantType):
+    class Item(SymbolicConstantField):
         ...
 
     items: list[Item]
 
 
-class Flags(BaseType):
-    class Flag(BaseField):
+class Flags(SymbolicConstantType):
+    class Flag(SymbolicConstantField):
         all: bool
         none: bool
 
@@ -20,7 +29,7 @@ class Parameter(BaseField):
     type_ref: TypeReference
 
 
-class Interface(BaseClassType):
+class Interface(ClassType):
     class Method(BaseField):
         parameters: list[Parameter] = []
         return_type_ref: TypeReference | None = None
@@ -41,7 +50,7 @@ class Function(BaseType):
     targets: list[str] = []
 
 
-class Record(BaseClassType):
+class Record(ClassType):
     class Field(BaseField):
         type_ref: TypeReference
 

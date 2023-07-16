@@ -69,6 +69,7 @@ pydjinni = "pydjinni.__main__:main"
 cpp = 'pydjinni.generator.cpp:CppTarget'
 java = 'pydjinni.generator.java:JavaTarget'
 objc = 'pydjinni.generator.objc:ObjcTarget'
+yaml = 'pydjinni.generator.yaml:YamlTarget'
 
 [project.entry-points.'pygments.lexers']
 djinni='pydjinni.lexer:PyDjinniLexer'

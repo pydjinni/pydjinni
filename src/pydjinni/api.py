@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from functools import cached_property
 from importlib.metadata import entry_points, EntryPoint
 from pathlib import Path
 
@@ -9,7 +10,7 @@ from pydjinni.file.processed_files_model_builder import ProcessedFilesModelBuild
 try:
     import tomllib
 except ModuleNotFoundError:
-    import tomli as tomllib
+    import tomli as tomllib # Fallback for Python < 3.11
 
 import pydantic
 import yaml
@@ -20,7 +21,6 @@ from pydjinni.exceptions import FileNotFoundException, ConfigurationException
 from pydjinni.generator.external_types import ExternalTypesBuilder
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.generator.generate_config import GenerateBaseConfig
-from pydjinni.generator.marshal import Marshal
 from pydjinni.generator.target import Target
 from pydjinni.parser.base_models import BaseType, BaseExternalType
 from pydjinni.parser.parser import IdlParser
@@ -99,7 +99,7 @@ class API:
         """
         return self._processed_files_model
 
-    @property
+    @cached_property
     def generation_targets(self) -> dict[str, Target]:
         """
         Caution:
@@ -110,15 +110,14 @@ class API:
         """
         return {target.key: target for target in self._generate_targets}
 
-    @property
+    @cached_property
     def internal_types(self) -> list:
         """
         Returns:
             A list of all pre-defined types that are available to use in the IDL.
         """
         for target in self._generate_targets:
-            for marshal in target.marshals:
-                marshal.register_external_types(self._external_types_builder)
+            target.register_external_types(self._external_types_builder)
         return self._external_types_builder.build()
 
     def _init_generator_plugin(self, plugin: EntryPoint) -> Target:
@@ -212,30 +211,20 @@ class API:
             if isinstance(idl, str):
                 idl = Path(idl)
             generate_config: GenerateBaseConfig = self._config.generate
-            if generate_config is not None:
-                # only marshals that are configured are passed to the parser
-                generate_targets: list[str] = list(generate_config.model_fields_set)
-            else:
-                generate_targets = []
-            marshals: list[Marshal] = []
-            for key, target in self._generate_targets.items():
-                target.input_file(idl)
-                if key in generate_targets:
-                    marshals += target.marshals
-
-            for marshal in marshals:
-                marshal.register_external_types(self._external_types_builder)
-                marshal.configure(getattr(generate_config, marshal.key))
+            generate_targets: list[str] = list(generate_config.model_fields_set) if generate_config else []
+            targets: list[Target] = [target for key, target in self._generate_targets.items() if key in generate_targets]
+            for target in targets:
+                target.register_external_types(self._external_types_builder)
+                target.configure(generate_config)
 
             for external_type_def in self._external_types_builder.build():
                 self._resolver.register_external(external_type_def)
 
             parser = IdlParser(
                 resolver=self._resolver,
-                targets=[key for key in self._generate_targets],
+                targets=targets,
                 file_reader=self._file_reader_writer,
                 include_dirs=generate_config.include_dirs,
-                marshals=marshals,
                 default_deriving=set(generate_config.default_deriving),
                 idl=idl
             )
@@ -270,7 +259,7 @@ class API:
                 """
                 generate output for a specified target based on the previously parsed IDL.
                 Args:
-                    target_name: name of the target.
+                    target_name: name (key) of the target.
                     clean: if set to `True`, all output directories are purged before generating output, to make sure
                            that no leftovers from previous executions are still present.
 

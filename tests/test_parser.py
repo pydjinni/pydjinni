@@ -8,8 +8,9 @@ import pytest
 from pydjinni.exceptions import FileNotFoundException
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.file.processed_files_model_builder import ProcessedFiles
+from pydjinni.generator.target import Target
 from pydjinni.parser.ast import Record, Enum, Flags, Interface, TypeReference, Function
-from pydjinni.parser.base_models import BaseType, BaseExternalType
+from pydjinni.parser.base_models import BaseType, BaseExternalType, Position
 from pydjinni.parser.parser import IdlParser
 from pydjinni.parser.resolver import Resolver
 
@@ -28,6 +29,10 @@ def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, MagicMock]:
     reader = FileReaderWriter()
     reader.setup(ProcessedFiles)
     resolver_mock = MagicMock(spec=Resolver)
+    cpp_target_mock = MagicMock(spec=Target)
+    cpp_target_mock.key = "cpp"
+    java_target_mock = MagicMock(spec=Target)
+    java_target_mock.key = "java"
 
     # AND GIVEN an input file
     input_file = tmp_path / f"{uuid.uuid4()}.djinni"
@@ -37,9 +42,8 @@ def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, MagicMock]:
     parser = IdlParser(
         resolver=resolver_mock,
         file_reader=reader,
-        targets=['cpp', 'java'],
+        targets=[cpp_target_mock, java_target_mock],
         include_dirs=[tmp_path],
-        marshals=[],
         default_deriving=set(),
         idl=input_file
     )
@@ -81,13 +85,10 @@ def record_resolve(name, field_name, field_typename, field_primitive):
     def resolve(type_reference: TypeReference):
         type_reference.type_def = Record(
             name=name,
-            position=0,
             fields=[Record.Field(
                 name=field_name,
-                position=0,
                 type_ref=TypeReference(
                     name=field_typename,
-                    position=0,
                     type_def=BaseExternalType(
                         name=field_typename,
                         primitive=field_primitive
@@ -509,7 +510,7 @@ def test_parsing_missing_type(tmp_path):
     )
 
     def resolve(type_reference: TypeReference):
-        raise Resolver.TypeResolvingException(type_reference, 0)
+        raise Resolver.TypeResolvingException(type_reference, position=Position(start=0))
 
     resolver_mock.resolve.side_effect = resolve
 
@@ -531,7 +532,7 @@ def test_parsing_duplicate_type(tmp_path: Path):
     )
 
     def register(datatype: BaseType):
-        raise Resolver.DuplicateTypeException(datatype, 0)
+        raise Resolver.DuplicateTypeException(datatype, position=Position(start=0))
 
     resolver_mock.register.side_effect = register
 

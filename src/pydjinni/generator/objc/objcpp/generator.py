@@ -1,18 +1,27 @@
 from pydjinni.generator.generator import Generator
+from pydjinni.parser.base_models import BaseType, BaseField, SymbolicConstantField
+from .config import ObjcppConfig
+from .type import ObjcppExternalType, ObjcppBaseType, ObjcppBaseField, ObjcppSymbolicConstantField
 from pydjinni.parser.ast import Interface, Record, Flags, Enum
-from .marshal import ObjcppMarshal
 from pydjinni.generator.filters import quote, headers
+from .external_types import external_types
 
 
-class ObjcppGenerator(
-    Generator,
-    key="objcpp",
-    marshal=ObjcppMarshal,
-    writes_header=True,
-    writes_source=True,
-    support_lib_commons=True,
-    filters=[quote, headers]
-):
+class ObjcppGenerator(Generator):
+    key = "objcpp"
+    config_model = ObjcppConfig
+    external_type_model = ObjcppExternalType
+    external_types = external_types
+    marshal_models = {
+        BaseType: ObjcppBaseType,
+        BaseField: ObjcppBaseField,
+        SymbolicConstantField: ObjcppSymbolicConstantField
+    }
+    writes_header = True
+    writes_source = True
+    support_lib_commons = True
+    filters = [quote, headers]
+
     def generate_enum(self, type_def: Enum):
         self.write_header("header/enum.h.jinja2", type_def=type_def)
 

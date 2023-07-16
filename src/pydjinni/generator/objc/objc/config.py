@@ -27,7 +27,7 @@ class ObjcConfig(BaseModel):
         description="The output folder for the generated files. Separate folders for `source` and `header` files can be specified."
     )
     type_prefix: str = Field(
-        default=None,
+        default='',
         description="The prefix for Objective-C data types (usually two or three letters)."
     )
     header_extension: str = Field(

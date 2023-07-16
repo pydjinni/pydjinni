@@ -153,10 +153,11 @@ def define_env(env):
                       "| Target | Typename | Boxed |\n" \
                       "|--------|----------|-------|\n"
             for target in api.generation_targets:
-                target_type = getattr(type_def, target)
-                typename = f"`{target_type.typename}{generic_params}`" if target_type else "N/A"
-                boxed_typename = f"`{target_type.boxed}`" if target_type and 'boxed' in target_type.model_fields_set else ''
-                output += f"| {target} | {typename} | {boxed_typename} |\n"
+                if hasattr(type_def, target):
+                    target_type = getattr(type_def, target)
+                    typename = f"`{target_type.typename}{generic_params}`" if target_type else "N/A"
+                    boxed_typename = f"`{target_type.boxed}`" if target_type and 'boxed' in target_type.model_fields_set else ''
+                    output += f"| {target} | {typename} | {boxed_typename} |\n"
         return output
 
     @env.macro
@@ -180,7 +181,7 @@ def define_env(env):
     @env.macro
     def record_deriving():
         output = ""
-        targets = API().generation_targets
+        targets = {key: target for key, target in API().generation_targets.items() if target.supported_deriving}
         for item in Record.Deriving:
             output += f"## {item}\n{item.__doc__}\n\n"
             output += f"| { ' | '.join(targets.keys()) } |\n"

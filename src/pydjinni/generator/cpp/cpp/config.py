@@ -27,7 +27,8 @@ CppNamespace = Annotated[
 
 class CppConfig(BaseModel):
     out: Path | OutPaths = Field(
-        description="The output folder for the generated files. Separate folders for `source` and `header` files can be specified."
+        description="The output folder for the generated files. "
+                    "Separate folders for `source` and `header` files can be specified."
     )
     namespace: CppNamespace | list[str] = Field(
         default=[],

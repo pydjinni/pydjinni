@@ -15,7 +15,7 @@ def run(test_name: str):
     working_directory = Path(__file__).parent
     print("")
     try:
-        print(subprocess.check_output(["cmake", "-P", f"{test_name}.cmake"], cwd=working_directory, stderr=subprocess.PIPE, universal_newlines=True))
+        print(subprocess.check_output(["cmake", "--log-level", "DEBUG", "-P", f"{test_name}.cmake"], cwd=working_directory, stderr=subprocess.PIPE, universal_newlines=True))
     except subprocess.CalledProcessError as e:
         print(e.output)
         print(e.stderr)

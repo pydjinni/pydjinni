@@ -1,7 +1,12 @@
 from enum import Enum
+from functools import cached_property
 from pathlib import Path
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
+
+from pydjinni.generator.java.jni.config import JniConfig
+from pydjinni.parser.ast import Interface, Parameter
+from pydjinni.parser.base_models import BaseType, BaseField, TypeReference
 
 
 class NativeType(str, Enum):
@@ -33,22 +38,142 @@ class JniExternalType(BaseModel):
     )
     boxed_type_signature: str = Field(
         examples=["Ljava/lang/Integer;"],
-        description="Type signature of the boxed Java type. If the type is always boxed, both `type_signature` and `boxed_type_signature` should contain the same value."
+        description="Type signature of the boxed Java type. If the type is always boxed, both `type_signature` and "
+                    "`boxed_type_signature` should contain the same value."
     )
 
 
-class JniType(JniExternalType):
-    name: str
-    jni_prefix: str = None
-    source: Path
-    namespace: str
-    class_descriptor: str
+def get_field_accessor(type_ref: TypeReference) -> str:
+    native_type = type_ref.type_def.jni.typename
+    type = NativeType.object if native_type in [NativeType.string,
+                                                NativeType.byte_array] or type_ref.optional else native_type
+    return f"Get{type[1:].capitalize()}Field"
 
 
-class JniField(BaseModel):
-    name: str
-    jni_name: str = None
-    type_signature: str = None
-    routine_name: str = None
-    field_accessor: str = None
-    typename: str = None
+def get_typename(type_ref: TypeReference) -> str:
+    if type_ref:
+        if type_ref.optional and type_ref.type_def.jni.typename not in [NativeType.string, NativeType.byte_array]:
+            return NativeType.object.value
+        else:
+            return type_ref.type_def.jni.typename.value
+    else:
+        return ""
+
+
+class JniBaseType(BaseModel):
+    decl: BaseType = Field(exclude=True, repr=False)
+    config: JniConfig = Field(exclude=True, repr=False)
+
+    @computed_field
+    @cached_property
+    def translator(self) -> str: return f"::{self.namespace}::{self.name}"
+
+    @computed_field
+    @cached_property
+    def header(self) -> Path:
+        return Path(f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}")
+
+    @cached_property
+    def source(self) -> Path:
+        return Path(f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.source_extension}")
+
+    @computed_field
+    @cached_property
+    def typename(self) -> NativeType: return NativeType.object
+
+    @computed_field
+    @cached_property
+    def type_signature(self) -> str: return f"L{self.class_descriptor};"
+
+    @computed_field
+    @cached_property
+    def boxed_type_signature(self) -> str: return self.type_signature
+
+    @cached_property
+    def name(self) -> str: return self.decl.name.convert(self.config.identifier.class_name)
+
+    @cached_property
+    def jni_prefix(self) -> str:
+        segments = self.decl.java.package.split('.') + [self.name]
+        segments = [segment.replace("_", "_1") for segment in segments]
+        segments = [segment.replace("$", "_00024") for segment in segments]
+        return "_".join(["Java"] + segments)
+
+    @cached_property
+    def namespace(self): return '::'.join(self.config.namespace + [identifier.convert(self.config.identifier.namespace)
+                                                                   for identifier in self.decl.namespace])
+
+    @cached_property
+    def class_descriptor(self) -> str: return '/'.join(self.decl.java.package.split('.') + [self.name])
+
+
+class JniBaseField(BaseModel):
+    decl: BaseField = Field(exclude=True, repr=False)
+    config: JniConfig = Field(exclude=True, repr=False)
+
+    @computed_field
+    @cached_property
+    def name(self) -> str: return self.decl.name.convert(self.config.identifier.field)
+
+
+class JniSymbolicConstantField(JniBaseField):
+    @computed_field
+    @cached_property
+    def name(self) -> str: return self.decl.name.convert(self.config.identifier.enum)
+
+
+class JniInterface(JniBaseType):
+    class JniMethod(JniBaseField):
+        decl: Interface.Method = Field(exclude=True, repr=False)
+
+        @computed_field
+        @cached_property
+        def name(self) -> str:
+            return self.decl.name.convert(self.config.identifier.method)
+
+        @cached_property
+        def type_signature(self) -> str:
+            parameter_type_signatures = ""
+            for parameter in self.decl.parameters:
+                if parameter.type_ref.optional:
+                    parameter_type_signatures += parameter.type_ref.type_def.jni.boxed_type_signature
+                else:
+                    parameter_type_signatures += parameter.type_ref.type_def.jni.type_signature
+            return_type_signature = ""
+            if self.decl.return_type_ref:
+                if self.decl.return_type_ref.optional:
+                    return_type_signature = self.decl.return_type_ref.type_def.jni.boxed_type_signature
+                else:
+                    return_type_signature = self.decl.return_type_ref.type_def.jni.type_signature
+            return f"({parameter_type_signatures}){return_type_signature}"
+
+        @cached_property
+        def routine_name(self) -> str:
+            type_ref = self.decl.return_type_ref
+            if type_ref:
+                native_type = type_ref.type_def.jni.typename
+                if native_type in [NativeType.string, NativeType.byte_array] or type_ref.optional:
+                    native_type = NativeType.object
+            else:
+                native_type = "Void"
+            return f"Call{native_type[1:].capitalize()}Method"
+
+
+class JniParameter(JniBaseField):
+    decl: Parameter = Field(exclude=True, repr=False)
+
+    @cached_property
+    def field_accessor(self): return get_field_accessor(self.decl.type_ref)
+
+    @cached_property
+    def typename(self): return get_typename(self.decl.type_ref)
+
+
+class JniRecord(JniBaseType):
+    class JniField(JniBaseField):
+        @cached_property
+        def field_accessor(self): return get_field_accessor(self.decl.type_ref)
+
+        @cached_property
+        def typename(self): return get_typename(self.decl.type_ref)
+

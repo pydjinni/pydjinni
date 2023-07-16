@@ -10,8 +10,8 @@ record          = comment? identifier '=' 'record' targets? '{' (field/constant)
 interface       = comment? identifier '=' main? 'interface' targets? '{' (method/constant/property)* '}'
 main            = 'main'
 named_function  = comment? identifier '=' function ';'
-function        = ('function' targets?)? '(' ((parameter ',')* parameter)? ')' ('->' data_type)?
-constant        = comment? 'const' identifier ':' data_type '=' value ';'
+function        = ('function' targets?)? '(' ((parameter ',')* parameter)? ')' ('->' type_ref)?
+constant        = comment? 'const' identifier ':' type_ref '=' value ';'
 value           = (string/float/integer/bool/identifier/object)
 string          = r'".*"'
 integer         = r'\d+'
@@ -19,16 +19,17 @@ float           = r'\d*\.\d+'
 bool            = 'True'/'False'
 object          = '{' ((assignment ',')* assignment)? '}'
 assignment      = identifier '=' value
-field           = comment? identifier ':' data_type ';'
-method          = comment? 'static'? 'const'? identifier '(' ((parameter ',')* parameter)? ')' ('->' data_type)? ';'
-parameter       = comment? identifier ':' data_type
+field           = comment? identifier ':' type_ref ';'
+method          = comment? 'static'? 'const'? identifier '(' ((parameter ',')* parameter)? ')' ('->' type_ref)? ';'
+parameter       = comment? identifier ':' type_ref
 targets         = (r'\+[a-z]+'/r'-[a-z]+')+
-property        = comment? 'property' identifier ':' data_type ';'
+property        = comment? 'property' identifier ':' type_ref ';'
 item            = comment? identifier ';'
 flag            = comment? identifier flag_modifier? ';'
 flag_modifier   = '=' ('all'/'none')
 identifier      = r'[\w]+'
-data_type       = (function/(r'[\.\w]+' ('<' (data_type ',')* data_type '>')? optional?))
+type_ref        = function/data_type
+data_type       = r'[\.\w]+' ('<' (data_type ',')* data_type '>')? optional?
 optional        = '?'
 filepath        = r'".*"'
 import_def      = '@import' filepath

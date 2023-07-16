@@ -1,12 +1,40 @@
 from pathlib import Path
 
 from pydjinni.generator.generator import Generator
-from pydjinni.parser.ast import Enum, Flags, Record, Interface
-from pydjinni.parser.base_models import BaseType
-from .marshal import JavaMarshal
+from pydjinni.parser.ast import Enum, Flags, Record, Interface, Function
+from pydjinni.parser.base_models import BaseType, BaseField, SymbolicConstantField, Constant
+from .config import JavaConfig
+from .type import (
+    JavaExternalType,
+    JavaBaseType,
+    JavaRecord,
+    JavaFlags,
+    JavaFunction,
+    JavaBaseField,
+    JavaSymbolicConstantField,
+    JavaConstant,
+    JavaInterface
+)
+from .external_types import external_types
 
 
-class JavaGenerator(Generator, key="java", marshal=JavaMarshal, writes_source=True):
+class JavaGenerator(Generator):
+    key = "java"
+    config_model = JavaConfig
+    external_type_model = JavaExternalType
+    external_types = external_types
+    marshal_models = {
+        BaseType: JavaBaseType,
+        Record: JavaRecord,
+        Record.Field: JavaRecord.JavaField,
+        Flags: JavaFlags,
+        Function: JavaFunction,
+        BaseField: JavaBaseField,
+        SymbolicConstantField: JavaSymbolicConstantField,
+        Constant: JavaConstant,
+        Interface.Method: JavaInterface.JavaMethod
+    }
+    writes_source = True
 
     def generate_enum(self, type_def: Enum):
         self.write_source("enum.java.jinja2", type_def=type_def)
@@ -21,9 +49,9 @@ class JavaGenerator(Generator, key="java", marshal=JavaMarshal, writes_source=Tr
         self.write_source("interface.java.jinja2", type_def=type_def)
 
     def generate_loader(self):
-        if self.marshal.config.native_lib:
-            loader = f"{self.marshal.config.native_lib}Loader"
-            package = '.'.join(self.marshal.config.package + ["native_lib"])
+        if self.config.native_lib:
+            loader = f"{self.config.native_lib}Loader"
+            package = '.'.join(self.config.package + ["native_lib"])
             package_path = Path("/".join(package.split(".")))
             self.write_source(
                 template="loader.java.jinja2",

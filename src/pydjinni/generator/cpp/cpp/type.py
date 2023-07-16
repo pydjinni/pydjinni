@@ -1,6 +1,13 @@
+from functools import cached_property
 from pathlib import Path
 
-from pydantic import BaseModel, Field
+import mistletoe
+from pydantic import BaseModel, Field, computed_field
+
+from pydjinni.generator.cpp.cpp.comment_renderer import DoxygenCommentRenderer
+from pydjinni.generator.cpp.cpp.config import CppConfig
+from pydjinni.parser.ast import Parameter, Record, Interface
+from pydjinni.parser.base_models import BaseType, BaseField, TypeReference, BaseExternalType, Constant
 
 
 class CppExternalType(BaseModel):
@@ -14,15 +21,125 @@ class CppExternalType(BaseModel):
     by_value: bool = False
 
 
-class CppType(CppExternalType):
-    name: str  = None
-    source: Path = None
-    comment: str | None
-    namespace: str = None
-    proxy: bool = False
+def type_specifier(type_ref: TypeReference, is_parameter: bool = False):
+    output = type_ref.type_def.cpp.typename if type_ref else "void"
+    if type_ref:
+        if type_ref.parameters:
+            parameter_output = ""
+            for parameter in type_ref.parameters:
+                if parameter_output:
+                    parameter_output += ", "
+                parameter_output += type_specifier(parameter)
+            output += f"<{parameter_output}>"
+        if (isinstance(type_ref.type_def,
+                       BaseExternalType) and type_ref.type_def.primitive == BaseExternalType.Primitive.interface) or \
+                isinstance(type_ref.type_def, Interface):
+            output = f"std::shared_ptr<{output}>"
+        elif type_ref.optional:
+            output = f"std::optional<{output}>"
+    return f"const {output} &" if is_parameter and not type_ref.type_def.cpp.by_value else output
 
 
-class CppField(BaseModel):
-    name: str
-    comment: str | None
-    type_spec: str | None
+class CppBaseType(BaseModel):
+    decl: BaseType = Field(exclude=True, repr=False)
+    config: CppConfig = Field(exclude=True, repr=False)
+
+    @cached_property
+    def name(self): return self.decl.name.convert(self.config.identifier.type)
+
+    @cached_property
+    def namespace(self): return '::'.join(
+        self.config.namespace + [identifier.convert(self.config.identifier.namespace) for
+                                 identifier in self.decl.namespace])
+
+    @computed_field
+    @cached_property
+    def typename(self) -> str: return f"::{self.namespace}::{self.name}"
+
+    @computed_field
+    @cached_property
+    def header(self) -> Path: return Path(
+        *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}"
+
+    @cached_property
+    def source(self): return Path(
+        *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.source_extension}"
+
+    @cached_property
+    def comment(self): return mistletoe.markdown(self.decl.comment,
+                                                 DoxygenCommentRenderer) if self.decl.comment else ''
+
+    @computed_field
+    @cached_property
+    def by_value(self) -> bool: return True
+
+    @cached_property
+    def proxy(self): return False
+
+
+class CppBaseField(BaseModel):
+    decl: BaseField = Field(exclude=True, repr=False)
+    config: CppConfig = Field(exclude=True,repr=False)
+
+    @computed_field
+    @cached_property
+    def name(self) -> str: return self.decl.name.convert(self.config.identifier.field)
+
+    @cached_property
+    def comment(self): return mistletoe.markdown(self.decl.comment,
+                                                 DoxygenCommentRenderer) if self.decl.comment else ''
+
+
+class CppInterface(CppBaseType):
+    @cached_property
+    def proxy(self): return "cpp" in self.decl.targets
+
+    @computed_field
+    @cached_property
+    def by_value(self) -> bool: return False
+
+    class CppMethod(CppBaseField):
+        @cached_property
+        def name(self): return self.decl.name.convert(self.config.identifier.method)
+
+        @cached_property
+        def type_spec(self): return type_specifier(self.decl.return_type_ref)
+
+
+class CppRecord(CppBaseType):
+    @computed_field
+    @cached_property
+    def by_value(self) -> bool: return False
+
+    class CppField(CppBaseField):
+        decl: Record.Field = Field(exclude=True, repr=False)
+
+        @cached_property
+        def type_spec(self): return type_specifier(self.decl.type_ref)
+
+
+class CppFunction(CppBaseType):
+    @cached_property
+    def typename(self): return f"std::function<{type_specifier(self.decl.return_type_ref)}" \
+                               f"({','.join([type_specifier(parameter.type_ref) for parameter in self.decl.parameters])})>"
+
+
+class CppSymbolicConstantField(CppBaseField):
+    @cached_property
+    def name(self): return self.decl.name.convert(self.config.identifier.enum)
+
+
+class CppParameter(CppBaseField):
+    decl: Parameter = Field(exclude=True, repr=False)
+
+    @cached_property
+    def type_spec(self): return type_specifier(self.decl.type_ref, is_parameter=True)
+
+
+class CppConstant(CppBaseField):
+    decl: Constant = Field(exclude=True, repr=False)
+    @cached_property
+    def name(self): return self.decl.name.convert(self.config.identifier.const)
+
+
+

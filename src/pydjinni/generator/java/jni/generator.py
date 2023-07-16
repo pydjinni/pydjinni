@@ -1,21 +1,34 @@
 from pathlib import Path
 
 from pydjinni.generator.filters import quote, headers
-from pydjinni.generator.generator import Generator
-from pydjinni.parser.ast import Enum, Flags, Record, Interface
-from pydjinni.parser.base_models import BaseType
-from .marshal import JniMarshal
+from pydjinni.generator.generator import Generator, ConfigModel
+from pydjinni.parser.ast import Enum, Flags, Record, Interface, Parameter
+from pydjinni.parser.base_models import BaseType, BaseField, SymbolicConstantField
+from .config import JniConfig
+from .type import JniExternalType, JniBaseType, JniInterface, JniBaseField, JniSymbolicConstantField, JniRecord, \
+    JniParameter
+from .external_types import external_types
 
 
-class JniGenerator(
-    Generator,
-    key="jni",
-    marshal=JniMarshal,
-    writes_header=True,
-    writes_source=True,
-    support_lib_commons=True,
-    filters=[quote, headers]
-):
+class JniGenerator(Generator):
+    key = "jni"
+    config_model = JniConfig
+    external_type_model = JniExternalType
+    external_types = external_types
+    marshal_models = {
+        BaseType: JniBaseType,
+        Interface: JniInterface,
+        Interface.Method: JniInterface.JniMethod,
+        BaseField: JniBaseField,
+        SymbolicConstantField: JniSymbolicConstantField,
+        Record: JniRecord,
+        Record.Field: JniRecord.JniField,
+        Parameter: JniParameter
+    }
+    writes_header = True
+    writes_source = True
+    support_lib_commons = True
+    filters = [quote, headers]
 
     def generate_enum(self, type_def: Enum):
         self.write_header("header/enum.hpp.jinja2", type_def=type_def)
@@ -32,7 +45,7 @@ class JniGenerator(
         self.write_source("source/interface.cpp", type_def=type_def)
 
     def generate_loader(self):
-        if self.marshal.config.loader:
+        if self.config.loader:
             self.write_source(
                 template="source/loader.cpp.jinja2",
                 filename=Path("pydjinni") / "jni" / "loader.cpp"

@@ -23,6 +23,6 @@ list(LENGTH DEPENDS DEPENDS_LENGTH)
 assert(DEPENDS_LENGTH EQUAL 1)
 
 then("the variable cpp_GENERATED_HEADERS should be set")
-assert(cpp_GENERATED_HEADERS)
+assert(DEFINED cpp_GENERATED_HEADERS)
 then("the variable cpp_GENERATED_SOURCES should be set")
-assert(cpp_GENERATED_SOURCES)
+assert(DEFINED cpp_GENERATED_SOURCES)

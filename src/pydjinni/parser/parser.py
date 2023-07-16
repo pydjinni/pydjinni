@@ -12,10 +12,11 @@ from pydjinni.exceptions import FileNotFoundException, ApplicationException
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.generator.cpp.cpp.generator import CppGenerator
 from .ast import *
-from .base_models import Assignment, Constant, BaseExternalType, ObjectValue
+from .base_models import Assignment, Constant, BaseExternalType, ObjectValue, Position
 from .identifier import Identifier
 from .resolver import Resolver
-from pydjinni.generator.marshal import Marshal
+
+from ..generator.target import Target
 
 
 def unpack(list_input: []):
@@ -26,11 +27,10 @@ class IdlParser(PTNodeVisitor):
     def __init__(
             self,
             resolver: Resolver,
-            targets: list[str],
+            targets: list[Target],
             include_dirs: list[Path],
             default_deriving: set[Record.Deriving],
             file_reader: FileReaderWriter,
-            marshals: list[Marshal],
             idl: Path,
             position: int = 0,
             **kwargs
@@ -39,13 +39,14 @@ class IdlParser(PTNodeVisitor):
         self.idl_parser = ParserPEG(IDL_GRAMMAR_PATH.read_text(), root_rule_name="idl")
         self.resolver = resolver
         self.targets = targets
+        self.target_keys = [target.key for target in self.targets]
         self.file_reader = file_reader
         self.include_dirs = include_dirs
         self.default_deriving = default_deriving
-        self.marshals = marshals
         self.idl = idl
         self.position = position
         self.type_defs: list[BaseType] = []
+        self.field_defs: list[BaseField] = []
         self.current_namespace: list[Identifier] = []
         self.current_namespace_stack_size: list[int] = []
 
@@ -92,14 +93,14 @@ class IdlParser(PTNodeVisitor):
         return type_def
 
     def visit_class_type_def(self, node, children):
-        type_def: BaseClassType = unpack(children)
+        type_def: ClassType = unpack(children)
         type_def.dependencies += self._dependencies([constant.type_ref for constant in type_def.constants])
         return type_def
 
     def visit_enum(self, node, children):
         enum = Enum(
             name=unpack(children.identifier),
-            position=node.position,
+            position=self._position(node),
             items=children.item,
             namespace=self.current_namespace
         )
@@ -110,7 +111,7 @@ class IdlParser(PTNodeVisitor):
     def visit_flags(self, node, children):
         flags = Flags(
             name=unpack(children.identifier),
-            position=node.position,
+            position=self._position(node),
             flags=children.flag,
             namespace=self.current_namespace
         )
@@ -121,32 +122,35 @@ class IdlParser(PTNodeVisitor):
     def visit_flag(self, node, children):
         all = unpack(children.flag_modifier) == 'all' if children.flag_modifier else False
         none = unpack(children.flag_modifier) == 'none' if children.flag_modifier else False
-        return Flags.Flag(
+        flag = Flags.Flag(
             name=unpack(children.identifier),
-            position=node.position,
+            position=self._position(node),
             comment=unpack(children.comment),
             all=all,
             none=none
         )
+        self.field_defs.append(flag)
+        return flag
 
     def visit_flag_modifier(self, node, children):
         return children[0]
 
     def visit_interface(self, node, children):
-        targets: list[str] = unpack(children.targets) or self.targets
+        targets: list[str] = unpack(children.targets) or self.target_keys
         main: bool = 'main' in children.results
         methods: list[Interface.Method] = children.method
         properties: list[Interface.Property] = children.property
         dependencies: list[TypeReference] = []
 
         if main and targets != [CppGenerator.key]:
+            position = self._position(node)
             raise IdlParser.ParsingException(
-                self.idl, *self._get_context(node.position),
+                self.idl, *self._get_context(position.start, position.length),
                 message="a 'main' interface can only be implemented in C++"
             )
         for method in methods:
             if CppGenerator.key not in targets and method.static:
-                raise IdlParser.StaticNotAllowedException(self.idl, *self._get_context(method.position))
+                raise IdlParser.StaticNotAllowedException(self.idl, *self._get_context(method.position.start, method.position.length))
             for param in method.parameters:
                 dependencies.append(param.type_ref)
             if method.return_type_ref:
@@ -155,7 +159,7 @@ class IdlParser(PTNodeVisitor):
             dependencies.append(property_def.type_ref)
         interface = Interface(
             name=unpack(children.identifier),
-            position=node.position,
+            position=self._position(node),
             methods=methods,
             targets=targets,
             constants=children.constant,
@@ -173,18 +177,18 @@ class IdlParser(PTNodeVisitor):
         function.name = unpack(children.identifier)
         if children.comment:
             function.comment = unpack(children.comment)
-        function.position = node.position
+        function.position = self._position(node)
         return function
 
     def visit_function(self, node, children):
-        targets: list[str] = unpack(children.targets) or self.targets
+        targets: list[str] = unpack(children.targets) or self.target_keys
         return Function(
             name="<anonymous>",
-            position=node.position,
+            position=self._position(node),
             parameters=children.parameter,
             targets=targets,
             namespace=self.current_namespace,
-            return_type_ref=unpack(children.data_type)
+            return_type_ref=unpack(children.type_ref)
         )
 
     def visit_deriving(self, node, children):
@@ -194,9 +198,10 @@ class IdlParser(PTNodeVisitor):
         try:
             return Record.Deriving(node.value)
         except ValueError:
+            position = self._position(node)
             raise IdlParser.ParsingException(
                 self.idl,
-                *self._get_context(node.position),
+                *self._get_context(position.start, position.length),
                 message=f"{node.value} is not a valid record deriving")
 
     def visit_record(self, node, children):
@@ -205,7 +210,7 @@ class IdlParser(PTNodeVisitor):
         deriving = unpack(children.deriving) or set()
         record = Record(
             name=unpack(children.identifier),
-            position=node.position,
+            position=self._position(node),
             fields=fields,
             targets=targets,
             constants=children.constant,
@@ -218,25 +223,27 @@ class IdlParser(PTNodeVisitor):
         return record
 
     def visit_data_type(self, node, children):
-        if children.function:
+        parameters = children.data_type or []
+        return TypeReference(
+            name=str(node[0]),
+            parameters=parameters,
+            position=self._position(node),
+            namespace=self.current_namespace,
+            optional='optional' in children.results
+        )
+
+    def visit_type_ref(self, node, children) -> TypeReference:
+        output = unpack(children)
+        if isinstance(output, Function):
             type_def = unpack(children.function)
             self.type_defs.append(type_def)
-            type_ref = TypeReference(
+            output = TypeReference(
                 name="<function>",
-                position=node.position,
+                position=self._position(node),
                 type_def=type_def,
                 namespace=self.current_namespace
             )
-        else:
-            parameters = children.data_type or []
-            type_ref = TypeReference(
-                name=str(node[0]),
-                parameters=parameters,
-                position=node.position,
-                namespace=self.current_namespace,
-                optional='optional' in children.results
-            )
-        return type_ref
+        return output
 
     def second_data_type(self, type_ref: TypeReference):
         if not type_ref.type_def:
@@ -244,53 +251,62 @@ class IdlParser(PTNodeVisitor):
             if type_ref.parameters and not type_ref.type_def.params:
                 raise IdlParser.TypeResolvingException(
                     self.idl,
-                    *self._get_context(type_ref.position),
+                    *self._get_context(type_ref.position.start, type_ref.position.length),
                     message=f"Type '{type_ref.name}' does not accept generic parameters")
             elif type_ref.parameters and len(type_ref.type_def.params) != len(type_ref.parameters):
                 expected_parameters = ", ".join(type_ref.type_def.params)
                 raise IdlParser.TypeResolvingException(
                     self.idl,
-                    *self._get_context(type_ref.position),
+                    *self._get_context(type_ref.position.start, type_ref.position.length),
                     message=f"Invalid number of generic parameters given to '{type_ref.name}'. "
                             f"Expects {len(type_ref.type_def.params)} ({expected_parameters}), but {len(type_ref.parameters)} where given.")
 
     def visit_item(self, node, children):
-        return Enum.Item(
+        item = Enum.Item(
             name=unpack(children.identifier),
-            position=node.position,
+            position=self._position(node),
             comment=unpack(children.comment)
         )
+        self.field_defs.append(item)
+        return item
 
     def visit_method(self, node, children):
         static = 'static' in children
         const = 'const' in children
         if static and const:
-            raise IdlParser.StaticAndConstException(self.idl, *self._get_context(node.position))
-        return Interface.Method(
+            position = self._position(node)
+            raise IdlParser.StaticAndConstException(self.idl, *self._get_context(position.start, position.length))
+        method = Interface.Method(
             name=unpack(children.identifier),
-            position=node.position,
+            position=self._position(node),
             comment=unpack(children.comment),
             parameters=children.parameter,
-            return_type_ref=unpack(children.data_type),
+            return_type_ref=unpack(children.type_ref),
             static='static' in children,
             const='const' in children,
         )
+        self.field_defs.append(method)
+        return method
 
     def visit_property(self, node, children):
-        return Interface.Property(
+        property = Interface.Property(
             name=unpack(children.identifier),
-            type_ref=unpack(children.data_type),
+            type_ref=unpack(children.type_ref),
             comment=unpack(children.comment),
-            position=node.position
+            position=self._position(node)
         )
+        self.field_defs.append(property)
+        return property
 
     def visit_parameter(self, node, children):
-        return Parameter(
+        parameter = Parameter(
             name=unpack(children.identifier),
             comment=unpack(children.comment),
-            position=node.position,
-            type_ref=unpack(children.data_type)
+            position=self._position(node),
+            type_ref=unpack(children.type_ref)
         )
+        self.field_defs.append(parameter)
+        return parameter
 
     def visit_targets(self, node, children):
         includes = []
@@ -301,31 +317,34 @@ class IdlParser(PTNodeVisitor):
             else:
                 excludes.append(item[1:])
         if (not includes) and excludes:
-            includes = self.targets
+            includes = self.target_keys
 
         targets = [include for include in includes if include not in excludes]
         for target in targets:
-            if target not in self.targets:
+            if target not in self.target_keys:
+                position = self._position(node)
                 raise IdlParser.UnknownInterfaceTargetException(
                     self.idl,
-                    *self._get_context(node.position),
+                    *self._get_context(position.start, position.length),
                     message=f"'{target}'"
                 )
         return targets
 
     def visit_field(self, node, children):
-        return Record.Field(
+        field = Record.Field(
             name=unpack(children.identifier),
-            position=node.position,
+            position=self._position(node),
             comment=unpack(children.comment),
-            type_ref=unpack(children.data_type)
+            type_ref=unpack(children.type_ref)
         )
+        self.field_defs.append(field)
+        return field
 
     def second_field(self, field: Record.Field):
         if isinstance(field.type_ref.type_def, Function):
             raise IdlParser.ParsingException(
                 self.idl,
-                *self._get_context(field.position),
+                *self._get_context(field.position.start, field.position.length),
                 message="functions are not allowed as record field type."
             )
 
@@ -355,7 +374,7 @@ class IdlParser(PTNodeVisitor):
     def visit_assignment(self, node, children):
         return Assignment(
             key=unpack(children.identifier),
-            position=node.position,
+            position=self._position(node),
             value=unpack(children.value)
         )
 
@@ -368,19 +387,21 @@ class IdlParser(PTNodeVisitor):
         )
 
     def visit_constant(self, node, children) -> Constant:
-        return Constant(
+        constant = Constant(
             name=unpack(children.identifier),
-            type_ref=unpack(children.data_type),
+            type_ref=unpack(children.type_ref),
             value=unpack(children.value),
-            position=node.position,
+            position=self._position(node),
             comment=unpack(children.comment)
         )
+        self.field_defs.append(constant)
+        return constant
 
     def second_constant(self, constant: Constant):
         if isinstance(constant.type_ref.type_def, Function):
             raise IdlParser.ParsingException(
                 self.idl,
-                *self._get_context(constant.position),
+                *self._get_context(constant.position.start, constant.position.length),
                 message="functions are not allowed as constant field type."
             )
         self._check_const_assignment(constant.name, constant.type_ref.type_def, constant.value, constant.position)
@@ -399,7 +420,7 @@ class IdlParser(PTNodeVisitor):
                 if value not in fields:
                     raise IdlParser.InvalidAssignmentException(
                         self.idl,
-                        *self._get_context(position),
+                        *self._get_context(position.start, position.length),
                         message=f"Invalid value '{str(value)}' assigned to const"
                     )
             case Record():
@@ -410,7 +431,7 @@ class IdlParser(PTNodeVisitor):
                         if assignment.key not in record_keys:
                             raise IdlParser.UnknownFieldException(
                                 self.idl,
-                                *self._get_context(assignment.position),
+                                *self._get_context(assignment.position.start, assignment.position.length),
                                 message=f"Unknown field '{assignment.key}' defined in constant assignment"
                             )
                     for field in fields:
@@ -424,14 +445,14 @@ class IdlParser(PTNodeVisitor):
                         else:
                             raise IdlParser.MissingFieldException(
                                 self.idl,
-                                *self._get_context(position),
+                                *self._get_context(position.start, position.length),
                                 message=f"Missing field '{field.name}' in constant assignment"
                             )
 
                 else:
                     raise IdlParser.InvalidAssignmentException(
                         self.idl,
-                        *self._get_context(position),
+                        *self._get_context(position.start, position.length),
                         message=f"Invalid primitive value '{str(value)}' assigned to const record type '{type_def.name}'"
                     )
 
@@ -450,9 +471,10 @@ class IdlParser(PTNodeVisitor):
                         value_description = f"value"
                     raise IdlParser.InvalidAssignmentException(
                         self.idl,
-                        *self._get_context(position),
+                        *self._get_context(position.start, position.length),
                         message=f"Invalid {value_description} assigned to const '{name}' of type '{type_def.name}'"
                     )
+
     def visit_import_def(self, node, children):
         ast = IdlParser(
             resolver=self.resolver,
@@ -460,9 +482,8 @@ class IdlParser(PTNodeVisitor):
             include_dirs=self.include_dirs,
             default_deriving=self.default_deriving,
             file_reader=self.file_reader,
-            marshals=self.marshals,
             idl=unpack(children.filepath),
-            position=node.position).parse()
+            position=self._position(node)).parse()
         self.type_defs += ast
         return ast
 
@@ -477,11 +498,17 @@ class IdlParser(PTNodeVisitor):
         for _ in range(self.current_namespace_stack_size.pop()):
             self.current_namespace.pop()
 
-
-    def _get_context(self, position) -> tuple[int, int, str]:
+    def _get_context(self, position: int, length: int = None) -> tuple[int, int, str]:
         line, col = self.idl_parser.pos_to_linecol(position)
-        context = self.idl_parser.context(position=position)
+        context = self.idl_parser.context(position=position, length=length)
         return line, col, context
+
+    def _position(self, node):
+        return Position(
+            start=node.position,
+            end=node.position_end,
+            file=self.idl
+        )
 
     def parse(self) -> list[BaseType]:
         """
@@ -504,22 +531,22 @@ class IdlParser(PTNodeVisitor):
         """
         try:
             parse_tree = self.idl_parser.parse(self.file_reader.read_idl(self.idl))
-            visit_parse_tree(parse_tree, self)
-            for marshal in self.marshals:
-                marshal.marshal(self.type_defs)
+            ast = visit_parse_tree(parse_tree, self)
+            for target in self.targets:
+                target.marshal(self.type_defs, self.field_defs)
             return self.type_defs
         except FileNotFoundError as e:
             raise FileNotFoundException(self.idl)
         except Resolver.TypeResolvingException as e:
             raise IdlParser.TypeResolvingException(
                 self.idl,
-                *self._get_context(e.position),
+                *self._get_context(e.position.start, e.position.length),
                 message=f"Unknown type '{e.type_reference.name}'"
             )
         except Resolver.DuplicateTypeException as e:
             raise IdlParser.DuplicateTypeException(
                 self.idl,
-                *self._get_context(e.position),
+                *self._get_context(e.position.start, e.position.length),
                 message=f"Type '{e.datatype.name}' has been redefined"
             )
         except arpeggio.NoMatch as e:
@@ -531,5 +558,3 @@ class IdlParser(PTNodeVisitor):
                 *self._get_context(self.position),
                 message=f"file imports itself"
             )
-        except Marshal.MarshalException as e:
-            raise IdlParser.ParsingException(self.idl, *self._get_context(e.input_def.position), message=str(e))

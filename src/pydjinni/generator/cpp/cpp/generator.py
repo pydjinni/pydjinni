@@ -1,19 +1,55 @@
 from pydjinni.generator.filters import headers, quote
 from pydjinni.generator.generator import Generator
-from pydjinni.parser.ast import Interface, Record, Flags, Enum
-from .marshal import CppMarshal
+from pydjinni.parser.ast import (
+    Interface,
+    Record,
+    Flags,
+    Enum,
+    Function,
+    Parameter
+)
+from pydjinni.parser.base_models import (
+    BaseType,
+    BaseField,
+    SymbolicConstantField,
+    Constant
+)
+from .config import CppConfig
+from .external_types import external_types
 from .filters import needs_optional
+from .type import (
+    CppExternalType,
+    CppBaseType,
+    CppInterface,
+    CppRecord,
+    CppFunction,
+    CppBaseField,
+    CppSymbolicConstantField,
+    CppParameter,
+    CppConstant
+)
 
 
-class CppGenerator(
-    Generator,
-    key="cpp",
-    marshal=CppMarshal,
-    writes_header=True,
-    writes_source=True,
-    support_lib_commons=True,
-    filters=[quote, headers, needs_optional]
-):
+class CppGenerator(Generator):
+    key = "cpp"
+    config_model = CppConfig
+    external_type_model = CppExternalType
+    external_types = external_types
+    marshal_models = {
+        BaseType: CppBaseType,
+        Interface: CppInterface,
+        Interface.Method: CppInterface.CppMethod,
+        Record: CppRecord,
+        Record.Field: CppRecord.CppField,
+        Function: CppFunction,
+        BaseField: CppBaseField,
+        SymbolicConstantField: CppSymbolicConstantField,
+        Parameter: CppParameter,
+        Constant: CppConstant
+    }
+    writes_header = True
+    writes_source = True
+    filters = [quote, headers, needs_optional]
 
     def generate_enum(self, type_def: Enum):
         self.write_header("header/enum.hpp.jinja2", type_def=type_def)
@@ -30,3 +66,6 @@ class CppGenerator(
         self.write_header("header/interface.hpp.jinja2", type_def=type_def)
         if type_def.constants:
             self.write_source("source/interface.cpp.jinja2", type_def=type_def)
+
+    def generate_function(self, type_def: Function):
+        pass

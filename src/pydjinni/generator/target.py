@@ -1,13 +1,13 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from pathlib import Path
 
 from pydjinni.config.config_model_builder import ConfigModelBuilder
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.file.processed_files_model_builder import ProcessedFilesModelBuilder
-from pydjinni.parser.base_models import BaseType
+from pydjinni.parser.base_models import BaseType, BaseField
 from pydjinni.parser.type_model_builder import TypeModelBuilder
-from .generator import Generator
-from .marshal import Marshal
+from .external_types import ExternalTypesBuilder
+from .generator import Generator, ConfigModel
 from pydjinni.parser.ast import Record
 
 
@@ -17,16 +17,33 @@ class Target(ABC):
     E.g. to allow Java interop, both a Java and JNI generator are required.
     """
 
-    def __init_subclass__(cls, key: str, generators: list[type[Generator]], supported_deriving: set[Record.Deriving]) -> None:
+    @property
+    def supported_deriving(self) -> set[Record.Deriving]:
         """
-        Args:
-            key: The key that is used by the API/CLI to select the generator.
-            generators: The list of generators that is related to this target.
-            supported_deriving: A set of supported record deriving. For documentation purposes only.
+        Record derivings that are supported by the target language.
+        For documentation purposes only.
         """
-        cls._generator_types = generators
-        cls.supported_deriving = supported_deriving
-        cls.key = key
+        return set()
+
+    @property
+    @abstractmethod
+    def key(self) -> str:
+        """
+        The name of the target. Will be used by the API/CLI for selecting the target.
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def generators(self) -> list[type[Generator]]:
+        """
+        A list of generators related to the target.
+        Typically, targets will have two generators:
+
+        1. For the target (host) language
+        2. For the glue-code required in C++ to interact with the host language
+        """
+        pass
 
     def __init__(
             self,
@@ -39,11 +56,7 @@ class Target(ABC):
             config_model_builder=config_model_builder,
             external_type_model_builder=external_type_model_builder,
             processed_files_model_builder=processed_files_model_builder
-        ) for generator in self._generator_types]
-
-    def input_file(self, path: Path):
-        for generator_instance in self.generator_instances:
-            generator_instance.input_file(path)
+        ) for generator in self.generators]
 
     def generate(self, ast: list[BaseType], clean: bool = False, copy_support_lib_sources: bool = True):
         for generator_instance in self.generator_instances:
@@ -51,9 +64,14 @@ class Target(ABC):
                 generator_instance.clean()
             generator_instance.generate(ast, copy_support_lib_sources)
 
-    @property
-    def marshals(self) -> list[Marshal]:
-        marshals: list[Marshal] = []
+    def marshal(self, type_defs: list[BaseType], field_defs: list[BaseField]):
         for generator in self.generator_instances:
-            marshals.append(generator.marshal)
-        return marshals
+            generator.marshal(type_defs, field_defs)
+
+    def register_external_types(self, external_types_factory: ExternalTypesBuilder):
+        for generator in self.generator_instances:
+            generator.register_external_types(external_types_factory)
+
+    def configure(self, config: ConfigModel):
+        for generator in self.generator_instances:
+            generator.configure(getattr(config, generator.key))

@@ -51,7 +51,7 @@ CJNIEXPORT void JNICALL {{ type_def.jni.jni_prefix }}_nativeDestroy(JNIEnv* jniE
 }
 
 {% for method in type_def.methods %}
-CJNIEXPORT {{ return_type(method) }} JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_{{ "native_1" if not method.static }}{{ method.jni.jni_name }}(JNIEnv* jniEnv, jobject /*this*/{{ ", jlong nativeRef" if not method.static }}
+CJNIEXPORT {{ return_type(method) }} JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_{{ "native_1" if not method.static }}{{ method.jni.name }}(JNIEnv* jniEnv, jobject /*this*/{{ ", jlong nativeRef" if not method.static }}
     {%- for parameter in method.parameters -%}
     , {{ parameter.type_ref.type_def.jni.typename.value }} {{ parameter.jni.name }}
     {%- endfor -%}

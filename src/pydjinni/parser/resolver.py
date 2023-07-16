@@ -7,7 +7,7 @@ import yaml
 
 from pydjinni.exceptions import InputParsingException, FileNotFoundException
 from pydjinni.parser.ast import TypeReference, BaseType
-from pydjinni.parser.base_models import BaseExternalType
+from pydjinni.parser.base_models import BaseExternalType, Position
 
 
 class Resolver:
@@ -15,13 +15,13 @@ class Resolver:
     class TypeResolvingException(Exception):
         """Exception raised when the required pydjinni type cannot be found"""
         type_reference: TypeReference
-        position: int
+        position: Position
 
     @dataclass
     class DuplicateTypeException(Exception):
         """Exception raised when the given pydjinni type is already defined"""
         datatype: BaseType
-        position: int
+        position: Position
 
     def __init__(self, external_types_model: type[BaseExternalType]):
         self.registry = dict()
