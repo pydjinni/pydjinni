@@ -99,8 +99,9 @@ class CppInterface(CppBaseType):
     def by_value(self) -> bool: return False
 
     class CppMethod(CppBaseField):
+        @computed_field
         @cached_property
-        def name(self): return self.decl.name.convert(self.config.identifier.method)
+        def name(self) -> str: return self.decl.name.convert(self.config.identifier.method)
 
         @cached_property
         def type_spec(self): return type_specifier(self.decl.return_type_ref)
@@ -119,14 +120,16 @@ class CppRecord(CppBaseType):
 
 
 class CppFunction(CppBaseType):
+    @computed_field
     @cached_property
-    def typename(self): return f"std::function<{type_specifier(self.decl.return_type_ref)}" \
-                               f"({','.join([type_specifier(parameter.type_ref) for parameter in self.decl.parameters])})>"
+    def typename(self) -> str: return f"std::function<{type_specifier(self.decl.return_type_ref)}" \
+                                      f"({','.join([type_specifier(parameter.type_ref) for parameter in self.decl.parameters])})>"
 
 
 class CppSymbolicConstantField(CppBaseField):
+    @computed_field
     @cached_property
-    def name(self): return self.decl.name.convert(self.config.identifier.enum)
+    def name(self) -> str: return self.decl.name.convert(self.config.identifier.enum)
 
 
 class CppParameter(CppBaseField):
@@ -138,8 +141,10 @@ class CppParameter(CppBaseField):
 
 class CppConstant(CppBaseField):
     decl: Constant = Field(exclude=True, repr=False)
+
+    @computed_field
     @cached_property
-    def name(self): return self.decl.name.convert(self.config.identifier.const)
+    def name(self) -> str: return self.decl.name.convert(self.config.identifier.const)
 
 
 
