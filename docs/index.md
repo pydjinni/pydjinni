@@ -33,9 +33,9 @@ person = record { # (1)!
 
 
 database = interface +c { # (2)!
-    add(person: person): bool;
-    remove(person: person): bool;
-    get_persons(): list<person>;
+    add(person: person) -> bool;
+    remove(person: person) -> bool;
+    get_persons() -> list<person>;
 }
 ```
 
