@@ -5,12 +5,14 @@ from pydjinni.parser.base_models import (
     TypeReference,
     DocStrEnum,
     SymbolicConstantField,
-    SymbolicConstantType
+    SymbolicConstantType, BaseExternalType
 
 )
 
 
 class Enum(SymbolicConstantType):
+    primitive: BaseExternalType.Primitive = BaseExternalType.Primitive.enum
+
     class Item(SymbolicConstantField):
         ...
 
@@ -22,6 +24,7 @@ class Flags(SymbolicConstantType):
         all: bool
         none: bool
 
+    primitive: BaseExternalType.Primitive = BaseExternalType.Primitive.flags
     flags: list[Flag]
 
 
@@ -39,12 +42,14 @@ class Interface(ClassType):
     class Property(BaseField):
         type_ref: TypeReference
 
+    primitive: BaseExternalType.Primitive = BaseExternalType.Primitive.interface
     main: bool = False
     methods: list[Method] = []
     properties: list[Property] = []
 
 
 class Function(BaseType):
+    primitive: BaseExternalType.Primitive = BaseExternalType.Primitive.function
     parameters: list[Parameter] = []
     return_type_ref: TypeReference | None = None
     targets: list[str] = []
@@ -74,5 +79,6 @@ class Record(ClassType):
         Instances can be written to and restored from a Parcel (Android)
         """
 
+    primitive: BaseExternalType.Primitive = BaseExternalType.Primitive.record
     fields: list[Field] = []
     deriving: set[Deriving] = set()

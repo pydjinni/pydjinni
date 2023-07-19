@@ -143,14 +143,16 @@ def test_API_invalid_config_file(tmp_path):
         api.configure(config_file)
 
 
-def test_API_invalid_config_file_extension():
+def test_API_invalid_config_file_extension(tmp_path: Path):
     # GIVEN an API instance
     api = API()
+    file = tmp_path / "config.txt"
+    file.touch()
 
     # WHEN configuring the API with a config file with unknown file extension
     # THEN a ConfigurationException should be raised
     with pytest.raises(ConfigurationException):
-        api.configure("config.txt")
+        api.configure(file)
 
 
 def test_API_missing_config_file(tmp_path):

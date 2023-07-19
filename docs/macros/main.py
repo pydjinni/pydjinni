@@ -44,14 +44,15 @@ def render_config_schema_table(element, indent: int, render_defaults=True):
                     result += f"| `{key}` | "
                     first = True
                     for type in value["anyOf"]:
-                        if first:
-                            first = False
-                        else:
-                            result += ", "
-                        if type['type'] != "object":
-                            result += type['type']
-                        else:
-                            result += f"[{type['title']}](#{type['title'].lower()})"
+                        if type['type'] != "null":
+                            if first:
+                                first = False
+                            else:
+                                result += ", "
+                            if type['type'] != "object":
+                                result += type['type']
+                            else:
+                                result += f"[{type['title']}](#{type['title'].lower()})"
                     result += " |"
                 else:
                     result += f"| `{key}` | {value.get('type')} | "

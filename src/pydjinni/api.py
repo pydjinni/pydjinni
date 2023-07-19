@@ -23,6 +23,7 @@ from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.generator.generate_config import GenerateBaseConfig
 from pydjinni.generator.target import Target
 from pydjinni.parser.base_models import BaseType, BaseExternalType
+from pydjinni.position import Position, Cursor
 from pydjinni.parser.parser import IdlParser
 from pydjinni.parser.resolver import Resolver
 from pydjinni.parser.type_model_builder import TypeModelBuilder
@@ -152,15 +153,25 @@ class API:
             raise ConfigurationException("Provide either a config file or a list of configuration options!")
         try:
             if path:
-                match path.suffix:
-                    case '.yaml' | '.yml':
-                        config_dict = yaml.safe_load(path.read_text())
-                    case '.json':
-                        config_dict = json.loads(path.read_text())
-                    case '.toml':
-                        config_dict = tomllib.loads(path.read_text())
-                    case _:
-                        raise ConfigurationException(f"Unknown configuration file extension: '{path.suffix}'")
+                with open(path, "rb") as file:
+                    match path.suffix:
+                        case '.yaml' | '.yml':
+                            try:
+                                config_dict = yaml.safe_load(file)
+                            except yaml.MarkedYAMLError as e:
+                                raise ConfigurationException.from_yaml_error(e)
+                        case '.json':
+                            try:
+                                config_dict = json.load(file)
+                            except json.JSONDecodeError as e:
+                                raise ConfigurationException.from_json_error(path, e)
+                        case '.toml':
+                            try:
+                                config_dict = tomllib.load(file)
+                            except tomllib.TOMLDecodeError as e:
+                                raise ConfigurationException(e, position=Position(file=path))
+                        case _:
+                            raise ConfigurationException(f"Unknown configuration file extension: '{path.suffix}'")
             else:
                 config_dict = dict()
             combine_into(options, config_dict)
@@ -171,8 +182,8 @@ class API:
                 generate_targets=self.generation_targets,
                 file_reader_writer=self._file_reader_writer
             )
-        except (pydantic.ValidationError, yaml.YAMLError) as e:
-            raise ConfigurationException(str(e))
+        except pydantic.ValidationError as e:
+            raise ConfigurationException.from_pydantic_error(e)
         except FileNotFoundError:
             raise FileNotFoundException(path)
 

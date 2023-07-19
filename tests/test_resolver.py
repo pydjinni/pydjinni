@@ -42,10 +42,10 @@ def test_register_type():
     resolver.register(new_type)
 
     # AND WHEN resolving the registered type from a provided type reference
-    resolver.resolve(type_ref)
+    type_def = resolver.resolve(type_ref)
 
     # THEN the type_ref should now contain a reference to the new type
-    assert type_ref.type_def == new_type
+    assert type_def == new_type
 
 
 def test_register_type_twice():
@@ -56,7 +56,7 @@ def test_register_type_twice():
 
     # AND WHEN registering the new type again
     # THEN a DuplicateTypeException should be raised
-    with pytest.raises(Resolver.DuplicateTypeException):
+    with pytest.raises(Resolver.TypeResolvingException, match="Type 'foo' already exists"):
         resolver.register(new_type)
 
 
@@ -76,10 +76,10 @@ def test_register_external_type():
     resolver.register_external(new_external_type)
 
     # AND WHEN resolving the registered type from a provided type reference
-    resolver.resolve(type_ref)
+    type_def = resolver.resolve(type_ref)
 
     # THEN the type_ref should now contain a reference to the new type
-    assert type_ref.type_def == new_external_type
+    assert type_def == new_external_type
 
 
 def test_load_external_type(tmp_path: Path):
@@ -105,12 +105,11 @@ def test_load_external_type(tmp_path: Path):
     resolver.load_external(file)
 
     # AND WHEN resolving the type
-    resolver.resolve(type_ref)
+    type_def = resolver.resolve(type_ref)
 
     # THEN the type reference should contain a reference to the external type
-    assert type_ref.type_def
-    assert type_ref.type_def.name == "bar"
-    assert type_ref.type_def.foo == 5
+    assert type_def.name == "bar"
+    assert type_def.foo == 5
 
 
 def test_load_invalid_external_type(tmp_path: Path):
@@ -149,7 +148,7 @@ def test_register_namespaced_type(tmp_path: Path, type_ref: TypeReference, type_
         resolver.register(wrong_type_def)
 
     # AND WHEN resolving the registered type from a provided type reference
-    resolver.resolve(type_ref)
+    resolved_type_def = resolver.resolve(type_ref)
 
     # THEN the type_ref should now contain a reference to the new type
-    assert type_ref.type_def == type_def
+    assert resolved_type_def == type_def

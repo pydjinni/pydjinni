@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from functools import cached_property
-from pathlib import Path
-
 from pydjinni.parser.identifier import Identifier
 from pydjinni.parser.namespace import Namespace
+from pydjinni.position import Position
 
 try:
     from enum import StrEnum
@@ -19,16 +17,6 @@ class DocStrEnum(StrEnum):
         member._value_ = value
         member.__doc__ = doc.strip()
         return member
-
-
-class Position(BaseModel):
-    start: int = None
-    end: int = None
-    file: Path = None
-
-    @computed_field
-    @cached_property
-    def length(self) -> int: return self.end - self.start if self.end else None
 
 
 class BaseExternalType(BaseModel):
@@ -50,14 +38,18 @@ class BaseExternalType(BaseModel):
     )
     namespace: Namespace | list[Identifier] = Field(
         default=[],
-        description="Optional namespace that the type lives in"
+        description="Namespace that the type lives in"
     )
     primitive: Primitive = Field(
         default=Primitive.none,
         description="The underlying primitive type"
     )
     params: list[str] = []
-    comment: str = None
+    comment: str | None = Field(
+        default=None,
+        description="A short description of the type"
+    )
+
 
 class TypeReference(BaseModel):
     name: Identifier

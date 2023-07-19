@@ -81,29 +81,6 @@ def when(parser: IdlParser, type_type: type[TypeDef], type_name: str = None) -> 
     return type_def
 
 
-def record_resolve(name, field_name, field_typename, field_primitive):
-    def resolve(type_reference: TypeReference):
-        type_reference.type_def = Record(
-            name=name,
-            fields=[Record.Field(
-                name=field_name,
-                type_ref=TypeReference(
-                    name=field_typename,
-                    type_def=BaseExternalType(
-                        name=field_typename,
-                        primitive=field_primitive
-                    ),
-                    parameters=[]
-                )
-            )],
-            constants=[],
-            targets=[],
-            deriving=set()
-        )
-
-    return resolve
-
-
 def test_parsing_enum(tmp_path: Path):
     parser, _ = given(
         tmp_path=tmp_path,
@@ -316,7 +293,7 @@ def test_parsing_interface_unknown_target(tmp_path: Path):
     )
     # WHEN parsing the input
     # THEN a IdlParser.UnknownInterfaceTargetException should be raised
-    with pytest.raises(IdlParser.UnknownInterfaceTargetException):
+    with pytest.raises(IdlParser.ParsingException, match="Unknown interface target 'foo'"):
         parser.parse()
 
 
@@ -367,7 +344,7 @@ def test_parsing_interface_static_not_allowed(tmp_path):
     )
 
     # THEN a StaticNotAllowedException should be raised
-    with pytest.raises(IdlParser.StaticNotAllowedException):
+    with pytest.raises(IdlParser.ParsingException, match="methods are only allowed to be static on 'cpp' interfaces"):
         parser.parse()
 
 
@@ -383,7 +360,7 @@ def test_parsing_interface_static_and_const_not_allowed(tmp_path):
     )
 
     # THEN a StaticAndConstException should be raised
-    with pytest.raises(IdlParser.StaticAndConstException):
+    with pytest.raises(IdlParser.ParsingException, match="method cannot be both static and const"):
         parser.parse()
 
 
@@ -495,50 +472,6 @@ def test_parsing_invalid_input(tmp_path: Path):
     # WHEN parsing the input
     # THEN a IdlParser.ParsingException should be raised
     with pytest.raises(IdlParser.ParsingException):
-        parser.parse()
-
-
-def test_parsing_missing_type(tmp_path):
-    # GIVEN an input with an unknown type reference
-    parser, resolver_mock = given(
-        tmp_path=tmp_path,
-        input_idl="""
-        foo = record {
-            foo: bar;
-        }
-        """
-    )
-
-    def resolve(type_reference: TypeReference):
-        raise Resolver.TypeResolvingException(type_reference, position=Position(start=0))
-
-    resolver_mock.resolve.side_effect = resolve
-
-    # WHEN parsing the input
-    # THEN a IdlParser.TypeResolvingException should be raised
-    with pytest.raises(IdlParser.TypeResolvingException):
-        parser.parse()
-
-
-def test_parsing_duplicate_type(tmp_path: Path):
-    # GIVEN an input that redefines an existing type
-    parser, resolver_mock = given(
-        tmp_path=tmp_path,
-        input_idl="""
-            i8 = record {
-                foo: i8;
-            }
-            """
-    )
-
-    def register(datatype: BaseType):
-        raise Resolver.DuplicateTypeException(datatype, position=Position(start=0))
-
-    resolver_mock.register.side_effect = register
-
-    # WHEN parsing the input
-    # THEN a IdlParser.DuplicateTypeException should be raised
-    with pytest.raises(IdlParser.DuplicateTypeException):
         parser.parse()
 
 
@@ -682,13 +615,10 @@ def test_record_primitive_constant(tmp_path, typename, primitive, literal_value,
     )
 
     # AND GIVEN a resolver that returns the matching primitive type
-    def resolve(type_reference: TypeReference):
-        type_reference.type_def = BaseExternalType(
+    resolver_mock.resolve.return_value = BaseExternalType(
             name=typename,
             primitive=primitive
         )
-
-    resolver_mock.resolve.side_effect = resolve
 
     record = when(parser, Record, "foo")
 
@@ -729,13 +659,10 @@ def test_record_wrong_primitive_constant(tmp_path, typename, primitive, literal_
     )
 
     # AND GIVEN a resolver that returns a primitive type that does not match the provided const value
-    def resolve(type_reference: TypeReference):
-        type_reference.type_def = BaseExternalType(
+    resolver_mock.resolve.return_value = BaseExternalType(
             name=typename,
             primitive=primitive
         )
-
-    resolver_mock.resolve.side_effect = resolve
 
     # WHEN parsing the idl
     # THEN a Parsing exception should be thrown
@@ -757,11 +684,29 @@ def test_record_wrong_const_record_assignment(tmp_path, literal_value):
                 """
     )
 
-    resolver_mock.resolve.side_effect = record_resolve("foo", "a", "i8", BaseExternalType.Primitive.int)
+    resolver_mock.resolve.return_value = Record(
+        name="foo",
+        primitive=BaseExternalType.Primitive.record,
+        fields=[
+            Record.Field(
+                name="a",
+                type_ref=TypeReference(
+                    name="i8",
+                    type_def=BaseExternalType(
+                        name="i8",
+                        primitive=BaseExternalType.Primitive.int
+                    )
+                )
+            )
+        ],
+        constants=[],
+        targets=[],
+        deriving=set()
+    )
 
     # WHEN parsing the file
     # THEN a InvalidAssignmentException should be raised
-    with pytest.raises(IdlParser.InvalidAssignmentException):
+    with pytest.raises(IdlParser.ParsingException, match="Invalid"):
         parser.parse()
 
 
@@ -776,9 +721,27 @@ def test_record_wrong_const_unknown_field_assignment(tmp_path):
                     """
     )
 
-    resolver_mock.resolve.side_effect = record_resolve("foo", "a", "i8", BaseExternalType.Primitive.int)
+    resolver_mock.resolve.return_value = Record(
+        name="foo",
+        primitive=BaseExternalType.Primitive.record,
+        fields=[
+            Record.Field(
+                name="a",
+                type_ref=TypeReference(
+                    name="i8",
+                    type_def=BaseExternalType(
+                        name="i8",
+                        primitive=BaseExternalType.Primitive.int
+                    )
+                )
+            )
+        ],
+        constants=[],
+        targets=[],
+        deriving=set()
+    )
 
     # WHEN parsing the file
     # THEN a UnknownFieldException should be raised
-    with pytest.raises(IdlParser.UnknownFieldException):
+    with pytest.raises(IdlParser.ParsingException, match="Unknown field 'b' defined in constant assignment"):
         parser.parse()
