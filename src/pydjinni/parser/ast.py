@@ -49,6 +49,7 @@ class Interface(ClassType):
 
 
 class Function(BaseType):
+    anonymous: bool = True
     primitive: BaseExternalType.Primitive = BaseExternalType.Primitive.function
     parameters: list[Parameter] = []
     return_type_ref: TypeReference | None = None

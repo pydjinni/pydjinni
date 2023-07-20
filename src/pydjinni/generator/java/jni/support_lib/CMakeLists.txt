@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.24)
 project(PyDjinniJava_SupportLib C CXX)
 
 add_library(jni_support_lib
+        include/pydjinni/jni/marshal.hpp
+        include/pydjinni/jni/support.hpp
         src/pydjinni/support.cpp
 )
 

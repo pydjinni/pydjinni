@@ -14,7 +14,7 @@ from pydjinni.generator.cpp.cpp.generator import CppGenerator
 from pydjinni.position import Position, Cursor
 from .ast import *
 from .base_models import Assignment, Constant, BaseExternalType, ObjectValue
-from .identifier import Identifier
+from .identifier import IdentifierType as Identifier
 from .resolver import Resolver
 
 from pydjinni.generator.target import Target
@@ -143,21 +143,47 @@ class IdlParser(PTNodeVisitor):
     def visit_named_function(self, node, children):
         function = unpack(children.function)
         function.name = unpack(children.identifier)
-        if children.comment:
-            function.comment = unpack(children.comment)
+        function.comment = unpack(children.comment)
         function.position = self._position(node)
+        function.anonymous = False
         return function
 
     def visit_function(self, node, children):
         targets: list[str] = unpack(children.targets) or self.target_keys
+        return_type_ref = unpack(children.type_ref)
+        parameters = children.parameter
+
+        dependencies: list[TypeReference] = []
+
+        for param in parameters:
+            dependencies.append(param.type_ref)
+        if return_type_ref:
+            dependencies.append(return_type_ref)
+
+        def signature(type_ref: TypeReference, depth: int = 2):
+            output = type_ref.name
+            generic_signatures = []
+            for param in type_ref.parameters:
+                generic_signatures.append(signature(param, depth + 1))
+            return ('_' * depth).join([output] + generic_signatures)
+
+        name = '_'.join(
+            ['function'] +
+            [signature(parameter.type_ref) for parameter in parameters] +
+            [signature(return_type_ref) if return_type_ref else 'void']
+        )
         return Function(
-            name="<anonymous>",
+            name=name,
             position=self._position(node),
-            parameters=children.parameter,
+            parameters=parameters,
             targets=targets,
             namespace=self.current_namespace,
-            return_type_ref=unpack(children.type_ref)
+            return_type_ref=return_type_ref,
+            dependencies=dependencies
         )
+
+    def visit_identifier(self, node, children):
+        return Identifier(node.value)
 
     def visit_deriving(self, node, children):
         return set(children.declaration)

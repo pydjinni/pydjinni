@@ -1,0 +1,21 @@
+{% extends "base.jinja2" %}
+
+{% block header %}
+#import <Foundation/Foundation.h>
+{% for header in type_def.dependencies | headers('objcpp') -%}
+#import {{ header }}
+{% endfor %}
+#include {{ type_def.cpp.header | quote }}
+
+static_assert(__has_feature(objc_arc), "PyDjinni requires ARC to be enabled for this file");
+{% endblock %}
+
+{% block content %}
+struct {{ type_def.objcpp.name }} {
+    using CppType = {{ type_def.cpp.typename }};
+    using ObjcType = {{ type_def.objc.typename }};
+
+    static CppType toCpp(ObjcType objc);
+    static ObjcType fromCpp(CppType cpp);
+};
+{% endblock %}

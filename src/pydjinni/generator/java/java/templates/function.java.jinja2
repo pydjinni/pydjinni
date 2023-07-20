@@ -1,0 +1,50 @@
+{% extends "base.jinja2" %}
+{% from "macros.jinja2" import comment, return_type, parameters %}
+
+{% block header %}
+{% if type_def.cpp.proxy -%}
+import java.util.concurrent.atomic.AtomicBoolean;
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{{ comment(type_def, indentation=0) }}
+@FunctionalInterface
+public interface {{ type_def.java.name }} {
+    {{ return_type(type_def.return_type_ref) }} invoke({{ parameters(type_def) }});
+}
+
+
+{% if type_def.cpp.proxy %}
+final class {{ type_def.java.name }}CppProxy implements {{ type_def.java.name }} {
+    private final long nativeRef;
+    private final AtomicBoolean destroyed = new AtomicBoolean(false);
+
+    private {{ type_def.java.name }}CppProxy(long nativeRef)
+    {
+        if (nativeRef == 0) throw new RuntimeException("nativeRef is zero");
+        this.nativeRef = nativeRef;
+    }
+
+    private native void nativeDestroy(long nativeRef);
+    public void _djinni_private_destroy()
+    {
+        boolean destroyed = this.destroyed.getAndSet(true);
+        if (!destroyed) nativeDestroy(this.nativeRef);
+    }
+    @SuppressWarnings("deprecation")
+    protected void finalize() throws java.lang.Throwable
+    {
+        _djinni_private_destroy();
+        super.finalize();
+    }
+
+    @Override
+    public {{ return_type(type_def.return_type_ref) }} invoke({{ parameters(type_def) }}) {
+        assert !this.destroyed.get() : "trying to use a destroyed object";
+        {{ "return" if type_def.return_type_ref }} native_invoke(this.nativeRef{{ (", " if type_def.parameters) ~ parameters(type_def, with_types=False) }});
+    }
+    private native {{ return_type(type_def.return_type_ref) }} native_invoke(long _nativeRef{{ (", " if type_def.parameters) ~ parameters(type_def) }});
+}
+{% endif %}
+{% endblock %}

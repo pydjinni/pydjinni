@@ -125,6 +125,20 @@ class CppFunction(CppBaseType):
     def typename(self) -> str: return f"std::function<{type_specifier(self.decl.return_type_ref)}" \
                                       f"({','.join([type_specifier(parameter.type_ref) for parameter in self.decl.parameters])})>"
 
+    @computed_field
+    @cached_property
+    def header(self) -> Path: return Path("<functional>")
+
+    @computed_field
+    @cached_property
+    def by_value(self) -> bool: return False
+
+    @cached_property
+    def proxy(self): return "cpp" in self.decl.targets
+
+    @cached_property
+    def type_spec(self): return type_specifier(self.decl.return_type_ref)
+
 
 class CppSymbolicConstantField(CppBaseField):
     @computed_field

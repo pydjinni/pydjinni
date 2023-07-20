@@ -1,8 +1,8 @@
 from pydjinni.generator.generator import Generator
 from pydjinni.parser.base_models import BaseType, BaseField, SymbolicConstantField
 from .config import ObjcppConfig
-from .type import ObjcppExternalType, ObjcppBaseType, ObjcppBaseField, ObjcppSymbolicConstantField
-from pydjinni.parser.ast import Interface, Record, Flags, Enum
+from .type import ObjcppExternalType, ObjcppBaseType, ObjcppBaseField, ObjcppSymbolicConstantField, ObjcppFunction
+from pydjinni.parser.ast import Interface, Record, Flags, Enum, Function
 from pydjinni.generator.filters import quote, headers
 from .external_types import external_types
 
@@ -15,6 +15,7 @@ class ObjcppGenerator(Generator):
     marshal_models = {
         BaseType: ObjcppBaseType,
         BaseField: ObjcppBaseField,
+        Function: ObjcppFunction,
         SymbolicConstantField: ObjcppSymbolicConstantField
     }
     writes_header = True
@@ -35,3 +36,7 @@ class ObjcppGenerator(Generator):
     def generate_interface(self, type_def: Interface):
         self.write_header("header/interface.h.jinja2", type_def=type_def)
         self.write_source("source/interface.mm.jinja2", type_def=type_def)
+
+    def generate_function(self, type_def: Function):
+        self.write_header("header/function.h.jinja2", type_def=type_def)
+        self.write_source("source/function.mm.jinja2", type_def=type_def)

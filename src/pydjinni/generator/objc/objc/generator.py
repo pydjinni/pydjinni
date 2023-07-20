@@ -4,7 +4,7 @@ from pydjinni.parser.ast import (
     Record,
     Flags,
     Enum,
-    Parameter
+    Parameter, Function
 )
 from pydjinni.parser.base_models import (
     BaseType,
@@ -22,7 +22,8 @@ from .type import (
     ObjcSymbolicConstantField,
     ObjcConstantObjcField,
     ObjcRecord,
-    ObjcParameter
+    ObjcParameter,
+    ObjcFunction
 )
 from .external_types import external_types
 
@@ -37,6 +38,7 @@ class ObjcGenerator(Generator):
         BaseField: ObjcBaseField,
         Interface: ObjcInterface,
         Interface.Method: ObjcInterface.ObjcMethod,
+        Function: ObjcFunction,
         SymbolicConstantField: ObjcSymbolicConstantField,
         Constant: ObjcConstantObjcField,
         Record: ObjcRecord,
@@ -61,6 +63,9 @@ class ObjcGenerator(Generator):
         self.write_header("header/interface.h.jinja2", type_def=type_def)
         if type_def.constants:
             self.write_source("source/interface.m.jinja2", type_def=type_def)
+
+    def generate_function(self, type_def: Function):
+        pass
 
     def generate_bridging_header(self, ast: list[BaseType]):
         if self.config.swift.bridging_header:

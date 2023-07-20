@@ -2,11 +2,19 @@ from pathlib import Path
 
 from pydjinni.generator.filters import quote, headers
 from pydjinni.generator.generator import Generator, ConfigModel
-from pydjinni.parser.ast import Enum, Flags, Record, Interface, Parameter
+from pydjinni.parser.ast import Enum, Flags, Record, Interface, Parameter, Function
 from pydjinni.parser.base_models import BaseType, BaseField, SymbolicConstantField
 from .config import JniConfig
-from .type import JniExternalType, JniBaseType, JniInterface, JniBaseField, JniSymbolicConstantField, JniRecord, \
-    JniParameter
+from .type import (
+    JniExternalType,
+    JniBaseType,
+    JniInterface,
+    JniBaseField,
+    JniSymbolicConstantField,
+    JniRecord,
+    JniParameter,
+    JniFunction
+)
 from .external_types import external_types
 
 
@@ -19,6 +27,7 @@ class JniGenerator(Generator):
         BaseType: JniBaseType,
         Interface: JniInterface,
         Interface.Method: JniInterface.JniMethod,
+        Function: JniFunction,
         BaseField: JniBaseField,
         SymbolicConstantField: JniSymbolicConstantField,
         Record: JniRecord,
@@ -43,6 +52,10 @@ class JniGenerator(Generator):
     def generate_interface(self, type_def: Interface):
         self.write_header("header/interface.hpp", type_def=type_def)
         self.write_source("source/interface.cpp", type_def=type_def)
+
+    def generate_function(self, type_def: Function):
+        self.write_header("header/function.hpp.jinja2", type_def=type_def)
+        self.write_source("source/function.cpp.jinja2", type_def=type_def)
 
     def generate_loader(self):
         if self.config.loader:

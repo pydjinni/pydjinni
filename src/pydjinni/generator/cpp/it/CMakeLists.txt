@@ -45,3 +45,8 @@ cpp_test_case(FlagsTest
     SOURCES
         tests/test_flags.cpp
 )
+
+cpp_test_case(FunctionTest
+    SOURCES
+        tests/test_function.cpp
+)

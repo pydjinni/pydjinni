@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, computed_field
 
 from pydjinni.generator.java.java.comment_renderer import JavaDocCommentRenderer
 from pydjinni.generator.java.java.config import JavaConfig
-from pydjinni.parser.ast import Record
+from pydjinni.parser.ast import Record, Function
 from pydjinni.parser.base_models import BaseType, BaseField
 from pydjinni.parser.identifier import IdentifierType as Identifier
 
@@ -93,7 +93,14 @@ class JavaFlags(JavaBaseType):
 
 
 class JavaFunction(JavaBaseType):
-    ...
+    decl: Function = Field(exclude=True, repr=False)
+
+    @cached_property
+    def name(self) -> str:
+        if self.decl.anonymous:
+            return self.decl.name.title()
+        else:
+            return super().name
 
 
 class JavaSymbolicConstantField(JavaBaseField):

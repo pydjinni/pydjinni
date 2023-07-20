@@ -5,7 +5,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field, computed_field
 
 from pydjinni.generator.java.jni.config import JniConfig
-from pydjinni.parser.ast import Interface, Parameter
+from pydjinni.parser.ast import Interface, Parameter, Function
 from pydjinni.parser.base_models import BaseType, BaseField, TypeReference
 
 
@@ -60,6 +60,32 @@ def get_typename(type_ref: TypeReference) -> str:
         return ""
 
 
+def routine_name(type_ref: TypeReference) -> str:
+    if type_ref:
+        native_type = type_ref.type_def.jni.typename
+        if native_type in [NativeType.string, NativeType.byte_array] or type_ref.optional:
+            native_type = NativeType.object
+        native_type = native_type[1:].capitalize()
+    else:
+        native_type = "Void"
+    return f"Call{native_type}Method"
+
+
+def type_signature(parameters: list[Parameter], return_type_ref: TypeReference):
+    parameter_type_signatures = ""
+    for parameter in parameters:
+        if parameter.type_ref.optional:
+            parameter_type_signatures += parameter.type_ref.type_def.jni.boxed_type_signature
+        else:
+            parameter_type_signatures += parameter.type_ref.type_def.jni.type_signature
+    return_type_signature = ""
+    if return_type_ref:
+        if return_type_ref.optional:
+            return_type_signature = return_type_ref.type_def.jni.boxed_type_signature
+        else:
+            return_type_signature = return_type_ref.type_def.jni.type_signature
+    return f"({parameter_type_signatures}){return_type_signature}"
+
 class JniBaseType(BaseModel):
     decl: BaseType = Field(exclude=True, repr=False)
     config: JniConfig = Field(exclude=True, repr=False)
@@ -107,6 +133,22 @@ class JniBaseType(BaseModel):
     def class_descriptor(self) -> str: return '/'.join(self.decl.java.package.split('.') + [self.name])
 
 
+class JniFunction(JniBaseType):
+    decl: Function = Field(exclude=True, repr=False)
+
+    @cached_property
+    def name(self) -> str: return self.decl.name.title() if self.decl.anonymous else super().name
+
+    @cached_property
+    def wrapper(self) -> str: return f"{self.name}Wrapper"
+
+    @cached_property
+    def routine_name(self) -> str: return routine_name(self.decl.return_type_ref)
+
+    @cached_property
+    def type_signature(self) -> str: return type_signature(self.decl.parameters, self.decl.return_type_ref)
+
+
 class JniBaseField(BaseModel):
     decl: BaseField = Field(exclude=True, repr=False)
     config: JniConfig = Field(exclude=True, repr=False)
@@ -132,31 +174,10 @@ class JniInterface(JniBaseType):
             return self.decl.name.convert(self.config.identifier.method)
 
         @cached_property
-        def type_signature(self) -> str:
-            parameter_type_signatures = ""
-            for parameter in self.decl.parameters:
-                if parameter.type_ref.optional:
-                    parameter_type_signatures += parameter.type_ref.type_def.jni.boxed_type_signature
-                else:
-                    parameter_type_signatures += parameter.type_ref.type_def.jni.type_signature
-            return_type_signature = ""
-            if self.decl.return_type_ref:
-                if self.decl.return_type_ref.optional:
-                    return_type_signature = self.decl.return_type_ref.type_def.jni.boxed_type_signature
-                else:
-                    return_type_signature = self.decl.return_type_ref.type_def.jni.type_signature
-            return f"({parameter_type_signatures}){return_type_signature}"
+        def type_signature(self) -> str: return type_signature(self.decl.parameters, self.decl.return_type_ref)
 
         @cached_property
-        def routine_name(self) -> str:
-            type_ref = self.decl.return_type_ref
-            if type_ref:
-                native_type = type_ref.type_def.jni.typename
-                if native_type in [NativeType.string, NativeType.byte_array] or type_ref.optional:
-                    native_type = NativeType.object
-            else:
-                native_type = "Void"
-            return f"Call{native_type[1:].capitalize()}Method"
+        def routine_name(self) -> str: return routine_name(self.decl.return_type_ref)
 
 
 class JniParameter(JniBaseField):
@@ -176,4 +197,3 @@ class JniRecord(JniBaseType):
 
         @cached_property
         def typename(self): return get_typename(self.decl.type_ref)
-

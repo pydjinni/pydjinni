@@ -1,0 +1,48 @@
+{% extends "base.jinja2" %}
+{% from "macros.jinja2" import translator %}
+
+{% block header %}
+#import {{ type_def.objcpp.header | quote }}
+#import "pydjinni/marshal.h"
+#import "pydjinni/objc/error.h"
+#include <cassert>
+{% endblock %}
+
+{% block content %}
+auto {{ type_def.objcpp.name }}::toCpp(ObjcType obj) -> CppType {
+    assert(obj);
+    return [obj](
+        {%- for parameter in type_def.parameters -%}
+            {{ parameter.cpp.type_spec }} {{ parameter.cpp.name ~ (", " if not loop.last)  }}
+        {%- endfor -%}
+    ){
+        {{ "auto result = " if type_def.return_type_ref }}obj(
+            {% for parameter in type_def.parameters %}
+            {{ translator(parameter.type_ref) }}::fromCpp({{ parameter.cpp.name }}){{ ", " if not loop.last }}
+            {% endfor %}
+        );
+        {% if type_def.return_type_ref %}
+        return {{ translator(type_def.return_type_ref) }}::toCpp(result);
+        {% endif %}
+    };
+}
+
+auto {{ type_def.objcpp.name }}::fromCpp(CppType cpp) -> ObjcType {
+    return ^ (
+        {%- for parameter in type_def.parameters -%}
+            {{ parameter.objc.type_decl }} {{ parameter.objc.name ~ (", " if not loop.last)  }}
+        {%- endfor -%}
+    ) {
+        try {
+            {{ "auto result = " if type_def.return_type_ref }}cpp(
+                {% for parameter in type_def.parameters %}
+                {{ translator(parameter.type_ref) }}::toCpp({{ parameter.objc.name }}){{ ", " if not loop.last }}
+                {% endfor %}
+            );
+            {% if type_def.return_type_ref %}
+            return {{ translator(type_def.return_type_ref) }}::fromCpp(result);
+            {% endif %}
+        } DJINNI_TRANSLATE_EXCEPTIONS()
+    };
+}
+{% endblock %}

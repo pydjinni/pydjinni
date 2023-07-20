@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, computed_field
 
 from pydjinni.config.types import IdentifierStyle
 from pydjinni.generator.objc.objcpp.config import ObjcppConfig
+from pydjinni.parser.ast import Function
 from pydjinni.parser.base_models import BaseType, BaseField
 
 
@@ -22,7 +23,11 @@ class ObjcppBaseType(BaseModel):
 
     @computed_field
     @cached_property
-    def translator(self) -> str: return f"::{self.namespace}::{self.name}"
+    def translator(self) -> str:
+        output = f"::{self.name}"
+        if self.namespace:
+            output = f"::{self.namespace}{output}"
+        return output
 
     @computed_field
     @cached_property
@@ -34,6 +39,13 @@ class ObjcppBaseType(BaseModel):
     @cached_property
     def namespace(self): return '::'.join(self.config.namespace + [identifier.convert(IdentifierStyle.Case.pascal)
                                                                    for identifier in self.decl.namespace])
+
+
+class ObjcppFunction(ObjcppBaseType):
+    decl: Function = Field(exclude=True, repr=False)
+
+    @cached_property
+    def name(self): return self.decl.name.title() if self.decl.anonymous else super().name
 
 
 class ObjcppBaseField(BaseModel):

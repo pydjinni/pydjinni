@@ -5,7 +5,6 @@
 
 #include "pydjinni/jni/support.hpp"
 #include {{ type_def.cpp.header | quote }}
-#include {{ type_def.jni.header | quote }}
 {% endblock %}
 
 {% block content %}

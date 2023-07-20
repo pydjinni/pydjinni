@@ -48,6 +48,9 @@ class JavaGenerator(Generator):
     def generate_interface(self, type_def: Interface):
         self.write_source("interface.java.jinja2", type_def=type_def)
 
+    def generate_function(self, type_def: Function):
+        self.write_source("function.java.jinja2", type_def=type_def)
+
     def generate_loader(self):
         if self.config.native_lib:
             loader = f"{self.config.native_lib}Loader"

@@ -14,3 +14,7 @@
 >
 {%- endif -%}
 {% endmacro %}
+
+{% macro return_type(method) %}
+{{ method.return_type_ref.type_def.jni.typename.value if method.return_type_ref else "void" }}
+{% endmacro %}

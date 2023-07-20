@@ -1,5 +1,5 @@
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import translator %}
+{% from "macros.jinja2" import translator, return_type %}
 
 {% block header %}
 #include {{ type_def.jni.header | quote }}
@@ -8,9 +8,7 @@
 {% endfor %}
 {% endblock %}
 
-{% macro return_type(method) %}
-{{ method.return_type_ref.type_def.jni.typename.value if method.return_type_ref else "void" }}
-{% endmacro %}
+
 
 {% block content %}
 {{ type_def.jni.name }}::{{ type_def.jni.name }}() : ::pydjinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.name }}>("{{ type_def.jni.class_descriptor }}$CppProxy") {}

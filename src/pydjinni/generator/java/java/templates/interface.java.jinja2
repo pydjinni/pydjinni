@@ -1,21 +1,11 @@
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import comment, constant_def, data_type %}
+{% from "macros.jinja2" import comment, constant_def, data_type, return_type, parameters %}
 
 {% block header %}
 {% if type_def.cpp.proxy -%}
 import java.util.concurrent.atomic.AtomicBoolean;
 {% endif %}
 {% endblock %}
-
-{%- macro return_type(type_ref) -%}
-{{ data_type(type_ref) if type_ref else "void" }}
-{%- endmacro -%}
-
-{% macro parameters(method, with_types = True) %}
-{%- for parameter in method.parameters -%}
-    {{ (data_type(parameter.type_ref) ~ " ") if with_types }}{{ parameter.java.name ~ (", " if not loop.last) }}
-{%- endfor -%}
-{% endmacro %}
 
 {% block content %}
 {{ comment(type_def, indentation=0) }}
@@ -33,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     public {{ "static" if method.static else "abstract" }} {{ return_type(method.return_type_ref) }} {{ method.java.name }}({{ parameters(method) }})
     {%- if method.static -%}
     {
-        return CppProxy.{{ method.java.name }}(
+        {{ "return " if method.return_type_ref }}CppProxy.{{ method.java.name }}(
         {%- for parameter in method.parameters -%}
         {{ parameter.java.name ~ (", " if not loop.last) }}
         {%- endfor -%}

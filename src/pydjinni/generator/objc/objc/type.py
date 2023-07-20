@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, computed_field
 
 from pydjinni.generator.objc.objc.comment_renderer import DocCCommentRenderer
 from pydjinni.generator.objc.objc.config import ObjcConfig
-from pydjinni.parser.ast import Record, Interface, Parameter
+from pydjinni.parser.ast import Record, Interface, Parameter, Function
 from pydjinni.parser.base_models import BaseType, BaseExternalType, BaseField, TypeReference
 from pydjinni.parser.identifier import IdentifierType as Identifier
 
@@ -32,9 +32,7 @@ def type_decl(type_ref: TypeReference, parameter: bool = False, boxed: bool = Fa
                 generic_types += ", "
             generic_types += type_decl(parameter_ref, boxed=True)
         generic_types += ">"
-    if isinstance(type_def, Interface) or \
-            isinstance(type_def, BaseExternalType) and \
-            type_def.primitive == BaseExternalType.Primitive.interface:
+    if type_def.primitive == BaseExternalType.Primitive.interface:
         if parameter:
             typename = f"id<{typename}>"
             pointer = False
@@ -45,13 +43,14 @@ def type_decl(type_ref: TypeReference, parameter: bool = False, boxed: bool = Fa
 def annotation(type_ref: TypeReference):
     if type_ref and ((isinstance(type_ref.type_def, Interface) or
                       (isinstance(type_ref.type_def, BaseExternalType) and
-                      type_ref.type_def.primitive == BaseExternalType.Primitive.interface)) or
+                       type_ref.type_def.primitive == BaseExternalType.Primitive.interface)) or
                      type_ref.optional):
         return "nullable"
     elif type_ref and type_ref.type_def.objc.pointer:
         return "nonnull"
     else:
         return ""
+
 
 class ObjcBaseType(BaseModel):
     decl: BaseType = Field(exclude=True, repr=False)
@@ -90,6 +89,21 @@ class ObjcBaseType(BaseModel):
     @cached_property
     def namespace(self): return '.'.join([identifier.convert(self.config.identifier.type)
                                           for identifier in self.decl.namespace])
+
+
+class ObjcFunction(ObjcBaseType):
+    decl: Function = Field(exclude=True, repr=False)
+
+    @computed_field
+    @cached_property
+    def typename(self) -> str:
+        return_type_decl = type_decl(self.decl.return_type_ref) if self.decl.return_type_ref else "void"
+        parameter_type_decls = [type_decl(parameter.type_ref, parameter=True) for parameter in self.decl.parameters]
+        return f"{return_type_decl} (^)({', '.join(parameter_type_decls)})"
+
+    @computed_field
+    @cached_property
+    def header(self) -> Path: return None
 
 
 class ObjcBaseClassType(ObjcBaseType):
@@ -133,6 +147,7 @@ class ObjcParameter(ObjcBaseField):
     @cached_property
     def annotation(self) -> str: return annotation(self.decl.type_ref)
 
+
 class ObjcConstantObjcField(ObjcBaseField):
     @cached_property
     def type_decl(self) -> str: return type_decl(self.decl.type_ref)
@@ -156,7 +171,7 @@ class ObjcInterface(ObjcBaseClassType):
         def name(self) -> str: return self.decl.name.convert(self.config.identifier.method)
 
         @cached_property
-        def type_decl(self) -> str: return type_decl(self.decl.return_type_ref) if self.decl.return_type_ref else ""
+        def type_decl(self) -> str: return type_decl(self.decl.return_type_ref) if self.decl.return_type_ref else "void"
 
         @cached_property
         def specifier(self) -> str: return "+" if self.decl.static else "-"

@@ -1,0 +1,94 @@
+{% extends "base.jinja2" %}
+{% from "macros.jinja2" import translator, return_type %}
+
+{% block header %}
+#include <memory>
+#include "pydjinni/jni/support.hpp"
+{% for header in type_def.dependencies | headers('jni') -%}
+#include {{ header }}
+{% endfor %}
+#include {{ type_def.jni.header | quote }}
+{% endblock %}
+
+
+{% block content %}
+{{ type_def.cpp.typename}} {{ type_def.jni.name }}::toCpp(JNIEnv* jniEnv, JniType j){
+    auto functional_class = ::pydjinni::JniClass<{{ type_def.jni.translator }}>::get()._fromJava(jniEnv, j);
+    return [functional_class](
+        {%- for parameter in type_def.parameters -%}
+            {{ parameter.cpp.type_spec }} {{ parameter.cpp.name ~ (", " if not loop.last) }}
+        {%- endfor -%}
+    ) {
+        {{ "return " if type_def.return_type_ref }}functional_class->invoke(
+        {%- for parameter in type_def.parameters -%}
+            {{ parameter.cpp.name ~ (", " if not loop.last )}}
+        {%- endfor -%}
+        );
+    };
+}
+
+::pydjinni::LocalRef<{{ type_def.jni.name }}::JniType> {{ type_def.jni.name }}::fromCppOpt(JNIEnv* jniEnv, const {{ type_def.cpp.typename }}& c) {
+    auto proxy = std::make_shared<{{ type_def.jni.name }}::CppProxy>(c);
+    return {jniEnv, ::pydjinni::JniClass<{{ type_def.jni.translator }}>::get()._toJava(jniEnv, proxy)};
+}
+
+::pydjinni::LocalRef<{{ type_def.jni.name }}::JniType> {{ type_def.jni.name }}::fromCpp(JNIEnv* jniEnv, const {{ type_def.cpp.typename }}& c) { return fromCppOpt(jniEnv, c); }
+
+
+{{ type_def.jni.name }}::{{ type_def.jni.name }}() : ::pydjinni::JniInterface<{{ type_def.jni.wrapper }}, {{ type_def.jni.name }}>("{{ type_def.jni.class_descriptor }}CppProxy") {}
+{{ type_def.jni.name }}::~{{ type_def.jni.name }}() = default;
+
+{% if 'java' in type_def.targets %}
+{{ type_def.jni.name }}::JavaProxy::JavaProxy(JniType j) : Handle(::pydjinni::jniGetThreadEnv(), j) {}
+{{ type_def.jni.name }}::JavaProxy::~JavaProxy() = default;
+
+
+{{ type_def.cpp.type_spec }} {{ type_def.jni.name }}::JavaProxy::invoke(
+{%- for parameter in type_def.parameters -%}
+    {{ parameter.cpp.type_spec }} {{ parameter.cpp.name ~ (", " if not loop.last) }}
+{%- endfor -%}
+) {
+    auto jniEnv = ::pydjinni::jniGetThreadEnv();
+    ::pydjinni::JniLocalScope jscope(jniEnv, 10);
+    const auto& data = ::pydjinni::JniClass<{{ type_def.jni.translator }}>::get();
+    {{ "auto jret = " if type_def.return_type_ref }}jniEnv->{{ type_def.jni.routine_name }}(Handle::get().get(), data.method_invoke
+    {%- for parameter in type_def.parameters -%}
+        , ::pydjinni::get({{ translator(parameter.type_ref) }}::fromCpp(jniEnv, {{ parameter.cpp.name }}))
+    {%- endfor -%}
+    );
+    ::pydjinni::jniExceptionCheck(jniEnv);
+    {% if type_def.return_type_ref %}
+    return {{ translator(type_def.return_type_ref) }}::toCpp(jniEnv, jret);
+    {% endif %}
+}
+
+{% endif %}
+
+{% if 'cpp' in type_def.targets %}
+CJNIEXPORT void JNICALL {{ type_def.jni.jni_prefix }}_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef)
+{
+    ::pydjinni::translate_exceptions(jniEnv, [&](){
+        delete reinterpret_cast<::pydjinni::CppProxyHandle<{{ type_def.jni.wrapper }}>*>(nativeRef);
+    });
+}
+
+CJNIEXPORT {{ return_type(type_def) }} JNICALL {{ type_def.jni.jni_prefix }}CppProxy_native_1invoke(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef
+    {%- for parameter in type_def.parameters -%}
+    , {{ parameter.type_ref.type_def.jni.typename.value }} {{ parameter.jni.name }}
+    {%- endfor -%}
+    ) {
+    {{ "return" if type_def.return_type_ref }} ::pydjinni::translate_exceptions(jniEnv, [&](){
+        const auto& ref = ::pydjinni::objectFromHandleAddress<{{ type_def.jni.wrapper }}>(nativeRef);
+        {{ "auto r = " if type_def.return_type_ref }}ref->invoke(
+            {%- for parameter in type_def.parameters -%}
+                {{ translator(parameter.type_ref) }}::toCpp(jniEnv, {{ parameter.jni.name }}){{ ", " if not loop.last }}
+            {%- endfor -%}
+        );
+        {% if type_def.return_type_ref %}
+        return ::pydjinni::release({{ translator(type_def.return_type_ref) }}::fromCpp(jniEnv, r));
+        {% endif %}
+    });
+}
+
+{% endif %}
+{% endblock %}
