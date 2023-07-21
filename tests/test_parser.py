@@ -29,10 +29,6 @@ def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, MagicMock]:
     reader = FileReaderWriter()
     reader.setup(ProcessedFiles)
     resolver_mock = MagicMock(spec=Resolver)
-    cpp_target_mock = MagicMock(spec=Target)
-    cpp_target_mock.key = "cpp"
-    java_target_mock = MagicMock(spec=Target)
-    java_target_mock.key = "java"
 
     # AND GIVEN an input file
     input_file = tmp_path / f"{uuid.uuid4()}.djinni"
@@ -42,7 +38,8 @@ def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, MagicMock]:
     parser = IdlParser(
         resolver=resolver_mock,
         file_reader=reader,
-        targets=[cpp_target_mock, java_target_mock],
+        targets=[],
+        supported_target_keys=["cpp", "java"],
         include_dirs=[tmp_path],
         default_deriving=set(),
         idl=input_file

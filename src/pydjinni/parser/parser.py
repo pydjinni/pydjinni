@@ -455,6 +455,7 @@ class IdlParser(PTNodeVisitor):
         ast = IdlParser(
             resolver=self.resolver,
             targets=self.targets,
+            supported_target_keys=self.target_keys,
             include_dirs=self.include_dirs,
             default_deriving=self.default_deriving,
             file_reader=self.file_reader,
