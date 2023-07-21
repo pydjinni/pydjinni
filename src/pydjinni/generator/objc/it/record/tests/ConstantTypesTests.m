@@ -16,6 +16,7 @@
     XCTAssertLessThan(ConstantTypesFloatc, 33);
     XCTAssertGreaterThan(ConstantTypesDoublec, 64);
     XCTAssertLessThan(ConstantTypesDoublec, 65);
+    XCTAssertEqualObjects(ConstantTypesStringc, @"foo");
 }
 
 @end

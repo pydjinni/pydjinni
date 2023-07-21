@@ -20,7 +20,6 @@ class ObjcExternalType(BaseModel):
 
 def type_decl(type_ref: TypeReference, parameter: bool = False, boxed: bool = False) -> str:
     type_def: BaseExternalType | BaseType = type_ref.type_def
-    annotation = ""
     generic_types = ""
     pointer = type_def.objc.pointer
     optional = type_ref.optional
@@ -113,6 +112,18 @@ class ObjcBaseClassType(ObjcBaseType):
     def pointer(self) -> bool: return True
 
 
+class ObjcBaseField(BaseModel):
+    decl: BaseField = Field(exclude=True, repr=False)
+    config: ObjcConfig = Field(exclude=True, repr=False)
+
+    @computed_field
+    @cached_property
+    def name(self) -> str: return self.decl.name.convert(self.config.identifier.field)
+
+    @cached_property
+    def comment(self): return mistletoe.markdown(self.decl.comment, DocCCommentRenderer) if self.decl.comment else ''
+
+
 class ObjcRecord(ObjcBaseClassType):
     decl: Record = Field(exclude=True, repr=False)
 
@@ -147,17 +158,12 @@ class ObjcRecord(ObjcBaseClassType):
         return Identifier(f"{name}_with_{self.decl.fields[0].name}").convert(self.config.identifier.method) \
             if self.decl.fields else self.decl.name.convert(self.config.identifier.method)
 
+    class ObjcField(ObjcBaseField):
+        @cached_property
+        def type_decl(self) -> str: return type_decl(self.decl.type_ref)
 
-class ObjcBaseField(BaseModel):
-    decl: BaseField = Field(exclude=True, repr=False)
-    config: ObjcConfig = Field(exclude=True, repr=False)
-
-    @computed_field
-    @cached_property
-    def name(self) -> str: return self.decl.name.convert(self.config.identifier.field)
-
-    @cached_property
-    def comment(self): return mistletoe.markdown(self.decl.comment, DocCCommentRenderer) if self.decl.comment else ''
+        @cached_property
+        def annotation(self) -> str: return annotation(self.decl.type_ref)
 
 
 class ObjcParameter(ObjcBaseField):
@@ -170,12 +176,13 @@ class ObjcParameter(ObjcBaseField):
     def annotation(self) -> str: return annotation(self.decl.type_ref)
 
 
-class ObjcConstantObjcField(ObjcBaseField):
+class ObjcConstant(ObjcBaseField):
     @cached_property
     def type_decl(self) -> str: return type_decl(self.decl.type_ref)
 
     @cached_property
-    def annotation(self) -> str: return annotation(self.decl.type_ref)
+    def annotation(self) -> str: return " __nonnull" if self.decl.type_ref.type_def.objc.pointer else ""
+
 
 
 class ObjcSymbolicConstantField(ObjcBaseField):

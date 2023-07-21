@@ -104,6 +104,7 @@ TEST_CASE("Cpp.RecordTest") {
             REQUIRE(record.FLOAT_C < 33);
             REQUIRE(record.DOUBLE_C > 64);
             REQUIRE(record.DOUBLE_C < 65);
+            REQUIRE(record.STRING_C == "foo");
 
         }
         THEN("the defined constants should be available via the class type") {
@@ -116,6 +117,7 @@ TEST_CASE("Cpp.RecordTest") {
             REQUIRE(test::record::ConstantTypes::FLOAT_C < 33);
             REQUIRE(test::record::ConstantTypes::DOUBLE_C < 65);
             REQUIRE(test::record::ConstantTypes::DOUBLE_C < 65);
+            REQUIRE(test::record::ConstantTypes::STRING_C == "foo");
         }
     }
 }

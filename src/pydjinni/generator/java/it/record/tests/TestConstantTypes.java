@@ -16,5 +16,6 @@ class TestConstantTypes {
         assertTrue(ConstantTypes.FLOAT_C < 33);
         assertTrue(ConstantTypes.DOUBLE_C > 64);
         assertTrue(ConstantTypes.DOUBLE_C < 65);
+        assertEquals("foo", ConstantTypes.STRING_C);
     }
 }

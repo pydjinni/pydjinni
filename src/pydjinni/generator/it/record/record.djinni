@@ -39,6 +39,7 @@ constant_types = record {
     const long_c: i64 = 64;
     const float_c: f32 = 32.32;
     const double_c: f64 = 64.64;
+    const string_c: string = "foo";
 }
 
 base_record = record +any {

@@ -20,7 +20,7 @@ from .type import (
     ObjcBaseField,
     ObjcInterface,
     ObjcSymbolicConstantField,
-    ObjcConstantObjcField,
+    ObjcConstant,
     ObjcRecord,
     ObjcParameter,
     ObjcFunction
@@ -40,9 +40,9 @@ class ObjcGenerator(Generator):
         Interface.Method: ObjcInterface.ObjcMethod,
         Function: ObjcFunction,
         SymbolicConstantField: ObjcSymbolicConstantField,
-        Constant: ObjcConstantObjcField,
+        Constant: ObjcConstant,
         Record: ObjcRecord,
-        Record.Field: ObjcConstantObjcField,
+        Record.Field: ObjcRecord.ObjcField,
         Parameter: ObjcParameter
     }
     writes_header = True
