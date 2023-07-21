@@ -8,11 +8,14 @@
 {% endblock %}
 
 {% block content %}
+{% if type_def.objc.base_type %}
+@class {{ type_def.objc.derived_name }};
+{% endif %}
 {% if type_def.comment %}
 {{ type_def.objc.comment }}
 {% endif %}
 NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
-@interface {{ type_def.objc.typename }} : NSObject
+@interface {{ type_def.objc.name }} : NSObject
 - (nonnull instancetype){{ type_def.objc.init }}
     {%- for field in type_def.fields -%}
         {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}({{ (field.objc.annotation ~ " ") if field.objc.annotation }}{{ field.objc.type_decl }}){{ field.objc.name }}

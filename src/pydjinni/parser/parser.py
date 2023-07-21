@@ -29,6 +29,7 @@ class IdlParser(PTNodeVisitor):
             self,
             resolver: Resolver,
             targets: list[Target],
+            supported_target_keys: list[str],
             include_dirs: list[Path],
             default_deriving: set[Record.Deriving],
             file_reader: FileReaderWriter,
@@ -40,7 +41,7 @@ class IdlParser(PTNodeVisitor):
         self.idl_parser = ParserPEG(IDL_GRAMMAR_PATH.read_text(), root_rule_name="idl")
         self.resolver = resolver
         self.targets = targets
-        self.target_keys = [target.key for target in self.targets]
+        self.target_keys = supported_target_keys
         self.file_reader = file_reader
         self.include_dirs = include_dirs
         self.default_deriving = default_deriving
@@ -302,6 +303,8 @@ class IdlParser(PTNodeVisitor):
     def visit_targets(self, node, children):
         includes = []
         excludes = []
+        if "+any" in children:
+            includes = self.target_keys
         for item in children:
             if item.startswith('+'):
                 includes.append(item[1:])

@@ -41,8 +41,9 @@ constant_types = record {
     const double_c: f64 = 64.64;
 }
 
-base_record = record +cpp {
+base_record = record +any {
     value: i32;
+    const foo: i32 = 8;
 }
 
 helper = main interface +cpp {
@@ -51,4 +52,5 @@ helper = main interface +cpp {
     static get_optional_types(record: optional_types) -> optional_types;
     static get_binary_types(record: binary_types) -> binary_types;
     static get_cpp_base_record() -> base_record;
+    static get_host_base_record(record: base_record) -> base_record;
 }

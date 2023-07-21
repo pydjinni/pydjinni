@@ -234,6 +234,7 @@ class API:
             parser = IdlParser(
                 resolver=self._resolver,
                 targets=targets,
+                supported_target_keys=list(self._generate_targets.keys()),
                 file_reader=self._file_reader_writer,
                 include_dirs=generate_config.include_dirs,
                 default_deriving=set(generate_config.default_deriving),

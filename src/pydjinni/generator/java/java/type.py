@@ -76,11 +76,15 @@ class JavaRecord(JavaBaseType):
     decl: Record = Field(exclude=True, repr=False)
 
     @cached_property
+    def base_type(self) -> bool:
+        return "java" in self.decl.targets
+
+    @cached_property
     def name(self):
         name = self.decl.name
-        if "java" in self.decl.targets:
+        if self.base_type:
             name += "_base"
-        return name.convert(self.config.identifier.type)
+        return Identifier(name).convert(self.config.identifier.type)
 
     @computed_field
     @cached_property
@@ -91,7 +95,7 @@ class JavaRecord(JavaBaseType):
     @cached_property
     def class_modifier(self):
         output = super().class_modifier
-        if self.config.use_final_for_record:
+        if self.config.use_final_for_record and not self.base_type:
             output += "final "
         return output
 

@@ -10,7 +10,7 @@
 {{ constant_definition(type_def, constant) }}
 {%- endfor %}
 
-@implementation {{ type_def.objc.typename }}
+@implementation {{ type_def.objc.name }}
 
 - (nonnull instancetype){{ type_def.objc.init }}
     {%- for field in type_def.fields -%}
@@ -28,7 +28,7 @@
     {%- for field in type_def.fields -%}
         {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}({{ field.objc.type_decl}}){{ field.objc.name }}
     {%- endfor %} {
-    return [({{ type_def.objc.typename }}*)[self alloc] {{ type_def.objc.init }}
+    return [({{ type_def.objc.name }}*)[self alloc] {{ type_def.objc.init }}
     {%- for field in type_def.fields -%}
         {{ (" " ~ field.objc.name if not loop.first) ~ ":" }}{{ field.objc.name }}
     {%- endfor -%}

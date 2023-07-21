@@ -151,6 +151,15 @@ class CppRecord(CppBaseType):
         else:
             return super().header
 
+    @computed_field
+    @cached_property
+    def source(self) -> Path:
+        if self.base_type:
+            filename = Identifier(self.decl.name + "_base").convert(self.config.identifier.file)
+            return Path(*self.decl.namespace) / f"{filename}.{self.config.source_extension}"
+        else:
+            return super().source
+
     @cached_property
     def derived_header(self) -> Path:
         return Path(*self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}"

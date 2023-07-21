@@ -25,7 +25,9 @@ function(objc_test_case TEST_CASE_NAME)
         )
 
     add_library(${TEST_LIBRARY_NAME}
+        ${objc_GENERATED_HEADERS}
         ${objc_GENERATED_SOURCES}
+        ${objcpp_GENERATED_HEADERS}
         ${objcpp_GENERATED_SOURCES}
     )
     target_include_directories(${TEST_LIBRARY_NAME} PUBLIC ${objc_INCLUDE_DIR} ${objcpp_INCLUDE_DIR} ${objcpp_SOURCE_DIR})

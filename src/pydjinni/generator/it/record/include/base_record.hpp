@@ -2,12 +2,10 @@
 
 namespace test::record {
 struct BaseRecord final : public BaseRecordBase {
+    using BaseRecordBase::BaseRecordBase;
+
     BaseRecord()
     : BaseRecordBase(42)
-    {}
-
-    BaseRecord(int32_t value_)
-    : BaseRecordBase(value_)
     {}
 };
 }

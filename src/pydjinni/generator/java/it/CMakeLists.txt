@@ -29,6 +29,7 @@ function(java_test_case TEST_CASE_NAME)
             generate.java.native_lib:${JNI_TARGET_NAME})
 
     add_library(${JNI_TARGET_NAME} SHARED
+            ${jni_GENERATED_HEADERS}
             ${jni_GENERATED_SOURCES}
             )
     target_include_directories(${JNI_TARGET_NAME} PUBLIC ${jni_INCLUDE_DIR} ${jni_SOURCE_DIR})

@@ -4,7 +4,7 @@
 
 namespace test::record {
 
-PrimitiveTypes Helper::get_primitive_types(const ::test::record::PrimitiveTypes &record) {
+PrimitiveTypes Helper::get_primitive_types(const PrimitiveTypes &record) {
     assert(record.boolean_t == true);
     assert(record.byte_t == 8);
     assert(record.short_t == 16);
@@ -17,7 +17,7 @@ PrimitiveTypes Helper::get_primitive_types(const ::test::record::PrimitiveTypes 
     return record;
 }
 
-CollectionTypes Helper::get_collection_types(const ::test::record::CollectionTypes &record) {
+CollectionTypes Helper::get_collection_types(const CollectionTypes &record) {
     assert(record.int_list.size() == 2);
     assert(record.int_list[0] == 0);
     assert(record.int_list[1] == 1);
@@ -43,7 +43,7 @@ CollectionTypes Helper::get_collection_types(const ::test::record::CollectionTyp
     return record;
 }
 
-OptionalTypes Helper::get_optional_types(const ::test::record::OptionalTypes &record) {
+OptionalTypes Helper::get_optional_types(const OptionalTypes &record) {
     assert(record.int_optional.has_value());
     assert(record.int_optional.value() == 42);
     assert(record.string_optional.has_value());
@@ -51,7 +51,7 @@ OptionalTypes Helper::get_optional_types(const ::test::record::OptionalTypes &re
     return record;
 }
 
-BinaryTypes Helper::get_binary_types(const ::test::record::BinaryTypes &record) {
+BinaryTypes Helper::get_binary_types(const BinaryTypes &record) {
     assert(record.binary_t.size() == 1);
     assert(record.binary_t == std::vector<uint8_t>{0x8F});
     return record;
@@ -59,6 +59,11 @@ BinaryTypes Helper::get_binary_types(const ::test::record::BinaryTypes &record) 
 
 BaseRecord Helper::get_cpp_base_record() {
     return {};
+}
+
+BaseRecord Helper::get_host_base_record(const BaseRecord &record) {
+    assert(record.value == 42);
+    return record;
 }
 
 }

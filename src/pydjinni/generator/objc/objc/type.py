@@ -57,7 +57,8 @@ class ObjcBaseType(BaseModel):
     config: ObjcConfig = Field(exclude=True, repr=False)
 
     @cached_property
-    def name(self) -> str: return self.decl.name.convert(self.config.identifier.type)
+    def name(self) -> str:
+        return f"{self.config.type_prefix}{self.namespace}{self.decl.name.convert(self.config.identifier.type)}"
 
     @computed_field
     @cached_property
@@ -70,10 +71,10 @@ class ObjcBaseType(BaseModel):
 
     @computed_field
     @cached_property
-    def header(self) -> Path: return Path(f"{self.typename}.{self.config.header_extension}")
+    def header(self) -> Path: return Path(f"{self.name}.{self.config.header_extension}")
 
     @cached_property
-    def source(self) -> Path: return Path(f"{self.typename}.{self.config.source_extension}")
+    def source(self) -> Path: return Path(f"{self.name}.{self.config.source_extension}")
 
     @computed_field
     @cached_property
@@ -116,13 +117,34 @@ class ObjcRecord(ObjcBaseClassType):
     decl: Record = Field(exclude=True, repr=False)
 
     @cached_property
+    def name(self) -> str:
+        if self.base_type:
+            return f"{self.config.type_prefix}{self.namespace}{Identifier(f'{self.decl.name}_base').convert(self.config.identifier.type)}"
+        else:
+            return super().typename
+
+    @cached_property
+    def derived_name(self) -> str:
+        return f"{self.config.type_prefix}{self.namespace}{self.decl.name.convert(self.config.identifier.type)}"
+
+    @cached_property
+    def derived_header(self) -> Path:
+        return Path(f"{self.derived_name}.{self.config.header_extension}")
+
+    @cached_property
+    def base_type(self) -> bool:
+        return "objc" in self.decl.targets
+
+
+    @cached_property
     def init(self) -> str:
         return Identifier(f"init_with_{self.decl.fields[0].name}").convert(self.config.identifier.method) \
             if self.decl.fields else "init"
 
     @cached_property
     def convenience_init(self) -> str:
-        return Identifier(f"{self.decl.name}_with_{self.decl.fields[0].name}").convert(self.config.identifier.method) \
+        name = f"{self.decl.name}_base" if self.base_type else self.decl.name
+        return Identifier(f"{name}_with_{self.decl.fields[0].name}").convert(self.config.identifier.method) \
             if self.decl.fields else self.decl.name.convert(self.config.identifier.method)
 
 

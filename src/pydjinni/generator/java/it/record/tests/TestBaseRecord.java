@@ -13,4 +13,11 @@ class TestBaseRecord {
         assertEquals(42, record.getValue());
     }
 
+    @Test
+    void testJavaBaseRecord() {
+        var record = new BaseRecord();
+        var returned_record = Helper.getHostBaseRecord(record);
+        assertEquals(42, returned_record.getValue());
+    }
+
 }
