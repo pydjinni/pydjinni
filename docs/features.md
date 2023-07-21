@@ -72,6 +72,40 @@ class Main {
 }
 ```
 
+### Functions { .new-badge }
+
+Functions can be passed to and returned from interface methods.
+They are represented by [`std::function`](https://en.cppreference.com/w/cpp/utility/functional/function){target=blank} in C++, 
+[`@FunctionalInterface`](https://docs.oracle.com/javase/8/docs/api/java/lang/FunctionalInterface.html){target=blank} in Java and 
+[`blocks`](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/WorkingwithBlocks/WorkingwithBlocks.html){target=blank} in Objective-C.
+
+Functions can either be defined like a type, or can be defined inline where they are needed as anonymous functions:
+
+
+```djinni
+named_func = function (input: i32) -> bool;
+
+foo = interface {
+    register_callback(callback: named_func);
+    register_anonymous_callback(callback: (input: i32) -> bool);
+}
+```
+
+There is a short and a long form for defining functions.
+The long form allows target flags to be added in order to optimize the generated code:
+
+```djinni
+function -cpp (input: i32) -> bool; # This function will never be implemented in C++
+```
+
+The short form doesn't allow for code optimization, but in return is a lot more brief. The following is a valid function
+taking no parameter and returning nothing:
+```djinni
+();
+```
+
+That's cool, right? 😎
+
 ### Properties { .new-badge }
 
 When designing an interface, the `property` descriptor can be used to define values that support a mechanism of
