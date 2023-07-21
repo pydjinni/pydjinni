@@ -1,5 +1,6 @@
 #include "helper.hpp"
 #include <cassert>
+#include <stdexcept>
 
 using namespace test::function;
 
