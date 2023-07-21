@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from typing import Annotated
 
@@ -34,7 +34,7 @@ class JavaConfig(BaseModel):
         description="The output folder for the generated files."
     )
 
-    class ClassAccessModifier(str, Enum):
+    class ClassAccessModifier(StrEnum):
         public = 'public'
         package = 'package'
 

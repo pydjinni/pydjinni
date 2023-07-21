@@ -1,24 +1,25 @@
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import comment, return_type, attributes, constant_declaration %}
+{% from "macros.jinja2" import constant_declaration %}
 
 {% block header %}
 #pragma once
-
 #include <memory>
 {% endblock %}
 
 {% block content %}
-{{ comment(type_def) }}
+{% if type_def.comment %}
+{{ type_def.cpp.comment }}
+{% endif %}
 class {{ type_def.cpp.name }} {
 public:
-    virtual ~{{ type_def.cpp.name }}() {}
-
 {% for constant in type_def.constants -%}
     {{ constant_declaration(constant) }}
 {%- endfor %}
 {% for method in type_def.methods %}
-    {{ comment(method) }}
-    {{ attributes(method) }} {{ method.cpp.type_spec }} {{ method.cpp.name }}(
+    {% if method.comment %}
+    {{ method.cpp.comment | indent(4) }}
+    {% endif %}
+    {{ method.cpp.attribute }} {{ method.cpp.type_spec }} {{ method.cpp.name }}(
     {%- for parameter in method.parameters -%}
         {{ parameter.cpp.type_spec }} {{ parameter.cpp.name ~ (", " if not loop.last) }}
     {%- endfor -%}

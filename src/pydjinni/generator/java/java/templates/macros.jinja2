@@ -1,9 +1,3 @@
-{% macro comment(def, indentation=4) %}
-{%- if def.comment -%}
-{{ def.java.comment | indent(indentation) }}
-{%- endif -%}
-{% endmacro %}
-
 {%- macro return_type(type_ref) -%}
 {{ data_type(type_ref) if type_ref else "void" }}
 {%- endmacro -%}
@@ -27,7 +21,9 @@
 {% endmacro %}
 
 {% macro constant_def(constant) %}
-    {{ comment(constant) }}
+    {% if constant.comment %}
+    {{ constant.java.comment }}
+    {% endif %}
     public static final {{ constant.type_ref.type_def.java.typename }} {{ constant.java.name }} = {{ value_def(constant.value, constant.type_ref.type_def) }};
 {% endmacro %}
 

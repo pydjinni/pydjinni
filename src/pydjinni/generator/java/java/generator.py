@@ -2,7 +2,13 @@ from pathlib import Path
 
 from pydjinni.generator.generator import Generator
 from pydjinni.parser.ast import Enum, Flags, Record, Interface, Function
-from pydjinni.parser.base_models import BaseType, BaseField, SymbolicConstantField, Constant
+from pydjinni.parser.base_models import (
+    BaseType,
+    ClassType,
+    BaseField,
+    SymbolicConstantField,
+    Constant
+)
 from .config import JavaConfig
 from .type import (
     JavaExternalType,
@@ -32,6 +38,7 @@ class JavaGenerator(Generator):
         BaseField: JavaBaseField,
         SymbolicConstantField: JavaSymbolicConstantField,
         Constant: JavaConstant,
+        Interface: JavaInterface,
         Interface.Method: JavaInterface.JavaMethod
     }
     writes_source = True

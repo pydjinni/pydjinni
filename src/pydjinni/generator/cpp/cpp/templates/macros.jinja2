@@ -1,9 +1,3 @@
-{% macro comment(def, indentation=4) %}
-{%- if def.comment -%}
-{{ def.cpp.comment | indent(indentation) }}
-{%- endif -%}
-{% endmacro %}
-
 {% macro value_def(value, type_def) %}
 {%- if value is string -%}"{{ value }}"
 {%- elif value is boolean %}{{ "true" if value else "false" }}
@@ -17,26 +11,12 @@
 {% endmacro %}
 
 {% macro constant_declaration(constant) %}
-    {{ comment(constant)}}
+    {% if constant.comment %}
+    {{ constant.cpp.comment | indent(4) }}
+    {% endif %}
     static const {{ constant.type_ref.type_def.cpp.typename }} {{ constant.cpp.name }};
 {% endmacro %}
 
 {% macro constant_definition(type_def, constant) %}
     const {{ constant.type_ref.type_def.cpp.typename }} {{ type_def.cpp.name }}::{{ constant.cpp.name }} = {{ value_def(constant.value, constant.type_ref.type_def) }};
-{% endmacro %}
-
-{% macro return_type(method) %}
-    {%- if method.return_type_ref -%}
-        {%- if method.return_type_ref.type_def is shared_ptr -%}
-            std::shared_ptr<{{ method.return_type_ref.type_def.cpp.typename }}>
-        {%- else -%}
-            {{ method.return_type_ref.type_def.cpp.typename }}
-        {%- endif -%}
-    {%- else -%}
-        void
-    {%- endif -%}
-{% endmacro %}
-
-{% macro attributes(method) %}
-    {{- "static" if method.static else "virtual" -}}
 {% endmacro %}

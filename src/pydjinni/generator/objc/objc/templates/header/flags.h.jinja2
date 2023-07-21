@@ -3,7 +3,9 @@
 {% set counter = namespace(value=0) %}
 
 {% block content %}
+{% if type_def.comment %}
 {{ type_def.objc.comment }}
+{% endif %}
 NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
 typedef NS_OPTIONS(NSUInteger, {{ type_def.objc.typename }}) {
 {% for flag in type_def.flags %}

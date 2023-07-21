@@ -1,15 +1,17 @@
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import comment, constant_def, data_type, return_type, parameters %}
+{% from "macros.jinja2" import constant_def, data_type, return_type, parameters %}
 
 {% block header %}
-{% if type_def.cpp.proxy -%}
+{% if type_def.cpp.proxy %}
 import java.util.concurrent.atomic.AtomicBoolean;
 {% endif %}
 {% endblock %}
 
 {% block content %}
-{{ comment(type_def, indentation=0) }}
-{{ config.class_access_modifier.value }} abstract class {{ type_def.java.name }} {
+{% if type_def.comment %}
+{{ type_def.java.comment }}
+{% endif %}
+{{ type_def.java.class_modifier }}abstract class {{ type_def.java.name }} {
     {% if type_def.main and config.native_lib %}
     static {
         new {{ config.package|join('.') }}.native_lib.{{ config.native_lib }}Loader();
@@ -19,7 +21,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
     {{- constant_def(constant) }}
     {% endfor %}
     {% for method in type_def.methods %}
-    {{ comment(method) }}
+    {% if method.comment %}
+    {{ method.java.comment | indent(4) }}
+    {% endif %}
     public {{ "static" if method.static else "abstract" }} {{ return_type(method.return_type_ref) }} {{ method.java.name }}({{ parameters(method) }})
     {%- if method.static -%}
     {
@@ -43,7 +47,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
             if (nativeRef == 0) throw new RuntimeException("nativeRef is zero");
             this.nativeRef = nativeRef;
         }
-
         private native void nativeDestroy(long nativeRef);
         public void _djinni_private_destroy()
         {
@@ -56,9 +59,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
             _djinni_private_destroy();
             super.finalize();
         }
-
         {% for method in type_def.methods %}
-
         {% if method.static %}
         public static native {{ return_type(method.return_type_ref) }} {{ method.java.name }}({{ parameters(method) }});
         {% else %}
@@ -70,7 +71,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
         private native {{ return_type(method.return_type_ref) }} native_{{ method.java.name }}(long _nativeRef{{ (", " if method.parameters) ~ parameters(method) }});
         {% endif %}
         {% endfor %}
-
     }
     {% endif %}
 }

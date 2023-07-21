@@ -99,6 +99,7 @@ class CppInterface(CppBaseType):
     def by_value(self) -> bool: return False
 
     class CppMethod(CppBaseField):
+        decl: Interface.Method = Field(exclude=True, repr=False)
         @computed_field
         @cached_property
         def name(self) -> str: return self.decl.name.convert(self.config.identifier.method)
@@ -106,6 +107,8 @@ class CppInterface(CppBaseType):
         @cached_property
         def type_spec(self): return type_specifier(self.decl.return_type_ref)
 
+        @cached_property
+        def attribute(self): return "static" if self.decl.static else "virtual"
 
 class CppRecord(CppBaseType):
     @computed_field

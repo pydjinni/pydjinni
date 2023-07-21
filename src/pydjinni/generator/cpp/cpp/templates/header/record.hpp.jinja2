@@ -3,21 +3,23 @@
 
 {% block header %}
 #pragma once
-
 #include <algorithm>
 {% endblock %}
 
 {% block content %}
-{{ comment(type_def) }}
+{% if type_def.comment %}
+{{ type_def.cpp.comment }}
+{% endif %}
 struct {{ type_def.cpp.name }} final {
 {% for constant in type_def.constants -%}
     {{ constant_declaration(constant) }}
 {%- endfor %}
 {% for field in type_def.fields %}
-    {{ comment(field) }}
+    {% if field.comment %}
+    {{ field.cpp.comment | indent(4) }}
+    {% endif %}
     {{ field.cpp.type_spec }} {{ field.cpp.name }};
 {% endfor %}
-
     {{ type_def.cpp.name }}(
     {%- for field in type_def.fields %}
         {{- field.cpp.type_spec }} {{ field.cpp.name ~ "_" ~ (", " if not loop.last) }}

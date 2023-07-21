@@ -8,7 +8,9 @@
 {% endblock %}
 
 {% block content %}
+{% if type_def.comment %}
 {{ type_def.objc.comment }}
+{% endif %}
 NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
 {% if "objc" in type_def.targets %}
 @protocol {{ type_def.objc.typename }} {{ "<NSObject>" if config.strict_protocols }}

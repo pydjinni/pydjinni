@@ -71,7 +71,7 @@ class BaseType(BaseExternalType, extra='allow'):
 class BaseField(BaseModel, extra='allow'):
     name: Identifier
     position: Position = Position()
-    comment: list[str] | None = None
+    comment: str | None = None
 
 
 class Assignment(BaseModel):

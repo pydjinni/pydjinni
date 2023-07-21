@@ -1,9 +1,3 @@
-{% macro comment(def, indentation=4) %}
-{%- if def.comment -%}
-{{ def.objc.comment | indent(indentation) }}
-{%- endif -%}
-{% endmacro %}
-
 {% macro value_def(value, type_def) %}
 {%- if value is string -%}@"{{ value }}"
 {%- elif value is boolean %}{{ "YES" if value else "NO" }}
@@ -18,7 +12,9 @@
 
 
 {% macro constant_declaration(type_def, constant) %}
-{{ comment(constant)}}
+{% if constant.comment %}
+{{ constant.objc.comment }}
+{% endif %}
 extern const {{ constant.type_ref.type_def.objc.typename }} {{ type_def.objc.typename }}{{ constant.objc.name|title }};
 {% endmacro %}
 

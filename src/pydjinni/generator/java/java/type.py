@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field, computed_field
 from pydjinni.generator.java.java.comment_renderer import JavaDocCommentRenderer
 from pydjinni.generator.java.java.config import JavaConfig
 from pydjinni.parser.ast import Record, Function
-from pydjinni.parser.base_models import BaseType, BaseField
+from pydjinni.parser.base_models import BaseType, BaseField, ClassType
 from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
@@ -52,6 +52,13 @@ class JavaBaseType(BaseModel):
     @cached_property
     def comment(self): return mistletoe.markdown(self.decl.comment, JavaDocCommentRenderer) if self.decl.comment else ''
 
+    @cached_property
+    def class_modifier(self):
+        output = ""
+        if self.config.class_access_modifier == JavaConfig.ClassAccessModifier.public:
+            output += "public "
+        return output
+
 
 class JavaBaseField(BaseModel):
     decl: BaseField = Field(exclude=True, repr=False)
@@ -81,9 +88,23 @@ class JavaRecord(JavaBaseType):
         name = self.decl.name.convert(self.config.identifier.type)
         return f"{self.package}.{name}"
 
+    @cached_property
+    def class_modifier(self):
+        output = super().class_modifier
+        if self.config.use_final_for_record:
+            output += "final "
+        return output
+
     class JavaField(JavaBaseField):
         @cached_property
         def getter(self): return Identifier(f"get_{self.decl.name}").convert(self.config.identifier.method)
+
+        @cached_property
+        def field_modifier(self):
+            output = ""
+            if self.config.use_final_for_record:
+                output += "final "
+            return output
 
 
 class JavaFlags(JavaBaseType):
@@ -115,7 +136,7 @@ class JavaConstant(JavaBaseField):
     def name(self) -> str: return self.decl.name.convert(self.config.identifier.const)
 
 
-class JavaInterface(BaseType):
+class JavaInterface(JavaBaseType):
 
     class JavaMethod(JavaBaseField):
         @computed_field

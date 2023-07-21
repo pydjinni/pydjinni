@@ -21,7 +21,7 @@ object          = '{' ((assignment ',')* assignment)? '}'
 assignment      = identifier '=' value
 field           = comment? identifier ':' type_ref ';'
 method          = comment? 'static'? 'const'? identifier '(' ((parameter ',')* parameter)? ')' ('->' type_ref)? ';'
-parameter       = comment? identifier ':' type_ref
+parameter       = identifier ':' type_ref
 targets         = (r'\+[a-z]+'/r'-[a-z]+')+
 property        = comment? 'property' identifier ':' type_ref ';'
 item            = comment? identifier ';'

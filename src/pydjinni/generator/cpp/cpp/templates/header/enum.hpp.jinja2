@@ -1,17 +1,19 @@
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import comment %}
 
 {% block header %}
 #pragma once
 {% endblock %}
 
 {% block content %}
-{{ comment(type_def) }}
+{% if type_def.comment %}
+{{ type_def.cpp.comment }}
+{% endif %}
 enum class {{ type_def.cpp.name }} : int {
 {% for item in type_def.items %}
-    {{ comment(item) }}
+    {% if item.comment %}
+    {{ item.cpp.comment | indent(4) }}
+    {% endif %}
     {{ item.cpp.name ~ ("," if not loop.last) }}
 {% endfor %}
 };
-
 {% endblock %}

@@ -1,5 +1,5 @@
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import comment, return_type, parameters %}
+{% from "macros.jinja2" import return_type, parameters %}
 
 {% block header %}
 {% if type_def.cpp.proxy -%}
@@ -8,12 +8,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 {% endblock %}
 
 {% block content %}
-{{ comment(type_def, indentation=0) }}
+{% if type_def.comment %}
+{{ type_def.java.comment }}
+{% endif %}
 @FunctionalInterface
-public interface {{ type_def.java.name }} {
+{{ type_def.java.class_modifier }}interface {{ type_def.java.name }} {
     {{ return_type(type_def.return_type_ref) }} invoke({{ parameters(type_def) }});
 }
-
 
 {% if type_def.cpp.proxy %}
 final class {{ type_def.java.name }}CppProxy implements {{ type_def.java.name }} {

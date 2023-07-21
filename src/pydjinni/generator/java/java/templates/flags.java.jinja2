@@ -1,11 +1,14 @@
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import comment %}
 
 {% block content %}
-{{ comment(type_def, indentation=0) }}
+{% if type_def.comment %}
+{{ type_def.java.comment }}
+{% endif %}
 public enum {{ type_def.java.name }} {
 {% for flag in type_def.flags if not flag.none and not flag.all %}
-    {{ comment(flag) }}
+    {% if flag.comment %}
+    {{ flag.java.comment | indent(4) }}
+    {% endif %}
     {{ flag.java.name ~ (";" if loop.last else ",") }}
 {% endfor %}
 }

@@ -292,7 +292,6 @@ class IdlParser(PTNodeVisitor):
     def visit_parameter(self, node, children):
         return Parameter(
             name=unpack(children.identifier),
-            comment=unpack(children.comment),
             position=self._position(node),
             type_ref=unpack(children.type_ref)
         )
