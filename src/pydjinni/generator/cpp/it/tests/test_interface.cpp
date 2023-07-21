@@ -1,4 +1,5 @@
 #include "catch2/catch_test_macros.hpp"
+#include "catch2/matchers/catch_matchers_exception.hpp"
 #include "calculator.hpp"
 #include "platform_interface.hpp"
 
@@ -24,6 +25,11 @@ TEST_CASE("Cpp.InterfaceTest") {
                 THEN("the expected result should be given") {
                     REQUIRE(result == 5);
                 }
+            }
+        }
+        WHEN("calling a method that throws an exception") {
+            THEN("the exception should be received") {
+                REQUIRE_THROWS_MATCHES(calculator->throwing_exception(), std::runtime_error, Catch::Matchers::Message("shit hit the fan"));
             }
         }
     }

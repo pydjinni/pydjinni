@@ -35,4 +35,10 @@ class TestFunction {
         assertTrue(result);
     }
 
+    @Test
+    void testCppFunctionThrowingException() {
+        var function = Helper.cppFunctionThrowingException();
+        Exception exception = assertThrows(RuntimeException.class, () -> function.invoke());
+        assertTrue(exception.getMessage().equals("shit hit the fan"));
+    }
 }

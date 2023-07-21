@@ -32,5 +32,10 @@
     XCTAssertTrue(result);
 }
 
+- (void)testCppFunctionThrowingException {
+    void(^block)() = [Helper cppFunctionThrowingException];
+    XCTAssertThrowsSpecificNamed(block(), NSException, @"shit hit the fan");
+};
+
 
 @end

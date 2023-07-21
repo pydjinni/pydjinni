@@ -14,3 +14,7 @@ int8_t CalculatorImpl::get_platform_value(const std::shared_ptr<PlatformInterfac
 }
 
 void CalculatorImpl::no_parameters_no_return() {}
+
+void CalculatorImpl::throwing_exception() {
+    throw std::runtime_error("shit hit the fan");
+}

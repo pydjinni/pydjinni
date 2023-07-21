@@ -5,13 +5,19 @@
 @end
 
 @interface InterfaceTests : XCTestCase
+
+@property (nonatomic, strong) Calculator * calculator;
+
 @end
 
 @implementation InterfaceTests
 
+- (void)setUp {
+    self.calculator = [Calculator getInstance];
+}
+
 - (void)testCalculator {
-    Calculator* calculator = [Calculator getInstance];
-    int8_t result = [calculator add:40 b:2];
+    int8_t result = [self.calculator add:40 b:2];
     XCTAssertEqual(result, 42, @"The calculator has returned an unexpected value");
 }
 
@@ -20,15 +26,17 @@
 }
 
 - (void)testPlatformImplementation {
-    Calculator* calculator = [Calculator getInstance];
     PlatformImplementation* implementation = [[PlatformImplementation alloc] init];
-    int8_t result = [calculator getPlatformValue:implementation];
+    int8_t result = [self.calculator getPlatformValue:implementation];
     XCTAssertEqual(result, 5, @"The result from the Objective-C implementation was not as expected");
 }
 
 - (void)testMethodNoParametersNoReturn {
-    Calculator* calculator = [Calculator getInstance];
-    [calculator noParametersNoReturn];
+    [self.calculator noParametersNoReturn];
+}
+
+- (void)testMethodThrowingException {
+    XCTAssertThrowsSpecificNamed([self.calculator throwingException], NSException, @"shit hit the fan");
 }
 
 @end

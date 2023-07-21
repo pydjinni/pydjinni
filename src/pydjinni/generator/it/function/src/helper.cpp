@@ -22,3 +22,9 @@ std::function<bool(int32_t)> Helper::cpp_anonymous_function() {
         return input == 42;
     };
 }
+
+std::function<void()> Helper::cpp_function_throwing_exception() {
+    return [](){
+        throw std::runtime_error("shit hit the fan");
+    };
+}

@@ -1,13 +1,19 @@
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import test.interface_test.Calculator;
 import test.interface_test.PlatformInterface;
 
 class TestInterface {
+    Calculator calculator;
+
+    @BeforeEach
+    void setup() {
+        calculator = Calculator.getInstance();
+    }
+
     @Test
     void testCalculator() {
-        var calculator = Calculator.getInstance();
         var result = calculator.add((byte)40, (byte)2);
         assertEquals(result, 42);
     }
@@ -20,7 +26,6 @@ class TestInterface {
 
     @Test
     void testPlatformImplementation() {
-        var calculator = Calculator.getInstance();
         var result = calculator.getPlatformValue(new PlatformInterface() {
             public byte getValue() {
                 return 5;
@@ -30,8 +35,13 @@ class TestInterface {
 
     @Test
     void testMethodNoParametersNoReturn() {
-        var calculator = Calculator.getInstance();
         calculator.noParametersNoReturn();
+    }
+
+    @Test
+    void testMethodThrowingException() {
+        Exception exception = assertThrows(RuntimeException.class, () -> calculator.throwingException());
+        assertTrue(exception.getMessage().equals("shit hit the fan"));
     }
 
 }

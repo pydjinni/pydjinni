@@ -8,4 +8,5 @@ calculator = main interface +cpp {
     const a: i8 = 5;
     get_platform_value(platform: platform_interface) -> i8;
     no_parameters_no_return();
+    throwing_exception();
 }

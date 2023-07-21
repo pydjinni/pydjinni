@@ -5,4 +5,5 @@ helper = main interface +cpp {
     static anonymous_function(callback: (param: i32) -> bool);
     static cpp_named_function() -> named_function;
     static cpp_anonymous_function() -> (param: i32) -> bool;
+    static cpp_function_throwing_exception() -> ();
 }

@@ -78,7 +78,7 @@ def type_signature(parameters: list[Parameter], return_type_ref: TypeReference):
             parameter_type_signatures += parameter.type_ref.type_def.jni.boxed_type_signature
         else:
             parameter_type_signatures += parameter.type_ref.type_def.jni.type_signature
-    return_type_signature = ""
+    return_type_signature = "V"
     if return_type_ref:
         if return_type_ref.optional:
             return_type_signature = return_type_ref.type_def.jni.boxed_type_signature

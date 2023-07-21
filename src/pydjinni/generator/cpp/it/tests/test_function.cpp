@@ -1,4 +1,5 @@
 #include "catch2/catch_test_macros.hpp"
+#include "catch2/matchers/catch_matchers_exception.hpp"
 #include "helper.hpp"
 
 TEST_CASE("Cpp.FunctionTest") {
@@ -31,6 +32,14 @@ TEST_CASE("Cpp.FunctionTest") {
             auto result = lambda(42);
             THEN("true should be returned") {
                 REQUIRE(result == true);
+            }
+        }
+    }
+    GIVEN("a function returned by the helper that throws an excption") {
+        auto lambda = test::function::Helper::cpp_function_throwing_exception();
+        WHEN("calling the lambda") {
+            THEN("an exception should be thrown") {
+                REQUIRE_THROWS_MATCHES(lambda(), std::runtime_error, Catch::Matchers::Message("shit hit the fan"));
             }
         }
     }
