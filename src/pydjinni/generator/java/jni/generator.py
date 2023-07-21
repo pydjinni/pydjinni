@@ -46,12 +46,12 @@ class JniGenerator(Generator):
         self.write_header("header/flags.hpp.jinja2", type_def=type_def)
 
     def generate_record(self, type_def: Record):
-        self.write_header("header/record.hpp", type_def=type_def)
-        self.write_source("source/record.cpp", type_def=type_def)
+        self.write_header("header/record.hpp.jinja2", type_def=type_def)
+        self.write_source("source/record.cpp.jinja2", type_def=type_def)
 
     def generate_interface(self, type_def: Interface):
-        self.write_header("header/interface.hpp", type_def=type_def)
-        self.write_source("source/interface.cpp", type_def=type_def)
+        self.write_header("header/interface.hpp.jinja2", type_def=type_def)
+        self.write_source("source/interface.cpp.jinja2", type_def=type_def)
 
     def generate_function(self, type_def: Function):
         self.write_header("header/function.hpp.jinja2", type_def=type_def)

@@ -1,5 +1,5 @@
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import translator, return_type %}
+{% from "macros.jinja2" import translator %}
 
 {% block header %}
 #include <memory>
@@ -72,7 +72,7 @@ CJNIEXPORT void JNICALL {{ type_def.jni.jni_prefix }}_nativeDestroy(JNIEnv* jniE
     });
 }
 
-CJNIEXPORT {{ return_type(type_def) }} JNICALL {{ type_def.jni.jni_prefix }}CppProxy_native_1invoke(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef
+CJNIEXPORT {{ type_def.jni.return_type_spec }} JNICALL {{ type_def.jni.jni_prefix }}CppProxy_native_1invoke(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef
     {%- for parameter in type_def.parameters -%}
     , {{ parameter.type_ref.type_def.jni.typename.value }} {{ parameter.jni.name }}
     {%- endfor -%}

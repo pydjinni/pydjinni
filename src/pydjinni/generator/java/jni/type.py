@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import StrEnum
 from functools import cached_property
 from pathlib import Path
 
@@ -9,7 +9,7 @@ from pydjinni.parser.ast import Interface, Parameter, Function
 from pydjinni.parser.base_models import BaseType, BaseField, TypeReference
 
 
-class NativeType(str, Enum):
+class NativeType(StrEnum):
     object = 'jobject'
     string = 'jstring'
     boolean = 'jboolean'
@@ -53,9 +53,9 @@ def get_field_accessor(type_ref: TypeReference) -> str:
 def get_typename(type_ref: TypeReference) -> str:
     if type_ref:
         if type_ref.optional and type_ref.type_def.jni.typename not in [NativeType.string, NativeType.byte_array]:
-            return NativeType.object.value
+            return NativeType.object
         else:
-            return type_ref.type_def.jni.typename.value
+            return type_ref.type_def.jni.typename
     else:
         return ""
 
@@ -85,6 +85,7 @@ def type_signature(parameters: list[Parameter], return_type_ref: TypeReference):
         else:
             return_type_signature = return_type_ref.type_def.jni.type_signature
     return f"({parameter_type_signatures}){return_type_signature}"
+
 
 class JniBaseType(BaseModel):
     decl: BaseType = Field(exclude=True, repr=False)
@@ -148,6 +149,10 @@ class JniFunction(JniBaseType):
     @cached_property
     def type_signature(self) -> str: return type_signature(self.decl.parameters, self.decl.return_type_ref)
 
+    @cached_property
+    def return_type_spec(self) -> str:
+        return self.decl.return_type_ref.type_def.jni.typename if self.decl.return_type_ref else "void"
+
 
 class JniBaseField(BaseModel):
     decl: BaseField = Field(exclude=True, repr=False)
@@ -178,6 +183,10 @@ class JniInterface(JniBaseType):
 
         @cached_property
         def routine_name(self) -> str: return routine_name(self.decl.return_type_ref)
+
+        @cached_property
+        def return_type_spec(self) -> str:
+            return self.decl.return_type_ref.type_def.jni.typename if self.decl.return_type_ref else "void"
 
 
 class JniParameter(JniBaseField):
