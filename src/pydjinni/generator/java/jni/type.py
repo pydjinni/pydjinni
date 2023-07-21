@@ -1,4 +1,7 @@
-from enum import StrEnum
+try:
+    from enum import StrEnum
+except ImportError:
+    from strenum import StrEnum  # Fallback for python < 3.11
 from functools import cached_property
 from pathlib import Path
 
