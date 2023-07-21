@@ -7,10 +7,13 @@
 {% endblock %}
 
 {% block content %}
+{% if type_def.cpp.base_type %}
+struct {{ type_def.cpp.derived_name }};
+{% endif %}
 {% if type_def.comment %}
 {{ type_def.cpp.comment }}
 {% endif %}
-struct {{ type_def.cpp.name }} final {
+struct {{ type_def.cpp.name }}{{ " final" if not type_def.cpp.base_type }} {
 {% for constant in type_def.constants -%}
     {{ constant_declaration(constant) }}
 {%- endfor %}

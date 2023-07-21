@@ -41,9 +41,14 @@ constant_types = record {
     const double_c: f64 = 64.64;
 }
 
+base_record = record +cpp {
+    value: i32;
+}
+
 helper = main interface +cpp {
     static get_primitive_types(record: primitive_types) -> primitive_types;
     static get_collection_types(record: collection_types) -> collection_types;
     static get_optional_types(record: optional_types) -> optional_types;
     static get_binary_types(record: binary_types) -> binary_types;
+    static get_cpp_base_record() -> base_record;
 }

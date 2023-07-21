@@ -4,7 +4,7 @@
 #pragma once
 
 #include "pydjinni/jni/support.hpp"
-#include {{ type_def.cpp.header | quote }}
+#include {{ (type_def.cpp.derived_header if type_def.cpp.base_type else type_def.cpp.header) | quote }}
 {% endblock %}
 
 {% block content %}

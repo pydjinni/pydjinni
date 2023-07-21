@@ -1,4 +1,5 @@
 #include "helper.hpp"
+#include "base_record.hpp"
 #include <cassert>
 
 namespace test::record {
@@ -54,6 +55,10 @@ BinaryTypes Helper::get_binary_types(const ::test::record::BinaryTypes &record) 
     assert(record.binary_t.size() == 1);
     assert(record.binary_t == std::vector<uint8_t>{0x8F});
     return record;
+}
+
+BaseRecord Helper::get_cpp_base_record() {
+    return {};
 }
 
 }

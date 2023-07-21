@@ -8,6 +8,7 @@ from pydjinni.generator.cpp.cpp.comment_renderer import DoxygenCommentRenderer
 from pydjinni.generator.cpp.cpp.config import CppConfig
 from pydjinni.parser.ast import Parameter, Record, Interface
 from pydjinni.parser.base_models import BaseType, BaseField, TypeReference, BaseExternalType, Constant
+from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
 class CppExternalType(BaseModel):
@@ -54,12 +55,16 @@ class CppBaseType(BaseModel):
 
     @computed_field
     @cached_property
-    def typename(self) -> str: return f"::{self.namespace}::{self.name}"
+    def typename(self) -> str:
+        output = f"::{self.name}"
+        if self.namespace:
+            output = f"::{self.namespace}{output}"
+        return output
 
     @computed_field
     @cached_property
-    def header(self) -> Path: return Path(
-        *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}"
+    def header(self) -> Path:
+        return Path(*self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}"
 
     @cached_property
     def source(self): return Path(
@@ -111,9 +116,44 @@ class CppInterface(CppBaseType):
         def attribute(self): return "static" if self.decl.static else "virtual"
 
 class CppRecord(CppBaseType):
+    decl: Record = Field(exclude=True, repr=False)
     @computed_field
     @cached_property
     def by_value(self) -> bool: return False
+
+    @cached_property
+    def base_type(self) -> bool: return "cpp" in self.decl.targets
+
+    @cached_property
+    def derived_name(self) -> str: return Identifier(self.decl.name).convert(self.config.identifier.type)
+
+    @cached_property
+    def name(self):
+        if self.base_type:
+            return Identifier(f"{self.decl.name}_base").convert(self.config.identifier.type)
+        else:
+            return super().name
+
+    @computed_field
+    @cached_property
+    def typename(self) -> str:
+        output = f"::{self.derived_name}"
+        if self.namespace:
+            output = f"::{self.namespace}{output}"
+        return output
+
+    @computed_field
+    @cached_property
+    def header(self) -> Path:
+        if self.base_type:
+            filename = Identifier(self.decl.name + "_base").convert(self.config.identifier.file)
+            return Path(*self.decl.namespace) / f"{filename}.{self.config.header_extension}"
+        else:
+            return super().header
+
+    @cached_property
+    def derived_header(self) -> Path:
+        return Path(*self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}"
 
     class CppField(CppBaseField):
         decl: Record.Field = Field(exclude=True, repr=False)

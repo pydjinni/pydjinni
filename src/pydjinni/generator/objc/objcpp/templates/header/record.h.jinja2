@@ -5,7 +5,7 @@
 #import {{ header }}
 {% endfor %}
 #import {{ type_def.objc.header | quote }}
-#include {{ type_def.cpp.header | quote }}
+#include {{ (type_def.cpp.derived_header if type_def.cpp.base_type else type_def.cpp.header) | quote }}
 
 static_assert(__has_feature(objc_arc), "PyDjinni requires ARC to be enabled for this file");
 

@@ -11,7 +11,7 @@ from pydjinni.parser.base_models import BaseExternalType, Position
 
 
 class Resolver:
-    class TypeResolvingException(ApplicationException, code=180):
+    class TypeResolvingException(ApplicationException, code=170):
         """Type resolving error"""
 
 
