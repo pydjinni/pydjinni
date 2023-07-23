@@ -17,7 +17,6 @@ class JavaIdentifierStyle(BaseModel):
     type: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.pascal
     method: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.camel
     package: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.snake
-    const: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.train
 
 
 Package = Annotated[

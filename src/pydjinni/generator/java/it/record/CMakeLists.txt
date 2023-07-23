@@ -10,6 +10,5 @@ java_test_case(RecordTest
         tests/TestCollectionTypes.java
         tests/TestOptionalTypes.java
         tests/TestBinaryTypes.java
-        tests/TestConstantTypes.java
         tests/TestBaseRecord.java
 )

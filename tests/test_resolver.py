@@ -94,7 +94,7 @@ def test_load_external_type(tmp_path: Path):
     file = tmp_path / "my_type.yaml"
     file.write_text(yaml.dump({
         'name': 'bar',
-        'primitive': 'int',
+        'primitive': 'record',
         'foo': 5
     }))
 
@@ -110,6 +110,7 @@ def test_load_external_type(tmp_path: Path):
     # THEN the type reference should contain a reference to the external type
     assert type_def.name == "bar"
     assert type_def.foo == 5
+    assert type_def.primitive == BaseExternalType.Primitive.record
 
 
 def test_load_invalid_external_type(tmp_path: Path):

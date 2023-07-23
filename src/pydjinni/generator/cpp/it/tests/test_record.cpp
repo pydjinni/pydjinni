@@ -1,5 +1,4 @@
 #include "catch2/catch_test_macros.hpp"
-#include "constant_types.hpp"
 #include "helper.hpp"
 
 TEST_CASE("Cpp.RecordTest") {
@@ -90,34 +89,6 @@ TEST_CASE("Cpp.RecordTest") {
                 REQUIRE(returned_record.binary_optional.has_value());
                 REQUIRE(returned_record.binary_optional.value() == std::vector<uint8_t>{0x8F});
             }
-        }
-    }
-    GIVEN("A ConstantTypes record instance") {
-        const auto record = test::record::ConstantTypes();
-        THEN("the defined constants should be available via the class instance") {
-            REQUIRE(record.BOOLEAN_C == true);
-            REQUIRE(record.BYTE_C == 8);
-            REQUIRE(record.SHORT_C == 16);
-            REQUIRE(record.INT_C == 32);
-            REQUIRE(record.LONG_C == 64);
-            REQUIRE(record.FLOAT_C > 32);
-            REQUIRE(record.FLOAT_C < 33);
-            REQUIRE(record.DOUBLE_C > 64);
-            REQUIRE(record.DOUBLE_C < 65);
-            REQUIRE(record.STRING_C == "foo");
-
-        }
-        THEN("the defined constants should be available via the class type") {
-            REQUIRE(test::record::ConstantTypes::BOOLEAN_C == true);
-            REQUIRE(test::record::ConstantTypes::BYTE_C == 8);
-            REQUIRE(test::record::ConstantTypes::SHORT_C == 16);
-            REQUIRE(test::record::ConstantTypes::INT_C ==32);
-            REQUIRE(test::record::ConstantTypes::LONG_C ==64);
-            REQUIRE(test::record::ConstantTypes::FLOAT_C > 32);
-            REQUIRE(test::record::ConstantTypes::FLOAT_C < 33);
-            REQUIRE(test::record::ConstantTypes::DOUBLE_C < 65);
-            REQUIRE(test::record::ConstantTypes::DOUBLE_C < 65);
-            REQUIRE(test::record::ConstantTypes::STRING_C == "foo");
         }
     }
 }

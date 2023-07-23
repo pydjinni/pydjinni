@@ -21,10 +21,6 @@
     XCTAssertEqual(result, 42, @"The calculator has returned an unexpected value");
 }
 
-- (void)testConstant {
-    XCTAssertEqual(CalculatorA, 5, @"The constant does not have the expected value");
-}
-
 - (void)testPlatformImplementation {
     PlatformImplementation* implementation = [[PlatformImplementation alloc] init];
     int8_t result = [self.calculator getPlatformValue:implementation];

@@ -9,8 +9,7 @@ from pydjinni.parser.ast import (
 from pydjinni.parser.base_models import (
     BaseType,
     BaseField,
-    SymbolicConstantField,
-    Constant
+    SymbolicConstantField
 )
 from .config import ObjcConfig
 from pydjinni.generator.filters import quote, headers
@@ -20,7 +19,6 @@ from .type import (
     ObjcBaseField,
     ObjcInterface,
     ObjcSymbolicConstantField,
-    ObjcConstant,
     ObjcRecord,
     ObjcParameter,
     ObjcFunction
@@ -40,7 +38,6 @@ class ObjcGenerator(Generator):
         Interface.Method: ObjcInterface.ObjcMethod,
         Function: ObjcFunction,
         SymbolicConstantField: ObjcSymbolicConstantField,
-        Constant: ObjcConstant,
         Record: ObjcRecord,
         Record.Field: ObjcRecord.ObjcField,
         Parameter: ObjcParameter
@@ -61,8 +58,6 @@ class ObjcGenerator(Generator):
 
     def generate_interface(self, type_def: Interface):
         self.write_header("header/interface.h.jinja2", type_def=type_def)
-        if type_def.constants:
-            self.write_source("source/interface.m.jinja2", type_def=type_def)
 
     def generate_function(self, type_def: Function):
         pass

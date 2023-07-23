@@ -1,15 +1,11 @@
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import constant_def, data_type %}
+{% from "macros.jinja2" import data_type %}
 
 {% block content %}
 {% if type_def.comment %}
 {{ type_def.java.comment }}
 {% endif %}
 {{ type_def.java.class_modifier }}class {{ type_def.java.name }} {
-    {% for constant in type_def.constants -%}
-    {{ constant_def(constant) }}
-    {%- endfor %}
-
 {% for field in type_def.fields %}
     {% if field.comment %}
     {{ field.java.comment }}

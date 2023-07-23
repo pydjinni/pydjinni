@@ -8,25 +8,6 @@
 {%- endfor -%}
 {% endmacro %}
 
-{% macro value_def(value, type_def) %}
-{%- if value is string -%}"{{ value }}"
-{%- elif value is boolean %}{{ "true" if value else "false" }}
-{%- elif value is number %}{{ value ~ ("f" if type_def.primitive.value == "float") }}
-{%- else %}new {{ type_def.java.typename }}(
-{%- for field in type_def.fields -%}
-    {{ value_def(value.assignments[field.name].value, field.type_ref.type_def) ~ (", " if not loop.last) }}
-{%- endfor -%}
-)
-{%- endif -%}
-{% endmacro %}
-
-{% macro constant_def(constant) %}
-    {% if constant.comment %}
-    {{ constant.java.comment }}
-    {% endif %}
-    public static final {{ constant.type_ref.type_def.java.typename }} {{ constant.java.name }} = {{ value_def(constant.value, constant.type_ref.type_def) }};
-{% endmacro %}
-
 {% macro data_type(type_ref, boxed=False) %}
 {{ type_ref.type_def.java.boxed if boxed or type_ref.optional else type_ref.type_def.java.typename }}
 {%- if type_ref.parameters -%}

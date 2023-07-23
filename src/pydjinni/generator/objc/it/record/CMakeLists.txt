@@ -6,7 +6,6 @@ objc_test_case(RecordTest
         tests/CollectionTypesTests.m
         tests/OptionalTypesTests.m
         tests/BinaryTypesTests.m
-        tests/ConstantTypesTests.m
         tests/BaseRecordTests.m
 )
 target_sources(RecordTestObjc

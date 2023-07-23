@@ -7,42 +7,34 @@ class ExternalTypesBuilder:
     external_types: dict[str, BaseExternalType] = {
         "bool": BaseExternalType(
             name='bool',
-            primitive=BaseExternalType.Primitive.bool,
             comment="boolean type"
         ),
         "i8": BaseExternalType(
             name='i8',
-            primitive=BaseExternalType.Primitive.int,
             comment="8 bit integer type"
         ),
         "i16": BaseExternalType(
             name='i16',
-            primitive=BaseExternalType.Primitive.int,
             comment="16 bit integer type"
         ),
         "i32": BaseExternalType(
             name='i32',
-            primitive=BaseExternalType.Primitive.int,
             comment="32 bit integer type"
         ),
         "i64": BaseExternalType(
             name='i64',
-            primitive=BaseExternalType.Primitive.int,
             comment="64 bit integer type"
         ),
         "f32": BaseExternalType(
             name='f32',
-            primitive=BaseExternalType.Primitive.float,
             comment="float type"
         ),
         "f64": BaseExternalType(
             name='f64',
-            primitive=BaseExternalType.Primitive.double,
             comment="double type"
         ),
         "string": BaseExternalType(
             name='string',
-            primitive=BaseExternalType.Primitive.string,
             comment="string"
         ),
         "binary": BaseExternalType(

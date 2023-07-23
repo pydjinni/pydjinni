@@ -12,10 +12,6 @@ TEST_CASE("Cpp.InterfaceTest") {
                 REQUIRE(result == 42);
             }
         }
-        THEN("the defined constant should be available") {
-            REQUIRE(calculator->A == 5);
-            REQUIRE(test::interface::Calculator::A == 5);
-        }
         AND_GIVEN("an implementation for the PlatformInterface interface") {
             class PlatformInterfaceImpl : public test::interface::PlatformInterface {
                 int8_t get_value() override { return 5; }

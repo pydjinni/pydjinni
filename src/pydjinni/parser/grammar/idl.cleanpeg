@@ -1,24 +1,15 @@
 idl             = (import_def/extern)* (type_def/namespace)* EOF
 comment         = r'#.*$'+
-type_def        = enum/flags/class_type_def/named_function
+type_def        = enum/flags/record/interface/named_function
 enum            = comment? identifier '=' 'enum' '{' item* '}'
 flags           = comment? identifier '=' 'flags' '{' flag* '}'
 declaration     = r'[\w]+'
 deriving        = 'deriving' '(' ((declaration ',')* declaration)? ')'
-class_type_def  = record/interface
-record          = comment? identifier '=' 'record' targets? '{' (field/constant)* '}' deriving?
-interface       = comment? identifier '=' main? 'interface' targets? '{' (method/constant/property)* '}'
+record          = comment? identifier '=' 'record' targets? '{' (field)* '}' deriving?
+interface       = comment? identifier '=' main? 'interface' targets? '{' (method/property)* '}'
 main            = 'main'
 named_function  = comment? identifier '=' function ';'
 function        = ('function' targets?)? '(' ((parameter ',')* parameter)? ')' ('->' type_ref)?
-constant        = comment? 'const' identifier ':' type_ref '=' value ';'
-value           = (string/float/integer/bool/identifier/object)
-string          = r'".*"'
-integer         = r'\d+'
-float           = r'\d*\.\d+'
-bool            = 'True'/'False'
-object          = '{' ((assignment ',')* assignment)? '}'
-assignment      = identifier '=' value
 field           = comment? identifier ':' type_ref ';'
 method          = comment? 'static'? 'const'? identifier '(' ((parameter ',')* parameter)? ')' ('->' type_ref)? ';'
 parameter       = identifier ':' type_ref

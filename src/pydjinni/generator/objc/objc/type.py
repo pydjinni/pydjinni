@@ -176,15 +176,6 @@ class ObjcParameter(ObjcBaseField):
     def annotation(self) -> str: return annotation(self.decl.type_ref)
 
 
-class ObjcConstant(ObjcBaseField):
-    @cached_property
-    def type_decl(self) -> str: return type_decl(self.decl.type_ref)
-
-    @cached_property
-    def annotation(self) -> str: return " __nonnull" if self.decl.type_ref.type_def.objc.pointer else ""
-
-
-
 class ObjcSymbolicConstantField(ObjcBaseField):
     @computed_field
     @cached_property

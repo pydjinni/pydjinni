@@ -19,12 +19,6 @@ class TestInterface {
     }
 
     @Test
-    void testConstant() {
-        var constant = Calculator.A;
-        assertEquals(constant, 5);
-    }
-
-    @Test
     void testPlatformImplementation() {
         var result = calculator.getPlatformValue(new PlatformInterface() {
             public byte getValue() {

@@ -1,5 +1,5 @@
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import constant_def, data_type, return_type, parameters %}
+{% from "macros.jinja2" import data_type, return_type, parameters %}
 
 {% block header %}
 {% if type_def.cpp.proxy %}
@@ -17,9 +17,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
         new {{ config.package|join('.') }}.native_lib.{{ config.native_lib }}Loader();
     }
     {% endif %}
-    {%- for constant in type_def.constants -%}
-    {{- constant_def(constant) }}
-    {% endfor %}
     {% for method in type_def.methods %}
     {% if method.comment %}
     {{ method.java.comment | indent(4) }}

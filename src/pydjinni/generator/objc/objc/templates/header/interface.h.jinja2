@@ -1,5 +1,4 @@
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import constant_declaration %}
 
 {% block header %}
 {% for header in type_def.dependencies | headers('objc') -%}
@@ -32,9 +31,4 @@ NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
 )")));
 {% endfor %}
 @end
-
-{% for constant in type_def.constants -%}
-{{ constant_declaration(type_def, constant) }}
-{%- endfor %}
-
 {% endblock %}

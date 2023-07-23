@@ -1,5 +1,4 @@
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import comment, constant_declaration %}
 
 {% block header %}
 #pragma once
@@ -14,9 +13,6 @@ struct {{ type_def.cpp.derived_name }};
 {{ type_def.cpp.comment }}
 {% endif %}
 struct {{ type_def.cpp.name }}{{ " final" if not type_def.cpp.base_type }} {
-{% for constant in type_def.constants -%}
-    {{ constant_declaration(constant) }}
-{%- endfor %}
 {% for field in type_def.fields %}
     {% if field.comment %}
     {{ field.cpp.comment | indent(4) }}

@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field, computed_field
 from pydjinni.generator.cpp.cpp.comment_renderer import DoxygenCommentRenderer
 from pydjinni.generator.cpp.cpp.config import CppConfig
 from pydjinni.parser.ast import Parameter, Record, Interface
-from pydjinni.parser.base_models import BaseType, BaseField, TypeReference, BaseExternalType, Constant
+from pydjinni.parser.base_models import BaseType, BaseField, TypeReference, BaseExternalType
 from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
@@ -84,7 +84,7 @@ class CppBaseType(BaseModel):
 
 class CppBaseField(BaseModel):
     decl: BaseField = Field(exclude=True, repr=False)
-    config: CppConfig = Field(exclude=True,repr=False)
+    config: CppConfig = Field(exclude=True, repr=False)
 
     @computed_field
     @cached_property
@@ -105,6 +105,7 @@ class CppInterface(CppBaseType):
 
     class CppMethod(CppBaseField):
         decl: Interface.Method = Field(exclude=True, repr=False)
+
         @computed_field
         @cached_property
         def name(self) -> str: return self.decl.name.convert(self.config.identifier.method)
@@ -115,17 +116,22 @@ class CppInterface(CppBaseType):
         @cached_property
         def attribute(self): return "static" if self.decl.static else "virtual"
 
+
 class CppRecord(CppBaseType):
     decl: Record = Field(exclude=True, repr=False)
+
     @computed_field
     @cached_property
-    def by_value(self) -> bool: return False
+    def by_value(self) -> bool:
+        return False
 
     @cached_property
-    def base_type(self) -> bool: return "cpp" in self.decl.targets
+    def base_type(self) -> bool:
+        return "cpp" in self.decl.targets
 
     @cached_property
-    def derived_name(self) -> str: return Identifier(self.decl.name).convert(self.config.identifier.type)
+    def derived_name(self) -> str:
+        return Identifier(self.decl.name).convert(self.config.identifier.type)
 
     @cached_property
     def name(self):
@@ -203,14 +209,3 @@ class CppParameter(CppBaseField):
 
     @cached_property
     def type_spec(self): return type_specifier(self.decl.type_ref, is_parameter=True)
-
-
-class CppConstant(CppBaseField):
-    decl: Constant = Field(exclude=True, repr=False)
-
-    @computed_field
-    @cached_property
-    def name(self) -> str: return self.decl.name.convert(self.config.identifier.const)
-
-
-

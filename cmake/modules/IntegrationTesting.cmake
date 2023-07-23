@@ -31,7 +31,6 @@ function(define_test_case TEST_CASE_NAME)
     )
     set(BASE_LIB_NAME ${TEST_CASE_NAME}Base)
     add_library(${BASE_LIB_NAME} STATIC
-            ${cpp_GENERATED_SOURCES}
             ${cpp_GENERATED_HEADERS}
             ${TEST_CASE_SOURCES}
     )

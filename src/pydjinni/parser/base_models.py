@@ -22,11 +22,6 @@ class DocStrEnum(StrEnum):
 class BaseExternalType(BaseModel):
     class Primitive(StrEnum):
         none = 'none'
-        int = 'int'
-        float = 'float'
-        double = 'double'
-        string = 'string'
-        bool = 'bool'
         interface = 'interface'
         record = 'record'
         enum = 'enum'
@@ -74,23 +69,7 @@ class BaseField(BaseModel, extra='allow'):
     comment: str | None = None
 
 
-class Assignment(BaseModel):
-    key: str
-    position: Position = Position()
-    value: int | float | str | bool | Identifier | ObjectValue
-
-
-class ObjectValue(BaseModel):
-    assignments: dict[Identifier, Assignment]
-
-
-class Constant(BaseField):
-    type_ref: TypeReference = None
-    value: int | float | str | bool | Identifier | ObjectValue = None
-
-
 class ClassType(BaseType):
-    constants: list[Constant] = []
     targets: list[str] = []
 
 

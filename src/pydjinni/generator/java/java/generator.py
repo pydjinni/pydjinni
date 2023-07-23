@@ -4,10 +4,8 @@ from pydjinni.generator.generator import Generator
 from pydjinni.parser.ast import Enum, Flags, Record, Interface, Function
 from pydjinni.parser.base_models import (
     BaseType,
-    ClassType,
     BaseField,
-    SymbolicConstantField,
-    Constant
+    SymbolicConstantField
 )
 from .config import JavaConfig
 from .type import (
@@ -18,7 +16,6 @@ from .type import (
     JavaFunction,
     JavaBaseField,
     JavaSymbolicConstantField,
-    JavaConstant,
     JavaInterface
 )
 from .external_types import external_types
@@ -37,7 +34,6 @@ class JavaGenerator(Generator):
         Function: JavaFunction,
         BaseField: JavaBaseField,
         SymbolicConstantField: JavaSymbolicConstantField,
-        Constant: JavaConstant,
         Interface: JavaInterface,
         Interface.Method: JavaInterface.JavaMethod
     }

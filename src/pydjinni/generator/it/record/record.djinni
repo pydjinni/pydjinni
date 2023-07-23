@@ -31,20 +31,8 @@ binary_types = record {
     binary_optional: binary?;
 }
 
-constant_types = record {
-    const boolean_c: bool = True;
-    const byte_c: i8 = 8;
-    const short_c: i16 = 16;
-    const int_c: i32 = 32;
-    const long_c: i64 = 64;
-    const float_c: f32 = 32.32;
-    const double_c: f64 = 64.64;
-    const string_c: string = "foo";
-}
-
 base_record = record +any {
     value: i32;
-    const foo: i32 = 8;
 }
 
 helper = main interface +cpp {

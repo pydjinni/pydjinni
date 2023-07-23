@@ -13,7 +13,7 @@ from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.generator.cpp.cpp.generator import CppGenerator
 from pydjinni.position import Position, Cursor
 from .ast import *
-from .base_models import Assignment, Constant, BaseExternalType, ObjectValue
+from .base_models import BaseExternalType
 from .identifier import IdentifierType as Identifier
 from .resolver import Resolver
 
@@ -55,16 +55,10 @@ class IdlParser(PTNodeVisitor):
     class ParsingException(ApplicationException, code=150):
         """IDL Parsing error"""
 
-
     def visit_type_def(self, node, children) -> BaseType:
         type_def = unpack(children)
         self.resolver.register(type_def)
         self.type_defs.append(type_def)
-        return type_def
-
-    def visit_class_type_def(self, node, children):
-        type_def: ClassType = unpack(children)
-        type_def.dependencies += self._dependencies([constant.type_ref for constant in type_def.constants])
         return type_def
 
     def visit_enum(self, node, children):
@@ -122,7 +116,6 @@ class IdlParser(PTNodeVisitor):
             position=self._position(node),
             methods=methods,
             targets=unpack(children.targets) or self.target_keys,
-            constants=children.constant,
             properties=properties,
             main='main' in children.results,
             namespace=self.current_namespace,
@@ -205,7 +198,6 @@ class IdlParser(PTNodeVisitor):
             position=self._position(node),
             fields=fields,
             targets=targets,
-            constants=children.constant,
             namespace=self.current_namespace,
             dependencies=self._dependencies([field.type_ref for field in fields]),
             deriving=deriving | self.default_deriving
@@ -322,7 +314,6 @@ class IdlParser(PTNodeVisitor):
                 )
         return targets
 
-
     def visit_field(self, node, children):
         return Record.Field(
             name=unpack(children.identifier),
@@ -347,109 +338,12 @@ class IdlParser(PTNodeVisitor):
                 return search_path
         raise FileNotFoundException(path)
 
-    def visit_string(self, node, children) -> str:
-        return node.value[1:-1]
-
-    def visit_integer(self, node, children) -> int:
-        return int(node.value)
-
-    def visit_float(self, node, children) -> float:
-        return float(node.value)
-
-    def visit_bool(self, node, children) -> bool:
-        return node.value == "True"
-
-    def visit_assignment(self, node, children):
-        return Assignment(
-            key=unpack(children.identifier),
-            position=self._position(node),
-            value=unpack(children.value)
-        )
-
-    def visit_value(self, node, children):
-        return children[0]
-
-    def visit_object(self, node, children):
-        return ObjectValue(
-            assignments={assignment.key: assignment for assignment in children.assignment}
-        )
-
-    def visit_constant(self, node, children) -> Constant:
-        constant = Constant(
-            name=unpack(children.identifier),
-            type_ref=unpack(children.type_ref),
-            value=unpack(children.value),
-            position=self._position(node),
-            comment=unpack(children.comment)
-        )
-        self.field_defs.append(constant)
-        return constant
-
-    def second_constant(self, constant: Constant):
-        if constant.type_ref.type_def.primitive == BaseExternalType.Primitive.function:
-            raise IdlParser.ParsingException("functions are not allowed as constant field type.", constant.position)
-        self._check_const_assignment(constant.name, constant.type_ref.type_def, constant.value, constant.position)
-
     def _dependencies(self, type_refs: list[TypeReference]) -> list[TypeReference]:
         output: list[TypeReference] = []
         for type_ref in type_refs:
             output.append(type_ref)
             output += self._dependencies(type_ref.parameters)
         return output
-
-    def _check_const_assignment(self, name, type_def, value, position):
-        match type_def:
-            case Flags() | Enum():
-                fields = [item.name for item in (type_def.items or type_def.flags)]
-                if value not in fields:
-                    raise IdlParser.ParsingException(f"Invalid value '{str(value)}' assigned to constant", position)
-            case Record():
-                fields = type_def.fields
-                if type(value) is ObjectValue:
-                    record_keys = [field.name for field in fields]
-                    for assignment in value.assignments.values():
-                        if assignment.key not in record_keys:
-                            raise IdlParser.ParsingException(
-                                f"Unknown field '{assignment.key}' defined in constant assignment",
-                                assignment.position
-                            )
-                    for field in fields:
-                        if field.name in value.assignments:
-                            self._check_const_assignment(
-                                field.name,
-                                field.type_ref.type_def,
-                                value.assignments[field.name].value,
-                                value.assignments[field.name].position
-                            )
-                        else:
-                            raise IdlParser.ParsingException(
-                                f"Missing field '{field.name}' in constant assignment",
-                                position
-                            )
-
-                else:
-                    raise IdlParser.ParsingException(
-                        f"Invalid primitive value '{str(value)}' assigned to const record type '{type_def.name}'",
-                        position
-                    )
-
-            case BaseExternalType():
-                primitive = type_def.primitive
-                if not ((primitive == BaseExternalType.Primitive.int and type(value) == int) or
-                        (primitive == BaseExternalType.Primitive.float and type(value) == float) or
-                        (primitive == BaseExternalType.Primitive.double and type(value) == float) or
-                        (primitive == BaseExternalType.Primitive.string and type(value) == str) or
-                        (primitive == BaseExternalType.Primitive.bool and type(value) == bool)):
-                    if type(value) == str:
-                        value_description = f'string value "{value}"'
-                    elif type(value) in [int, float, bool]:
-                        value_description = f"primitive value '{value}'"
-                    else:
-                        value_description = f"value"
-                    raise IdlParser.ParsingException(
-                        f"Invalid {value_description} assigned to const '{name}' of type '{type_def.name}'",
-                        position
-                    )
 
     def visit_import_def(self, node, children):
         ast = IdlParser(

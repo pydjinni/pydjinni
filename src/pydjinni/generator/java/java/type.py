@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field, computed_field
 from pydjinni.generator.java.java.comment_renderer import JavaDocCommentRenderer
 from pydjinni.generator.java.java.config import JavaConfig
 from pydjinni.parser.ast import Record, Function
-from pydjinni.parser.base_models import BaseType, BaseField, ClassType
+from pydjinni.parser.base_models import BaseType, BaseField
 from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
@@ -132,12 +132,6 @@ class JavaSymbolicConstantField(JavaBaseField):
     @computed_field
     @cached_property
     def name(self) -> str: return self.decl.name.convert(self.config.identifier.enum)
-
-
-class JavaConstant(JavaBaseField):
-    @computed_field
-    @cached_property
-    def name(self) -> str: return self.decl.name.convert(self.config.identifier.const)
 
 
 class JavaInterface(JavaBaseType):

@@ -8,9 +8,8 @@ import pytest
 from pydjinni.exceptions import FileNotFoundException
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.file.processed_files_model_builder import ProcessedFiles
-from pydjinni.generator.target import Target
-from pydjinni.parser.ast import Record, Enum, Flags, Interface, TypeReference, Function
-from pydjinni.parser.base_models import BaseType, BaseExternalType, Position
+from pydjinni.parser.ast import Record, Enum, Flags, Interface, Function
+from pydjinni.parser.base_models import BaseType
 from pydjinni.parser.parser import IdlParser
 from pydjinni.parser.resolver import Resolver
 
@@ -144,7 +143,6 @@ def test_parsing_record(tmp_path: Path):
         foo = record {
             bar: i8;
             baz: i8?;
-            const foobar: i8 = 5;
         }
         """
     )
@@ -158,14 +156,6 @@ def test_parsing_record(tmp_path: Path):
     assert_field(fields[0], name="bar", typename="i8")
     assert_field(fields[1], name="baz", typename="i8", optional=True)
     assert not record.targets
-
-    # THEN the record should have the defined constant
-    assert len(record.constants) == 1
-    constant = record.constants[0]
-    assert constant.name == "foobar"
-    assert constant.type_ref.name == "i8"
-    assert constant.value == 5
-    assert type(constant.value) is int
 
 
 @pytest.mark.parametrize("deriving,expected", [
@@ -236,7 +226,6 @@ def test_parsing_interface(tmp_path: Path):
                 method_with_parameter(param: i8);
                 method_with_parameters_and_return(param: i8, param2: i8) -> i8;
                 property a: i8;
-                const b: i8 = 5;
             }
             """
     )
@@ -263,13 +252,6 @@ def test_parsing_interface(tmp_path: Path):
     # then the expected targets should be defined
     assert "cpp" in interface.targets
     assert len(interface.targets) == 1
-
-    # then the defined constants should be present
-    assert len(interface.constants) == 1
-    constant = interface.constants[0]
-    assert constant.name == "b"
-    assert constant.value == 5
-    assert constant.type_ref.name == "i8"
 
     # then the defined properties should be present
     assert len(interface.properties) == 1
@@ -433,30 +415,18 @@ def test_parsing_inline_function(tmp_path):
     assert function.return_type_ref is None
 
 
-@pytest.mark.parametrize("input", [
-    """
-    foo = record {
-        field: ();
-    }
-    """,
-    """
-    foo = record {
-        const field: () = 0;
-    }""",
-    """
-    foo = interface {
-        const field: () = 0;
-    }
-    """
-])
-def test_parsing_anonymous_function_not_allowed(tmp_path: Path, input):
+def test_parsing_anonymous_function_not_allowed(tmp_path: Path):
     parser, _ = given(
         tmp_path=tmp_path,
-        input_idl=input
+        input_idl="""
+            foo = record {
+                field: ();
+            }
+            """
     )
 
     # WHEN parsing the input
-    # THEN a ParsingException should be raised because functions are not allowed in the given context
+    # THEN a ParsingException should be raised because functions are not allowed in records
     with pytest.raises(IdlParser.ParsingException, match="functions are not allowed"):
         parser.parse()
 
@@ -591,154 +561,3 @@ def test_namespace(tmp_path: Path):
     assert ast[0].namespace == ["foo", "bar"]
     assert ast[1].name == "bar"
     assert ast[1].namespace == ["foo", "bar", "baz"]
-
-
-@pytest.mark.parametrize("typename,primitive,literal_value,value", [
-    ('i8', BaseExternalType.Primitive.int, '5', 5),
-    ('f32', BaseExternalType.Primitive.float, '42.2', 42.2),
-    ('bool', BaseExternalType.Primitive.bool, 'True', True),
-    ('bool', BaseExternalType.Primitive.bool, 'False', False),
-    ('string', BaseExternalType.Primitive.string, '"the foo is in the bar"', "the foo is in the bar"),
-])
-def test_record_primitive_constant(tmp_path, typename, primitive, literal_value, value):
-    # GIVEN an idl file that defines a record with a constant
-    parser, resolver_mock = given(
-        tmp_path=tmp_path,
-        input_idl=f"""
-        foo = record {{
-            const bar: {typename} = {literal_value};
-        }}
-        """
-    )
-
-    # AND GIVEN a resolver that returns the matching primitive type
-    resolver_mock.resolve.return_value = BaseExternalType(
-            name=typename,
-            primitive=primitive
-        )
-
-    record = when(parser, Record, "foo")
-
-    # THEN the record should contain the defined constant and value
-    assert len(record.constants) == 1
-    constant = record.constants[0]
-    assert constant.name == "bar"
-    assert constant.value == value
-    assert constant.type_ref.name == typename
-
-
-@pytest.mark.parametrize("typename,primitive,literal_value", [
-    ('i8', BaseExternalType.Primitive.int, '"this is a number, I swear!"'),
-    ('i8', BaseExternalType.Primitive.int, '52.6'),
-    ('i8', BaseExternalType.Primitive.int, 'True'),
-    ('i8', BaseExternalType.Primitive.int, 'False'),
-    ('f32', BaseExternalType.Primitive.float, '42'),
-    ('f32', BaseExternalType.Primitive.float, '"42"'),
-    ('f32', BaseExternalType.Primitive.float, 'True'),
-    ('f32', BaseExternalType.Primitive.float, 'False'),
-    ('bool', BaseExternalType.Primitive.bool, '"the truth is here"'),
-    ('bool', BaseExternalType.Primitive.bool, '4'),
-    ('bool', BaseExternalType.Primitive.bool, '4.2'),
-    ('string', BaseExternalType.Primitive.string, '5'),
-    ('string', BaseExternalType.Primitive.string, '5.4'),
-    ('string', BaseExternalType.Primitive.string, 'True'),
-    ('string', BaseExternalType.Primitive.string, 'False'),
-])
-def test_record_wrong_primitive_constant(tmp_path, typename, primitive, literal_value):
-    # GIVEN an idl file that defines a record with a constant
-    parser, resolver_mock = given(
-        tmp_path=tmp_path,
-        input_idl=f"""
-            foo = record {{
-                const bar: {typename} = {literal_value};
-            }}
-            """
-    )
-
-    # AND GIVEN a resolver that returns a primitive type that does not match the provided const value
-    resolver_mock.resolve.return_value = BaseExternalType(
-            name=typename,
-            primitive=primitive
-        )
-
-    # WHEN parsing the idl
-    # THEN a Parsing exception should be thrown
-    with pytest.raises(IdlParser.ParsingException):
-        when(parser, Record, "foo")
-
-
-@pytest.mark.parametrize("literal_value", [
-    '5', '5.5', 'false', 'true', '"test"', '{a="foo"}', '{a=5.5}', '{a=true}'
-])
-def test_record_wrong_const_record_assignment(tmp_path, literal_value):
-    # GIVEN an idl file that assigns a primitive value to a const record type
-    parser, resolver_mock = given(
-        tmp_path=tmp_path,
-        input_idl=f"""
-                bar = record {{
-                    const b: foo = {literal_value};
-                }}
-                """
-    )
-
-    resolver_mock.resolve.return_value = Record(
-        name="foo",
-        primitive=BaseExternalType.Primitive.record,
-        fields=[
-            Record.Field(
-                name="a",
-                type_ref=TypeReference(
-                    name="i8",
-                    type_def=BaseExternalType(
-                        name="i8",
-                        primitive=BaseExternalType.Primitive.int
-                    )
-                )
-            )
-        ],
-        constants=[],
-        targets=[],
-        deriving=set()
-    )
-
-    # WHEN parsing the file
-    # THEN a InvalidAssignmentException should be raised
-    with pytest.raises(IdlParser.ParsingException, match="Invalid"):
-        parser.parse()
-
-
-def test_record_wrong_const_unknown_field_assignment(tmp_path):
-    # GIVEN an idl file that assigns an object with an unknown field to a const value
-    parser, resolver_mock = given(
-        tmp_path=tmp_path,
-        input_idl="""
-                    bar = record {
-                        const b: foo = {b=5};
-                    }
-                    """
-    )
-
-    resolver_mock.resolve.return_value = Record(
-        name="foo",
-        primitive=BaseExternalType.Primitive.record,
-        fields=[
-            Record.Field(
-                name="a",
-                type_ref=TypeReference(
-                    name="i8",
-                    type_def=BaseExternalType(
-                        name="i8",
-                        primitive=BaseExternalType.Primitive.int
-                    )
-                )
-            )
-        ],
-        constants=[],
-        targets=[],
-        deriving=set()
-    )
-
-    # WHEN parsing the file
-    # THEN a UnknownFieldException should be raised
-    with pytest.raises(IdlParser.ParsingException, match="Unknown field 'b' defined in constant assignment"):
-        parser.parse()

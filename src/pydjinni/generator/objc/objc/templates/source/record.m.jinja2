@@ -1,15 +1,10 @@
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import constant_definition %}
 
 {% block header %}
 #import {{ type_def.objc.header | quote }}
 {% endblock %}
 
 {% block content %}
-{% for constant in type_def.constants -%}
-{{ constant_definition(type_def, constant) }}
-{%- endfor %}
-
 @implementation {{ type_def.objc.name }}
 
 - (nonnull instancetype){{ type_def.objc.init }}
@@ -43,7 +38,7 @@
     {%- endfor -%}
     >", self.class
     {%- for field in type_def.fields -%}
-        {%- if field.type_ref.type_def.primitive.value == "bool" -%}
+        {%- if field.type_ref.type_def.name == "bool" -%}
             , self.{{ field.objc.name }} ? @"YES" : @"NO"
         {%- elif not field.type_ref.type_def.objc.pointer and not field.type_ref.optional -%}
             , @(self.{{ field.objc.name }})
