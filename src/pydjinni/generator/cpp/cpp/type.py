@@ -116,6 +116,13 @@ class CppInterface(CppBaseType):
         @cached_property
         def attribute(self): return "static" if self.decl.static else "virtual"
 
+    class CppProperty(CppBaseField):
+        @cached_property
+        def getter(self): return Identifier(f"get_{self.decl.name}").convert(self.config.identifier.method)
+
+        @cached_property
+        def type_spec(self): return type_specifier(self.decl.type_ref)
+
 
 class CppRecord(CppBaseType):
     decl: Record = Field(exclude=True, repr=False)

@@ -140,3 +140,8 @@ class JavaInterface(JavaBaseType):
         @computed_field
         @cached_property
         def name(self) -> str: return self.decl.name.convert(self.config.identifier.method)
+
+    class JavaProperty(JavaBaseField):
+
+        @cached_property
+        def getter(self): return Identifier(f"get_{self.decl.name}").convert(self.config.identifier.method)

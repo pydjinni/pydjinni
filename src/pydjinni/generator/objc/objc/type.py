@@ -4,6 +4,7 @@ from pathlib import Path
 import mistletoe
 from pydantic import BaseModel, Field, computed_field
 
+from pydjinni.config.types import IdentifierStyle
 from pydjinni.generator.objc.objc.comment_renderer import DocCCommentRenderer
 from pydjinni.generator.objc.objc.config import ObjcConfig
 from pydjinni.parser.ast import Record, Interface, Parameter, Function
@@ -146,7 +147,6 @@ class ObjcRecord(ObjcBaseClassType):
     def base_type(self) -> bool:
         return "objc" in self.decl.targets
 
-
     @cached_property
     def init(self) -> str:
         return Identifier(f"init_with_{self.decl.fields[0].name}").convert(self.config.identifier.method) \
@@ -198,3 +198,19 @@ class ObjcInterface(ObjcBaseClassType):
 
         @cached_property
         def annotation(self) -> str: return annotation(self.decl.return_type_ref)
+
+    class ObjcProperty(ObjcBaseField):
+        decl: Interface.Property = Field(exclude=True, repr=False)
+
+        @cached_property
+        def type_decl(self) -> str: return type_decl(self.decl.type_ref)
+
+        @cached_property
+        def setter(self) -> str: return Identifier(f"set_{self.decl.name}").convert(IdentifierStyle.Case.camel)
+
+        @cached_property
+        def attributes(self) -> str: return "readonly" if self.decl.readonly else "readwrite"
+
+        @cached_property
+        def automatic_notification_configuration(self) -> str:
+            return f"automaticallyNotifiesObserversOf{self.name[0].upper() + self.name[1:]}"

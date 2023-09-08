@@ -36,6 +36,7 @@ class ObjcGenerator(Generator):
         BaseField: ObjcBaseField,
         Interface: ObjcInterface,
         Interface.Method: ObjcInterface.ObjcMethod,
+        Interface.Property: ObjcInterface.ObjcProperty,
         Function: ObjcFunction,
         SymbolicConstantField: ObjcSymbolicConstantField,
         Record: ObjcRecord,

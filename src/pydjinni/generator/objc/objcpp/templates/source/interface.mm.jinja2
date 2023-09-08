@@ -34,12 +34,28 @@ static_assert(__has_feature(objc_arc), "PyDjinni requires ARC to be enabled for 
 
 @implementation {{ type_def.objc.typename ~ ("CppProxy" if "objc" in type_def.targets) }} {
     ::pydjinni::CppProxyCache::Handle<std::shared_ptr<{{ type_def.cpp.typename }}>> _cppRefHandle;
+    {% if "cpp" in type_def.targets %}
+    {% for property in type_def.properties %}
+    std::unique_ptr<::pydjinni::Handle> _{{ property.objc.name }}WillChangeCallbackHandle;
+    std::unique_ptr<::pydjinni::Handle> _{{ property.objc.name }}DidChangeCallbackHandle;
+    {% endfor %}
+    {% endif %}
 }
 
 - (id)initWithCpp:(const std::shared_ptr<{{ type_def.cpp.typename }}>&)cppRef {
     if (self = [super init]) {
         _cppRefHandle.assign(cppRef);
     }
+    {% if "cpp" in type_def.targets %}
+    {% for property in type_def.properties %}
+    _{{ property.objc.name }}WillChangeCallbackHandle = cppRef->{{ property.cpp.getter }}().on_will_change([&, self](){
+        [self willChangeValueForKey:@"{{ property.objc.name }}"];
+    });
+    _{{ property.objc.name }}DidChangeCallbackHandle = cppRef->{{ property.cpp.getter }}().on_did_change([&, self]({{ property.cpp.type_spec }} {{ property.cpp.name }}){
+        [self didChangeValueForKey:@"{{ property.objc.name }}"];
+    });
+    {% endfor %}
+    {% endif %}
     return self;
 }
 
@@ -69,6 +85,24 @@ static_assert(__has_feature(objc_arc), "PyDjinni requires ARC to be enabled for 
 {% endfor %}
 
 {% if "objc" not in type_def.targets %}
+{% for property in type_def.properties %}
+- ({{ property.objc.type_decl }}){{ property.objc.name }} {
+    try {
+        auto result = _cppRefHandle.get()->{{ property.cpp.getter }}().get();
+        return {{ translator(property.type_ref) }}::fromCpp(result);
+    } DJINNI_TRANSLATE_EXCEPTIONS()
+}
+{% if not property.readonly %}
+- (void){{ property.objc.setter }}:({{ property.objc.type_decl }})newValue {
+    try {
+        _cppRefHandle.get()->{{ property.cpp.getter }}().set({{ translator(property.type_ref) }}::toCpp(newValue));
+    } DJINNI_TRANSLATE_EXCEPTIONS()
+}
+{% endif %}
++ (BOOL) {{ property.objc.automatic_notification_configuration }} {
+    return NO;
+}
+{% endfor %}
 namespace {{ type_def.objcpp.namespace }} {
 
 auto {{ type_def.objcpp.translator }}::toCpp(ObjcType objc) -> CppType {

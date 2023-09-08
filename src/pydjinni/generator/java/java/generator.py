@@ -35,7 +35,8 @@ class JavaGenerator(Generator):
         BaseField: JavaBaseField,
         SymbolicConstantField: JavaSymbolicConstantField,
         Interface: JavaInterface,
-        Interface.Method: JavaInterface.JavaMethod
+        Interface.Method: JavaInterface.JavaMethod,
+        Interface.Property: JavaInterface.JavaProperty
     }
     writes_source = True
 

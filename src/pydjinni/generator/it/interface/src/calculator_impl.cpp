@@ -19,3 +19,7 @@ void CalculatorImpl::no_parameters_no_return() {}
 void CalculatorImpl::throwing_exception() {
     throw std::runtime_error("shit hit the fan");
 }
+
+void CalculatorImpl::update_readonly_property(int32_t value) {
+    _readonly_value = value;
+}

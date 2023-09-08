@@ -20,7 +20,7 @@ class TestInterface {
 
     @Test
     void testPlatformImplementation() {
-        var result = calculator.getPlatformValue(new PlatformInterface() {
+        var result = calculator.getPlatformValue(new PlatformInterface(4, 5) {
             public byte getValue() {
                 return 5;
             }

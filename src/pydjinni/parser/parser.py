@@ -276,11 +276,20 @@ class IdlParser(PTNodeVisitor):
             name=unpack(children.identifier),
             type_ref=unpack(children.type_ref),
             comment=unpack(children.comment),
-            position=self._position(node)
+            position=self._position(node),
+            readonly=unpack(children.readonly) or False
         )
+
+    def visit_readonly(self, node, children):
+        return True
+
 
     def second_property(self, decl: Interface.Property):
         self.field_defs.append(decl)
+        if decl.type_ref.type_def.primitive == BaseExternalType.Primitive.interface:
+            raise IdlParser.ParsingException("property type cannot be an interface", decl.position)
+        if decl.type_ref.type_def.primitive == BaseExternalType.Primitive.function:
+            raise IdlParser.ParsingException("property type cannot be a function", decl.position)
 
     def visit_parameter(self, node, children):
         return Parameter(
@@ -346,6 +355,12 @@ class IdlParser(PTNodeVisitor):
         return output
 
     def visit_import_def(self, node, children):
+        imported_idl = unpack(children.filepath)
+        if imported_idl == self.idl:
+            raise IdlParser.ParsingException(
+                f"Recursive Import detected: file {self.idl} imports itself!",
+                self.position
+            )
         ast = IdlParser(
             resolver=self.resolver,
             targets=self.targets,
@@ -353,7 +368,7 @@ class IdlParser(PTNodeVisitor):
             include_dirs=self.include_dirs,
             default_deriving=self.default_deriving,
             file_reader=self.file_reader,
-            idl=unpack(children.filepath),
+            idl=imported_idl,
             position=self._position(node)).parse()
         self.type_defs += ast
         return ast
@@ -410,6 +425,6 @@ class IdlParser(PTNodeVisitor):
             raise IdlParser.ParsingException(e.message, Position(file=self.idl, start=Cursor(line=e.line, col=e.col)))
         except RecursionError:
             raise IdlParser.ParsingException(
-                f"Recursive Import detected: file {self.idl} imports itself!",
+                f"Circular Import detected.",
                 self.position
             )

@@ -37,6 +37,7 @@ class CppGenerator(Generator):
         BaseType: CppBaseType,
         Interface: CppInterface,
         Interface.Method: CppInterface.CppMethod,
+        Interface.Property: CppInterface.CppProperty,
         Record: CppRecord,
         Record.Field: CppRecord.CppField,
         Function: CppFunction,

@@ -14,7 +14,8 @@ field           = comment? identifier ':' type_ref ';'
 method          = comment? 'static'? 'const'? identifier '(' ((parameter ',')* parameter)? ')' ('->' type_ref)? ';'
 parameter       = identifier ':' type_ref
 targets         = (r'\+[a-z]+'/r'-[a-z]+')+
-property        = comment? 'property' identifier ':' type_ref ';'
+property        = comment? 'property' readonly? identifier ':' type_ref ';'
+readonly        = '(' 'readonly' ')'
 item            = comment? identifier ';'
 flag            = comment? identifier flag_modifier? ';'
 flag_modifier   = '=' ('all'/'none')

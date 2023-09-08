@@ -30,5 +30,9 @@ NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
 {%- endfor -%}
 )")));
 {% endfor %}
+{% for property in type_def.properties %}
+@property({{ property.objc.attributes }}) {{ property.objc.type_decl }} {{ property.objc.name }};
++ (BOOL) {{ property.objc.automatic_notification_configuration }};
+{% endfor %}
 @end
 {% endblock %}

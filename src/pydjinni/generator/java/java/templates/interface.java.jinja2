@@ -17,6 +17,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
         new {{ config.package|join('.') }}.native_lib.{{ config.native_lib }}Loader();
     }
     {% endif %}
+    {%  if type_def.properties|length > 0 %}
+    protected {{ type_def.java.name }}(
+        {%- for property in type_def.properties -%}
+            {{ property.type_ref.type_def.java.typename }} {{ property.java.name ~ (', ' if not loop.last) }}
+        {%- endfor -%}
+        ) {
+        {% for property in type_def.properties %}
+        _{{ property.java.name }} = new pydjinni.Property<>({{ property.java.name }});
+        {% endfor %}
+    }
+    {% endif %}
     {% for method in type_def.methods %}
     {% if method.comment %}
     {{ method.java.comment | indent(4) }}
@@ -34,15 +45,39 @@ import java.util.concurrent.atomic.AtomicBoolean;
     ;
     {% endif %}
     {% endfor %}
+    {% for property in type_def.properties %}
+    public pydjinni.{{ 'ReadOnly' if property.readonly }}Property<{{ property.type_ref.type_def.java.boxed }}> {{ property.java.getter }}() {
+        return _{{ property.java.name }};
+    }
+    {% endfor %}
+    {% for property in type_def.properties %}
+    protected final pydjinni.{{ 'ReadOnly' if property.readonly }}Property<{{ property.type_ref.type_def.java.boxed }}> _{{ property.java.name }};
+    {% endfor %}
     {% if type_def.cpp.proxy %}
     private static final class CppProxy extends {{ type_def.java.name }} {
         private final long nativeRef;
         private final AtomicBoolean destroyed = new AtomicBoolean(false);
 
-        private CppProxy(long nativeRef)
+        private CppProxy(long nativeRef
+            {%- for property in type_def.properties -%}
+                , {{ property.type_ref.type_def.java.typename }} {{ property.java.name }}
+            {%- endfor -%}
+        )
         {
+            super(
+            {%- for property in type_def.properties -%}
+                {{ property.java.name ~ (", " if not loop.last) }}
+            {%- endfor -%}
+            );
             if (nativeRef == 0) throw new RuntimeException("nativeRef is zero");
             this.nativeRef = nativeRef;
+            {% if type_def.properties|length > 0 %}
+            {% endif %}
+            {% for property in type_def.properties if not property.readonly %}
+            _{{ property.java.name }}.onChange(value -> {
+                native_property_{{ property.java.name }}_changed(this.nativeRef, value);
+            });
+            {% endfor %}
         }
         private native void nativeDestroy(long nativeRef);
         public void _djinni_private_destroy()
@@ -67,6 +102,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
         }
         private native {{ return_type(method.return_type_ref) }} native_{{ method.java.name }}(long _nativeRef{{ (", " if method.parameters) ~ parameters(method) }});
         {% endif %}
+        {% endfor %}
+        {% for property in type_def.properties if not property.readonly %}
+        private native void native_property_{{ property.java.name }}_changed(long _nativeRef, {{ property.type_ref.type_def.java.typename }} {{ property.java.name }});
         {% endfor %}
     }
     {% endif %}

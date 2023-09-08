@@ -1,5 +1,7 @@
 platform_interface = interface {
     get_value() -> i8;
+    property readwrite_value: i32;
+    property(readonly) readonly_value: i32;
 }
 
 calculator = main interface +cpp {
@@ -8,4 +10,7 @@ calculator = main interface +cpp {
     get_platform_value(platform: platform_interface) -> i8;
     no_parameters_no_return();
     throwing_exception();
+    property readwrite_value: i32;
+    property(readonly) readonly_value: i32;
+    update_readonly_property(value: i32);
 }

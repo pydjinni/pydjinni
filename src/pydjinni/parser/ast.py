@@ -41,6 +41,7 @@ class Interface(ClassType):
 
     class Property(BaseField):
         type_ref: TypeReference
+        readonly: bool
 
     primitive: BaseExternalType.Primitive = BaseExternalType.Primitive.interface
     main: bool = False

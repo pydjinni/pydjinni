@@ -8,6 +8,7 @@ public:
     int8_t get_platform_value(const std::shared_ptr<PlatformInterface>& platform) override;
     void no_parameters_no_return() override;
     void throwing_exception() override;
+    void update_readonly_property(int32_t value) override;
 };
 
 }
