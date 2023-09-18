@@ -250,10 +250,10 @@ class Generator(ABC):
         """
         Copies support lib files if they exist. Fails silently if no files can be found in the expected directories.
         """
-        self._file_writer.copy_source_directory(
+        self._file_writer.copy_header_directory(
             key=self.key,
-            source_dir=self._generator_directory / "support_lib" / "include",
-            target_dir=self.source_path
+            header_dir=self._generator_directory / "support_lib" / "include",
+            target_dir=self.header_path
         )
         self._file_writer.copy_source_directory(
             key=self.key,
@@ -262,10 +262,10 @@ class Generator(ABC):
         )
         if self.support_lib_commons:
             root = Path(__file__).parent
-            self._file_writer.copy_source_directory(
+            self._file_writer.copy_header_directory(
                 key=self.key,
-                source_dir=root / "support_lib" / "include",
-                target_dir=self.source_path
+                header_dir=root / "support_lib" / "include",
+                target_dir=self.header_path
             )
             self._file_writer.copy_source_directory(
                 key=self.key,

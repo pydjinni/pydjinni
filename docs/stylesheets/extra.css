@@ -15,6 +15,10 @@
     font-weight: 600;
 }
 
+.md-typeset h5 {
+    text-transform: none;
+}
+
 .md-typeset__table {
   width: 100%;
 }

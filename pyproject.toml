@@ -26,13 +26,15 @@ dependencies = [
     "Jinja2>=3.1,<4",
     "mistletoe>=1.0,<2",
     "pydantic>=2.0.3,<3",
+    "pydantic-settings>=2.0.3,<3",
     'rich>=12.6,<13',
     'PyYAML>=6,<7',
     'dotmap>=1.3,<2',
     'tomli>=1.1.0,<2; python_version < "3.11"',
     'StrEnum>=0.4; python_version < "3.11"',
     'tomli_w>=1.0,<2',
-    'setuptools>=65'
+    'setuptools>=65',
+    'conan>=2'
 ]
 
 [tool.setuptools_scm]
@@ -66,10 +68,14 @@ Homepage = "https://jothepro.github.io/pydjinni"
 pydjinni = "pydjinni.__main__:main"
 
 [project.entry-points.'pydjinni.generator']
-cpp = 'pydjinni.generator.cpp:CppTarget'
+cpp  = 'pydjinni.generator.cpp:CppTarget'
 java = 'pydjinni.generator.java:JavaTarget'
 objc = 'pydjinni.generator.objc:ObjcTarget'
 yaml = 'pydjinni.generator.yaml:YamlTarget'
-
+[project.entry-points.'pydjinni.builder']
+conan = 'pydjinni.builder.conan:ConanTarget'
+[project.entry-points.'pydjinni.packaging']
+swiftpackage = 'pydjinni.packaging.swiftpackage:SwiftpackageTarget'
+aar = 'pydjinni.packaging.aar:AndroidArchiveTarget'
 [project.entry-points.'pygments.lexers']
 djinni='pydjinni.lexer:PyDjinniLexer'

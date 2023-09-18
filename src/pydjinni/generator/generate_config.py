@@ -1,4 +1,3 @@
-from enum import Enum
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -7,6 +6,7 @@ from pydjinni.parser.ast import Record
 
 
 class GenerateBaseConfig(BaseModel):
+    "Configuration options related to language gluecode generation"
     list_processed_files: Path = Field(
         default=None,
         description="File that reports all the parsed and generated files. "

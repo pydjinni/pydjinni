@@ -5,12 +5,16 @@ from functools import cached_property
 from importlib.metadata import entry_points, EntryPoint
 from pathlib import Path
 
+from pydjinni.builder.build_config import BuildBaseConfig
 from pydjinni.file.processed_files_model_builder import ProcessedFilesModelBuilder, ProcessedFiles
+from pydjinni.packaging.architecture import Architecture
+from pydjinni.packaging.packaging_config import PackageBaseConfig
+from pydjinni.packaging.target import PackageTarget
 
 try:
     import tomllib
 except ModuleNotFoundError:
-    import tomli as tomllib # Fallback for Python < 3.11
+    import tomli as tomllib  # Fallback for Python < 3.11
 
 import pydantic
 import yaml
@@ -22,6 +26,7 @@ from pydjinni.generator.external_types import ExternalTypesBuilder
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.generator.generate_config import GenerateBaseConfig
 from pydjinni.generator.target import Target
+from pydjinni.builder.target import BuildTarget
 from pydjinni.parser.base_models import BaseType, BaseExternalType
 from pydjinni.position import Position, Cursor
 from pydjinni.parser.parser import IdlParser
@@ -60,8 +65,12 @@ class API:
         self._external_type_model_builder = TypeModelBuilder(BaseExternalType)
         self._processed_files_model_builder = ProcessedFilesModelBuilder()
         # initializing plugins
-        generator_plugins = entry_points(group='pydjinni.generator')
-        self._generate_targets = [self._init_generator_plugin(plugin) for plugin in generator_plugins]
+        self._generate_targets = [self._init_generator_plugin(plugin) for plugin in
+                                  entry_points(group='pydjinni.generator')]
+        self._build_targets = [self._init_build_plugin(plugin) for plugin in
+                               entry_points(group='pydjinni.builder')]
+        self._package_targets = [self._init_package_plugin(plugin) for plugin in
+                                 entry_points(group='pydjinni.packaging')]
 
         # generate models
         self._configuration_model = self._config_model_builder.build()
@@ -112,6 +121,14 @@ class API:
         return {target.key: target for target in self._generate_targets}
 
     @cached_property
+    def package_targets(self) -> dict[str, PackageTarget]:
+        return {target.key: target for target in self._package_targets}
+
+    @cached_property
+    def build_targets(self) -> dict[str, BuildTarget]:
+        return {target.key: target for target in self._build_targets}
+
+    @cached_property
     def internal_types(self) -> list:
         """
         Returns:
@@ -122,12 +139,21 @@ class API:
         return self._external_types_builder.build()
 
     def _init_generator_plugin(self, plugin: EntryPoint) -> Target:
-        target_type: type[Target] = plugin.load()
-        return target_type(
+        return plugin.load()(
             file_reader_writer=self._file_reader_writer,
             config_model_builder=self._config_model_builder,
             external_type_model_builder=self._external_type_model_builder,
             processed_files_model_builder=self._processed_files_model_builder
+        )
+
+    def _init_build_plugin(self, plugin: EntryPoint) -> BuildTarget:
+        return plugin.load()(
+            config_model_builder=self._config_model_builder,
+        )
+
+    def _init_package_plugin(self, plugin: EntryPoint) -> PackageTarget:
+        return plugin.load()(
+            config_model_builder=self._config_model_builder
         )
 
     def configure(self, path: Path | str = None, options: dict = None) -> ConfiguredContext:
@@ -180,6 +206,8 @@ class API:
                 config=config,
                 external_types_model=self.external_type_model,
                 generate_targets=self.generation_targets,
+                package_targets=self.package_targets,
+                build_targets=self.build_targets,
                 file_reader_writer=self._file_reader_writer
             )
         except pydantic.ValidationError as e:
@@ -189,10 +217,12 @@ class API:
 
     class ConfiguredContext:
         def __init__(self, config: BaseModel, external_types_model: type[BaseExternalType],
-                     generate_targets: dict[str, Target], file_reader_writer: FileReaderWriter):
+                     generate_targets: dict[str, Target], package_targets: dict[str, PackageTarget], build_targets: dict[str, BuildTarget], file_reader_writer: FileReaderWriter):
             self._config = config
             self._external_types_builder = ExternalTypesBuilder(external_types_model)
             self._generate_targets = generate_targets
+            self._package_targets = package_targets
+            self._build_targets = build_targets
             self._resolver = Resolver(external_types_model)
             self._file_reader_writer = file_reader_writer
 
@@ -223,7 +253,8 @@ class API:
                 idl = Path(idl)
             generate_config: GenerateBaseConfig = self._config.generate
             generate_targets: list[str] = list(generate_config.model_fields_set) if generate_config else []
-            targets: list[Target] = [target for key, target in self._generate_targets.items() if key in generate_targets]
+            targets: list[Target] = [target for key, target in self._generate_targets.items() if
+                                     key in generate_targets]
             for target in targets:
                 target.register_external_types(self._external_types_builder)
                 target.configure(generate_config)
@@ -250,6 +281,50 @@ class API:
                 ast=ast,
                 config=generate_config
             )
+
+        def package(self, target: str, configuration: str = None) -> PackageContext:
+            """
+            assemble a package for distribution from the binaries
+            """
+            package_config: PackageBaseConfig = self._config.package
+            if configuration:
+                package_config.configuration = configuration
+            target = self._package_targets.get(target)
+
+            build_config: BuildBaseConfig = self._config.build
+            build_strategy = self._build_targets[package_config.build_strategy]
+            build_strategy.configure(build_config)
+
+            target.configure(package_config)
+
+            return API.ConfiguredContext.PackageContext(
+                target=target,
+                build_strategy=build_strategy
+            )
+
+        def publish(self, target: str, configuration: str = None):
+            package_config: PackageBaseConfig = self._config.package
+            if configuration:
+                package_config.configuration = configuration
+            target = self._package_targets.get(target)
+            target.configure(package_config)
+            target.publish()
+
+        class PackageContext:
+            def __init__(self, target: PackageTarget, build_strategy: BuildTarget):
+                self._target = target
+                self._build_strategy = build_strategy
+
+            def build(self, target: str, architectures: set[Architecture] = None, clean: bool = False) -> API.ConfiguredContext.PackageContext:
+                self._target.build(self._build_strategy, target, architectures, clean)
+                return self
+
+            def write_package(self, clean: bool = False) -> Path:
+                """
+                Returns:
+                    Path to the final package that has been created
+                """
+                return self._target.package(clean=clean)
 
         class GenerateContext:
             def __init__(self, generate_targets: dict[str, Target], file_writer: FileReaderWriter, ast: list[BaseType],
@@ -282,13 +357,13 @@ class API:
                 target.generate(self._ast, clean=clean, copy_support_lib_sources=self._config.support_lib_sources)
                 return self
 
-            def write_processed_files(self) -> API.ConfiguredContext.GenerateContext:
+            def write_processed_files(self) -> Path | None:
                 """
                 write the file that lists all generated files to the path specified in the configuration.
                 If no path is configured, this does nothing.
                 Returns:
-                    the same context.
+                    Path to the written file.
                 """
                 if self._config and self._config.list_processed_files:
                     self._file_reader_writer.write_processed_files(self._config.list_processed_files)
-                return self
+                    return self._config.list_processed_files
