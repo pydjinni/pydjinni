@@ -4,7 +4,7 @@ include(../modules/Testing.cmake)
 scenario("Testing successful pydjinni execution with just custom options and no config file")
 
 given("some required options")
-list(APPEND OPTIONS generate.cpp.out:out/cpp)
+list(APPEND OPTIONS generate.cpp.out=out/cpp)
 
 given("a valid IDL file")
 

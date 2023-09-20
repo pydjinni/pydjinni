@@ -7,7 +7,7 @@ given("Valid IDL and config files")
 set(CONFIG_FILE resources/valid_config.yaml)
 set(IDL_FILE resources/valid_idl.djinni)
 given("a custom option to change the out directory of the generated java code")
-set(OPTION generate.java.out:out/java-custom)
+set(OPTION generate.java.out=out/java-custom)
 
 when("calling pydjinni_generate with the custom option")
 
