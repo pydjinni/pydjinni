@@ -11,7 +11,8 @@ from pydjinni.api import API, combine_into
 from pydjinni.defs import DEFAULT_CONFIG_PATH
 from pydjinni.exceptions import ApplicationException
 from .context import CliContext, pass_cli_context, GenerateContext, pass_generate_context, PackageContext, \
-    pass_package_context, PackageConfigurationContext, pass_package_configuration_context
+    pass_package_context, PackageConfigurationContext, pass_package_configuration_context, PublishConfigurationContext, \
+    pass_publish_configuration_context
 from ..packaging.architecture import Architecture
 
 logger = logging.getLogger(__name__)
@@ -20,7 +21,7 @@ logger = logging.getLogger(__name__)
 def main():
     """Entrypoint for initializing the Command Line Interface (CLI)"""
     try:
-        cli(auto_envvar_prefix='PYDJINNI')
+        cli()
     except ApplicationException as e:
         logger.error(e)
         exit(e.code)
@@ -111,6 +112,27 @@ class BuildCli(MultiCommand):
         return None if target_architectures is None else command
 
 
+class PublishCli(MultiCommand):
+    @click.pass_context
+    def list_commands(self, ctx, context: click.Context) -> list[str]:
+        api = MultiCommand.get_api(context)
+        return list(api.package_targets.keys())
+
+    @click.pass_context
+    def get_command(self, ctx, context: click.Context, name) -> click.Command | None:
+        api = MultiCommand.get_api(context)
+        target = api.package_targets.get(name)
+
+        @click.command(name, help=target.__doc__)
+        @pass_publish_configuration_context
+        def command(publish_configuration_context: PublishConfigurationContext):
+            logger.info(f"publishing '{name}'")
+            publish_configuration_context.context.publish(
+                name,
+                configuration=publish_configuration_context.configuration
+            )
+
+        return None if target is None else command
 
 @click.group()
 @click.version_option()
@@ -135,10 +157,10 @@ def cli(ctx, log_level, config, option):
             a dict representing the configuration hierarchy provided by the parameter
 
         Examples:
-            >>> parse_option("foo.bar:baz")
+            >>> parse_option("foo.bar=baz")
             defaultdict(None, {'foo': {'bar': 'baz'}})
         """
-        key_list, value = option.split(':', 1)
+        key_list, value = option.split('=', 1)
         keys = key_list.split('.')
         result = defaultdict()
         d = result
@@ -228,11 +250,14 @@ def package_callback(package_context, clean: bool, configuration: str):
     logger.info(f"final distributable package: {output.absolute()}")
 
 
-@cli.command()
+@cli.group(cls=PublishCli)
 @pass_cli_context
 @click.pass_context
 @click.option("--configuration", type=str,
               help="The build configuration that should be published")
-@click.argument('target', type=str)
-def publish(ctx, cli_context: CliContext, configuration: str, target: str):
-    cli_context.context.publish(target=target, configuration=configuration)
+def publish(ctx, cli_context: CliContext, configuration: str):
+    ctx.obj = PublishConfigurationContext(
+        api=cli_context.api,
+        context=cli_context.context,
+        configuration=configuration
+    )

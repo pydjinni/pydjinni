@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import inspect
+
 from pydantic import create_model, BaseModel
-from pydantic.fields import FieldInfo
+from pydantic.fields import FieldInfo, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from pydjinni.builder.build_config import BuildBaseConfig
@@ -13,6 +15,7 @@ class Settings(BaseSettings):
                 extra='forbid',
                 env_file='.env',
                 env_nested_delimiter='__',
+                env_prefix='pydjinni__'
             )
 
 class ConfigModelBuilder:
@@ -35,15 +38,22 @@ class ConfigModelBuilder:
         self._package_config_models[name] = config_model
 
     def build(self):
+
         return create_model(
             "Config",
             __base__=Settings,
-            generate=(self._create_config_model("Generate", GenerateBaseConfig, self._generator_config_models),
-                      FieldInfo(default=None, description=GenerateBaseConfig.__doc__)),
-            build=(self._create_config_model("Build", BuildBaseConfig, self._builder_config_models),
-                   FieldInfo(default=None, description=BuildBaseConfig.__doc__)),
-            package=(self._create_config_model("Package", PackageBaseConfig, self._package_config_models),
-                     FieldInfo(default=None, description=PackageBaseConfig.__doc__)),
+            generate=(self._create_config_model("Generate", GenerateBaseConfig, self._generator_config_models) | None, FieldInfo(
+                default=None,
+                description=inspect.cleandoc(GenerateBaseConfig.__doc__)
+            )),
+            build=(self._create_config_model("Build", BuildBaseConfig, self._builder_config_models) | None, FieldInfo(
+                default=None,
+                description=inspect.cleandoc(BuildBaseConfig.__doc__)
+            )),
+            package=(self._create_config_model("Package", PackageBaseConfig, self._package_config_models) | None, FieldInfo(
+                default=None,
+                description=inspect.cleandoc(PackageBaseConfig.__doc__)
+            )),
         )
 
     def _create_config_model(self, model_name: str, base: type[BaseModel], models: dict[str, type[BaseModel]]):

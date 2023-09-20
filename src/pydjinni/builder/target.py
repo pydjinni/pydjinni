@@ -5,12 +5,18 @@ from typing import TypeVar
 from pydantic import BaseModel
 
 from pydjinni.config.config_model_builder import ConfigModelBuilder
+from pydjinni.exceptions import ApplicationException
 from pydjinni.packaging.architecture import Architecture
 
 BuildConfigModel = TypeVar("BuildConfigModel", bound=BaseModel)
 
 
 class BuildTarget(ABC):
+
+    class BuildException(ApplicationException, code=180):
+        """Build step failed"""
+
+
     @property
     @abstractmethod
     def key(self) -> str:

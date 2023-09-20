@@ -1,9 +1,9 @@
 java_test_case(EnumTest
     OPTIONS
-        generate.java.package:test.enum_test
-        generate.jni.identifier.file.prefix:marshal_
-        generate.jni.identifier.file.style:snake_case
-        generate.jni.namespace:test::record::jni
+        generate.java.package=test.enum_test
+        generate.jni.identifier.file.prefix=marshal_
+        generate.jni.identifier.file.style=snake_case
+        generate.jni.namespace=test::record::jni
     SOURCES
         tests/EnumTest.java
 )

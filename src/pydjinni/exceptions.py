@@ -55,10 +55,21 @@ class ApplicationException(Exception):
 
 
 class FileNotFoundException(ApplicationException, code=2):
-    """The file could not be found"""
+    """The file or directory could not be found"""
 
     def __init__(self, file: Path):
         super().__init__(str(file.absolute().as_uri()))
+
+
+class UnknownTargetException(ApplicationException, code=120):
+    """Unknown target"""
+
+
+class ExternalCommandException(ApplicationException, code=130):
+    """External command execution has failed"""
+
+    def __init__(self, command: str):
+        super().__init__(description=f"'{command}'")
 
 
 class InputParsingException(ApplicationException, code=140):

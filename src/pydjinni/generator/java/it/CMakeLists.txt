@@ -23,10 +23,10 @@ function(java_test_case TEST_CASE_NAME)
 
     implement_test_case(${TEST_CASE_NAME} LANGUAGE java OPTIONS
             ${TEST_CASE_OPTIONS}
-            generate.java.out:${CMAKE_CURRENT_LIST_DIR}/generated/java
-            generate.jni.out.header:${CMAKE_CURRENT_LIST_DIR}/generated/include/jni
-            generate.jni.out.source:${CMAKE_CURRENT_LIST_DIR}/generated/src/jni
-            generate.java.native_lib:${JNI_TARGET_NAME})
+            generate.java.out=${CMAKE_CURRENT_LIST_DIR}/generated/java
+            generate.jni.out.header=${CMAKE_CURRENT_LIST_DIR}/generated/include/jni
+            generate.jni.out.source=${CMAKE_CURRENT_LIST_DIR}/generated/src/jni
+            generate.java.native_lib=${JNI_TARGET_NAME})
 
     add_library(${JNI_TARGET_NAME} SHARED
             ${jni_GENERATED_HEADERS}

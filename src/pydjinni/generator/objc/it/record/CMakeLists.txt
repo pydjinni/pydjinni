@@ -1,6 +1,6 @@
 objc_test_case(RecordTest
     OPTIONS
-        generate.objcpp.namespace:test::record_test::objcpp
+        generate.objcpp.namespace=test::record_test::objcpp
     SOURCES
         tests/PrimitiveTypesTests.m
         tests/CollectionTypesTests.m

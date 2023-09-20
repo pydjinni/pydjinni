@@ -69,7 +69,7 @@ function(pydjinni_generate IDL)
     # generate c++ interface
     execute_process(COMMAND ${DJINNI_EXECUTABLE}
             ${ADDITIONAL_OPTIONS}
-            --option generate.list_processed_files:${DJINNI_PROCESSED_FILES_OUTFILE}
+            --option generate.list_processed_files=${DJINNI_PROCESSED_FILES_OUTFILE}
             generate ${ADDITIONAL_GENERATE_OPTIONS} ${IDL} ${DJINNI_LANGUAGES}
         RESULT_VARIABLE PYDIJNNI_RESULT
         WORKING_DIRECTORY ${DJINNI_WORKING_DIRECTORY}

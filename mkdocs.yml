@@ -100,4 +100,6 @@ nav:
       - Architecture: architecture.md
       - Plugins:
           - Generator Plugin: generator_plugin.md
+          - Build Plugin: build_plugin.md
+          - Package Plugin: package_plugin.md
 

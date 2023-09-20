@@ -4,6 +4,7 @@ import json
 from functools import cached_property
 from importlib.metadata import entry_points, EntryPoint
 from pathlib import Path
+from typing import Any
 
 from pydjinni.builder.build_config import BuildBaseConfig
 from pydjinni.file.processed_files_model_builder import ProcessedFilesModelBuilder, ProcessedFiles
@@ -21,7 +22,7 @@ import yaml
 from pydantic import BaseModel
 
 from pydjinni.config.config_model_builder import ConfigModelBuilder
-from pydjinni.exceptions import FileNotFoundException, ConfigurationException
+from pydjinni.exceptions import FileNotFoundException, ConfigurationException, UnknownTargetException
 from pydjinni.generator.external_types import ExternalTypesBuilder
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.generator.generate_config import GenerateBaseConfig
@@ -40,6 +41,27 @@ def combine_into(d: dict, combined: dict) -> None:
             combine_into(v, combined.setdefault(k, {}))
         else:
             combined[k] = v
+
+
+def get_config(config: Any, key: str, base_path: str = None) -> Any:
+    """
+    Tries to get an attribute from a given config model by the name of the key with `getattr`.
+    If known, a base path should be provided, which helps to improve the error message by specifying in which location
+    in the config file the key is missing.
+
+    Args:
+        config: the config model that he key should be read from
+        key: the key that should be searched in the config model
+        base_path: the base path to the key
+    Returns:
+        the model behind the given key, if it does exist
+    Raises:
+        ConfigurationException: if the given key cannot be found.
+    """
+    if config is not None and hasattr(config, key) and getattr(config, key) is not None:
+        return getattr(config, key)
+    else:
+        raise ConfigurationException(f"Missing configuration for '{'.'.join([base_path, key]) if base_path else key}'")
 
 
 class API:
@@ -217,7 +239,8 @@ class API:
 
     class ConfiguredContext:
         def __init__(self, config: BaseModel, external_types_model: type[BaseExternalType],
-                     generate_targets: dict[str, Target], package_targets: dict[str, PackageTarget], build_targets: dict[str, BuildTarget], file_reader_writer: FileReaderWriter):
+                     generate_targets: dict[str, Target], package_targets: dict[str, PackageTarget],
+                     build_targets: dict[str, BuildTarget], file_reader_writer: FileReaderWriter):
             self._config = config
             self._external_types_builder = ExternalTypesBuilder(external_types_model)
             self._generate_targets = generate_targets
@@ -284,43 +307,83 @@ class API:
 
         def package(self, target: str, configuration: str = None) -> PackageContext:
             """
-            assemble a package for distribution from the binaries
+            configure a context for package configuration
+
+            Returns:
+                PackageContext: the packaging context
+            """
+
+            package_config: PackageBaseConfig = get_config(self._config, "package")
+            if configuration:
+                package_config.configuration = configuration
+            package_target = self._package_targets.get(target)
+            if package_target:
+                build_config: BuildBaseConfig = get_config(self._config.build, package_config.build_strategy,
+                                                                      "build")
+                build_strategy = self._build_targets[package_config.build_strategy]
+                build_strategy.configure(build_config)
+
+                package_target.configure(package_config)
+
+                return API.ConfiguredContext.PackageContext(
+                    target=package_target,
+                    build_strategy=build_strategy
+                )
+            else:
+                raise UnknownTargetException(target)
+
+        def publish(self, target: str, configuration: str = None):
+            """
+            Publish a previously packaged artifact to an online repository.
+            Depending on the type of package, the repository might vary. This command aims to provide a top-level
+            API to publishing packages no matter what the underlying technology is.
+
+            Args:
+                target: the package type that should be published
+                configuration: the configuration that should be used
+            Raises:
+                UnknownTargetException if the given target is not known to the system
+
             """
             package_config: PackageBaseConfig = self._config.package
             if configuration:
                 package_config.configuration = configuration
-            target = self._package_targets.get(target)
-
-            build_config: BuildBaseConfig = self._config.build
-            build_strategy = self._build_targets[package_config.build_strategy]
-            build_strategy.configure(build_config)
-
-            target.configure(package_config)
-
-            return API.ConfiguredContext.PackageContext(
-                target=target,
-                build_strategy=build_strategy
-            )
-
-        def publish(self, target: str, configuration: str = None):
-            package_config: PackageBaseConfig = self._config.package
-            if configuration:
-                package_config.configuration = configuration
-            target = self._package_targets.get(target)
-            target.configure(package_config)
-            target.publish()
+            package_target = self._package_targets.get(target)
+            if package_target:
+                package_target.configure(package_config)
+                package_target.publish()
+            else:
+                raise UnknownTargetException(target)
 
         class PackageContext:
             def __init__(self, target: PackageTarget, build_strategy: BuildTarget):
                 self._target = target
                 self._build_strategy = build_strategy
 
-            def build(self, target: str, architectures: set[Architecture] = None, clean: bool = False) -> API.ConfiguredContext.PackageContext:
+            def build(self, target: str, architectures: set[Architecture] = None,
+                      clean: bool = False) -> API.ConfiguredContext.PackageContext:
+                """
+                Build the library for a given platform target.
+
+                Args:
+                    target:         the platform that the library should be built for. Must be supported by the package plugin
+                    architectures:  list of architectures that the library should be compiled for. Overrides the
+                                    architectures defined in the configuration.
+                    clean:          If `True`, a clean build is preformed, meaning that the build directory is deleted
+                                    and the build is started from scratch.
+                Returns:
+                    the current context.
+                """
                 self._target.build(self._build_strategy, target, architectures, clean)
                 return self
 
             def write_package(self, clean: bool = False) -> Path:
                 """
+                combines all binaries previously built with `build()` into a package artifact.
+
+                Args:
+                    clean: if `True`, the packaging is done from scratch, deleting the package source directory
+                           and building it from scratch.
                 Returns:
                     Path to the final package that has been created
                 """

@@ -5,5 +5,5 @@ define_test_case(FlagsTest
     SOURCES
         src/helper.cpp
     OPTIONS
-        generate.cpp.namespace:test::flags_test
+        generate.cpp.namespace=test::flags_test
 )

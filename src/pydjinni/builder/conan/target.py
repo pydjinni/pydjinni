@@ -1,13 +1,9 @@
-import shutil
 from pathlib import Path
-
-from conan.cli.cli import Cli
-from conan.api.conan_api import ConanAPI
-
 
 from pydjinni.builder.conan.config_model import ConanConfigModel
 from pydjinni.builder import BuildTarget
 from pydjinni.packaging.architecture import Architecture
+from pydjinni.packaging.target import execute
 
 
 class ConanTarget(BuildTarget):
@@ -24,9 +20,9 @@ class ConanTarget(BuildTarget):
     config_model = ConanConfigModel
 
     def build(self, build_dir: Path, platform: str, build_type: str, architecture: Architecture) -> Path:
-        Cli(ConanAPI()).run(['build',
+        execute("conan", ['build',
                           '--output-folder', str(build_dir),
-                          '--profile:host', f'{self.config.conan.profiles / platform }',
+                          '--profile:host', f'{self.config.profiles / platform }',
                           '--settings:host', f'build_type={build_type}',
                           '--settings:host', f'arch={architecture}',
                           '--build', 'missing', '.'])

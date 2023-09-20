@@ -1,9 +1,9 @@
 java_test_case(FunctionTest
     OPTIONS
-        generate.java.package:test.function_test
-        generate.jni.identifier.file.prefix:marshal_
-        generate.jni.identifier.file.style:snake_case
-        generate.jni.namespace:test::function::jni
+        generate.java.package=test.function_test
+        generate.jni.identifier.file.prefix=marshal_
+        generate.jni.identifier.file.style=snake_case
+        generate.jni.namespace=test::function::jni
     SOURCES
         tests/TestFunction.java
 )

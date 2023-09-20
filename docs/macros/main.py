@@ -28,6 +28,11 @@ def render_config_schema_table(element, indent: int, render_defaults=True):
                 if value.get("description"):
                     value["allOf"][0]["description"] = value["description"]
                 value = value["allOf"][0]
+            elif value.get("anyOf") and len(value["anyOf"]) == 2:
+                if value.get("anyOf")[1].get("type") == "null":
+                    if value.get("description"):
+                        value["anyOf"][0]["description"] = value["description"]
+                    value = value["anyOf"][0]
             if value.get("type") == "object":
                 content = f"\n{'#' * indent} {key}\n\n"
                 if value.get("description"):

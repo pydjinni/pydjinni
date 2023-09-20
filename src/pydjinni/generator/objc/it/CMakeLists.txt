@@ -18,10 +18,10 @@ function(objc_test_case TEST_CASE_NAME)
     implement_test_case(${TEST_CASE_NAME} LANGUAGE objc
         OPTIONS
             ${TEST_CASE_OPTIONS}
-            generate.objc.out.header:${CMAKE_CURRENT_LIST_DIR}/generated/include/objc
-            generate.objc.out.source:${CMAKE_CURRENT_LIST_DIR}/generated/src/objc
-            generate.objcpp.out.header:${CMAKE_CURRENT_LIST_DIR}/generated/include/objcpp
-            generate.objcpp.out.source:${CMAKE_CURRENT_LIST_DIR}/generated/src/objcpp
+            generate.objc.out.header=${CMAKE_CURRENT_LIST_DIR}/generated/include/objc
+            generate.objc.out.source=${CMAKE_CURRENT_LIST_DIR}/generated/src/objc
+            generate.objcpp.out.header=${CMAKE_CURRENT_LIST_DIR}/generated/include/objcpp
+            generate.objcpp.out.source=${CMAKE_CURRENT_LIST_DIR}/generated/src/objcpp
         )
 
     add_library(${TEST_LIBRARY_NAME}

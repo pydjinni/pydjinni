@@ -6,6 +6,6 @@ define_test_case(RecordTest
         src/helper.cpp
         include/base_record.hpp
     OPTIONS
-        generate.cpp.namespace:test::record
+        generate.cpp.namespace=test::record
 )
 target_include_directories(RecordTestBase PUBLIC include)

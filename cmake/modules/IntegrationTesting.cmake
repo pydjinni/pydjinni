@@ -19,8 +19,8 @@ function(define_test_case TEST_CASE_NAME)
         )
 
     list(APPEND TEST_CASE_OPTIONS
-        generate.cpp.out.header:generated/include/cpp
-        generate.cpp.out.source:generated/src/cpp
+        generate.cpp.out.header=generated/include/cpp
+        generate.cpp.out.source=generated/src/cpp
     )
 
     pydjinni_generate(${TEST_CASE_INTERFACE} CLEAN

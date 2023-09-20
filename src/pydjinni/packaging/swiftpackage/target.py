@@ -1,19 +1,16 @@
-import os
-import shutil
 from pathlib import Path
 
 from pydantic import HttpUrl
 
-from pydjinni.packaging.target import PackageTarget
+from pydjinni.packaging.target import PackageTarget, prepare, copy_directory, execute
 from pydjinni.packaging.architecture import Architecture
 from pydjinni.packaging.platform import Platform
 from pydjinni.packaging.swiftpackage.publish_config import SwiftpackagePublishConfig
 
 
 def lipo_combine_framework(input: list[Path], output: Path):
-    if output.exists():
-        shutil.rmtree(output)
-    shutil.copytree(src=input[0], dst=output, symlinks=True)
+    copy_directory(src=input[0], dst=output, clean=True)
+
     name_segments = input[0].name.split('.')
     if name_segments[-1] == 'dSYM':
         binary_name = Path('Contents') / 'Resources' / 'DWARF' / name_segments[0]
@@ -21,10 +18,17 @@ def lipo_combine_framework(input: list[Path], output: Path):
         binary_name = Path(input[0].name.split('.')[0])
     input_absolute_paths: list[Path] = [(framework / binary_name).resolve().absolute() for framework in input]
     output_absolute_path = (output / binary_name).resolve()
-    os.system(f"lipo -create -output {str(output_absolute_path)} {' '.join([str(path) for path in input_absolute_paths])} ")
+    execute("lipo", arguments=[
+        "-create",
+        f"-output {str(output_absolute_path)}",
+        *[str(path) for path in input_absolute_paths]
+    ])
 
 
 class SwiftpackageTarget(PackageTarget):
+    """
+    Swift package
+    """
     key = "swiftpackage"
     platforms = {
         Platform.macos: [Architecture.x86_64, Architecture.armv8],
@@ -39,46 +43,59 @@ class SwiftpackageTarget(PackageTarget):
             output_arch = '_'.join(self._build_artifacts[target].keys())
             framework_name = f'{self.config.target}.framework'
             merged_output_folder = self.config.out / self.config.configuration / 'build' / 'swiftpackage' / 'platforms' / target / output_arch / 'dist'
-            for artifact in [framework_name, f'{framework_name}.dSYM']:
+
+            lipo_combine_framework(
+                input=[path / framework_name for path in build_artifacts_folders],
+                output=merged_output_folder / framework_name
+            )
+            dsym_name = f'{framework_name}.dSYM'
+            dsym_input = [path / dsym_name for path in build_artifacts_folders if (path / dsym_name).exists()]
+            if dsym_input:
                 lipo_combine_framework(
-                    input=[path / artifact for path in build_artifacts_folders],
-                    output=merged_output_folder / artifact
+                    input=dsym_input,
+                    output=merged_output_folder / dsym_name
                 )
+
             self._build_artifacts[target] = {output_arch: merged_output_folder}
 
     def package_build(self):
         framework_output_path = self.package_build_path / 'bin'
         xcframework_path = framework_output_path / f'{self.config.target}.xcframework'
         framework_name = f'{self.config.target}.framework'
-        if xcframework_path.exists():
-            shutil.rmtree(xcframework_path)
-        parameters = ""
+        prepare(xcframework_path, clean=True)
+        parameters = []
         for artifacts in self._build_artifacts.values():
             for path in artifacts.values():
-                parameters += f'-framework {str((path / framework_name).absolute())} '
-                parameters += f'-debug-symbols {str((path / f"{framework_name}.dSYM").absolute())} '
-        os.system(f"xcodebuild -create-xcframework -output { str(xcframework_path.absolute()) } {parameters}")
-        shutil.copytree(src=self.package_build_path, dst=self.package_output_path, dirs_exist_ok=True)
+                parameters.append(f'-framework {str((path / framework_name).absolute())}')
+                dsym_path = path / f"{framework_name}.dSYM"
+                if dsym_path.exists():
+                    parameters.append(f'-debug-symbols {str(dsym_path.absolute())}')
+        execute("xcodebuild", [
+            "-create-xcframework",
+            f"-output { str(xcframework_path.absolute()) }",
+            *parameters
+        ])
+        copy_directory(src=self.package_build_path, dst=self.package_output_path, clean=True)
 
     def publish(self):
         git_repository_path = self.config.out / self.config.configuration / 'build' / self.key / 'package_repository'
-        cwd = os.getcwd()
         if git_repository_path.exists():
-            os.chdir(git_repository_path)
-            os.system(f"git checkout {self.config.swiftpackage.publish.branch}")
-            os.system("git pull")
+            execute("git", ["checkout", self.config.swiftpackage.publish.branch], working_dir=git_repository_path)
+            execute("git", ["pull"], working_dir=git_repository_path)
         else:
             repository: HttpUrl = self.config.swiftpackage.publish.repository
-            os.system(f"git clone https://{self.config.swiftpackage.publish.username}:{self.config.swiftpackage.publish.password}@{repository.host}{repository.path} {git_repository_path}")
-            os.chdir(git_repository_path)
-            os.system(f"git checkout {self.config.swiftpackage.publish.branch}")
-        os.chdir(cwd)
-        shutil.copytree(src=self.package_build_path, dst=git_repository_path, dirs_exist_ok=True)
+            execute("git", [
+                "clone",
+                f"https://{self.config.swiftpackage.publish.username}:{self.config.swiftpackage.publish.password}@{repository.host}{repository.path}",
+                git_repository_path
+            ])
+            execute("git", ["checkout", self.config.swiftpackage.publish.branch], working_dir=git_repository_path)
+        (git_repository_path / "Package.swift").unlink()
+        prepare(git_repository_path / "bin", clean=True)
+        copy_directory(src=self.package_build_path, dst=git_repository_path)
         version = (self.package_build_path / "VERSION").read_text()
-        os.chdir(git_repository_path)
-        os.system("git add .")
-        os.system(f'git commit -m "version {version}"')
-        os.system(f'git tag {version}')
-        os.system("git push")
-        os.system("git push --tags")
-        os.chdir(cwd)
+        execute("git", ["add", "."], working_dir=git_repository_path)
+        execute("git", ["commit", f'-m "version {version}"'], working_dir=git_repository_path)
+        execute("git", ["tag", version], working_dir=git_repository_path)
+        execute("git", ["push"], working_dir=git_repository_path)
+        execute("git", ["push", "--tags"], working_dir=git_repository_path)

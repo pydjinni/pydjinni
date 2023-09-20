@@ -5,5 +5,5 @@ define_test_case(EnumTest
     SOURCES
         src/helper.cpp
     OPTIONS
-        generate.cpp.namespace:test::enum_test
+        generate.cpp.namespace=test::enum_test
 )

@@ -1,4 +1,5 @@
 import inspect
+import os
 import shutil
 from abc import ABC, abstractmethod
 from functools import cached_property
@@ -13,12 +14,61 @@ from .architecture import Architecture
 from .packaging_config import PackageBaseConfig
 from .platform import Platform
 from pydjinni.builder import BuildTarget
+from pydjinni.exceptions import ExternalCommandException, FileNotFoundException
+
+
+def copy_directory(src: Path, dst: Path, clean: bool = False):
+    prepare(dst, clean)
+    try:
+        shutil.copytree(src=src, dst=dst, symlinks=True, dirs_exist_ok=True)
+    except FileNotFoundError as e:
+        raise FileNotFoundException(Path(e.filename))
+
+
+def copy_file(src: Path, dst: Path):
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        shutil.copy(src, dst)
+    except FileNotFoundError as e:
+        raise FileNotFoundException(e.filename)
+
+
+def prepare(directory: Path, clean: bool = False):
+    """
+    prepares a directory for later use. Makes sure the directory exists, and cleans it if requested
+
+    Args:
+        directory: the directory that should be prepared
+        clean: whether the directory should be cleaned if it may already contain files
+    """
+    if clean and directory.exists():
+        shutil.rmtree(directory)
+    directory.mkdir(parents=True, exist_ok=True)
+
+
+def execute(command: str, arguments: list[str], working_dir: Path = Path(os.getcwd())) -> int:
+    cwd = os.getcwd()
+    os.chdir(working_dir)
+    if shutil.which(command):
+        full_command = f'{command} {" ".join([str(argument) for argument in arguments])}'
+        result = os.system(full_command)
+        if result != 0:
+            raise ExternalCommandException(full_command)
+        os.chdir(cwd)
+        return result
+    else:
+        os.chdir(cwd)
+        raise ExternalCommandException(f"Unknown command {command}")
 
 
 class PackageTarget(ABC):
+
     @abstractmethod
     @cached_property
     def key(self) -> str:
+        """
+        The name of the package plugin. Will be used as configuration key.
+        """
         pass
 
     @abstractmethod
@@ -75,8 +125,7 @@ class PackageTarget(ABC):
         build_artifacts = {}
         for arch in build_architectures:
             build_path = self.config.out / self.config.configuration / 'build' / self.key / 'platforms' / target / arch
-            if clean and build_path.exists():
-                shutil.rmtree(build_path)
+            prepare(build_path, clean)
             build_artifacts[arch] = build_strategy.build(
                 build_dir=build_path,
                 platform=target,
@@ -87,6 +136,10 @@ class PackageTarget(ABC):
         self.after_build(target, architectures)
 
     def after_build(self, target: str, architectures: set[Architecture]):
+        """
+        Implement this method to add additional postprocessing step to the build output that was produced by the
+        configured build system.
+        """
         pass
 
     def package(self, clean: bool = False) -> Path:
@@ -96,22 +149,18 @@ class PackageTarget(ABC):
         Returns:
             Path to the final package that has been created
         """
-        if self.package_build_path.exists() and clean:
-            shutil.rmtree(self.package_build_path)
-        self.package_build_path.mkdir(parents=True, exist_ok=True)
-        if self.package_output_path.exists():
-            shutil.rmtree(self.package_output_path)
-        self.package_output_path.mkdir(parents=True, exist_ok=True)
+        prepare(self.package_build_path, clean)
+        prepare(self.package_output_path, True)
         for file in self._template_directory.rglob('*'):
             if file.is_file():
                 output_file = self.package_build_path / file.relative_to(self._template_directory)
-                output_file.parent.mkdir(parents=True, exist_ok=True)
+                prepare(output_file.parent)
                 try:
                     output_file.write_text(
                         self._jinja_env.get_template(str(file.relative_to(self._template_directory))).render(
                             config=self.config))
                 except UnicodeDecodeError:
-                    shutil.copy(src=file, dst=output_file)
+                    copy_file(src=file, dst=output_file)
 
         self.package_build()
 
@@ -119,8 +168,14 @@ class PackageTarget(ABC):
 
     @abstractmethod
     def package_build(self):
+        """
+        Implement this method to bundle a package.
+        """
         pass
 
     @abstractmethod
     def publish(self):
+        """
+        Implement this method to publish the bundled package
+        """
         pass

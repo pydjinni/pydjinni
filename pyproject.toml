@@ -33,8 +33,7 @@ dependencies = [
     'tomli>=1.1.0,<2; python_version < "3.11"',
     'StrEnum>=0.4; python_version < "3.11"',
     'tomli_w>=1.0,<2',
-    'setuptools>=65',
-    'conan>=2'
+    'setuptools>=65'
 ]
 
 [tool.setuptools_scm]

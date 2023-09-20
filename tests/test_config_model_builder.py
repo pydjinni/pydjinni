@@ -9,6 +9,7 @@ def test_add_generator_config():
 
     # AND GIVEN a pydantic model
     class GeneratorConfig(BaseModel):
+        """foo"""
         foo: int = 1
 
     # WHEN adding a generator model
@@ -21,6 +22,6 @@ def test_add_generator_config():
     assert 'generate' in config_model.model_fields
 
     # THEN the config model should contain the GeneratorConfig model in the generate field
-    assert 'name' in config_model.model_fields['generate'].annotation.model_fields
-    assert config_model.model_fields['generate'].annotation.model_fields['name'].annotation == GeneratorConfig
+    assert 'name' in config_model.model_fields['generate'].annotation.__args__[0].model_fields
+    assert config_model.model_fields['generate'].annotation.__args__[0].model_fields['name'].annotation == GeneratorConfig
 

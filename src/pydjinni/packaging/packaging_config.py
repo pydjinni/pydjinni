@@ -6,6 +6,9 @@ from pydjinni.packaging.configuration import Configuration
 
 
 class PackageBaseConfig(BaseModel):
+    """
+    Packaging configuration
+    """
     out: Path = Field(
         default=Path("dist"),
         description="output base directory for the final distributable packages"

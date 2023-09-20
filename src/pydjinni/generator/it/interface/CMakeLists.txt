@@ -7,5 +7,5 @@ define_test_case(InterfaceTest
         src/calculator_impl.cpp
         src/calculator_impl.hpp
     OPTIONS
-        generate.cpp.namespace:test::interface
+        generate.cpp.namespace=test::interface
 )
