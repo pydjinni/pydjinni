@@ -48,13 +48,13 @@ foo = record {
     info: i16;
 }
 
-my_cpp_interface = interface +c {
+my_cpp_interface = main interface +cpp {
     # comment
     method_returning_nothing(
         value: i16,
         foo: i16
     );
-    method_returning_some_type(key: i8): foo;
-    static get_version(): i8;
+    method_returning_some_type(key: i8) -> foo;
+    static get_version() -> i8;
 }
 ```

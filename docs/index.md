@@ -10,9 +10,9 @@ hide:
 <div class="hero" markdown>
 
 <img src="assets/logo.png" alt="logo" width="90" height="90">
-<h1 class="hero-title">Integrate C++ code into<br>your Java, Objective-C or C# application!</h1>
+<h1 class="hero-title">Integrate C++ code into<br>your Android or iOS application!</h1>
 PyDjinni is a tool for generating cross-language type declarations and interface bindings.<br>
-Heavily inspired by the original [Djinni by Dropbox](https://github.com/dropbox/djinni), it's designed to connect C++ with either Java, Objective-C, Rust or C#.
+Heavily inspired by the original [Djinni by Dropbox](https://github.com/dropbox/djinni), it's designed to connect C++ with Java and Objective-C.
 
 <br>
 [&nbsp;&nbsp;:material-rocket-launch-outline: Get Started&nbsp;&nbsp;](installation.md){ .md-button .md-button--primary }&nbsp;
@@ -32,7 +32,7 @@ person = record { # (1)!
 }
 
 
-database = interface +c { # (2)!
+database = main interface +cpp { # (2)!
     add(person: person) -> bool;
     remove(person: person) -> bool;
     get_persons() -> list<person>;
@@ -142,9 +142,10 @@ Here is what is planned for the near future:
 
 <div id="roadmap" markdown>
 - [x] Publish Initial Preview
+- [ ] Add C#/Windows support
 - [ ] Release stable version 1.0
-- [ ] Rust support
-- [ ] Javascript support
+- [ ] Publish IDE Plugins
+- [ ] Add more language bindings
 </div>
 
 <br>
