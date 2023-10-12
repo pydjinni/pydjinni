@@ -144,7 +144,7 @@ class PublishCli(MultiCommand):
                    "File format is determined based on the file extension. "
                    "Supported extensions: `.yaml`, `.yml`, `.json`, `.toml`")
 @click.option("--log-level", "-l", default="info",
-              type=click.Choice(["debug", "info", "warn", "error"]),
+              type=click.Choice(["debug", "info", "warn", "error"], case_sensitive=False),
               help="log level")
 def cli(ctx, log_level, config, option):
     def parse_option(option: str) -> dict:
@@ -169,11 +169,13 @@ def cli(ctx, log_level, config, option):
         d[keys[-1]] = value
         return result
 
+    log_level = getattr(logging, log_level.upper(), logging.INFO)
     logging.basicConfig(
-        level=getattr(logging, log_level.upper(), None),
+        level=log_level,
         format="%(message)s",
         handlers=[RichHandler(show_time=False, show_path=False, markup=True)]
     )
+    logger.setLevel(log_level)
 
     options_dict = dict()
     for value in option:
@@ -209,7 +211,8 @@ def generate(ctx, cli_context: CliContext, idl: Path, clean: bool):
     logger.info("parsing IDL")
     context = cli_context.context.parse(idl)
     logger.debug("generated AST:")
-    logger.debug(pretty_repr(context.ast))
+    if logger.level <= logging.DEBUG:
+        logger.debug(pretty_repr(context.ast))
     ctx.obj = GenerateContext(
         api=cli_context.api,
         context=context,
