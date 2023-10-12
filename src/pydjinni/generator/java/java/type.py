@@ -6,6 +6,8 @@ from pydantic import BaseModel, Field, computed_field
 
 from pydjinni.generator.java.java.comment_renderer import JavaDocCommentRenderer
 from pydjinni.generator.java.java.config import JavaConfig
+from pydjinni.generator.java.java.keywords import keywords
+from pydjinni.generator.validator import validate
 from pydjinni.parser.ast import Record, Function
 from pydjinni.parser.base_models import BaseType, BaseField
 from pydjinni.parser.identifier import IdentifierType as Identifier
@@ -24,6 +26,7 @@ class JavaBaseType(BaseModel):
     config: JavaConfig = Field(exclude=True, repr=False)
 
     @cached_property
+    @validate(keywords)
     def name(self) -> str: return self.decl.name.convert(self.config.identifier.type)
 
     @computed_field
@@ -43,6 +46,7 @@ class JavaBaseType(BaseModel):
     def generic(self) -> bool: return False
 
     @cached_property
+    @validate(keywords, separator='.')
     def package(self) -> str:
         return '.'.join(self.config.package + [identifier.convert(self.config.identifier.package) for identifier in self.decl.namespace])
 
@@ -131,6 +135,7 @@ class JavaFunction(JavaBaseType):
 class JavaSymbolicConstantField(JavaBaseField):
     @computed_field
     @cached_property
+    @validate(keywords)
     def name(self) -> str: return self.decl.name.convert(self.config.identifier.enum)
 
 
@@ -139,4 +144,5 @@ class JavaInterface(JavaBaseType):
     class JavaMethod(JavaBaseField):
         @computed_field
         @cached_property
+        @validate(keywords)
         def name(self) -> str: return self.decl.name.convert(self.config.identifier.method)

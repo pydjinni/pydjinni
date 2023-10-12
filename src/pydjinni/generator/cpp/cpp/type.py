@@ -6,6 +6,8 @@ from pydantic import BaseModel, Field, computed_field
 
 from pydjinni.generator.cpp.cpp.comment_renderer import DoxygenCommentRenderer
 from pydjinni.generator.cpp.cpp.config import CppConfig
+from pydjinni.generator.cpp.cpp.keywords import keywords
+from pydjinni.generator.validator import validate
 from pydjinni.parser.ast import Parameter, Record, Interface
 from pydjinni.parser.base_models import BaseType, BaseField, TypeReference, BaseExternalType
 from pydjinni.parser.identifier import IdentifierType as Identifier
@@ -49,6 +51,7 @@ class CppBaseType(BaseModel):
     def name(self): return self.decl.name.convert(self.config.identifier.type)
 
     @cached_property
+    @validate(keywords, separator="::")
     def namespace(self): return '::'.join(
         self.config.namespace + [identifier.convert(self.config.identifier.namespace) for
                                  identifier in self.decl.namespace])
@@ -88,6 +91,7 @@ class CppBaseField(BaseModel):
 
     @computed_field
     @cached_property
+    @validate(keywords)
     def name(self) -> str: return self.decl.name.convert(self.config.identifier.field)
 
     @cached_property
@@ -108,6 +112,7 @@ class CppInterface(CppBaseType):
 
         @computed_field
         @cached_property
+        @validate(keywords)
         def name(self) -> str: return self.decl.name.convert(self.config.identifier.method)
 
         @cached_property
@@ -201,6 +206,7 @@ class CppFunction(CppBaseType):
 class CppSymbolicConstantField(CppBaseField):
     @computed_field
     @cached_property
+    @validate(keywords)
     def name(self) -> str: return self.decl.name.convert(self.config.identifier.enum)
 
 

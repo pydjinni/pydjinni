@@ -6,6 +6,8 @@ from pydantic import BaseModel, Field, computed_field
 
 from pydjinni.generator.objc.objc.comment_renderer import DocCCommentRenderer
 from pydjinni.generator.objc.objc.config import ObjcConfig
+from pydjinni.generator.objc.objc.keywords import swift_keywords, keywords
+from pydjinni.generator.validator import validate
 from pydjinni.parser.ast import Record, Interface, Parameter, Function
 from pydjinni.parser.base_models import BaseType, BaseExternalType, BaseField, TypeReference
 from pydjinni.parser.identifier import IdentifierType as Identifier
@@ -56,6 +58,7 @@ class ObjcBaseType(BaseModel):
     config: ObjcConfig = Field(exclude=True, repr=False)
 
     @cached_property
+    @validate(keywords)
     def name(self) -> str:
         return f"{self.config.type_prefix}{self.namespace}{self.decl.name.convert(self.config.identifier.type)}"
 
@@ -80,6 +83,7 @@ class ObjcBaseType(BaseModel):
     def pointer(self) -> bool: return False
 
     @cached_property
+    @validate(swift_keywords)
     def swift_typename(self) -> str:
         return f"{self.namespace}.{self.name}" if self.namespace else self.name
 
@@ -118,6 +122,7 @@ class ObjcBaseField(BaseModel):
 
     @computed_field
     @cached_property
+    @validate(keywords)
     def name(self) -> str: return self.decl.name.convert(self.config.identifier.field)
 
     @cached_property
@@ -128,6 +133,7 @@ class ObjcRecord(ObjcBaseClassType):
     decl: Record = Field(exclude=True, repr=False)
 
     @cached_property
+    @validate(keywords)
     def name(self) -> str:
         if self.base_type:
             return f"{self.config.type_prefix}{self.namespace}{Identifier(f'{self.decl.name}_base').convert(self.config.identifier.type)}"
@@ -179,6 +185,7 @@ class ObjcParameter(ObjcBaseField):
 class ObjcSymbolicConstantField(ObjcBaseField):
     @computed_field
     @cached_property
+    @validate(keywords)
     def name(self) -> str: return self.decl.name.convert(self.config.identifier.enum)
 
 
@@ -188,6 +195,7 @@ class ObjcInterface(ObjcBaseClassType):
 
         @computed_field
         @cached_property
+        @validate(keywords)
         def name(self) -> str: return self.decl.name.convert(self.config.identifier.method)
 
         @cached_property
