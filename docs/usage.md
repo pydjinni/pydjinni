@@ -8,7 +8,9 @@ It also comes with a flexible plugin system that allows to adapt certain behavio
 If the development process provided does not fit your needs nevertheless, it is still possible to
 just use the `pydjinni generate` command set and ignore all the other tools in the swiss knife.
 
-## Generate
+## Commands
+
+### Generate
 
 Generate java language bindings for android from the `foo.djinni` IDL file:
 
@@ -19,10 +21,10 @@ pydjinni generate foo.djinni java
 Generate objc bindings with custom config:
 
 ```bash
-pydinni generate --config=.pydjinni.yaml foo.djinni objc
+pydinni --config=custom.yaml generate foo.djinni objc
 ```
 
-## Build and Package
+### Build and Package
 
 Build for a variety of target platforms and package the results for distribution:
 
@@ -31,7 +33,7 @@ pydjinni package aar android
 pydjinni package swiftpackage ios macos ios_simulator
 ```
 
-## Publish
+### Publish
 
 Upload the distribution artifact to a repository or registry:
 
@@ -40,8 +42,9 @@ pydjinni publish aar
 pydjinni publish swiftpackage
 ```
 
+## Configuration
 
-## Config file
+### Example configuration file
 
 ```yaml
   generate:
@@ -78,7 +81,7 @@ pydjinni publish swiftpackage
           android: [x86_64, armv8]
 ```
 
-## Credentials
+### Credentials
 
 Credentials for artifact publication should not be stored in the configuration file or passed to the command via the CLI.
 Instead, they can be set as environment variables or in a `.env` file:

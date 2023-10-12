@@ -141,11 +141,12 @@ Here is what is planned for the near future:
 
 
 <div id="roadmap" markdown>
-- [x] Publish Initial Preview
+- [x] Publish initial preview
+- [ ] Add language server (LSP) support
+- [ ] Add project setup wizard
 - [ ] Add C#/Windows support
 - [ ] Release stable version 1.0
-- [ ] Publish IDE Plugins
-- [ ] Add more language bindings
+- [ ] Publish IDE plugins
 </div>
 
 <br>

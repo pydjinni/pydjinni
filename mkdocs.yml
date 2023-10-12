@@ -82,7 +82,6 @@ nav:
       - Installation: installation.md
       - Usage: usage.md
       - Features: features.md
-      - Migration: migration.md
   - Reference:
       - CLI: cli.md
       - API: api.md
@@ -97,7 +96,6 @@ nav:
   - Demo: demo.md
   - Development:
       - Setup: dev_setup.md
-      - Architecture: architecture.md
       - Plugins:
           - Generator Plugin: generator_plugin.md
           - Build Plugin: build_plugin.md

@@ -1,5 +1,5 @@
 #demo {
-    margin-top: -35px;
+    margin-top: -30px;
 }
 
 #demo .tabbed-set {
@@ -142,7 +142,7 @@ span.teaser .twemoji {
 
     textarea, .generated_listing, .md-typeset .rich_text {
         display: block;
-        height: calc(100vh - 345px);
+        height: calc(100vh - 300px);
         overflow-wrap: normal;
         white-space: pre;
         overflow: auto;

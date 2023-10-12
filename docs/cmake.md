@@ -73,8 +73,8 @@ include(Pydjinni)
 pydjinni_generate(example.djinni
     LANGUAGES java
     OPTIONS
-        generate.java.out:out/java
-        generate.java.package:foo.bar.package
+        generate.java.out=out/java
+        generate.java.package=foo.bar.package
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 ```
