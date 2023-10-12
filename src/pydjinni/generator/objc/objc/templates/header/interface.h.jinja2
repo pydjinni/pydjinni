@@ -10,7 +10,9 @@
 {% if type_def.comment %}
 {{ type_def.objc.comment }}
 {% endif %}
+{% if config.swift.rename_interfaces %}
 NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
+{% endif %}
 {% if "objc" in type_def.targets %}
 @protocol {{ type_def.objc.typename }} {{ "<NSObject>" if config.strict_protocols }}
 {% else %}
@@ -24,11 +26,13 @@ NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
 {%- for parameter in method.parameters -%}
 {{ ":" if loop.first else (" " ~ parameter.objc.name ~ ":") }}({{ (parameter.objc.annotation ~ " ") if parameter.objc.annotation }}{{ parameter.objc.type_decl }}){{ parameter.objc.name }}
 {% endfor %}
+{% if config.swift.rename_interfaces %}
   __attribute__((swift_name("{{ method.objc.name }}(
 {%- for parameter in method.parameters -%}
 {{ parameter.objc.name }}:
 {%- endfor -%}
 )")));
+{% endif %}
 {% endfor %}
 @end
 {% endblock %}

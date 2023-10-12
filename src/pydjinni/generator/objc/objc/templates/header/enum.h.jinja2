@@ -4,7 +4,9 @@
 {% if type_def.comment %}
 {{ type_def.objc.comment }}
 {% endif %}
+{% if config.swift.rename_interfaces %}
 NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
+{% endif %}
 typedef NS_ENUM(NSUInteger, {{ type_def.objc.typename }}) {
 {% for item in type_def.items %}
     {% if item.comment %}

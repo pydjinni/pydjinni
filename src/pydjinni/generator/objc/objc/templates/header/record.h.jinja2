@@ -13,7 +13,9 @@
 {% if type_def.comment %}
 {{ type_def.objc.comment }}
 {% endif %}
+{% if config.swift.rename_interfaces %}
 NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
+{% endif %}
 @interface {{ type_def.objc.name }} : NSObject
 - (nonnull instancetype){{ type_def.objc.init }}
     {%- for field in type_def.fields -%}

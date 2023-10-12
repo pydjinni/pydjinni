@@ -16,6 +16,10 @@ class ObjcIdentifierStyle(BaseModel):
 
 class SwiftConfig(BaseModel):
     """Configuration options related to using the Objective-C interface from Swift"""
+    rename_interfaces: bool = Field(
+        default=True,
+        description="Whether the Objective-C interface should be annotated with improved Swift method and class names."
+    )
     bridging_header: Path = Field(
         default=None,
         description="The name of the Objective-C Bridging Header required for using the interface from Swift."
