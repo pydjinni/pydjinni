@@ -1,4 +1,4 @@
-# CLI Reference
+# Command Line Interface
 
 {{ cli_commands() }}
 

@@ -80,16 +80,17 @@ nav:
   - Home: index.md
   - Getting started:
       - Installation: installation.md
-      - Usage: usage.md
-      - Features: features.md
+      - Introduction: introduction.md
+      - Migrating from Djinni: migration.md
   - Reference:
-      - CLI: cli.md
-      - API: api.md
-      - IDL: idl.md
+      - Command Line Interface: cli.md
+      - Programming Interface: api.md
+      - Interface Definition:
+        - Overview: idl.md
+        - Types: types.md
+        - Deriving: deriving.md
+        - External Types: external_types.md
       - Configuration: config.md
-      - Types: types.md
-      - Deriving: deriving.md
-      - External Types: external_types.md
       - Processed Files: processed_files.md
       - CMake: cmake.md
       - Pygments: pygments.md

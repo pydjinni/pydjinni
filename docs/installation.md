@@ -1,6 +1,9 @@
 # Installation
 
-## PyPi <small>(recommended)</small>
+PyDjinni is distributed on the [Python Package Index](https://pypi.org/project/PyDjinni/).
+It also includes the support-library code that is required for the generated glue code to function.
+
+## PyPI <small>(recommended)</small>
 
 ```shell
 pip install pydjinni

@@ -11,6 +11,17 @@
     }
 }
 
+.md-header__title .md-ellipsis::after {
+    content: "PREVIEW";
+    background: var(--md-accent-fg-color);
+    border-radius: var(--border-radius);
+    padding: 2px 4px;
+    color: var(--md-default-bg-color);
+    font-size: 50%;
+    font-weight: bold;
+    vertical-align: 5%;
+}
+
 .md-typeset h1, .md-typeset h2 {
     font-weight: 600;
 }
@@ -101,6 +112,102 @@
     border-radius: 3px 3px 0 0;
 }
 
+.md-typeset h1.hero-title {
+    font-size: 2.4em;
+    font-weight: bold;
+    letter-spacing: -0.024em;
+    margin: 0;
+    background-color: #9473FF;
+    background-image: url("https://unsplash.com/photos/33xSu0EWgP4/download?ixid=MnwxMjA3fDB8MXxzZWFyY2h8NzB8fGNvbG9yZnVsJTIwYmx1cnJlZHxkZXwwfHx8fDE2ODIwMzQ5NDU&force=true&w=640");
+    background-repeat: repeat;
+    background-size: 2500px 2500px;
+    background-clip:text;
+    -webkit-background-clip:text;
+    animation: animate 120s ease-in-out infinite;
+    color: transparent;
+}
+
+.md-typeset h1.hero-subtitle {
+    margin: 0;
+    font-size: 2.4em;
+    color: var(--md-default-fg-color);
+    letter-spacing: -0.024em;
+    line-height: 1.1em;
+    opacity: 0.85;
+    font-weight: bold;
+}
+
+.md-typeset p.hero-abstract {
+    color: var(--md-default-fg-color--light);
+    font-size: 1em;
+    letter-spacing: -0.014em;
+}
+
+.main-feature-panels, .secondary-feature-panels {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: stretch;
+    margin-bottom: 20px;
+}
+
+.feature-panel {
+    background: rgba(190, 190, 220, 0.03);
+    border-radius: calc(2* var(--border-radius));
+    padding: 18px;
+    border: 1px solid var(--md-typeset-table-color);
+    flex-grow: 1;
+}
+
+.feature-panel div.highlight pre {
+    margin: 0;
+}
+
+.feature-icon {
+    display: inline-block;
+    background: var(--md-code-bg-color);
+    border-radius: var(--border-radius);
+    width: 40px;
+    height: 40px;
+    margin-right: 8px;
+    text-align: center;
+}
+
+.feature-panel h3 {
+    margin-top: 0;
+    font-weight: bold;
+    line-height: 40px;
+}
+
+.feature-panel h3 .headerlink {
+    display: none;
+}
+
+.hero-buttons p {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-top: 15px;
+}
+
+.hero-buttons a.md-button {
+    text-align: center;
+}
+
+@media screen and (max-width: 500px) {
+    .hero-buttons p {
+        justify-content: center;
+    }
+
+    .hero-buttons a.md-button:first-child {
+        width: 100%;
+    }
+}
+
+a[href="https://github.com/pydjinni/pydjinni/edit/main/docs/index.md"] > svg {
+    display: none;
+}
+
 @media screen and (min-width: 60em) {
     .md-search__form {
         height: 1.64rem;
@@ -158,20 +265,18 @@
         height: 2em;
     }
 
-    .md-typeset h1.hero-title {
-        font-size:2.9em;
+    .md-typeset h1.hero-title, .md-typeset h1.hero-subtitle {
+        font-size: 3em;
     }
-}
 
-.md-typeset h1.hero-title {
-    background-color: #9473FF;
-    background-image: url("https://unsplash.com/photos/33xSu0EWgP4/download?ixid=MnwxMjA3fDB8MXxzZWFyY2h8NzB8fGNvbG9yZnVsJTIwYmx1cnJlZHxkZXwwfHx8fDE2ODIwMzQ5NDU&force=true&w=640");
-    background-repeat: repeat;
-    background-size: 2500px 2500px;
-    background-clip:text;
-    -webkit-background-clip:text;
-    animation: animate 120s ease-in-out infinite;
-    color: transparent;
+    .main-feature-panels, .secondary-feature-panels {
+        flex-direction: row;
+    }
+
+    .md-typeset p.hero-abstract {
+        font-size: 1.2em;
+    }
+
 }
 
 @keyframes animate {
@@ -190,17 +295,6 @@
 
 .md-tooltip {
     border-radius: 0 var(--border-radius) var(--border-radius) var(--border-radius);
-    border: 1px solid var(--md-default-fg-color--lightest);
-}
-
-.hero {
-    background-image: linear-gradient(175deg, var(--md-accent-fg-color) -480%, var(--md-code-bg-color) 110%);
-    border-radius: calc(3.5 * var(--border-radius));
-    margin-top: -3em;
-    z-index: 2;
-    position: relative;
-    padding: 2em;
-    box-shadow: 0 4px 20px 0 rgba(0,0,0,0.06);
     border: 1px solid var(--md-default-fg-color--lightest);
 }
 

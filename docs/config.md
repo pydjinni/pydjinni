@@ -1,4 +1,4 @@
-# Configuration Reference
+# Configuration
 
 PyDjinni can be configured in different ways:
 

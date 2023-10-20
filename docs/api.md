@@ -1,4 +1,4 @@
-# API
+# Programming Interface
 
 ::: pydjinni.API
     options:

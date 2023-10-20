@@ -1,7 +1,7 @@
 # CMake
 
 PyDjinni comes with a CMake module that allows for easy integration of the interface generation
-in the CMake configuration step.
+in a CMake project configuration.
 
 ## Synopsis
 

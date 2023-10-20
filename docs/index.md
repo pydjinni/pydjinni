@@ -5,32 +5,37 @@ hide:
   - toc
   - footer
 ---
-<center>
 
-<div class="hero" markdown>
-
-<img src="assets/logo.png" alt="logo" width="90" height="90">
-<h1 class="hero-title">Integrate C++ code into<br>your Android or iOS application!</h1>
+<h1 class="hero-title">PyDjinni</h1>
+<h1 class="hero-subtitle">The C++ Cross-Platform Library<br>Development Toolkit.</h1>
+<p class="hero-abstract" markdown>
 PyDjinni is a tool for generating cross-language type declarations and interface bindings.<br>
 Heavily inspired by the original [Djinni by Dropbox](https://github.com/dropbox/djinni), it's designed to connect C++ with Java and Objective-C.
+</p>
 
-<br>
-[&nbsp;&nbsp;:material-rocket-launch-outline: Get Started&nbsp;&nbsp;](installation.md){ .md-button .md-button--primary }&nbsp;
-[:octicons-comment-discussion-16: Discuss](https://github.com/pydjinni/pydjinni/discussions){ .md-button }&nbsp;
+<div class="hero-buttons" markdown>
+[&nbsp;&nbsp;:material-rocket-launch-outline: Get Started&nbsp;&nbsp;](installation.md){ .md-button .md-button--primary }
+[:octicons-comment-discussion-16: Discuss](https://github.com/pydjinni/pydjinni/discussions){ .md-button }
 [:simple-github: Contribute](https://github.com/pydjinni/pydjinni){ .md-button }
-
 </div>
-</center>
+
 <br>
 
-```{ .djinni .text .left }
-# comment
+<div class="main-feature-panels" markdown>
+
+<div class="feature-panel" markdown>
+
+<h3><span class="feature-icon">💬</span>Interface Definition</h3>
+
+
+The interface to C++ is defined with a custom interface definition language.
+
+```{ .djinni }
 person = record { # (1)!
     id: i16;
     name: str;
     age: i16;
 }
-
 
 database = main interface +cpp { # (2)!
     add(person: person) -> bool;
@@ -39,31 +44,25 @@ database = main interface +cpp { # (2)!
 }
 ```
 
-1. This defines a custom datatype that can be used to transmit complex datastructures
+1. This `record` defines a custom datatype that can be used to transmit complex datastructures
    from the host language to C++ und vice-versa.
-2. This Interface defines a class with methods that will be implemented in C++ and can
+2. This `interface` defines a class with methods that will be implemented in C++ and can
    be called from the host language.
 
-## Easy Interface Definition
+</div>
 
-The Djinni IDL allows to define the interface between the host language and C++ with a clean and intuitive syntax.
+<div class="feature-panel" markdown>
 
-Datatypes are automatically converted, and interface calls are forwarded across the languages magically.
+<h3><span class="feature-icon">🎛️</span>Configuration</h3>
 
-[:material-lightbulb-on-10: Learn more](idl.md){ .md-button }
+The output can be configured with a YAML configuration file.
 
-<div class="clear"></div>
-<br>
-<br>
-<br>
-
-
-```{ .yaml .left }
+```{ .yaml }
 generate:
-  list_out_files: generated-files.txt
+  list_processed_files: processed-files.json # (1)!
   cpp:
     out: 
-      header: out/include
+      header: out/include # (2)!
       source: out/src
     namespace: my::lib
   java:
@@ -72,66 +71,45 @@ generate:
     out: out/jni
 ```
 
+1. A JSON report is generated that lists all input and output files.
+2. The target directory for both header and source files can be specified separately
 
-## Flexible Configuration
+</div>
 
-The output can be configured comfortably with a YAML configuration file.
+</div>
 
-Optionally, options can also be passed to the command line interface directly, like in the original Djinni.
+<div class="secondary-feature-panels" markdown>
 
-[:material-format-list-bulleted: Configuration Reference](config.md){ .md-button }
-
-<div class="clear"></div>
-<br>
-<br>
-<br>
+<div class="feature-panel" markdown>
 
 
-```{ .toml .left }
-[project]
-name = "pydjinni-go"
-description = "Plugin to add Go support"
+<h3><span class="feature-icon">🔌</span>Modular</h3>
 
+Pydjinni is modular, additional capabilities can be added through custom plugins.
 
-[project.entry-points.'pydjinni.generator']
-go = 'pydjinni-go.generator.go:GoTarget'
-```
+</div>
 
+<div class="feature-panel" markdown>
 
-## Extendable
+<h3><span class="feature-icon">🔧️</span>Toolchain</h3>
 
-Pydjinni is modular, additional capabilities can be added through custom modules.
+The tool also provides utilities to help build, package and distribute cross-platform libraries.
 
-That way for example support for an additional host language can be added without having to maintain a fork or contributing 
-to the project.
+</div>
 
-<div class="clear"></div>
-<br>
-<br>
-<br>
+<div class="feature-panel" markdown>
 
-
-```{ .python .left }
-from pydjinni import API
-
-API() \
-    .configure("pyyjinni.yaml") \
-    .parse("my_lib.djinni") \
-    .generate("cpp") \
-    .generate("java") \
-    .write_out_files()
-```
-
-## Python API
+<h3><span class="feature-icon">🐍</span>Python API</h3>
 
 The tools functionality can also be used from a Python API, in order to seamlessly embed into custom build processes.
 
-[:material-power-plug-outline: API Documentation](api.md){ .md-button }
+</div>
 
-<div class="clear"></div>
+</div>
+
 <br>
 <br>
-<br>
+
 <center>
 
 # Roadmap
@@ -142,8 +120,8 @@ Here is what is planned for the near future:
 
 <div id="roadmap" markdown>
 - [x] Publish initial preview
-- [ ] Add language server (LSP) support
 - [ ] Add project setup wizard
+- [ ] Add language server (LSP) support
 - [ ] Add C#/Windows support
 - [ ] Release stable version 1.0
 - [ ] Publish IDE plugins
