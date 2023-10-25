@@ -23,7 +23,7 @@ PyDjinni can be configured in different ways:
 
 ## Configuration Parameters
 
-[:material-file-document-check-outline: JSON-Schema](/json-schema/config_schema.json){ .md-button target="_blank" }
+[:material-file-document-check-outline: JSON-Schema](../json-schema/config_schema.json){ .md-button target="_blank" }
 
 {{ config_schema_table() }}
 

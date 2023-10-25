@@ -7,6 +7,6 @@ The type of the file is determined by the filename extension, supported extensio
 
 ## File Structure
 
-[:material-file-document-check-outline: JSON-Schema](/json-schema/processed_files_definition_schema.json){ .md-button target="_blank" }
+[:material-file-document-check-outline: JSON-Schema](../json-schema/processed_files_definition_schema.json){ .md-button target="_blank" }
 
 {{ processed_files_schema_table() }}
