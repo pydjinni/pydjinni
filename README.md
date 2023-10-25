@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/logo.png" width="60" height="60" alt="logo">
+<img src="https://raw.githubusercontent.com/pydjinni/pydjinni/main/docs/assets/logo.png" width="60" height="60" alt="logo">
 
 # PyDjinni
 
@@ -17,9 +17,10 @@ An opinionated Djinni reimplementation written in Python.
 
 ## Features
 
-- **Easy Interface Definition** The Djinni IDL allows to define the interface between the host language and C++ with a clean and intuitive syntax.
+- **Easy Interface Definition** The PyDjinni IDL allows to define the interface between the host language and C++ with a clean and intuitive syntax.
 - **Flexible Configuration** The output can be configured comfortably with a YAML configuration file.
-- **Extendable** Pydjinni is modular, additional capabilities can be added through custom modules.
+- **Modular** Pydjinni is modular. Additional capabilities can be added through custom plugins.
+- **Toolchain** The tool provides additional utilities to help build, package and distribute cross-platform libraries.
 - **Python API** The tools functionality can also be used from a Python API, in order to seamlessly embed into custom build processes.
 
 ## Installation

@@ -5,3 +5,4 @@ global-include template/**/*
 global-exclude CMakeLists.txt
 global-exclude tests/**
 global-exclude it/**
+global-exclude .gitignore

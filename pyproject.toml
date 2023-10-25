@@ -8,13 +8,12 @@ authors = [
     {name = "jothepro", email = "pydjinni@jothe.pro"},
 ]
 dynamic = ["version"]
-license = { file = "LICENSE" }
 description = "An opinionated Djinni reimplementation written in Python."
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11"
@@ -59,8 +58,8 @@ doc = [
 ]
 
 [project.urls]
-Repository = "https://github.com/jothepro/pydjinni"
-Homepage = "https://jothepro.github.io/pydjinni"
+Repository = "https://github.com/pydjinni/pydjinni"
+Homepage = "https://pydjinni.github.io/pydjinni"
 
 [project.scripts]
 pydjinni = "pydjinni.__main__:main"
