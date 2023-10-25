@@ -1,0 +1,351 @@
+{
+    "$defs": {
+        "Generated": {
+            "description": "List of generated files from all registered generators",
+            "properties": {
+                "cpp": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/Generated_cpp"
+                        }
+                    ],
+                    "default": {
+                        "header": [],
+                        "include_dir": "."
+                    }
+                },
+                "java": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/Generated_java"
+                        }
+                    ],
+                    "default": {
+                        "source": [],
+                        "source_dir": "."
+                    }
+                },
+                "jni": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/Generated_jni"
+                        }
+                    ],
+                    "default": {
+                        "header": [],
+                        "include_dir": ".",
+                        "source": [],
+                        "source_dir": "."
+                    }
+                },
+                "objc": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/Generated_objc"
+                        }
+                    ],
+                    "default": {
+                        "header": [],
+                        "include_dir": ".",
+                        "source": [],
+                        "source_dir": "."
+                    }
+                },
+                "objcpp": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/Generated_objcpp"
+                        }
+                    ],
+                    "default": {
+                        "header": [],
+                        "include_dir": ".",
+                        "source": [],
+                        "source_dir": "."
+                    }
+                },
+                "yaml": {
+                    "allOf": [
+                        {
+                            "$ref": "#/$defs/Generated_yaml"
+                        }
+                    ],
+                    "default": {
+                        "source": [],
+                        "source_dir": "."
+                    }
+                }
+            },
+            "title": "Generated",
+            "type": "object"
+        },
+        "Generated_cpp": {
+            "properties": {
+                "include_dir": {
+                    "default": ".",
+                    "description": "Path where all cpp header files are written to.",
+                    "format": "path",
+                    "title": "Include Dir",
+                    "type": "string"
+                },
+                "header": {
+                    "default": [],
+                    "description": "List of generated cpp header files.",
+                    "items": {
+                        "format": "path",
+                        "type": "string"
+                    },
+                    "title": "Header",
+                    "type": "array"
+                }
+            },
+            "title": "Generated_cpp",
+            "type": "object"
+        },
+        "Generated_java": {
+            "properties": {
+                "source": {
+                    "default": [],
+                    "description": "List of generated java source files.",
+                    "items": {
+                        "format": "path",
+                        "type": "string"
+                    },
+                    "title": "Source",
+                    "type": "array"
+                },
+                "source_dir": {
+                    "default": ".",
+                    "description": "Path where all java source files are written to.",
+                    "format": "path",
+                    "title": "Source Dir",
+                    "type": "string"
+                }
+            },
+            "title": "Generated_java",
+            "type": "object"
+        },
+        "Generated_jni": {
+            "properties": {
+                "include_dir": {
+                    "default": ".",
+                    "description": "Path where all jni header files are written to.",
+                    "format": "path",
+                    "title": "Include Dir",
+                    "type": "string"
+                },
+                "header": {
+                    "default": [],
+                    "description": "List of generated jni header files.",
+                    "items": {
+                        "format": "path",
+                        "type": "string"
+                    },
+                    "title": "Header",
+                    "type": "array"
+                },
+                "source": {
+                    "default": [],
+                    "description": "List of generated jni source files.",
+                    "items": {
+                        "format": "path",
+                        "type": "string"
+                    },
+                    "title": "Source",
+                    "type": "array"
+                },
+                "source_dir": {
+                    "default": ".",
+                    "description": "Path where all jni source files are written to.",
+                    "format": "path",
+                    "title": "Source Dir",
+                    "type": "string"
+                }
+            },
+            "title": "Generated_jni",
+            "type": "object"
+        },
+        "Generated_objc": {
+            "properties": {
+                "include_dir": {
+                    "default": ".",
+                    "description": "Path where all objc header files are written to.",
+                    "format": "path",
+                    "title": "Include Dir",
+                    "type": "string"
+                },
+                "header": {
+                    "default": [],
+                    "description": "List of generated objc header files.",
+                    "items": {
+                        "format": "path",
+                        "type": "string"
+                    },
+                    "title": "Header",
+                    "type": "array"
+                },
+                "source": {
+                    "default": [],
+                    "description": "List of generated objc source files.",
+                    "items": {
+                        "format": "path",
+                        "type": "string"
+                    },
+                    "title": "Source",
+                    "type": "array"
+                },
+                "source_dir": {
+                    "default": ".",
+                    "description": "Path where all objc source files are written to.",
+                    "format": "path",
+                    "title": "Source Dir",
+                    "type": "string"
+                }
+            },
+            "title": "Generated_objc",
+            "type": "object"
+        },
+        "Generated_objcpp": {
+            "properties": {
+                "include_dir": {
+                    "default": ".",
+                    "description": "Path where all objcpp header files are written to.",
+                    "format": "path",
+                    "title": "Include Dir",
+                    "type": "string"
+                },
+                "header": {
+                    "default": [],
+                    "description": "List of generated objcpp header files.",
+                    "items": {
+                        "format": "path",
+                        "type": "string"
+                    },
+                    "title": "Header",
+                    "type": "array"
+                },
+                "source": {
+                    "default": [],
+                    "description": "List of generated objcpp source files.",
+                    "items": {
+                        "format": "path",
+                        "type": "string"
+                    },
+                    "title": "Source",
+                    "type": "array"
+                },
+                "source_dir": {
+                    "default": ".",
+                    "description": "Path where all objcpp source files are written to.",
+                    "format": "path",
+                    "title": "Source Dir",
+                    "type": "string"
+                }
+            },
+            "title": "Generated_objcpp",
+            "type": "object"
+        },
+        "Generated_yaml": {
+            "properties": {
+                "source": {
+                    "default": [],
+                    "description": "List of generated yaml source files.",
+                    "items": {
+                        "format": "path",
+                        "type": "string"
+                    },
+                    "title": "Source",
+                    "type": "array"
+                },
+                "source_dir": {
+                    "default": ".",
+                    "description": "Path where all yaml source files are written to.",
+                    "format": "path",
+                    "title": "Source Dir",
+                    "type": "string"
+                }
+            },
+            "title": "Generated_yaml",
+            "type": "object"
+        },
+        "ParsedFiles": {
+            "description": "List of input files that have been parsed. This does not include the config file.",
+            "properties": {
+                "idl": {
+                    "default": [],
+                    "items": {
+                        "format": "path",
+                        "type": "string"
+                    },
+                    "title": "Idl",
+                    "type": "array"
+                },
+                "external_types": {
+                    "default": [],
+                    "items": {
+                        "format": "path",
+                        "type": "string"
+                    },
+                    "title": "External Types",
+                    "type": "array"
+                }
+            },
+            "title": "ParsedFiles",
+            "type": "object"
+        }
+    },
+    "properties": {
+        "parsed": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/ParsedFiles"
+                }
+            ],
+            "default": {
+                "external_types": [],
+                "idl": []
+            }
+        },
+        "generated": {
+            "allOf": [
+                {
+                    "$ref": "#/$defs/Generated"
+                }
+            ],
+            "default": {
+                "cpp": {
+                    "header": [],
+                    "include_dir": "."
+                },
+                "java": {
+                    "source": [],
+                    "source_dir": "."
+                },
+                "jni": {
+                    "header": [],
+                    "include_dir": ".",
+                    "source": [],
+                    "source_dir": "."
+                },
+                "objc": {
+                    "header": [],
+                    "include_dir": ".",
+                    "source": [],
+                    "source_dir": "."
+                },
+                "objcpp": {
+                    "header": [],
+                    "include_dir": ".",
+                    "source": [],
+                    "source_dir": "."
+                },
+                "yaml": {
+                    "source": [],
+                    "source_dir": "."
+                }
+            }
+        }
+    },
+    "title": "ProcessedFiles",
+    "type": "object"
+}
