@@ -56,10 +56,10 @@ my_cpp_interface = main interface +cpp {
 
 The `generate` subcommand produces glue code in the specified target languages from the PyDjinni IDL.
 
-The following command generates Java and C++ language bindings for android from the `foo.djinni` IDL file:
+The following command generates Java and C++ language bindings for Android from the `foo.pydjinni` IDL file:
 
 ```bash
-pydjinni generate foo.djinni cpp java
+pydjinni generate foo.pydjinni cpp java
 ```
 
 ## Building and Packaging { .new-badge }
@@ -79,7 +79,8 @@ pydjinni package swiftpackage ios macos ios_simulator
 
 Once artifacts are built, they can be published easily with PyDjinni.
 
-Upload the distribution artifact to a repository or registry:
+It can upload the distribution artifact to a repository or registry, hiding away the underlying process that is 
+different for every targeted platform:
 
 ```shell
 pydjinni publish aar
@@ -88,7 +89,7 @@ pydjinni publish swiftpackage
 
 ## Configuration
 
-All details of generating glue code and building, packaging, and publishing a cross-platform library with PyDjinni is
+All details of generating glue code and building, packaging and publishing a cross-platform library with PyDjinni is
 configured through the `pydjinni.yaml` configuration file.
 
 For a full overview of all available configuration parameters, consult the [Configuration Reference](config.md).
@@ -96,38 +97,40 @@ For a full overview of all available configuration parameters, consult the [Conf
 The following example shows what a minimal configuration file could look like:
 
 ```yaml
-  generate:
-    java:
-      out: lib/djinni-generated/java
-      package: pro.jothe.test
-    jni:
-      out: lib/djinni-generated/jni
-    objc:
-      out: lib/djinni-generated/objc
-  build:
-    conan:
-      profiles: profiles
-  package:
-    out: dist
-    build_strategy: conan
-    version: 1.1.0
-    configuration: Debug
-    target: MyLibrary
-    swiftpackage:
-      publish:
-        repository: gitlab.com/jothepro/foo.git
-        branch: main
-      platforms:
-          macos: [armv8]
-          ios: [armv8]
-          ios_simulator: [x86_64, armv8]
-    aar:
-      publish:
-          group_id: foo.bar
-          artifact_id: baz
-          url: https://maven.pkg.github.com/foo/bar
-      platforms:
-          android: [x86_64, armv8]
+generate:
+  cpp:
+    out:
+      header: generated/cpp/include
+      source: generated/cpp/src
+    namespace: pydjinni::example
+  java:
+    out: lib/generated/java
+    package: com.pydjinni.example
+  jni:
+    out: lib/generated/jni
+  objc:
+    out: lib/generated/objc
+  objcpp:
+    out: generated/objcpp
+    namespace: pydjinni::example::objcpp
+    swift:
+      bridging_header: PyDjinniLibrary.h
+package:
+  version: 1.1.0
+  target: MyLibrary
+  swiftpackage:
+    publish:
+      repository: github.com/foo/bar.git
+    platforms:
+      ios: [armv8]
+      ios_simulator: [x86_64, armv8]
+  aar:
+    publish:
+      group_id: com.pydjinni
+      artifact_id: example
+      maven_registry: https://maven.pkg.github.com/foo/bar
+    platforms:
+      android: [x86_64, armv8]
 ```
 
 ### Credentials

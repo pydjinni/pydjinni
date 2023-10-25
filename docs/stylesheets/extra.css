@@ -11,16 +11,25 @@
     }
 }
 
-.md-header__title .md-ellipsis::after {
-    content: "PREVIEW";
-    background: var(--md-accent-fg-color);
-    border-radius: var(--border-radius);
-    padding: 2px 4px;
-    color: var(--md-default-bg-color);
-    font-size: 50%;
-    font-weight: bold;
-    vertical-align: 5%;
+.md-banner {
+    background: #ff91001a;
+    border-bottom: 1px solid #ff9100;
+    color: var(--md-default-fg-color);
 }
+
+@media screen and (min-width: 385px) {
+    .md-header__title .md-ellipsis::after {
+        content: "PREVIEW";
+        background: var(--md-accent-fg-color);
+        border-radius: var(--border-radius);
+        padding: 2px 4px;
+        color: var(--md-default-bg-color);
+        font-size: 50%;
+        font-weight: bold;
+        vertical-align: 5%;
+    }
+}
+
 
 .md-typeset h1, .md-typeset h2 {
     font-weight: 600;

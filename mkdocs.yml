@@ -39,6 +39,7 @@ theme:
     - content.action.edit
     - content.code.copy
     - content.code.annotate
+    - announce.dismiss
 plugins:
   - tags
   - search

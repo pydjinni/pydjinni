@@ -95,7 +95,7 @@ my_client_interface = interface -cpp {
 which have special effects in C++:
 
 ```pydjinni
-special_methods = interface +c { 
+special_methods = interface +cpp { 
     const accessor_method(); 
     static factory_method(); 
 }
@@ -104,12 +104,12 @@ special_methods = interface +c {
 - `const` methods will be declared as `const` in C++, though this cannot be enforced on callers in other languages, 
   which lack this feature.
 - `static` methods will become a `static` method of the C++ class, which can be called from other languages without an 
-  object. This is often useful for factory methods to act as a cross-language constructor
+  object. This is often useful for factory methods to act as a cross-language constructor.
 
 ### Exception Handling
 
 When an interface implemented in C++ throws a `std::exception`, it will be translated to a `java.lang.RuntimeException`
-in Java and an `NSException` in Objective-C. The what() message will be translated as well.
+in Java and an `NSException` in Objective-C. The `what()` message will be translated as well.
 
 ### Main Interface { .new-badge }
 
@@ -164,18 +164,17 @@ There is a short and a long form for defining functions.
 The long form allows target flags to be added in order to optimize the generated code:
 
 ```djinni
-function -cpp (input: i32) -> bool; # This function will never be implemented in C++
+callback = function -cpp (input: i32) -> bool;
 ```
 
-The short form doesn't allow for code optimization, but in return is a lot more brief. The following is a valid function
-taking no parameter and returning a `bool`:
+The short form doesn't allow for code optimization, but in return is a lot more brief:
 ```djinni
-callback = () -> bool;
+callback = (input: i32) -> bool;
 ```
 
 ## Namespaces { .new-badge }
 
-The interface file can now be structured with namespaces:
+The interface file can be structured with namespaces:
 
 ```djinni
 namespace foo {
@@ -183,7 +182,7 @@ namespace foo {
 }
 ```
 
-The namespace is appended the base namespace that is defined in the generator configuration.
+The specified namespace is appended to the base namespace that is defined in the generator configuration.
 
 ## Comments
 

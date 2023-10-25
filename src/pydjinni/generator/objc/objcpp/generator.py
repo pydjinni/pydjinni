@@ -1,10 +1,24 @@
+# Copyright 2023 jothepro
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from pydjinni.generator.filters import quote, headers
 from pydjinni.generator.generator import Generator
+from pydjinni.parser.ast import Interface, Record, Flags, Enum, Function
 from pydjinni.parser.base_models import BaseType, BaseField, SymbolicConstantField
 from .config import ObjcppConfig
-from .type import ObjcppExternalType, ObjcppBaseType, ObjcppBaseField, ObjcppSymbolicConstantField, ObjcppFunction
-from pydjinni.parser.ast import Interface, Record, Flags, Enum, Function
-from pydjinni.generator.filters import quote, headers
 from .external_types import external_types
+from .type import ObjcppExternalType, ObjcppBaseType, ObjcppBaseField, ObjcppSymbolicConstantField, ObjcppFunction
 
 
 class ObjcppGenerator(Generator):

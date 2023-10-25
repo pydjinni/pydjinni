@@ -1,13 +1,26 @@
+# Copyright 2023 jothepro
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import yaml
 
 from pydjinni.exceptions import ConfigurationException
 from pydjinni.generator.generator import Generator
+from pydjinni.parser.base_models import BaseType, BaseExternalType
 from .config import YamlConfig
-from pydjinni.parser.base_models import BaseType, BaseExternalType, BaseField
 
 
 class YamlGenerator(Generator):
-
     key = "yaml"
     config_model = YamlConfig
     writes_source = True
@@ -17,7 +30,8 @@ class YamlGenerator(Generator):
             [field for field in type_def.model_fields.keys() if field not in (BaseExternalType.model_fields.keys())]))
 
     def generate(self, ast: list[BaseType], copy_support_lib_sources: bool = True):
-        filtered_type_defs = [type_def for type_def in ast if not (type_def.primitive == BaseExternalType.Primitive.function and type_def.anonymous)]
+        filtered_type_defs = [type_def for type_def in ast if
+                              not (type_def.primitive == BaseExternalType.Primitive.function and type_def.anonymous)]
         if self.config:
             if self.config.out_file:
                 self._file_writer.write_source(

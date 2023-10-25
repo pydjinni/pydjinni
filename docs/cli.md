@@ -4,6 +4,7 @@
 
 ## Return Codes
 
-In case of an error, in addition to the error message the CLI tries to give a helpful return code for further error handling.
+In the event of an error, the CLI tries to provide a helpful return code for further error handling in addition to the 
+error message.
 
 {{ return_code_list() }}

@@ -1,21 +1,35 @@
+# Copyright 2023 jothepro
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import inspect
 import re
 import shutil
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Callable, TypeVar, Any
+from typing import Callable, TypeVar
 
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel
 
 from pydjinni.config.config_model_builder import ConfigModelBuilder
+from pydjinni.config.types import OutPaths
 from pydjinni.exceptions import ConfigurationException, ApplicationException
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.file.processed_files_model_builder import ProcessedFilesModelBuilder
+from pydjinni.parser.base_models import BaseExternalType, BaseType, BaseField
 from pydjinni.parser.type_model_builder import TypeModelBuilder
 from .external_types import ExternalTypesBuilder
-from pydjinni.config.types import OutPaths
-from pydjinni.parser.base_models import BaseExternalType, BaseType, BaseField
 
 ConfigModel = TypeVar("ConfigModel", bound=BaseModel)
 ExternalTypeModel = TypeVar("ExternalTypeModel", bound=BaseModel)
@@ -300,6 +314,7 @@ class Generator(ABC):
 
         This method may be overridden if the default dynamic detection behaviour doesn't fit the requirements.
         """
+
         def call_generate_method(definition: BaseType):
             def traverse_hierarchy(def_class, definition):
                 if def_class == BaseExternalType:

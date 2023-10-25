@@ -1,9 +1,23 @@
+# Copyright 2023 jothepro
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import os
 
-from pydjinni.packaging.target import PackageTarget, copy_file, prepare, execute
 from pydjinni.packaging.aar.publish_config import AndroidArchivePublishConfig
 from pydjinni.packaging.architecture import Architecture
 from pydjinni.packaging.platform import Platform
+from pydjinni.packaging.target import PackageTarget, copy_file, execute
 
 
 class AndroidArchiveTarget(PackageTarget):
@@ -29,11 +43,14 @@ class AndroidArchiveTarget(PackageTarget):
         for artifacts in self._build_artifacts.values():
             for arch, path in artifacts.items():
                 copy_file(src=path / jar_name, dst=self.package_build_path / 'libs' / jar_name)
-                copy_file(src=path / so_name, dst=self.package_build_path / 'src' / 'main' / 'jniLibs' / self.architecture_mapping[arch] / so_name)
+                copy_file(src=path / so_name,
+                          dst=self.package_build_path / 'src' / 'main' / 'jniLibs' / self.architecture_mapping[
+                              arch] / so_name)
         gradlew_path = self.package_build_path / "gradlew"
-        os.chmod(gradlew_path, os.stat(gradlew_path).st_mode | 0o111) # make gradlew executable
+        os.chmod(gradlew_path, os.stat(gradlew_path).st_mode | 0o111)  # make gradlew executable
         execute("./gradlew", ["assembleRelease"], working_dir=self.package_build_path)
-        copy_file(src=self.package_build_path / 'build' / 'outputs' / 'aar' / f'{self.config.target}-release.aar', dst=self.package_output_path / f'{self.config.target}.aar')
+        copy_file(src=self.package_build_path / 'build' / 'outputs' / 'aar' / f'{self.config.target}-release.aar',
+                  dst=self.package_output_path / f'{self.config.target}.aar')
 
     def publish(self):
         execute("./gradlew", [

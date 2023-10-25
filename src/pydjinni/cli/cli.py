@@ -1,3 +1,17 @@
+# Copyright 2023 jothepro
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import logging
 import sys
 from collections import defaultdict
@@ -134,11 +148,12 @@ class PublishCli(MultiCommand):
 
         return None if target is None else command
 
+
 @click.group()
 @click.version_option()
 @click.pass_context
 @click.option('--option', '-o', multiple=True, type=str,
-              help="overwrite or extend options from the generate config. Example: `-o java.out:java_out`")
+              help="overwrite or extend options from the generate config. Example: `-o java.out=java_out`")
 @click.option('--config', '-c', default=DEFAULT_CONFIG_PATH, type=Path,
               help="path to the config file. Set to `None` if no config should be parsed. "
                    "File format is determined based on the file extension. "
@@ -149,7 +164,7 @@ class PublishCli(MultiCommand):
 def cli(ctx, log_level, config, option):
     def parse_option(option: str) -> dict:
         """
-        helper to parse options in the format `foo.bar:baz` into a hierarchical dict
+        helper to parse options in the format `foo.bar=baz` into a hierarchical dict
         Args:
             option: Option that should be parsed
 
@@ -199,8 +214,8 @@ def cli(ctx, log_level, config, option):
 @click.option(
     '--clean',
     is_flag=True,
-    help="If enabled, deletes all specified out directories before generating output. "
-         "Caution: This deletes the entire folders, including all files that are inside it!")
+    help="If enabled, deletes all specified output directories before generating new output. "
+         "Caution: This deletes the entire output folders, including all files that are inside it!")
 @click.argument('idl', type=Path)
 def generate(ctx, cli_context: CliContext, idl: Path, clean: bool):
     """

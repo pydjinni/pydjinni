@@ -1,11 +1,25 @@
+# Copyright 2023 jothepro
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from pathlib import Path
 
 from pydantic import HttpUrl
 
-from pydjinni.packaging.target import PackageTarget, prepare, copy_directory, execute
 from pydjinni.packaging.architecture import Architecture
 from pydjinni.packaging.platform import Platform
 from pydjinni.packaging.swiftpackage.publish_config import SwiftpackagePublishConfig
+from pydjinni.packaging.target import PackageTarget, prepare, copy_directory, execute
 
 
 def lipo_combine_framework(input: list[Path], output: Path):
@@ -72,7 +86,7 @@ class SwiftpackageTarget(PackageTarget):
                     parameters.append(f'-debug-symbols {str(dsym_path.absolute())}')
         execute("xcodebuild", [
             "-create-xcframework",
-            f"-output { str(xcframework_path.absolute()) }",
+            f"-output {str(xcframework_path.absolute())}",
             *parameters
         ])
         copy_directory(src=self.package_build_path, dst=self.package_output_path, clean=True)

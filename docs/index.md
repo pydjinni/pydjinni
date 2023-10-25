@@ -44,7 +44,7 @@ database = main interface +cpp { # (2)!
 }
 ```
 
-1. This `record` defines a custom datatype that can be used to transmit complex datastructures
+1. This `record` defines a custom datatype that can be used to transmit data
    from the host language to C++ und vice-versa.
 2. This `interface` defines a class with methods that will be implemented in C++ and can
    be called from the host language.
@@ -85,7 +85,7 @@ generate:
 
 <h3><span class="feature-icon">🔌</span>Modular</h3>
 
-Pydjinni is modular, additional capabilities can be added through custom plugins.
+Pydjinni is modular. Additional capabilities can be added through custom plugins.
 
 </div>
 
@@ -93,7 +93,7 @@ Pydjinni is modular, additional capabilities can be added through custom plugins
 
 <h3><span class="feature-icon">🔧️</span>Toolchain</h3>
 
-The tool also provides utilities to help build, package and distribute cross-platform libraries.
+The tool provides additional utilities to help build, package and distribute cross-platform libraries.
 
 </div>
 
@@ -101,7 +101,7 @@ The tool also provides utilities to help build, package and distribute cross-pla
 
 <h3><span class="feature-icon">🐍</span>Python API</h3>
 
-The tools functionality can also be used from a Python API, in order to seamlessly embed into custom build processes.
+The tool can also be used through a Python API, in order to seamlessly embed into a custom build process.
 
 </div>
 

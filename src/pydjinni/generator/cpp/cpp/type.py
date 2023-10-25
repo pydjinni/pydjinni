@@ -1,3 +1,17 @@
+# Copyright 2023 jothepro
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from functools import cached_property
 from pathlib import Path
 
@@ -67,7 +81,8 @@ class CppBaseType(BaseModel):
     @computed_field
     @cached_property
     def header(self) -> Path:
-        return Path(*self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}"
+        return Path(
+            *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}"
 
     @cached_property
     def source(self): return Path(
@@ -173,7 +188,8 @@ class CppRecord(CppBaseType):
 
     @cached_property
     def derived_header(self) -> Path:
-        return Path(*self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}"
+        return Path(
+            *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}"
 
     class CppField(CppBaseField):
         decl: Record.Field = Field(exclude=True, repr=False)
