@@ -24,11 +24,17 @@ from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.file.processed_files_model_builder import ProcessedFiles
 from pydjinni.parser.ast import Record, Enum, Flags, Interface, Function
 from pydjinni.parser.base_models import BaseType
-from pydjinni.parser.parser import IdlParser
+from pydjinni.parser.parser import Parser
 from pydjinni.parser.resolver import Resolver
 
 
-def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, MagicMock]:
+def given_mocks() -> tuple[FileReaderWriter, MagicMock]:
+    reader = FileReaderWriter()
+    reader.setup(ProcessedFiles)
+    return reader, MagicMock(spec=Resolver)
+
+
+def given(tmp_path: Path, input_idl: str) -> tuple[Parser, MagicMock]:
     """
     Prepares the testing environment by initializing the parser and the file to be parsed.
 
@@ -39,16 +45,14 @@ def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, MagicMock]:
     Returns:
         instance of the Parser and the Path where the temporary IDL file can be found.
     """
-    reader = FileReaderWriter()
-    reader.setup(ProcessedFiles)
-    resolver_mock = MagicMock(spec=Resolver)
+    reader, resolver_mock = given_mocks()
 
-    # AND GIVEN an input file
-    input_file = tmp_path / f"{uuid.uuid4()}.djinni"
+    # GIVEN an input file
+    input_file = tmp_path / f"{uuid.uuid4()}.pydjinni"
     input_file.write_text(input_idl)
 
-    # GIVEN a Parser instance
-    parser = IdlParser(
+    # AND GIVEN a Parser instance
+    parser = Parser(
         resolver=resolver_mock,
         file_reader=reader,
         targets=[],
@@ -64,7 +68,7 @@ def given(tmp_path: Path, input_idl: str) -> tuple[IdlParser, MagicMock]:
 TypeDef = TypeVar("TypeDef", bound=BaseType)
 
 
-def when(parser: IdlParser, type_type: type[TypeDef], type_name: str = None) -> TypeDef:
+def when(parser: Parser, type_type: type[TypeDef], type_name: str = None) -> TypeDef:
     """
     parses the given input and asserts that the result is an AST with exactly one element
     of the expected type and name.
@@ -176,6 +180,7 @@ def test_parsing_record(tmp_path: Path):
     ('eq', {Record.Deriving.eq}),
     ('eq, ord', {Record.Deriving.eq, Record.Deriving.ord}),
     ('eq, ord, str', {Record.Deriving.eq, Record.Deriving.ord, Record.Deriving.str}),
+    ('eq, eq', {Record.Deriving.eq})
 ])
 def test_parsing_record_deriving(tmp_path: Path, deriving, expected: set[Record.Deriving]):
     # GIVEN an idl file that defines a record that derives some extensions
@@ -191,6 +196,53 @@ def test_parsing_record_deriving(tmp_path: Path, deriving, expected: set[Record.
     record = when(parser, Record, "foo")
 
     # THEN only the derived extensions should be enabled
+    assert record.deriving == expected
+
+
+def test_parsing_record_unknown_deriving(tmp_path: Path):
+    # GIVEN an idl file that defines a record that derives an unknown extension
+    parser, _ = given(
+        tmp_path=tmp_path,
+        input_idl=f"""
+                foo = record {{}} deriving (loremipsum)
+                """
+    )
+
+    # WHEN parsing the input
+    # THEN an error should be raised
+    with pytest.raises(Parser.ParsingException, match="'loremipsum' is not a valid record extension"):
+        parser.parse()
+
+
+@pytest.mark.parametrize("deriving,expected", [
+    ('', {Record.Deriving.eq, Record.Deriving.ord}),
+    ('deriving()', {Record.Deriving.eq, Record.Deriving.ord}),
+    ('deriving(ord)', {Record.Deriving.eq, Record.Deriving.ord}),
+    ('deriving(eq, ord, str)', {Record.Deriving.eq, Record.Deriving.ord, Record.Deriving.str}),
+])
+def test_parsing_record_default_deriving(tmp_path: Path, deriving, expected: set[Record.Deriving]):
+    reader, resolver_mock = given_mocks()
+
+    # GIVEN an input file
+    input_file = tmp_path / f"{uuid.uuid4()}.pydjinni"
+    input_file.write_text(f"""
+    foo = record {{}} {deriving}
+    """)
+
+    # AND GIVEN a Parser instance with a set of default deriving extensions
+    parser = Parser(
+        resolver=resolver_mock,
+        file_reader=reader,
+        targets=[],
+        supported_target_keys=["cpp", "java"],
+        include_dirs=[tmp_path],
+        default_deriving={Record.Deriving.eq, Record.Deriving.ord},
+        idl=input_file
+    )
+
+    # WHEN parsing the input
+    # THEN the record should contain the defined default extensions
+    record = when(parser, Record, "foo")
     assert record.deriving == expected
 
 
@@ -286,7 +338,7 @@ def test_parsing_interface_unknown_target(tmp_path: Path):
     )
     # WHEN parsing the input
     # THEN a IdlParser.UnknownInterfaceTargetException should be raised
-    with pytest.raises(IdlParser.ParsingException, match="Unknown interface target 'foo'"):
+    with pytest.raises(Parser.ParsingException, match="Unknown interface target 'foo'"):
         parser.parse()
 
 
@@ -337,7 +389,7 @@ def test_parsing_interface_static_not_allowed(tmp_path):
     )
 
     # THEN a StaticNotAllowedException should be raised
-    with pytest.raises(IdlParser.ParsingException, match="methods are only allowed to be static on 'cpp' interfaces"):
+    with pytest.raises(Parser.ParsingException, match="methods are only allowed to be static on 'cpp' interfaces"):
         parser.parse()
 
 
@@ -353,7 +405,7 @@ def test_parsing_interface_static_and_const_not_allowed(tmp_path):
     )
 
     # THEN a StaticAndConstException should be raised
-    with pytest.raises(IdlParser.ParsingException, match="method cannot be both static and const"):
+    with pytest.raises(Parser.ParsingException, match="method cannot be both static and const"):
         parser.parse()
 
 
@@ -383,7 +435,7 @@ def test_parsing_main_interface_not_cpp(tmp_path, targets):
     )
     # WHEN parsing the input
     # THEN a ParsingException should be thrown because the 'main' interface is not implemented in C++
-    with pytest.raises(IdlParser.ParsingException):
+    with pytest.raises(Parser.ParsingException, match="a 'main' interface can only be implemented in C++"):
         parser.parse()
 
 
@@ -391,7 +443,7 @@ def test_parsing_function(tmp_path):
     # GIVEN a named function definition
     parser, _ = given(
         tmp_path=tmp_path,
-        input_idl="foo = function (param: i8) -> bool;"
+        input_idl="foo = function +cpp (param: i8) -> bool;"
     )
 
     function = when(parser, Function, "foo")
@@ -401,7 +453,37 @@ def test_parsing_function(tmp_path):
     assert function.parameters[0].name == "param"
     assert function.parameters[0].type_ref.name == "i8"
     assert function.return_type_ref.name == "bool"
+    # THEN all the specified language target should be set
+    assert "cpp" in function.targets
+    assert len(function.targets) == 1
 
+
+def test_parsing_function_no_target(tmp_path: Path):
+    # GIVEN a named function definition
+    parser, _ = given(
+        tmp_path=tmp_path,
+        input_idl="foo = function (param: i8) -> bool;"
+    )
+
+    function = when(parser, Function, "foo")
+
+    # THEN all known language targets should be set for the defined interface
+    assert "cpp" in function.targets
+    assert "java" in function.targets
+    assert len(function.targets) == 2
+
+def test_parsing_function_minus_target(tmp_path: Path):
+    # GIVEN a named function definition
+    parser, _ = given(
+        tmp_path=tmp_path,
+        input_idl="foo = function -cpp (param: i8) -> bool;"
+    )
+
+    function = when(parser, Function, "foo")
+
+    # THEN all known language targets minus the one specified in the interface should be set for the defined interface
+    assert "java" in function.targets
+    assert len(function.targets) == 1
 
 def test_parsing_inline_function(tmp_path):
     # GIVEN an interface with an inline function definition
@@ -441,8 +523,9 @@ def test_parsing_anonymous_function_not_allowed(tmp_path: Path):
 
     # WHEN parsing the input
     # THEN a ParsingException should be raised because functions are not allowed in records
-    with pytest.raises(IdlParser.ParsingException, match="functions are not allowed"):
+    with pytest.raises(Parser.ParsingException, match="functions are not allowed"):
         parser.parse()
+
 
 def test_parsing_invalid_input(tmp_path: Path):
     parser, _ = given(
@@ -452,7 +535,7 @@ def test_parsing_invalid_input(tmp_path: Path):
 
     # WHEN parsing the input
     # THEN a IdlParser.ParsingException should be raised
-    with pytest.raises(IdlParser.ParsingException):
+    with pytest.raises(Parser.ParsingException):
         parser.parse()
 
 
@@ -498,12 +581,71 @@ def test_missing_import(tmp_path: Path):
     parser, _ = given(
         tmp_path=tmp_path,
         input_idl="""
-                    @import "foo.pydjinni"
-                    """
+                  @import "foo.pydjinni"
+                  """
     )
     # WHEN parsing the file
     # THEN a FileNotFoundException should be raised
     with pytest.raises(FileNotFoundException):
+        parser.parse()
+
+
+def test_detect_direct_recursive_import(tmp_path: Path):
+    reader, resolver_mock = given_mocks()
+
+    # GIVEN an input file
+    filename = f"{uuid.uuid4()}.pydjinni"
+    input_file = tmp_path / filename
+    input_file.write_text(f"""
+    @import "{filename}"
+    """)
+
+    # AND GIVEN a Parser instance
+    parser = Parser(
+        resolver=resolver_mock,
+        file_reader=reader,
+        targets=[],
+        supported_target_keys=["cpp", "java"],
+        include_dirs=[tmp_path],
+        default_deriving=set(),
+        idl=input_file
+    )
+
+    # WHEN parsing the input
+    # THEN a recursive input should be detected
+    with pytest.raises(Parser.ParsingException,
+                       match=f"Circular import detected: file {input_file} directly references itself!"):
+        parser.parse()
+
+
+def test_detect_indirect_recursive_import(tmp_path: Path):
+    reader, resolver_mock = given_mocks()
+    # GIVEN an input file
+    filename = f"{uuid.uuid4()}.pydjinni"
+    second_filename = f"{uuid.uuid4()}.pydjinni"
+    input_file = tmp_path / filename
+    second_file = tmp_path / second_filename
+    input_file.write_text(f"""
+    @import "{second_filename}"
+    """)
+    second_file.write_text(f"""
+    @import "{filename}"
+    """)
+
+    # AND GIVEN a Parser instance
+    parser = Parser(
+        resolver=resolver_mock,
+        file_reader=reader,
+        targets=[],
+        supported_target_keys=["cpp", "java"],
+        include_dirs=[tmp_path],
+        default_deriving=set(),
+        idl=input_file
+    )
+
+    # WHEN parsing the input
+    # THEN a recursive input should be detected
+    with pytest.raises(Parser.ParsingException, match=f"indirectly imports itself!"):
         parser.parse()
 
 

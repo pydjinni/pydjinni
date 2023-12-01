@@ -25,6 +25,7 @@ from pydjinni.file.processed_files_model_builder import ProcessedFilesModelBuild
 from pydjinni.packaging.architecture import Architecture
 from pydjinni.packaging.packaging_config import PackageBaseConfig
 from pydjinni.packaging.target import PackageTarget
+from pydjinni.parser.parser import Parser
 
 try:
     import tomllib
@@ -44,7 +45,6 @@ from pydjinni.generator.target import Target
 from pydjinni.builder.target import BuildTarget
 from pydjinni.parser.base_models import BaseType, BaseExternalType
 from pydjinni.position import Position
-from pydjinni.parser.parser import IdlParser
 from pydjinni.parser.resolver import Resolver
 from pydjinni.parser.type_model_builder import TypeModelBuilder
 
@@ -299,7 +299,7 @@ class API:
             for external_type_def in self._external_types_builder.build():
                 self._resolver.register_external(external_type_def)
 
-            parser = IdlParser(
+            parser = Parser(
                 resolver=self._resolver,
                 targets=targets,
                 supported_target_keys=list(self._generate_targets.keys()),
