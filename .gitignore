@@ -129,7 +129,10 @@ dmypy.json
 .pyre/
 
 # Jetbrains
-.idea
+.idea/*
+!.idea/icon.svg
+!.idea/watcherTasks.xml
+!.idea/externalDependencies.xml
 
 # CLion
 
