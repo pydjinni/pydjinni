@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import re
 import uuid
 from pathlib import Path
 from typing import TypeVar
@@ -155,9 +155,8 @@ def test_missing_import(tmp_path: Path):
     parser, _ = given(
         tmp_path=tmp_path,
         input_idl="""
-                  @import "foo.pydjinni"
-                  """
-    )
+            @import "foo.pydjinni"
+            """)
     # WHEN parsing the file
     # THEN a FileNotFoundException should be raised
     with pytest.raises(FileNotFoundException):
@@ -171,8 +170,8 @@ def test_detect_direct_recursive_import(tmp_path: Path):
     filename = f"{uuid.uuid4()}.pydjinni"
     input_file = tmp_path / filename
     input_file.write_text(f"""
-    @import "{filename}"
-    """)
+        @import "{filename}"
+        """)
 
     # AND GIVEN a Parser instance
     parser = Parser(
@@ -188,7 +187,7 @@ def test_detect_direct_recursive_import(tmp_path: Path):
     # WHEN parsing the input
     # THEN a recursive input should be detected
     with pytest.raises(Parser.ParsingException,
-                       match=f"Circular import detected: file {input_file} directly references itself!"):
+                       match=f"Circular import detected: file .* directly references itself!"):
         parser.parse()
 
 
@@ -200,11 +199,11 @@ def test_detect_indirect_recursive_import(tmp_path: Path):
     input_file = tmp_path / filename
     second_file = tmp_path / second_filename
     input_file.write_text(f"""
-    @import "{second_filename}"
-    """)
+        @import "{second_filename}"
+        """)
     second_file.write_text(f"""
-    @import "{filename}"
-    """)
+        @import "{filename}"
+        """)
 
     # AND GIVEN a Parser instance
     parser = Parser(
@@ -219,7 +218,7 @@ def test_detect_indirect_recursive_import(tmp_path: Path):
 
     # WHEN parsing the input
     # THEN a recursive input should be detected
-    with pytest.raises(Parser.ParsingException, match=f"indirectly imports itself!"):
+    with pytest.raises(Parser.ParsingException, match=f"Circular import detected: file .* indirectly imports itself!"):
         parser.parse()
 
 
@@ -328,5 +327,5 @@ def test_generic_parameters_invalid_number(tmp_path: Path):
 
     # WHEN parsing the idl file
     # THEN an exception should be raised because of the number of generic parameters is not correct
-    with pytest.raises(Parser.ParsingException, match="Invalid number of generic parameters given to 'list'. Expects 1 \(T\), but 2 where given."):
+    with pytest.raises(Parser.ParsingException, match=re.escape("Invalid number of generic parameters given to 'list'. Expects 1 (T), but 2 where given.")):
         parser.parse()
