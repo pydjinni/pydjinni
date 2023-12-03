@@ -22,8 +22,8 @@ import pytest
 from pydjinni.exceptions import FileNotFoundException
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.file.processed_files_model_builder import ProcessedFiles
-from pydjinni.parser.ast import Record, Enum, Flags, Interface, Function
-from pydjinni.parser.base_models import BaseType
+from pydjinni.parser.ast import Record
+from pydjinni.parser.base_models import BaseType, BaseExternalType
 from pydjinni.parser.parser import Parser
 from pydjinni.parser.resolver import Resolver
 
@@ -249,7 +249,7 @@ def test_extern(tmp_path: Path):
 
 def test_missing_extern(tmp_path: Path):
     # GIVEN an idl file that references an extern type that does not exist
-    parser, resolver_mock = given(
+    parser, _ = given(
         tmp_path=tmp_path,
         input_idl="""
             @extern "extern.yaml"
@@ -291,3 +291,42 @@ def test_namespace(tmp_path: Path):
     assert ast[0].namespace == ["foo", "bar"]
     assert ast[1].name == "bar"
     assert ast[1].namespace == ["foo", "bar", "baz"]
+
+
+def test_generic_parameters_not_allowed(tmp_path: Path):
+    # GIVEN an idl file with a generic type reference
+    parser, resolver_mock = given(
+        tmp_path=tmp_path,
+        input_idl="""
+            foo = record {
+                a: i8<i32>;
+            }
+                """
+    )
+
+    # AND GIVEN a type that does not allow generic parameters
+    resolver_mock.resolve.return_value = BaseExternalType(name='i8')
+
+    # WHEN parsing the idl file
+    # THEN an exception should be raised because of the unexpected generic parameter
+    with pytest.raises(Parser.ParsingException, match="Type 'i8' does not accept generic parameters"):
+        parser.parse()
+
+def test_generic_parameters_invalid_number(tmp_path: Path):
+    # GIVEN an idl file with a generic type reference
+    parser, resolver_mock = given(
+        tmp_path=tmp_path,
+        input_idl="""
+            foo = record {
+                a: list<i32, i8>;
+            }
+                """
+    )
+
+    # AND GIVEN a type that does not allow generic parameters
+    resolver_mock.resolve.return_value = BaseExternalType(name='list', params=["T"])
+
+    # WHEN parsing the idl file
+    # THEN an exception should be raised because of the number of generic parameters is not correct
+    with pytest.raises(Parser.ParsingException, match="Invalid number of generic parameters given to 'list'. Expects 1 \(T\), but 2 where given."):
+        parser.parse()
