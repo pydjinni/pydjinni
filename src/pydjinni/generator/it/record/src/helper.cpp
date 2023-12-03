@@ -18,66 +18,66 @@
 
 namespace test::record {
 
-PrimitiveTypes Helper::get_primitive_types(const PrimitiveTypes &record) {
-    assert(record.boolean_t == true);
-    assert(record.byte_t == 8);
-    assert(record.short_t == 16);
-    assert(record.int_t == 32);
-    assert(record.long_t == 64);
-    assert(record.float_t > 32 && record.float_t < 33);
-    assert(record.double_t > 64 && record.double_t < 65);
-    assert(record.string_t == "test string");
-    assert(record.date_t == std::chrono::time_point<std::chrono::system_clock>(std::chrono::seconds(1688213309)));
-    return record;
+PrimitiveTypes Helper::get_primitive_types(const PrimitiveTypes &record_type) {
+    assert(record_type.boolean_t == true);
+    assert(record_type.byte_t == 8);
+    assert(record_type.short_t == 16);
+    assert(record_type.int_t == 32);
+    assert(record_type.long_t == 64);
+    assert(record_type.float_t > 32 && record_type.float_t < 33);
+    assert(record_type.double_t > 64 && record_type.double_t < 65);
+    assert(record_type.string_t == "test string");
+    assert(record_type.date_t == std::chrono::time_point<std::chrono::system_clock>(std::chrono::seconds(1688213309)));
+    return record_type;
 }
 
-CollectionTypes Helper::get_collection_types(const CollectionTypes &record) {
-    assert(record.int_list.size() == 2);
-    assert(record.int_list[0] == 0);
-    assert(record.int_list[1] == 1);
+CollectionTypes Helper::get_collection_types(const CollectionTypes &record_type) {
+    assert(record_type.int_list.size() == 2);
+    assert(record_type.int_list[0] == 0);
+    assert(record_type.int_list[1] == 1);
 
-    assert(record.string_list.size() == 2);
-    assert(record.string_list[0] == "foo");
-    assert(record.string_list[1] == "bar");
+    assert(record_type.string_list.size() == 2);
+    assert(record_type.string_list[0] == "foo");
+    assert(record_type.string_list[1] == "bar");
 
-    assert(record.int_set.size() == 2);
-    assert(record.int_set.contains(0));
-    assert(record.int_set.contains(1));
+    assert(record_type.int_set.size() == 2);
+    assert(record_type.int_set.contains(0));
+    assert(record_type.int_set.contains(1));
 
-    assert(record.string_set.size() == 2);
-    assert(record.string_set.contains("foo"));
-    assert(record.string_set.contains("bar"));
+    assert(record_type.string_set.size() == 2);
+    assert(record_type.string_set.contains("foo"));
+    assert(record_type.string_set.contains("bar"));
 
-    assert(record.int_int_map.size() == 1);
-    assert(record.int_int_map.at(0) == 1);
+    assert(record_type.int_int_map.size() == 1);
+    assert(record_type.int_int_map.at(0) == 1);
 
-    assert(record.string_string_map.size() == 1);
-    assert(record.string_string_map.at("foo") == "bar");
+    assert(record_type.string_string_map.size() == 1);
+    assert(record_type.string_string_map.at("foo") == "bar");
 
-    return record;
+    return record_type;
 }
 
-OptionalTypes Helper::get_optional_types(const OptionalTypes &record) {
-    assert(record.int_optional.has_value());
-    assert(record.int_optional.value() == 42);
-    assert(record.string_optional.has_value());
-    assert(record.string_optional.value() == "optional");
-    return record;
+OptionalTypes Helper::get_optional_types(const OptionalTypes &record_type) {
+    assert(record_type.int_optional.has_value());
+    assert(record_type.int_optional.value() == 42);
+    assert(record_type.string_optional.has_value());
+    assert(record_type.string_optional.value() == "optional");
+    return record_type;
 }
 
-BinaryTypes Helper::get_binary_types(const BinaryTypes &record) {
-    assert(record.binary_t.size() == 1);
-    assert(record.binary_t == std::vector<uint8_t>{0x8F});
-    return record;
+BinaryTypes Helper::get_binary_types(const BinaryTypes &record_type) {
+    assert(record_type.binary_t.size() == 1);
+    assert(record_type.binary_t == std::vector<uint8_t>{0x8F});
+    return record_type;
 }
 
 BaseRecord Helper::get_cpp_base_record() {
     return {};
 }
 
-BaseRecord Helper::get_host_base_record(const BaseRecord &record) {
-    assert(record.value == 42);
-    return record;
+BaseRecord Helper::get_host_base_record(const BaseRecord &record_type) {
+    assert(record_type.value == 42);
+    return record_type;
 }
 
 }

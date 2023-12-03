@@ -36,10 +36,10 @@ base_record = record +any {
 }
 
 helper = main interface +cpp {
-    static get_primitive_types(record: primitive_types) -> primitive_types;
-    static get_collection_types(record: collection_types) -> collection_types;
-    static get_optional_types(record: optional_types) -> optional_types;
-    static get_binary_types(record: binary_types) -> binary_types;
+    static get_primitive_types(record_type: primitive_types) -> primitive_types;
+    static get_collection_types(record_type: collection_types) -> collection_types;
+    static get_optional_types(record_type: optional_types) -> optional_types;
+    static get_binary_types(record_type: binary_types) -> binary_types;
     static get_cpp_base_record() -> base_record;
-    static get_host_base_record(record: base_record) -> base_record;
+    static get_host_base_record(record_type: base_record) -> base_record;
 }

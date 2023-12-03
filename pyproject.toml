@@ -21,7 +21,6 @@ classifiers = [
 keywords = ["djinni"]
 dependencies = [
     "click>=8.1,<9",
-    "arpeggio>=2,<3",
     "Jinja2>=3.1,<4",
     "mistletoe>=1.0,<2",
     "pydantic>=2.0.3,<3",
@@ -32,7 +31,8 @@ dependencies = [
     'tomli>=1.1.0,<2; python_version < "3.11"',
     'StrEnum>=0.4; python_version < "3.11"',
     'tomli_w>=1.0,<2',
-    'setuptools>=65'
+    'setuptools>=65',
+    'antlr4-python3-runtime==4.13.1'
 ]
 
 [tool.setuptools_scm]
@@ -41,6 +41,7 @@ dependencies = [
 dev = [
     "pytest==7.3.1",
     "coverage==7.2.3",
+    "antlr4-tools==0.2.1"
 ]
 publish = [
     "twine==4.0.2",

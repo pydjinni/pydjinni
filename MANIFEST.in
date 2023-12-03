@@ -1,5 +1,4 @@
 prune docs
-global-include *.cleanpeg
 global-include support_lib/**/*
 global-include template/**/*
 global-exclude CMakeLists.txt
