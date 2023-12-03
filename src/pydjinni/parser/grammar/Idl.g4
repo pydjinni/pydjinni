@@ -16,7 +16,7 @@ flags         : comment? identifier ASSIGN FLAGS LBRACE flag* RBRACE;
 flag          : comment? identifier modifier? SEMI;
 modifier      : ASSIGN ID;
 record        : comment? identifier ASSIGN RECORD targets LBRACE field* RBRACE deriving?;
-field         : identifier COLON typeRef SEMI;
+field         : comment? identifier COLON typeRef SEMI;
 typeRef       : dataType | function;
 dataType      : nsIdentifier (LT (dataType COMMA)* dataType GT)? OPTIONAL?;
 function      : (FUNCTION targets)? LPAREN ((parameter COMMA)* parameter)? RPAREN (ARROW typeRef)?;

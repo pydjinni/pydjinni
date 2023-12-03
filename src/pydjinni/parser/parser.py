@@ -105,7 +105,8 @@ class Parser(IdlVisitor):
     def visitItem(self, ctx: IdlParser.ItemContext) -> Enum.Item:
         item = Enum.Item(
             name=self.visit(ctx.identifier()),
-            position=self._position(ctx)
+            position=self._position(ctx),
+            comment=self.visit(ctx.comment()) if ctx.comment() else None
         )
         self.field_decls.append(item)
         return item
@@ -271,6 +272,7 @@ class Parser(IdlVisitor):
         return Record(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
+            comment=self.visit(ctx.comment()) if ctx.comment() else None,
             fields=fields,
             targets=self.visit(ctx.targets()),
             namespace=self.current_namespace,
@@ -282,6 +284,7 @@ class Parser(IdlVisitor):
         field = Record.Field(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
+            comment=self.visit(ctx.comment()) if ctx.comment() else None,
             type_ref=self.visit(ctx.typeRef())
         )
         if isinstance(field.type_ref.type_def, Function):
