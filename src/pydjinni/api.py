@@ -21,6 +21,8 @@ from pathlib import Path
 from typing import Any
 
 from pydjinni.builder.build_config import BuildBaseConfig
+from pydjinni.documentation.documentation_config import DocumentationBaseConfig
+from pydjinni.documentation.target import DocumentationTarget
 from pydjinni.file.processed_files_model_builder import ProcessedFilesModelBuilder, ProcessedFiles
 from pydjinni.packaging.architecture import Architecture
 from pydjinni.packaging.packaging_config import PackageBaseConfig
@@ -107,6 +109,8 @@ class API:
                                entry_points(group='pydjinni.builder')]
         self._package_targets = [self._init_package_plugin(plugin) for plugin in
                                  entry_points(group='pydjinni.packaging')]
+        self._document_targets = [self._init_document_plugin(plugin) for plugin in
+                                  entry_points(group='pydjinni.documentation')]
 
         # generate models
         self._configuration_model = self._config_model_builder.build()
@@ -165,6 +169,10 @@ class API:
         return {target.key: target for target in self._build_targets}
 
     @cached_property
+    def document_targets(self) -> dict[str, DocumentationTarget]:
+        return {target.key: target for target in self._document_targets}
+
+    @cached_property
     def internal_types(self) -> list:
         """
         Returns:
@@ -188,6 +196,11 @@ class API:
         )
 
     def _init_package_plugin(self, plugin: EntryPoint) -> PackageTarget:
+        return plugin.load()(
+            config_model_builder=self._config_model_builder
+        )
+
+    def _init_document_plugin(self, plugin: EntryPoint) -> DocumentationTarget:
         return plugin.load()(
             config_model_builder=self._config_model_builder
         )
@@ -242,6 +255,7 @@ class API:
                 config=config,
                 external_types_model=self.external_type_model,
                 generate_targets=self.generation_targets,
+                document_targets=self.document_targets,
                 package_targets=self.package_targets,
                 build_targets=self.build_targets,
                 file_reader_writer=self._file_reader_writer
@@ -253,11 +267,14 @@ class API:
 
     class ConfiguredContext:
         def __init__(self, config: BaseModel, external_types_model: type[BaseExternalType],
-                     generate_targets: dict[str, Target], package_targets: dict[str, PackageTarget],
+                     generate_targets: dict[str, Target],
+                     document_targets: dict[str, DocumentationTarget],
+                     package_targets: dict[str, PackageTarget],
                      build_targets: dict[str, BuildTarget], file_reader_writer: FileReaderWriter):
             self._config = config
             self._external_types_builder = ExternalTypesBuilder(external_types_model)
             self._generate_targets = generate_targets
+            self._document_targets = document_targets
             self._package_targets = package_targets
             self._build_targets = build_targets
             self._resolver = Resolver(external_types_model)
@@ -289,15 +306,30 @@ class API:
             if isinstance(idl, str):
                 idl = Path(idl)
             generate_config: GenerateBaseConfig = self._config.generate
+            document_config: DocumentationBaseConfig = self._config.documentation
             generate_targets: list[str] = list(generate_config.model_fields_set) if generate_config else []
             targets: list[Target] = [target for key, target in self._generate_targets.items() if
                                      key in generate_targets]
+
+            configured_document_target_keys: list[str] = list(
+                document_config.model_fields_set) if document_config else []
+            document_targets: dict[str, DocumentationTarget] = {key: target for key, target in
+                                                                self._document_targets.items() if
+                                                                key in configured_document_target_keys}
+
+            for key, target in document_targets.items():
+                target.configure(getattr(document_config, key))
+
             for target in targets:
                 target.register_external_types(self._external_types_builder)
+                for generate_target in document_targets.values():
+                    target.register_documentation_generators(generate_target)
                 target.configure(generate_config)
 
             for external_type_def in self._external_types_builder.build():
                 self._resolver.register_external(external_type_def)
+
+
 
             parser = Parser(
                 resolver=self._resolver,
@@ -314,6 +346,7 @@ class API:
 
             return API.ConfiguredContext.GenerateContext(
                 generate_targets=self._generate_targets,
+                document_targets=document_targets,
                 file_writer=self._file_reader_writer,
                 ast=ast,
                 config=generate_config
@@ -404,9 +437,12 @@ class API:
                 return self._target.package(clean=clean)
 
         class GenerateContext:
-            def __init__(self, generate_targets: dict[str, Target], file_writer: FileReaderWriter, ast: list[BaseType],
+            def __init__(self, generate_targets: dict[str, Target],
+                         document_targets: dict[str, DocumentationTarget],
+                         file_writer: FileReaderWriter, ast: list[BaseType],
                          config: GenerateBaseConfig):
                 self._generate_targets = generate_targets
+                self._document_targets = document_targets
                 self._file_reader_writer = file_writer
                 self._ast = ast
                 self._config = config
@@ -432,6 +468,11 @@ class API:
                 """
                 target = self._generate_targets[target_name]
                 target.generate(self._ast, clean=clean, copy_support_lib_sources=self._config.support_lib_sources)
+                return self
+
+            def document(self, target_name: str, clean: bool = False) -> API.ConfiguredContext.GenerateContext:
+                target = self._document_targets[target_name]
+                target.generate(self.ast, clean=clean)
                 return self
 
             def write_processed_files(self) -> Path | None:

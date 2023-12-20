@@ -37,6 +37,11 @@ class GenerateContext(Context[API.ConfiguredContext.GenerateContext]):
         self.clean = clean
 
 
+class DocumentContext(Context[API.ConfiguredContext.GenerateContext]):
+    def __init__(self, api: API, context: ContextType, clean: bool):
+        super().__init__(api, context)
+        self.clean = clean
+
 class PackageConfigurationContext(Context[API.ConfiguredContext]):
     def __init__(self, api: API, context: ContextType, clean: bool, configuration: str):
         super().__init__(api, context)
@@ -58,6 +63,7 @@ class PackageContext(Context[API.ConfiguredContext.PackageContext]):
 
 pass_cli_context = click.make_pass_decorator(CliContext)
 pass_generate_context = click.make_pass_decorator(GenerateContext)
+pass_document_context = click.make_pass_decorator(DocumentContext)
 pass_package_configuration_context = click.make_pass_decorator(PackageConfigurationContext)
 pass_publish_configuration_context = click.make_pass_decorator(PublishConfigurationContext)
 pass_package_context = click.make_pass_decorator(PackageContext)

@@ -14,16 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #}
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import data_type %}
+{% from "macros.jinja2" import data_type, comment %}
 
 {% block content %}
 {% if type_def.comment %}
-{{ type_def.java.comment }}
+{{ comment(type_def) }}
+{% endif %}
+{% if type_def.deprecated %}
+@Deprecated
 {% endif %}
 {{ type_def.java.class_modifier }}class {{ type_def.java.name }} {
 {% for field in type_def.fields %}
     {% if field.comment %}
-    {{ field.java.comment }}
+    {{ comment(field, indentation=4) }}
+    {% endif %}
+    {% if field.deprecated %}
+    @Deprecated
     {% endif %}
     {{ field.java.field_modifier ~ data_type(field.type_ref) }} {{ field.java.name }};
 {% endfor %}
@@ -38,6 +44,12 @@ limitations under the License.
     }
 
 {% for field in type_def.fields %}
+    {% if field.comment %}
+    {{ comment(field, indentation=4) }}
+    {% endif %}
+    {% if field.deprecated %}
+    @Deprecated
+    {% endif %}
     public {{ data_type(field.type_ref) }} {{ field.java.getter }}() { return {{ field.java.name }}; }
 {% endfor %}
 

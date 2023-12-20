@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #}
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import return_type, parameters %}
+{% from "macros.jinja2" import return_type, parameters, comment %}
 
 {% block header %}
 {% if type_def.cpp.proxy -%}
@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 {% block content %}
 {% if type_def.comment %}
-{{ type_def.java.comment }}
+{{ comment(type_def) }}
 {% endif %}
 @FunctionalInterface
 {{ type_def.java.class_modifier }}interface {{ type_def.java.name }} {

@@ -22,7 +22,6 @@ keywords = ["djinni"]
 dependencies = [
     "click>=8.1,<9",
     "Jinja2>=3.1,<4",
-    "mistletoe>=1.0,<2",
     "pydantic>=2.0.3,<3",
     "pydantic-settings>=2.0.3,<3",
     'rich>=12.6,<13',
@@ -32,7 +31,8 @@ dependencies = [
     'StrEnum>=0.4; python_version < "3.11"',
     'tomli_w>=1.0,<2',
     'setuptools>=65',
-    'antlr4-python3-runtime==4.13.1'
+    'antlr4-python3-runtime==4.13.1',
+    'mistune>=3,<4'
 ]
 
 [tool.setuptools_scm]
@@ -75,5 +75,7 @@ conan = 'pydjinni.builder.conan:ConanTarget'
 [project.entry-points.'pydjinni.packaging']
 swiftpackage = 'pydjinni.packaging.swiftpackage:SwiftpackageTarget'
 aar = 'pydjinni.packaging.aar:AndroidArchiveTarget'
+[project.entry-points.'pydjinni.documentation']
+default = 'pydjinni.documentation.default:DefaultDocumentationTarget'
 [project.entry-points.'pygments.lexers']
 djinni='pydjinni.lexer:PyDjinniLexer'

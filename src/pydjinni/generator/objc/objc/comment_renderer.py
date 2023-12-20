@@ -11,26 +11,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Any
 
-from mistletoe import block_token
+from mistune import BlockState
+from mistune.renderers.markdown import MarkdownRenderer
 
-from pydjinni.generator.comment_renderer import BaseCommentRenderer
+from pydjinni.generator.objc.objc.config import ObjcIdentifierStyle
+from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
-class DocCCommentRenderer(BaseCommentRenderer):
-    def render_heading(self, token: block_token.Heading) -> str:
-        return f"{'#' * token.level} {self.render_inner(token)}{self.NEWLINE * 2}"
+class DocCCommentRenderer(MarkdownRenderer):
 
-    def render_list(self, token: block_token.List) -> str:
-        if token.start is None:
-            prefix = "-"
-        else:
-            prefix = "1."
-        inner = ''.join([f"{prefix} {self.render(child)}" for child in token.children])
-        return f"{self.NEWLINE * 2}{inner}{self.NEWLINE}"
+    def __init__(self, identifier_style: ObjcIdentifierStyle):
+        super().__init__()
+        self.identifier_style = identifier_style
 
-    def render_list_item(self, token: block_token.ListItem) -> str:
-        return f"{self.render_inner(token)}{self.NEWLINE}"
+    def returns(self, token: dict[str, Any], state: BlockState) -> str:
+        return f"- Returns: {self.render_children(token, state)}"
 
-    def render_returns(self, token):
-        return f"{self.NEWLINE}- Returns: {self.render_inner(token)}"
+    def param(self, token: dict[str, Any], state: BlockState) -> str:
+        name = token['attrs']['name']
+        return f"- Parameter {Identifier(name).convert(self.identifier_style.field)}: {self.render_children(token, state)}"
+
+    def deprecated(self, token: dict[str, Any], state: BlockState) -> str:
+        return ""

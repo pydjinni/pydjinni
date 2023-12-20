@@ -89,8 +89,9 @@ class CppBaseType(BaseModel):
         *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.source_extension}"
 
     @cached_property
-    def comment(self): return mistletoe.markdown(self.decl.comment,
-                                                 DoxygenCommentRenderer) if self.decl.comment else ''
+    def comment(self):
+        return DoxygenCommentRenderer(self.config.identifier).render_tokens(*self.decl.parsed_comment).strip() \
+            if self.decl.comment else ''
 
     @computed_field
     @cached_property
@@ -110,8 +111,9 @@ class CppBaseField(BaseModel):
     def name(self) -> str: return self.decl.name.convert(self.config.identifier.field)
 
     @cached_property
-    def comment(self): return mistletoe.markdown(self.decl.comment,
-                                                 DoxygenCommentRenderer) if self.decl.comment else ''
+    def comment(self):
+        return DoxygenCommentRenderer(self.config.identifier).render_tokens(*self.decl.parsed_comment).strip() \
+            if self.decl.comment else ''
 
 
 class CppInterface(CppBaseType):

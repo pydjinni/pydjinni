@@ -12,26 +12,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from mistletoe import block_token
 
-from pydjinni.generator.comment_renderer import BaseCommentRenderer
+from mistune import HTMLRenderer
+from mistune.util import escape as escape_text
+
+from pydjinni.generator.java.java.config import JavaIdentifierStyle
+from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
-class JavaDocCommentRenderer(BaseCommentRenderer):
+class JavaDocCommentRenderer(HTMLRenderer):
 
-    def render_heading(self, token: block_token.Heading) -> str:
-        return f"<h{token.level}>{self.render_inner(token)}</h{token.level}>{self.NEWLINE}"
+    def __init__(self, identifier_style: JavaIdentifierStyle):
+        super().__init__()
+        self.identifier_style = identifier_style
 
-    def render_list(self, token: block_token.List) -> str:
-        if token.start is None:
-            tag = "ul"
-        else:
-            tag = "ol"
-        inner = ''.join([f"{self.render(child)}" for child in token.children])
-        return f"{self.NEWLINE}<{tag}>{self.NEWLINE}{inner}</{tag}>{self.NEWLINE}"
+    def paragraph(self, text: str) -> str:
+        return f'{text}\n\n'
 
-    def render_list_item(self, token: block_token.ListItem) -> str:
-        return f"<li>{self.render_inner(token)}</li>{self.NEWLINE}"
+    def codespan(self, text: str) -> str:
+        return f'{{@code {text}}}'
 
-    def render_returns(self, token):
-        return f"{self.NEWLINE}@return {self.render_inner(token)}"
+    def block_code(self, code: str, info=None) -> str:
+        return f'<pre>{{@code{escape_text(code)}}}</pre>\n'
+
+    def returns(self, text: str) -> str:
+        return f"@return {text}"
+
+    def param(self, text: str, name: str) -> str:
+        return f"@param {Identifier(name).convert(self.identifier_style.field)} {text}"
+
+    def deprecated(self, text: str) -> str:
+        return f"@deprecated {text}"

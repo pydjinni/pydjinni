@@ -14,6 +14,7 @@
 
 from pydjinni.generator.target import Target
 from pydjinni.parser.ast import Record
+from .doc.swift.generator import SwiftDocumentation
 from .objc.generator import ObjcGenerator
 from .objcpp.generator import ObjcppGenerator
 
@@ -26,4 +27,5 @@ class ObjcTarget(Target):
     """
     key = "objc"
     generators = [ObjcGenerator, ObjcppGenerator]
+    documentation = [SwiftDocumentation]
     supported_deriving = {Record.Deriving.eq, Record.Deriving.ord, Record.Deriving.str}

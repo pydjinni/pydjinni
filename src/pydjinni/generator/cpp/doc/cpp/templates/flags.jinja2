@@ -1,0 +1,10 @@
+{% extends "base.jinja2" %}
+
+{% block content %}
+<h2>Flags:</h2>
+<ul>
+    {% for flag in decl.flags %}
+    <li><code>{{ flag.cpp.name }}</code>{{ flag|comment }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

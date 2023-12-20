@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #}
 {% extends "base.jinja2" %}
+{% from "macros.jinja2" import comment, deprecated %}
 
 {% block header %}
 #pragma once
@@ -25,12 +26,15 @@ limitations under the License.
 struct {{ type_def.cpp.derived_name }};
 {% endif %}
 {% if type_def.comment %}
-{{ type_def.cpp.comment }}
+{{ comment(type_def) }}
+{% endif %}
+{% if type_def.deprecated %}
+{{ deprecated(type_def) }}
 {% endif %}
 struct {{ type_def.cpp.name }}{{ " final" if not type_def.cpp.base_type }} {
 {% for field in type_def.fields %}
     {% if field.comment %}
-    {{ field.cpp.comment | indent(4) }}
+    {{ comment(field, indentation=4) }}
     {% endif %}
     {{ field.cpp.type_spec }} {{ field.cpp.name }};
 {% endfor %}

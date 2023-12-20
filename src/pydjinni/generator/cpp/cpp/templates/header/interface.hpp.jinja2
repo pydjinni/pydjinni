@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #}
 {% extends "base.jinja2" %}
+{% from "macros.jinja2" import comment, deprecated %}
 
 {% block header %}
 #pragma once
@@ -22,13 +23,19 @@ limitations under the License.
 
 {% block content %}
 {% if type_def.comment %}
-{{ type_def.cpp.comment }}
+{{ comment(type_def) }}
+{% endif %}
+{% if type_def.deprecated %}
+{{ deprecated(type_def) }}
 {% endif %}
 class {{ type_def.cpp.name }} {
 public:
 {% for method in type_def.methods %}
     {% if method.comment %}
-    {{ method.cpp.comment | indent(4) }}
+    {{ comment(method, indentation=4) }}
+    {% endif %}
+    {% if method.deprecated %}
+    {{ deprecated(method) }}
     {% endif %}
     {{ method.cpp.attribute }} {{ method.cpp.type_spec }} {{ method.cpp.name }}(
     {%- for parameter in method.parameters -%}

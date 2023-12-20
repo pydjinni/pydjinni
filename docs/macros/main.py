@@ -100,8 +100,8 @@ def define_env(env):
 
     @env.macro
     def idl_grammar(path: str):
-        grammar = Path(path).read_text().replace(" = ", " ← ")
-        return f"```peg\n{grammar}\n```\n"
+        grammar = Path(path).read_text()
+        return f"```antlr\n{grammar}\n```\n"
 
     @env.macro
     def config_schema_table(header_indent: int = 3):

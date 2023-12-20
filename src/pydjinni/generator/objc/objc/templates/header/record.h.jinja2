@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
         limitations under the License.
 #}
 {% extends "base.jinja2" %}
+{% from "macros.jinja2" import comment, deprecated %}
 
 {% block header %}
 {% for header in type_def.dependencies | headers('objc') -%}
@@ -26,10 +27,13 @@ See the License for the specific language governing permissions and
 @class {{ type_def.objc.derived_name }};
 {% endif %}
 {% if type_def.comment %}
-{{ type_def.objc.comment }}
+{{ comment(type_def) }}
 {% endif %}
 {% if config.swift.rename_interfaces %}
 NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
+{% endif %}
+{% if type_def.deprecated %}
+{{ deprecated(type_def) }}
 {% endif %}
 @interface {{ type_def.objc.name }} : NSObject
 - (nonnull instancetype){{ type_def.objc.init }}
@@ -42,7 +46,7 @@ NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
     {%- endfor -%};
 {% for field in type_def.fields %}
 {% if field.comment %}
-{{ field.objc.comment }}
+{{ comment(field) }}
 {% endif %}
 @property (nonatomic, readonly{{ ", " ~ field.objc.annotation if field.objc.annotation }}) {{ field.objc.type_decl }} {{ field.objc.name }};
 {% endfor %}
