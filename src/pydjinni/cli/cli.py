@@ -26,7 +26,7 @@ from pydjinni.defs import DEFAULT_CONFIG_PATH
 from pydjinni.exceptions import ApplicationException
 from .context import CliContext, pass_cli_context, GenerateContext, pass_generate_context, PackageContext, \
     pass_package_context, PackageConfigurationContext, pass_package_configuration_context, PublishConfigurationContext, \
-    pass_publish_configuration_context, DocumentContext, pass_document_context
+    pass_publish_configuration_context
 from ..packaging.architecture import Architecture
 
 logger = logging.getLogger(__name__)
@@ -69,26 +69,6 @@ class GenerateCli(MultiCommand):
         def command(generate_context: GenerateContext):
             logger.info(f"generating files for target '{name}'")
             return generate_context.context.generate(name, clean=generate_context.clean)
-
-        return None if target is None else command
-
-
-class DocumentCli(MultiCommand):
-    @click.pass_context
-    def list_commands(self, ctx, generate_context: click.Context) -> list[str]:
-        api = MultiCommand.get_api(generate_context)
-        return list(api.document_targets.keys())
-
-    @click.pass_context
-    def get_command(self, ctx, generate_context: click.Context, name) -> click.Command | None:
-        api = MultiCommand.get_api(generate_context)
-        target = api.document_targets.get(name)
-
-        @click.command(name, help=target.__doc__)
-        @pass_document_context
-        def command(generate_context: DocumentContext):
-            logger.info(f"generating '{name}' documentation")
-            return generate_context.context.document(name, clean=generate_context.clean)
 
         return None if target is None else command
 
@@ -249,30 +229,6 @@ def generate(ctx, cli_context: CliContext, idl: Path, clean: bool):
     if logger.level <= logging.DEBUG:
         logger.debug(pretty_repr(context.ast))
     ctx.obj = GenerateContext(
-        api=cli_context.api,
-        context=context,
-        clean=clean
-    )
-
-
-@cli.group(cls=DocumentCli, chain=True)
-@pass_cli_context
-@click.pass_context
-@click.option(
-    '--clean',
-    is_flag=True,
-    help="If enabled, deletes all specified output directories before generating new output. "
-         "Caution: This deletes the entire output folders, including all files that are inside it!")
-@click.argument('idl', type=Path)
-def document(ctx, cli_context: CliContext, idl: Path, clean: bool):
-    """
-    generate glue-code from the provided IDL file.
-
-    COMMAND specifies the target languages.
-    """
-    logger.info("parsing IDL")
-    context = cli_context.context.parse(idl)
-    ctx.obj = DocumentContext(
         api=cli_context.api,
         context=context,
         clean=clean

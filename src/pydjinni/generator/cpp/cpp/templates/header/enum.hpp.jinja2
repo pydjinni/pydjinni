@@ -30,7 +30,7 @@ limitations under the License.
 enum class {{ type_def.cpp.name }} : int {
 {% for item in type_def.items %}
     {% if item.comment %}
-    {{ comment(item, identation=4) }}
+    {{ comment(item, indentation=4) }}
     {% endif %}
     {{ item.cpp.name ~ ("," if not loop.last) }}
 {% endfor %}

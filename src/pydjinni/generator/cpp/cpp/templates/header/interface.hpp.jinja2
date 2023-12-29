@@ -25,10 +25,9 @@ limitations under the License.
 {% if type_def.comment %}
 {{ comment(type_def) }}
 {% endif %}
-{% if type_def.deprecated %}
-{{ deprecated(type_def) }}
-{% endif %}
-class {{ type_def.cpp.name }} {
+class {% if type_def.deprecated -%}
+{{ deprecated(type_def) ~ " " }}
+{%- endif %}{{ type_def.cpp.name }} {
 public:
 {% for method in type_def.methods %}
     {% if method.comment %}

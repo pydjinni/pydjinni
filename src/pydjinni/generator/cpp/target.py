@@ -15,7 +15,6 @@
 from pydjinni.generator.target import Target
 from pydjinni.parser.ast import Record
 from .cpp.generator import CppGenerator
-from .doc.cpp.generator import CppDocumentation
 
 
 class CppTarget(Target):
@@ -24,5 +23,4 @@ class CppTarget(Target):
     """
     key = "cpp"
     generators = [CppGenerator]
-    documentation = [CppDocumentation]
     supported_deriving = {Record.Deriving.init, Record.Deriving.eq, Record.Deriving.ord}

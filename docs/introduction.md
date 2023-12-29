@@ -87,14 +87,6 @@ pydjinni publish aar
 pydjinni publish swiftpackage
 ```
 
-## Generating Documentation { .new-badge }
-
-PyDjinni can render a website that documents the declared interfaces.
-
-```shell
-pydjinni document foo.pydjinni default
-```
-
 ## Configuration
 
 All details of generating glue code and building, packaging and publishing a cross-platform library with PyDjinni is
@@ -139,17 +131,6 @@ package:
       maven_registry: https://maven.pkg.github.com/foo/bar
     platforms:
       android: [x86_64, armv8]
-documentation:
-  default:
-    out: out/html
-    default_language: java
-    title: Example
-    description: |
-      A small documentation example
-    logo: docs/assets/logo.png
-    home: README.md
-    docs:
-      Installation: docs/index.md
 ```
 
 ### Credentials

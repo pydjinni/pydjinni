@@ -14,8 +14,6 @@
 
 from pydjinni.generator.target import Target
 from pydjinni.parser.ast import Record
-from .doc.java.generator import JavaDocumentation
-from .doc.kotlin.generator import KotlinDocumentation
 from .java.generator import JavaGenerator
 from .jni.generator import JniGenerator
 
@@ -28,5 +26,4 @@ class JavaTarget(Target):
     """
     key = "java"
     generators = [JavaGenerator, JniGenerator]
-    documentation = [JavaDocumentation, KotlinDocumentation]
     supported_deriving = {Record.Deriving.eq, Record.Deriving.ord, Record.Deriving.str, Record.Deriving.parcelable}

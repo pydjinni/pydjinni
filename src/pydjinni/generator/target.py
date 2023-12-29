@@ -22,8 +22,6 @@ from pydjinni.parser.base_models import BaseType, BaseField
 from pydjinni.parser.type_model_builder import TypeModelBuilder
 from .external_types import ExternalTypesBuilder
 from .generator import Generator, ConfigModel
-from ..documentation.generator import DocumentationGenerator
-from ..documentation.target import DocumentationTarget
 
 
 class Target(ABC):
@@ -60,11 +58,6 @@ class Target(ABC):
         """
         pass
 
-    @property
-    @abstractmethod
-    def documentation(self) -> list[type[DocumentationGenerator]]:
-        pass
-
     def __init__(
             self,
             file_reader_writer: FileReaderWriter,
@@ -91,10 +84,6 @@ class Target(ABC):
     def register_external_types(self, external_types_factory: ExternalTypesBuilder):
         for generator in self.generator_instances:
             generator.register_external_types(external_types_factory)
-
-    def register_documentation_generators(self, target: DocumentationTarget):
-        for documentation_target in self.documentation:
-            target.register(documentation_target())
 
     def configure(self, config: ConfigModel):
         for generator in self.generator_instances:

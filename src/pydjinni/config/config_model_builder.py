@@ -21,7 +21,6 @@ from pydantic.fields import FieldInfo
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from pydjinni.builder.build_config import BuildBaseConfig
-from pydjinni.documentation.documentation_config import DocumentationBaseConfig
 from pydjinni.generator.generate_config import GenerateBaseConfig
 from pydjinni.packaging.packaging_config import PackageBaseConfig
 
@@ -41,7 +40,6 @@ class ConfigModelBuilder:
     """
 
     def __init__(self):
-        self._documentation_config_models: dict[str, type[BaseModel]] = {}
         self._generator_config_models: dict[str, type[BaseModel]] = {}
         self._builder_config_models: dict[str, type[BaseModel]] = {}
         self._package_config_models: dict[str, type[BaseModel]] = {}
@@ -55,8 +53,6 @@ class ConfigModelBuilder:
     def add_package_config(self, name: str, config_model: type[BaseModel]):
         self._package_config_models[name] = config_model
 
-    def add_documentation_config(self, name: str, config_model: type[BaseModel]):
-        self._documentation_config_models[name] = config_model
 
     def build(self):
         return create_model(
@@ -79,12 +75,6 @@ class ConfigModelBuilder:
                 self._create_config_model("Package", PackageBaseConfig, self._package_config_models) | None, FieldInfo(
                     default=None,
                     description=inspect.cleandoc(PackageBaseConfig.__doc__)
-                )
-            ),
-            documentation=(
-                self._create_config_model("Documentation", DocumentationBaseConfig, self._documentation_config_models) | None, FieldInfo(
-                    default=None,
-                    description=inspect.cleandoc(DocumentationBaseConfig.__doc__)
                 )
             )
         )

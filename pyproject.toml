@@ -75,7 +75,5 @@ conan = 'pydjinni.builder.conan:ConanTarget'
 [project.entry-points.'pydjinni.packaging']
 swiftpackage = 'pydjinni.packaging.swiftpackage:SwiftpackageTarget'
 aar = 'pydjinni.packaging.aar:AndroidArchiveTarget'
-[project.entry-points.'pydjinni.documentation']
-default = 'pydjinni.documentation.default:DefaultDocumentationTarget'
 [project.entry-points.'pygments.lexers']
 djinni='pydjinni.lexer:PyDjinniLexer'

@@ -13,25 +13,31 @@ android {
     packaging {
         jniLibs.keepDebugSymbols.add("**/*.so")
     }
-}
-dependencies {
-    api(files("libs/{{ config.target }}.jar"))
-}
-publishing {
-    publications {
-        create<MavenPublication>("release") {
-            groupId = "{{ config.aar.publish.group_id }}"
-            artifactId = "{{ config.aar.publish.artifact_id }}"
-            version = "{{ config.version }}"
-            artifact("$buildDir/outputs/aar/{{ config.target }}-release.aar")
+    publishing {
+        singleVariant("release") {
+            withJavadocJar()
+            withSourcesJar()
         }
-        repositories {
-            maven {
-                name = "remote"
-                url = uri("{{ config.aar.publish.maven_registry }}")
-                credentials(PasswordCredentials::class)
+    }
+}
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                groupId = "{{ config.aar.publish.group_id }}"
+                artifactId = "{{ config.aar.publish.artifact_id }}"
+                version = "{{ config.version }}"
+                from(components["release"])
+            }
+            repositories {
+                maven {
+                    name = "remote"
+                    url = uri("{{ config.aar.publish.maven_registry }}")
+                    credentials(PasswordCredentials::class)
+                }
             }
         }
     }
 }
+
 

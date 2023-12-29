@@ -11,15 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from pathlib import Path
 
-from pydantic import BaseModel, HttpUrl, Field
+from pydantic import BaseModel, Field, HttpUrl, DirectoryPath
 
 
 class SwiftpackagePublishConfig(BaseModel):
-    repository: HttpUrl = Field(
-        description="Http Url to git repository",
+    repository: HttpUrl | Path = Field(
+        description="Remote Git repository or path to a local directory where the package should be published",
         examples=[
-            "https://github.com/foo/bar.git"
+            "https://github.com/foo/bar.git",
+            "/path/where/swiftpackage/should/be/copied/to",
+            "git@github.com:foo/bar.git"
         ]
     )
     branch: str = Field(

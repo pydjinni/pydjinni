@@ -17,7 +17,7 @@ import os
 from pydjinni.packaging.aar.publish_config import AndroidArchivePublishConfig
 from pydjinni.packaging.architecture import Architecture
 from pydjinni.packaging.platform import Platform
-from pydjinni.packaging.target import PackageTarget, copy_file, execute
+from pydjinni.packaging.target import PackageTarget, copy_file, execute, copy_directory
 
 
 class AndroidArchiveTarget(PackageTarget):
@@ -38,11 +38,10 @@ class AndroidArchiveTarget(PackageTarget):
     }
 
     def package_build(self, clean: bool = False):
-        jar_name = f'{self.config.target}.jar'
         so_name = f'lib{self.config.target}.so'
         for artifacts in self._build_artifacts.values():
             for arch, path in artifacts.items():
-                copy_file(src=path / jar_name, dst=self.package_build_path / 'libs' / jar_name)
+                copy_directory(src=path / self.config.target, dst=self.package_build_path / 'src' / 'main' / 'java')
                 copy_file(src=path / so_name,
                           dst=self.package_build_path / 'src' / 'main' / 'jniLibs' / self.architecture_mapping[
                               arch] / so_name)
@@ -53,8 +52,13 @@ class AndroidArchiveTarget(PackageTarget):
                   dst=self.package_output_path / f'{self.config.target}.aar')
 
     def publish(self):
-        execute("./gradlew", [
-            "publishReleasePublicationToRemoteRepository",
-            f"-PremoteUsername={self.config.aar.publish.username}",
-            f"-PremotePassword={self.config.aar.publish.password}"
-        ], working_dir=self.package_build_path)
+        if self.config.aar.publish.maven_registry:
+            execute("./gradlew", [
+                "publishReleasePublicationToRemoteRepository",
+                f"-PremoteUsername={self.config.aar.publish.username}",
+                f"-PremotePassword={self.config.aar.publish.password}"
+            ], working_dir=self.package_build_path)
+        else:
+            execute("./gradlew", [
+                "publishReleasePublicationToMavenLocal"
+            ], working_dir=self.package_build_path)

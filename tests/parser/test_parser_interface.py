@@ -193,7 +193,7 @@ def test_parsing_main_interface_not_cpp(tmp_path, targets):
     )
     # WHEN parsing the input
     # THEN a ParsingException should be thrown because the 'main' interface is not implemented in C++
-    with pytest.raises(Parser.ParsingException, match="a 'main' interface can only be implemented in C\+\+"):
+    with pytest.raises(Parser.ParsingException, match=r"a 'main' interface can only be implemented in C++"):
         parser.parse()
 
 
