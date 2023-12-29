@@ -15,7 +15,6 @@
 from functools import cached_property
 from pathlib import Path
 
-import mistletoe
 from pydantic import BaseModel, Field, computed_field
 
 from pydjinni.generator.objc.objc.comment_renderer import DocCCommentRenderer
