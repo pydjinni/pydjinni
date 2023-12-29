@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import re
 from pathlib import Path
 
 import pytest
@@ -193,7 +193,7 @@ def test_parsing_main_interface_not_cpp(tmp_path, targets):
     )
     # WHEN parsing the input
     # THEN a ParsingException should be thrown because the 'main' interface is not implemented in C++
-    with pytest.raises(Parser.ParsingException, match=r"a 'main' interface can only be implemented in C++"):
+    with pytest.raises(Parser.ParsingException, match=re.escape("a 'main' interface can only be implemented in C++")):
         parser.parse()
 
 

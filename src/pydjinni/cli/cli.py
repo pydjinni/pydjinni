@@ -219,7 +219,7 @@ def cli(ctx, log_level, config, option):
 @click.argument('idl', type=Path)
 def generate(ctx, cli_context: CliContext, idl: Path, clean: bool):
     """
-    generate documentation from the provided IDL file.
+    generate glue-code from the provided IDL file.
 
     COMMAND specifies the target languages.
     """
