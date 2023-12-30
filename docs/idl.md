@@ -194,9 +194,18 @@ namespace foo {
 
 The specified namespace is appended to the base namespace that is defined in the generator configuration.
 
-## Comments
+## Comments { .new-badge }
 
 Comments starting with `#` are converted to documentation comments in the generated interfaces.
+
+[CommonMark](https://commonmark.org) flavored Markdown can be used to format the text.
+
+The following special commands are available:
+
+{{ markdown_special_commands() }}
+
+Both JavaDoc or Doxygen style commands can be used: `@deprecated`, `\deprecated`.
+
 
 ## ANTLR grammar
 

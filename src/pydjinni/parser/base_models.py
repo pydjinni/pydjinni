@@ -49,8 +49,7 @@ class BaseCommentModel(BaseModel):
     @cached_property
     def parsed_comment(self) -> tuple[list, BlockState] | None:
         if self.comment:
-            parser = Markdown()
-            commands_plugin(parser)
+            parser = Markdown(plugins=[commands_plugin])
             return parser.parse(self.comment)
         else:
             return None

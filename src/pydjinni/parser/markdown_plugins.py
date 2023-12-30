@@ -1,25 +1,40 @@
+from dataclasses import dataclass
+
 from mistune import Markdown
 
 
-def commands_plugin(md: Markdown):
-    def pattern(keyword: str) -> str:
-        return r'^ {0,3}[@\\]' + keyword + r'(?P<' + keyword + r'_command_content>([ \t\v\f]+.+)?(\n[ \t\v\f]+[^@\\].*)*)'
+@dataclass
+class MarkdownCommand:
+    name: str
+    description: str
+    parameter: str = None
 
-    def commands_block_command(keyword: str, parameter: str = None):
+    @property
+    def pattern(self):
+        return r'^ {0,3}[@\\]' + self.name + r'(?P<' + self.name + r'_command_content>([ \t\v\f]+.+)?(\n[ \t\v\f]+[^@\\].*)*)'
+
+    @property
+    def command(self):
         def parse_block_command(block, m, state):
-            text = m.group(f'{keyword}_command_content').strip()
-            if parameter and text:
+            text = m.group(f'{self.name}_command_content').strip()
+            if self.parameter and text:
                 parameter_value = text.split()[0]
                 text_value = text[len(parameter_value) + 1:]
-                state.append_token({'type': keyword, 'text': text_value, 'attrs': {parameter: parameter_value}})
+                state.append_token({'type': self.name, 'text': text_value, 'attrs': {self.parameter: parameter_value}})
             else:
-                state.append_token({'type': keyword, 'text': text})
+                state.append_token({'type': self.name, 'text': text})
             return m.end() + 1
+
         return parse_block_command
 
-    md.block.register('returns', pattern("returns"), commands_block_command('returns'))
-    md.block.register('deprecated', pattern("deprecated"), commands_block_command('deprecated'))
-    md.block.register('param', pattern("param"), commands_block_command('param', 'name'))
+
+markdown_commands = [
+    MarkdownCommand("returns", "documents the return value of a method"),
+    MarkdownCommand("deprecated", "marks a type, field or method as deprecated"),
+    MarkdownCommand("param", "documents a method parameter", parameter="name")
+]
 
 
-
+def commands_plugin(md: Markdown):
+    for command in markdown_commands:
+        md.block.register(command.name, command.pattern, command.command)

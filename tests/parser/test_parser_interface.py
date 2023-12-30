@@ -198,7 +198,7 @@ def test_parsing_main_interface_not_cpp(tmp_path, targets):
 
 
 def test_parsing_interface_comment(tmp_path: Path):
-    # GIVEN an interface with a comments
+    # GIVEN an interface with comments
     parser, _ = given(
         tmp_path=tmp_path,
         input_idl="""
@@ -225,3 +225,31 @@ def test_parsing_interface_comment(tmp_path: Path):
 
     # THEN the property should contain the given comment
     assert interface.properties[0].comment == " this is a property"
+
+
+def test_parsing_comment_commands(tmp_path: Path):
+    # GIVEN an interface with comments
+    parser, _ = given(
+        tmp_path=tmp_path,
+        input_idl="""
+            # @deprecated but it should not be used
+            foo = interface +cpp {
+                # @param bar is a bar
+                # @returns a foo instance
+                # @deprecated
+                static init_foo(bar: i8) -> foo;
+            }
+            """
+    )
+
+    # WHEN parsing the input
+    interface = when(parser, Interface, "foo")
+
+    # THEN the interface should be marked as deprecated
+    assert interface.deprecated == "but it should not be used"
+
+    # THEN the method should be marked as deprecated
+    assert interface.methods[0].deprecated == True
+
+    # THEN the method param should contain the @param docs
+    assert interface.methods[0].parameters[0].comment == "is a bar"
