@@ -27,11 +27,11 @@ class DocCCommentRenderer(MarkdownRenderer):
         self.identifier_style = identifier_style
 
     def returns(self, token: dict[str, Any], state: BlockState) -> str:
-        return f"- Returns: {self.render_children(token, state)}"
+        return f"- Returns: {self.render_children(token, state)}\n"
 
     def param(self, token: dict[str, Any], state: BlockState) -> str:
         name = token['attrs']['name']
-        return f"- Parameter {Identifier(name).convert(self.identifier_style.field)}: {self.render_children(token, state)}"
+        return f"- Parameter {Identifier(name).convert(self.identifier_style.field)}: {self.render_children(token, state)}\n"
 
     def deprecated(self, token: dict[str, Any], state: BlockState) -> str:
         return ""

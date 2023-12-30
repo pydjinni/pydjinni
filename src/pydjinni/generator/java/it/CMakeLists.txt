@@ -41,7 +41,7 @@ function(java_test_case TEST_CASE_NAME)
             generate.jni.out.header=${CMAKE_CURRENT_LIST_DIR}/generated/include/jni
             generate.jni.out.source=${CMAKE_CURRENT_LIST_DIR}/generated/src/jni
             generate.java.native_lib=${JNI_TARGET_NAME})
-
+    compare_files(SOURCE ${CMAKE_CURRENT_LIST_DIR}/expected TARGET ${CMAKE_CURRENT_LIST_DIR}/generated)
     add_library(${JNI_TARGET_NAME} SHARED
             ${jni_GENERATED_HEADERS}
             ${jni_GENERATED_SOURCES}

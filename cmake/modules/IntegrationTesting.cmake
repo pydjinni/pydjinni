@@ -19,6 +19,54 @@ define_property(TARGET
         PROPERTY PYDJINNI_OPTIONS
         BRIEF_DOCS "The pydjinni options that where applied when generating the targets interface")
 
+option(ABORT_ON_FAILED_PRECONDITION "If disabled, failed preconditions will only produce a warning." ON)
+
+find_program(DIFF_EXECUTABLE diff)
+
+function(compare_files)
+    cmake_parse_arguments(COMPARE
+            # options
+            ""
+            # one-value keywords
+            "SOURCE;TARGET"
+            # multi-value keywords
+            ""
+            # args
+            ${ARGN}
+    )
+    file(GLOB_RECURSE EXPECTED_GENERATED_FILES RELATIVE ${COMPARE_SOURCE} ${COMPARE_SOURCE}/*)
+    foreach(EXPECTED_FILE ${EXPECTED_GENERATED_FILES})
+        file(TO_CMAKE_PATH ${COMPARE_SOURCE}/${EXPECTED_FILE} SOURCE_FILE)
+        file(TO_CMAKE_PATH ${COMPARE_TARGET}/${EXPECTED_FILE} TARGET_FILE)
+        execute_process(
+            COMMAND
+                ${CMAKE_COMMAND}
+                -E compare_files
+                ${SOURCE_FILE}
+                ${TARGET_FILE}
+            RESULT_VARIABLE
+                COMPARE_RESULT
+        )
+        if(NOT COMPARE_RESULT EQUAL 0)
+            if(DIFF_EXECUTABLE)
+                message(STATUS "Difference between ${TARGET_FILE} and ${SOURCE_FILE}")
+                execute_process(
+                    COMMAND
+                        ${DIFF_EXECUTABLE}
+                        ${SOURCE_FILE}
+                        ${TARGET_FILE}
+                )
+            endif()
+            if(ABORT_ON_FAILED_PRECONDITION)
+                set(MESSAGE_MODE SEND_ERROR)
+            else()
+                set(MESSAGE_MODE WARNING)
+            endif()
+            message(${MESSAGE_MODE} "Precondition failed: Generated output ${TARGET_FILE} is different from expectations: ${SOURCE_FILE}")
+        endif()
+    endforeach()
+endfunction()
+
 function(define_test_case TEST_CASE_NAME)
     cmake_parse_arguments(TEST_CASE
         # options
@@ -42,6 +90,7 @@ function(define_test_case TEST_CASE_NAME)
         OPTIONS
             ${TEST_CASE_OPTIONS}
     )
+    compare_files(SOURCE ${CMAKE_CURRENT_LIST_DIR}/expected TARGET ${CMAKE_CURRENT_LIST_DIR}/generated)
     set(BASE_LIB_NAME ${TEST_CASE_NAME}Base)
     add_library(${BASE_LIB_NAME} STATIC
             ${cpp_GENERATED_HEADERS}

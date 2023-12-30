@@ -36,10 +36,10 @@ class JavaDocCommentRenderer(HTMLRenderer):
         return f'<pre>{{@code{escape_text(code)}}}</pre>\n'
 
     def returns(self, text: str) -> str:
-        return f"@return {text}"
+        return f"@return {text}\n"
 
     def param(self, text: str, name: str) -> str:
-        return f"@param {Identifier(name).convert(self.identifier_style.field)} {text}"
+        return f"@param {Identifier(name).convert(self.identifier_style.field)} {text}\n"
 
     def deprecated(self, text: str) -> str:
-        return f"@deprecated {text}"
+        return f"@deprecated {text}\n"

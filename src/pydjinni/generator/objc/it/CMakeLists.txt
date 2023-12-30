@@ -37,7 +37,7 @@ function(objc_test_case TEST_CASE_NAME)
             generate.objcpp.out.header=${CMAKE_CURRENT_LIST_DIR}/generated/include/objcpp
             generate.objcpp.out.source=${CMAKE_CURRENT_LIST_DIR}/generated/src/objcpp
         )
-
+    compare_files(SOURCE ${CMAKE_CURRENT_LIST_DIR}/expected TARGET ${CMAKE_CURRENT_LIST_DIR}/generated)
     add_library(${TEST_LIBRARY_NAME}
         ${objc_GENERATED_HEADERS}
         ${objc_GENERATED_SOURCES}
