@@ -17,6 +17,8 @@
 #include <sstream>
 
 TEST_CASE("Cpp.RecordTest") {
+    std::string tz = "TZ=Etc/GMT-0";
+    putenv(tz.data());
     GIVEN("a PrimitiveTypes record instance") {
         const auto record = test::record::PrimitiveTypes(
                 true, 8, 16, 32, 64, 32.32, 64.64,
@@ -42,20 +44,12 @@ TEST_CASE("Cpp.RecordTest") {
                 REQUIRE(record == returned_record);
             }
         }
-        #ifdef __cpp_lib_format
-        WHEN("formatting the type as string (for debugging)") {
-            const auto result = std::format("{}", record);
-            THEN("a string representation of the record should be returned") {
-                REQUIRE(result == "::test::record::PrimitiveTypes(booleanT=true, byteT=8, shortT=16, intT=32, longT=64, floatT=32.32, doubleT=64.64, stringT=test string, dateT=2023-07-01T12:08:29Z)");
-            }
-        }
-        #endif
         WHEN("streaming the type to ostream") {
             std::stringstream ss;
             ss << record;
             const auto result = ss.str();
             THEN("a string representation of the type should be returned") {
-                REQUIRE(result == "::test::record::PrimitiveTypes(boolean_t=1, byte_t=8, short_t=16, int_t=32, long_t=64, float_t=32.320000, double_t=64.640000, string_t=test string, date_t=1688213309000000)");
+                REQUIRE(result == "::test::record::PrimitiveTypes(boolean_t=1, byte_t=8, short_t=16, int_t=32, long_t=64, float_t=32.320000, double_t=64.640000, string_t=test string, date_t=2023-07-01T12:08:29+0000)");
             }
         }
     }

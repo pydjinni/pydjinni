@@ -1,0 +1,19 @@
+{
+  "properties": {
+    "bar": {
+      "description": "A test field",
+      "examples": [
+        "example1",
+        "example2"
+      ],
+      "pattern": "example\\d+",
+      "title": "Bar",
+      "type": "string"
+    }
+  },
+  "required": [
+    "bar"
+  ],
+  "title": "Foo",
+  "type": "object"
+}

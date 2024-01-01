@@ -21,6 +21,7 @@ limitations under the License.
 #include <algorithm>
 {% if 'str' in type_def.deriving %}
 #include <ostream>
+#include <iomanip>
 #include <version>
 #ifdef __cpp_lib_format
 #include <format>
@@ -69,42 +70,26 @@ struct {{ type_def.cpp.name }}{{ " final" if not type_def.cpp.base_type }} {
         os << "{{ type_def.cpp.typename }}(";
         {% for field in type_def.fields %}
         os << "{{ field.cpp.name }}=
-        {%- if field.type_ref.name in ["bool", "i8", "i16", "i32", "i64", "f32", "f64", "date"] and not field.type_ref.optional -%}
+        {%- if field.type_ref.name in ["bool", "i8", "i16", "i32", "i64", "f32", "f64"] and not field.type_ref.optional -%}
             " << std::to_string(value.{{ field.cpp.name }}
             {%- if field.type_ref.name == "date" -%}
                 .time_since_epoch().count()
-            {%- endif -%}){{ ' << ", "' if not loop.last }}
+            {%- endif -%})
+        {%- elif field.type_ref.name == "date" and not field.type_ref.optional -%}
+        ";
+        std::time_t {{ field.cpp.name }}_t = std::chrono::system_clock::to_time_t(value.{{ field.cpp.name }});
+        std::tm {{ field.cpp.name }}_tm = *std::localtime(&{{ field.cpp.name }}_t);
+        os << std::put_time(&{{ field.cpp.name }}_tm, "%FT%T%z");
         {%- elif field.type_ref.name == "string" and not field.type_ref.optional -%}
-            " << value.{{ field.cpp.name }}{{ ' << ", "' if not loop.last }}
+            " << value.{{ field.cpp.name }}
         {%- else -%}
-            {?}{{ ', ' if not loop.last }}"
+            {?}"
         {%- endif -%}
-        ;
+        {{ ' << ", "' if not loop.last }};
         {% endfor %}
         os << ")";
         return os;
     }
 {% endif %}
 };
-{% endblock %}
-
-{% block no_namespace %}
-{% if 'str' in type_def.deriving %}
-#ifdef __cpp_lib_format
-template <>
-struct std::formatter<{{ type_def.cpp.typename }}> {
-    auto format(const {{ type_def.cpp.typename }}& obj, std::format_context& ctx) const {
-        return std::format_to(ctx.out(), "{{ type_def.cpp.typename }}(
-        {%- for field in type_def.fields -%}
-            {{ field.cpp.name }}={}{{ ", " if not loop.last }}
-        {%- endfor -%}
-        )"
-        {%- for field in type_def.fields -%}
-            , obj.{{field.cpp.name }}
-        {%- endfor -%}
-        );
-    }
-};
-#endif
-{% endif %}
 {% endblock %}
