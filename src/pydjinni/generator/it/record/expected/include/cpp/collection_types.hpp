@@ -3,6 +3,7 @@
 #pragma once
 #include <algorithm>
 #include <ostream>
+#include <iomanip>
 #include <version>
 #ifdef __cpp_lib_format
 #include <format>
@@ -32,22 +33,14 @@ struct CollectionTypes final {
 
     friend std::ostream& operator<<( std::ostream& os, CollectionTypes const& value ) {
         os << "::test::record::CollectionTypes(";
-        os << "int_list={?}, ";
-        os << "string_list={?}, ";
-        os << "int_set={?}, ";
-        os << "string_set={?}, ";
-        os << "int_int_map={?}, ";
+        os << "int_list={?}" << ", ";
+        os << "string_list={?}" << ", ";
+        os << "int_set={?}" << ", ";
+        os << "string_set={?}" << ", ";
+        os << "int_int_map={?}" << ", ";
         os << "string_string_map={?}";
         os << ")";
         return os;
     }
 };
 }  // namespace test::record
-#ifdef __cpp_lib_format
-template <>
-struct std::formatter<::test::record::CollectionTypes> {
-    auto format(const ::test::record::CollectionTypes& obj, std::format_context& ctx) const {
-        return std::format_to(ctx.out(), "::test::record::CollectionTypes(int_list={}, string_list={}, int_set={}, string_set={}, int_int_map={}, string_string_map={})", obj.int_list, obj.string_list, obj.int_set, obj.string_set, obj.int_int_map, obj.string_string_map);
-    }
-};
-#endif

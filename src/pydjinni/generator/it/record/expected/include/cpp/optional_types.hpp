@@ -3,6 +3,7 @@
 #pragma once
 #include <algorithm>
 #include <ostream>
+#include <iomanip>
 #include <version>
 #ifdef __cpp_lib_format
 #include <format>
@@ -22,18 +23,10 @@ struct OptionalTypes final {
 
     friend std::ostream& operator<<( std::ostream& os, OptionalTypes const& value ) {
         os << "::test::record::OptionalTypes(";
-        os << "int_optional={?}, ";
+        os << "int_optional={?}" << ", ";
         os << "string_optional={?}";
         os << ")";
         return os;
     }
 };
 }  // namespace test::record
-#ifdef __cpp_lib_format
-template <>
-struct std::formatter<::test::record::OptionalTypes> {
-    auto format(const ::test::record::OptionalTypes& obj, std::format_context& ctx) const {
-        return std::format_to(ctx.out(), "::test::record::OptionalTypes(int_optional={}, string_optional={})", obj.int_optional, obj.string_optional);
-    }
-};
-#endif

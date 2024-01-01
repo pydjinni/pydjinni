@@ -3,6 +3,7 @@
 #pragma once
 #include <algorithm>
 #include <ostream>
+#include <iomanip>
 #include <version>
 #ifdef __cpp_lib_format
 #include <format>
@@ -46,17 +47,12 @@ struct PrimitiveTypes final {
         os << "float_t=" << std::to_string(value.float_t) << ", ";
         os << "double_t=" << std::to_string(value.double_t) << ", ";
         os << "string_t=" << value.string_t << ", ";
-        os << "date_t=" << std::to_string(value.date_t.time_since_epoch().count());
+        os << "date_t=";
+        std::time_t date_t_t = std::chrono::system_clock::to_time_t(value.date_t);
+        std::tm date_t_tm = *std::localtime(&date_t_t);
+        os << std::put_time(&date_t_tm, "%FT%T%z");;
         os << ")";
         return os;
     }
 };
 }  // namespace test::record
-#ifdef __cpp_lib_format
-template <>
-struct std::formatter<::test::record::PrimitiveTypes> {
-    auto format(const ::test::record::PrimitiveTypes& obj, std::format_context& ctx) const {
-        return std::format_to(ctx.out(), "::test::record::PrimitiveTypes(boolean_t={}, byte_t={}, short_t={}, int_t={}, long_t={}, float_t={}, double_t={}, string_t={}, date_t={})", obj.boolean_t, obj.byte_t, obj.short_t, obj.int_t, obj.long_t, obj.float_t, obj.double_t, obj.string_t, obj.date_t);
-    }
-};
-#endif
