@@ -15,5 +15,4 @@ public final class BinaryTypes {
 
     public byte[] getBinaryT() { return binaryT; }
     public byte[] getBinaryOptional() { return binaryOptional; }
-
 }

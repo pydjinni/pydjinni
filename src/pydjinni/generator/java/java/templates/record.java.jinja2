@@ -52,8 +52,8 @@ limitations under the License.
     {% endif %}
     public {{ data_type(field.type_ref) }} {{ field.java.getter }}() { return {{ field.java.name }}; }
 {% endfor %}
-
 {% if 'eq' in type_def.deriving and type_def.fields %}
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof {{ type_def.java.name }})) {
@@ -76,8 +76,8 @@ limitations under the License.
         return hashCode;
     }
 {% endif %}
-
 {% if 'ord' in type_def.deriving and type_def.fields %}
+
     @Override
     public int compareTo({{ type_def.java.name }} other) {
         int tempResult;
@@ -100,8 +100,8 @@ limitations under the License.
         return 0;
     }
 {% endif %}
-
 {% if 'str' in type_def.deriving %}
+
     @Override
     public String toString() {
         return "{{ type_def.java.typename }}{" +
