@@ -70,9 +70,13 @@ CJNIEXPORT {{ method.jni.return_type_spec }} JNICALL {{ type_def.jni.jni_prefix 
     {%- endfor -%}
     ) {
     {{ "return" if method.return_type_ref }} ::pydjinni::translate_exceptions(jniEnv, [&](){
+        {% if method.deprecated and not type_def.deprecated %}
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        {% endif %}
         {% if method.static %}
         {{ "auto r = " if method.return_type_ref }}{{ type_def.cpp.typename }}::{{ method.cpp.name }}(
-        {%- else -%}
+        {% else %}
         const auto& ref = ::pydjinni::objectFromHandleAddress<{{ type_def.cpp.typename }}>(nativeRef);
         {{ "auto r = " if method.return_type_ref }}ref->{{ method.cpp.name }}(
         {%- endif -%}
@@ -81,6 +85,9 @@ CJNIEXPORT {{ method.jni.return_type_spec }} JNICALL {{ type_def.jni.jni_prefix 
         {%- endfor -%}
         );
         {% if method.return_type_ref %}
+        {% if method.deprecated and not type_def.deprecated %}
+        #pragma clang diagnostic pop
+        {% endif %}
         return ::pydjinni::release({{ translator(method.return_type_ref) }}::fromCpp(jniEnv, r));
         {% endif %}
     });

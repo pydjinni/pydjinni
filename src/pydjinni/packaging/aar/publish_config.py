@@ -19,7 +19,7 @@ class AndroidArchivePublishConfig(BaseModel):
     """
     Maven publishing information
     """
-    maven_registry: HttpUrl = Field(
+    maven_registry: HttpUrl | None = Field(
         default=None,
         description="Url of the maven registry that the package should be published to."
     )

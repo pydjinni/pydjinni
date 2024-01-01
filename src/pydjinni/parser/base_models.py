@@ -14,7 +14,10 @@
 
 from __future__ import annotations
 
+from functools import cached_property
+from mistune import Markdown, BlockState
 from pydjinni.parser.identifier import Identifier
+from pydjinni.parser.markdown_plugins import commands_plugin
 from pydjinni.parser.namespace import Namespace
 from pydjinni.position import Position
 
@@ -22,7 +25,7 @@ try:
     from enum import StrEnum
 except ImportError:
     from strenum import StrEnum  # Fallback for python < 3.11
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 
 
 class DocStrEnum(StrEnum):
@@ -33,7 +36,26 @@ class DocStrEnum(StrEnum):
         return member
 
 
-class BaseExternalType(BaseModel):
+class BaseCommentModel(BaseModel):
+    comment: str | None = Field(
+        default=None,
+        description="A short description of the type"
+    )
+    deprecated: str | bool = Field(
+        default=False,
+        description="Marks a type as deprecated"
+    )
+
+    @cached_property
+    def parsed_comment(self) -> tuple[list, BlockState] | None:
+        if self.comment:
+            parser = Markdown(plugins=[commands_plugin])
+            return parser.parse(self.comment)
+        else:
+            return None
+
+
+class BaseExternalType(BaseCommentModel):
     class Primitive(StrEnum):
         none = 'none'
         interface = 'interface'
@@ -54,10 +76,6 @@ class BaseExternalType(BaseModel):
         description="The underlying primitive type"
     )
     params: list[str] = []
-    comment: str | None = Field(
-        default=None,
-        description="A short description of the type"
-    )
 
 
 class TypeReference(BaseModel):
@@ -77,10 +95,9 @@ class BaseType(BaseExternalType, extra='allow'):
     dependencies: list[TypeReference] = []
 
 
-class BaseField(BaseModel, extra='allow'):
+class BaseField(BaseCommentModel, extra='allow'):
     name: Identifier
     position: Position = Position()
-    comment: str | None = None
 
 
 class ClassType(BaseType):

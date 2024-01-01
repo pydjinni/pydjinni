@@ -6,6 +6,7 @@ define_test_case(InterfaceTest
         src/calculator.cpp
         src/calculator_impl.cpp
         src/calculator_impl.hpp
+        src/deprecation_test.cpp
     OPTIONS
         generate.cpp.namespace=test::interface
 )

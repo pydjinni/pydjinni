@@ -65,6 +65,10 @@ static_assert(__has_feature(objc_arc), "PyDjinni requires ARC to be enabled for 
     {% endfor %}
     {
     try {
+        {% if method.deprecated and not type_def.deprecated %}
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        {% endif %}
         {{ "auto objcpp_result_ = " if method.return_type_ref }}
         {%- if method.static -%}
             {{ type_def.cpp.typename }}::
@@ -76,6 +80,9 @@ static_assert(__has_feature(objc_arc), "PyDjinni requires ARC to be enabled for 
             {{ translator(parameter.type_ref) }}::toCpp({{ parameter.objc.name }}){{ ", " if not loop.last }}
         {%- endfor -%}
         );
+        {% if method.deprecated and not type_def.deprecated %}
+        #pragma clang diagnostic pop
+        {% endif %}
         {% if method.return_type_ref %}
         return {{ translator(method.return_type_ref) }}::fromCpp(objcpp_result_);
         {% endif %}
@@ -117,11 +124,18 @@ public:
     {%- endfor -%}
     ) override {
         @autoreleasepool {
+            {% if method.deprecated and not type_def.deprecated %}
+            #pragma clang diagnostic push
+            #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            {% endif %}
             auto objcpp_result_ = [djinni_private_get_proxied_objc_object() {{ method.objc.name }}
             {%- for parameter in method.parameters -%}
                 {{ " " ~ parameter.objc.name if not loop.first }}:({{ translator(parameter.type_ref) }}::fromCpp({{ parameter.cpp.name }}))
             {%- endfor -%}
             ];
+            {% if method.deprecated and not type_def.deprecated %}
+            #pragma clang diagnostic pop
+            {% endif %}
             {% if method.return_type_ref.type_def %}
             return {{ translator(method.return_type_ref) }}::toCpp(objcpp_result_);
             {% endif %}

@@ -15,7 +15,6 @@
 from functools import cached_property
 from pathlib import Path
 
-import mistletoe
 from pydantic import BaseModel, Field, computed_field
 
 from pydjinni.generator.java.java.comment_renderer import JavaDocCommentRenderer
@@ -69,7 +68,9 @@ class JavaBaseType(BaseModel):
     def source(self): return Path(*self.package.split('.')) / f"{self.name}.java"
 
     @cached_property
-    def comment(self): return mistletoe.markdown(self.decl.comment, JavaDocCommentRenderer) if self.decl.comment else ''
+    def comment(self):
+        return JavaDocCommentRenderer(self.config.identifier).render_tokens(*self.decl.parsed_comment).strip() \
+            if self.decl.comment else ''
 
     @cached_property
     def class_modifier(self):
@@ -88,7 +89,9 @@ class JavaBaseField(BaseModel):
     def name(self) -> str: return self.decl.name.convert(self.config.identifier.field)
 
     @cached_property
-    def comment(self): return mistletoe.markdown(self.decl.comment, JavaDocCommentRenderer) if self.decl.comment else ''
+    def comment(self):
+        return JavaDocCommentRenderer(self.config.identifier).render_tokens(*self.decl.parsed_comment).strip() \
+            if self.decl.comment else ''
 
 
 class JavaRecord(JavaBaseType):

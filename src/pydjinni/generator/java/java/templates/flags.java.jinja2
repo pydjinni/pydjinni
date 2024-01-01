@@ -14,15 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #}
 {% extends "base.jinja2" %}
+{% from "macros.jinja2" import comment %}
 
 {% block content %}
 {% if type_def.comment %}
-{{ type_def.java.comment }}
+{{ comment(type_def) }}
 {% endif %}
 public enum {{ type_def.java.name }} {
 {% for flag in type_def.flags if not flag.none and not flag.all %}
     {% if flag.comment %}
-    {{ flag.java.comment | indent(4) }}
+    {{ comment(flag, 4) }}
     {% endif %}
     {{ flag.java.name ~ (";" if loop.last else ",") }}
 {% endfor %}

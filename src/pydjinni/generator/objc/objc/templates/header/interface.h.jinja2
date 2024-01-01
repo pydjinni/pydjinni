@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
         limitations under the License.
 #}
 {% extends "base.jinja2" %}
+{% from "macros.jinja2" import comment, deprecated %}
 
 {% block header %}
 {% for header in type_def.dependencies | headers('objc') -%}
@@ -22,11 +23,14 @@ See the License for the specific language governing permissions and
 {% endblock %}
 
 {% block content %}
-{% if type_def.comment %}
-{{ type_def.objc.comment }}
+{% if type_def.objc.comment %}
+{{ comment(type_def) }}
 {% endif %}
 {% if config.swift.rename_interfaces %}
 NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
+{% endif %}
+{% if type_def.deprecated %}
+{{ deprecated(type_def) }}
 {% endif %}
 {% if "objc" in type_def.targets %}
 @protocol {{ type_def.objc.typename }} {{ "<NSObject>" if config.strict_protocols }}
@@ -34,19 +38,22 @@ NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
 @interface {{ type_def.objc.typename }} : NSObject
 {% endif %}
 {% for method in type_def.methods %}
-{% if method.comment %}
-{{ method.objc.comment }}
+{% if method.objc.comment %}
+{{ comment(method) }}
 {% endif %}
 {{ method.objc.specifier }} ({{ (method.objc.annotation ~ " ") if method.objc.annotation }}{{ method.objc.type_decl }}){{ method.objc.name }}
-{%- for parameter in method.parameters -%}
-{{ ":" if loop.first else (" " ~ parameter.objc.name ~ ":") }}({{ (parameter.objc.annotation ~ " ") if parameter.objc.annotation }}{{ parameter.objc.type_decl }}){{ parameter.objc.name }}
+{%- for parameter in method.parameters %}
+{{ ":" if loop.first else (parameter.objc.name.rjust(method.objc.specifier|length + method.objc.type_decl|length + method.objc.name|length + 3 + ((method.objc.annotation|length + 1) if method.objc.annotation else 0) ) ~ ":") }}({{ (parameter.objc.annotation ~ " ") if parameter.objc.annotation }}{{ parameter.objc.type_decl }}){{ parameter.objc.name }}
 {% endfor %}
+{% if method.deprecated %}
+ {{ deprecated(method) | indent(2) }}
+{% endif %}
 {% if config.swift.rename_interfaces %}
-  __attribute__((swift_name("{{ method.objc.name }}(
+ NS_SWIFT_NAME({{ method.objc.name }}(
 {%- for parameter in method.parameters -%}
 {{ parameter.objc.name }}:
 {%- endfor -%}
-)")));
+));
 {% endif %}
 {% endfor %}
 @end

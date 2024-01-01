@@ -33,3 +33,10 @@ limitations under the License.
     >
 {%- endif -%}
 {% endmacro %}
+
+{%- macro comment(def, indentation = 0) -%}
+{{ "/**" | indent(indentation) }}
+{{ def.java.comment | indent(' * ', true, true) | indent(indentation, true) }}
+{{ " */" | indent(indentation, true) }}
+{%- endmacro -%}
+

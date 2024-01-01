@@ -15,7 +15,6 @@
 from functools import cached_property
 from pathlib import Path
 
-import mistletoe
 from pydantic import BaseModel, Field, computed_field
 
 from pydjinni.generator.objc.objc.comment_renderer import DocCCommentRenderer
@@ -102,7 +101,9 @@ class ObjcBaseType(BaseModel):
         return f"{self.namespace}.{self.name}" if self.namespace else self.name
 
     @cached_property
-    def comment(self): return mistletoe.markdown(self.decl.comment, DocCCommentRenderer) if self.decl.comment else ''
+    def comment(self):
+        return DocCCommentRenderer(self.config.identifier).render_tokens(*self.decl.parsed_comment).strip() \
+            if self.decl.comment else ''
 
     @cached_property
     def namespace(self): return '.'.join([identifier.convert(self.config.identifier.type)
@@ -140,7 +141,9 @@ class ObjcBaseField(BaseModel):
     def name(self) -> str: return self.decl.name.convert(self.config.identifier.field)
 
     @cached_property
-    def comment(self): return mistletoe.markdown(self.decl.comment, DocCCommentRenderer) if self.decl.comment else ''
+    def comment(self):
+        return DocCCommentRenderer(self.config.identifier).render_tokens(*self.decl.parsed_comment).strip() \
+            if self.decl.comment else ''
 
 
 class ObjcRecord(ObjcBaseClassType):

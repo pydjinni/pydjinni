@@ -14,8 +14,7 @@
 
 from pathlib import Path
 
-from pydantic import HttpUrl
-
+from pydantic import AnyUrl, HttpUrl
 from pydjinni.packaging.architecture import Architecture
 from pydjinni.packaging.platform import Platform
 from pydjinni.packaging.swiftpackage.publish_config import SwiftpackagePublishConfig
@@ -92,24 +91,36 @@ class SwiftpackageTarget(PackageTarget):
         copy_directory(src=self.package_build_path, dst=self.package_output_path, clean=True)
 
     def publish(self):
-        git_repository_path = self.config.out / self.config.configuration / 'build' / self.key / 'package_repository'
-        if git_repository_path.exists():
-            execute("git", ["checkout", self.config.swiftpackage.publish.branch], working_dir=git_repository_path)
-            execute("git", ["pull"], working_dir=git_repository_path)
+        repository: HttpUrl | Path = self.config.swiftpackage.publish.repository
+        if isinstance(repository, Path) and not (str(repository).startswith("git@") and repository.suffix == ".git"):
+            copy_directory(src=self.package_build_path, dst=repository / self.config.target, clean=True)
         else:
-            repository: HttpUrl = self.config.swiftpackage.publish.repository
-            execute("git", [
-                "clone",
-                f"https://{self.config.swiftpackage.publish.username}:{self.config.swiftpackage.publish.password}@{repository.host}{repository.path}",
-                git_repository_path
-            ])
-            execute("git", ["checkout", self.config.swiftpackage.publish.branch], working_dir=git_repository_path)
-        (git_repository_path / "Package.swift").unlink()
-        prepare(git_repository_path / "bin", clean=True)
-        copy_directory(src=self.package_build_path, dst=git_repository_path)
-        version = (self.package_build_path / "VERSION").read_text()
-        execute("git", ["add", "."], working_dir=git_repository_path)
-        execute("git", ["commit", f'-m "version {version}"'], working_dir=git_repository_path)
-        execute("git", ["tag", version], working_dir=git_repository_path)
-        execute("git", ["push"], working_dir=git_repository_path)
-        execute("git", ["push", "--tags"], working_dir=git_repository_path)
+            git_repository_path = self.config.out / self.config.configuration / 'build' / self.key / 'package_repository'
+            if git_repository_path.exists():
+                execute("git", ["checkout", self.config.swiftpackage.publish.branch], working_dir=git_repository_path)
+                execute("git", ["pull"], working_dir=git_repository_path)
+            else:
+                if isinstance(repository, Path):
+                    execute("git", [
+                        "clone",
+                        repository,
+                        git_repository_path
+                    ])
+                else:
+                    execute("git", [
+                        "clone",
+                        f"{repository.scheme}://{self.config.swiftpackage.publish.username}:{self.config.swiftpackage.publish.password}@{repository.host}{f':{repository.port}' if repository.port else ''}{repository.path}",
+                        git_repository_path
+                    ])
+                execute("git", ["checkout", self.config.swiftpackage.publish.branch], working_dir=git_repository_path)
+            (git_repository_path / "Package.swift").unlink()
+            prepare(git_repository_path / "bin", clean=True)
+            copy_directory(src=self.package_build_path, dst=git_repository_path)
+            version = (self.package_build_path / "VERSION").read_text()
+            execute("git", ["add", "."], working_dir=git_repository_path)
+            execute("git", ["commit", f'-m "version {version}"'], working_dir=git_repository_path)
+            execute("git", ["tag", version], working_dir=git_repository_path)
+            execute("git", ["push"], working_dir=git_repository_path)
+            execute("git", ["push", "--tags"], working_dir=git_repository_path)
+
+

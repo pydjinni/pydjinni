@@ -18,7 +18,10 @@ limitations under the License.
 
 {% block header %}
 {% endblock %}
-
+{% if type_def.deprecated %}
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+{% endif %}
 {% block no_namespace %}
 {% endblock %}
 
@@ -29,4 +32,7 @@ namespace {{ type_def.objcpp.namespace }} {
 {% endblock content %}
 {% if type_def.objcpp.namespace -%}
 }  // namespace {{ type_def.objcpp.namespace }}
+{% endif %}
+{% if type_def.deprecated %}
+#pragma clang diagnostic pop
 {% endif %}

@@ -14,6 +14,7 @@ from mkdocs_click._extension import load_command
 from pydjinni.api import API
 from pydjinni.exceptions import return_codes
 from pydjinni.parser.ast import Record
+from pydjinni.parser.markdown_plugins import markdown_commands
 
 
 def render_config_schema_table(element, indent: int, render_defaults=True):
@@ -100,8 +101,8 @@ def define_env(env):
 
     @env.macro
     def idl_grammar(path: str):
-        grammar = Path(path).read_text().replace(" = ", " ← ")
-        return f"```peg\n{grammar}\n```\n"
+        grammar = Path(path).read_text()
+        return f"```antlr\n{grammar}\n```\n"
 
     @env.macro
     def config_schema_table(header_indent: int = 3):
@@ -198,4 +199,11 @@ def define_env(env):
                 else:
                     output += "✖️ | "
             output += "\n\n"
+        return output
+
+    @env.macro
+    def markdown_special_commands():
+        output = "| Command | Description |\n|-------|-------|\n"
+        for command in markdown_commands:
+            output += f"| `@{command.name} {f'<{command.parameter}> ' if command.parameter else ' '}{{ description }}` | {command.description} |\n"
         return output

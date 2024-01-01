@@ -21,8 +21,15 @@ limitations under the License.
 {%- if type_def.jni.namespace -%}
 namespace {{ type_def.jni.namespace }} {
 {% endif %}
+{% if type_def.deprecated %}
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+{% endif %}
 {% block content %}
 {% endblock %}
+{% if type_def.deprecated %}
+#pragma clang diagnostic pop
+{% endif %}
 {% if type_def.jni.namespace -%}
 }  // namespace {{ type_def.jni.namespace }}
 {% endif %}

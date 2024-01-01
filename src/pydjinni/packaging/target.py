@@ -105,6 +105,10 @@ class PackageTarget(ABC):
     def package_build_path(self) -> Path:
         return self.config.out / self.config.configuration / 'build' / self.key / 'package'
 
+    @cached_property
+    def build_path(self) -> Path:
+        return self.config.out / self.config.configuration / 'build' / self.key / 'platforms'
+
     def __init__(
             self,
             config_model_builder: ConfigModelBuilder):
@@ -138,7 +142,7 @@ class PackageTarget(ABC):
         build_architectures = architectures or getattr(getattr(self.config, self.key).platforms, target)
         build_artifacts = {}
         for arch in build_architectures:
-            build_path = self.config.out / self.config.configuration / 'build' / self.key / 'platforms' / target / arch
+            build_path = self.build_path / target / arch
             prepare(build_path, clean)
             build_artifacts[arch] = build_strategy.build(
                 build_dir=build_path,

@@ -53,6 +53,7 @@ class ConfigModelBuilder:
     def add_package_config(self, name: str, config_model: type[BaseModel]):
         self._package_config_models[name] = config_model
 
+
     def build(self):
         return create_model(
             "Config",
@@ -62,16 +63,20 @@ class ConfigModelBuilder:
                 FieldInfo(
                     default=None,
                     description=inspect.cleandoc(GenerateBaseConfig.__doc__)
-                )),
-            build=(self._create_config_model("Build", BuildBaseConfig, self._builder_config_models) | None, FieldInfo(
-                default=None,
-                description=inspect.cleandoc(BuildBaseConfig.__doc__)
-            )),
+                )
+            ),
+            build=(
+                self._create_config_model("Build", BuildBaseConfig, self._builder_config_models) | None, FieldInfo(
+                    default=None,
+                    description=inspect.cleandoc(BuildBaseConfig.__doc__)
+                )
+            ),
             package=(
                 self._create_config_model("Package", PackageBaseConfig, self._package_config_models) | None, FieldInfo(
                     default=None,
                     description=inspect.cleandoc(PackageBaseConfig.__doc__)
-                )),
+                )
+            )
         )
 
     def _create_config_model(self, model_name: str, base: type[BaseModel], models: dict[str, type[BaseModel]]):

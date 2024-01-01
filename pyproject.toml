@@ -22,7 +22,6 @@ keywords = ["djinni"]
 dependencies = [
     "click>=8.1,<9",
     "Jinja2>=3.1,<4",
-    "mistletoe>=1.0,<2",
     "pydantic>=2.0.3,<3",
     "pydantic-settings>=2.0.3,<3",
     'rich>=12.6,<13',
@@ -32,7 +31,8 @@ dependencies = [
     'StrEnum>=0.4; python_version < "3.11"',
     'tomli_w>=1.0,<2',
     'setuptools>=65',
-    'antlr4-python3-runtime==4.13.1'
+    'antlr4-python3-runtime==4.13.1',
+    'mistune>=3,<4'
 ]
 
 [tool.setuptools_scm]
@@ -48,13 +48,13 @@ publish = [
     "build==0.10.0"
 ]
 doc = [
-    "mkdocs-material==9.1.18",
-    "mkdocs-click==0.8.0",
-    "mike==1.1.2",
+    "mkdocs-material==9.5.3",
+    "mkdocs-click==0.8.1",
+    "mike==2.0.0",
     "jsonref==1.1.0",
-    "mkdocs-macros-plugin==1.0.1",
+    "mkdocs-macros-plugin==1.0.5",
     "mkdocs-gen-files==0.5.0",
-    "mkdocstrings[python]==0.22.0",
+    "mkdocstrings[python]==0.24.0",
     "setuptools_scm"
 ]
 

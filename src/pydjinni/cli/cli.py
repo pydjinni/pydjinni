@@ -153,7 +153,7 @@ class PublishCli(MultiCommand):
 @click.version_option()
 @click.pass_context
 @click.option('--option', '-o', multiple=True, type=str,
-              help="overwrite or extend options from the generate config. Example: `-o java.out=java_out`")
+              help="overwrite or extend configuration. Example: `-o generate.java.out=java_out`")
 @click.option('--config', '-c', default=DEFAULT_CONFIG_PATH, type=Path,
               help="path to the config file. Set to `None` if no config should be parsed. "
                    "File format is determined based on the file extension. "

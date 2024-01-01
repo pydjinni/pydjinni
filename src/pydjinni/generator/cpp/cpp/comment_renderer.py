@@ -11,27 +11,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Any
 
-from mistletoe import block_token
+from mistune import BlockState
+from mistune.renderers.markdown import MarkdownRenderer
 
-from pydjinni.generator.comment_renderer import BaseCommentRenderer
+from pydjinni.generator.cpp.cpp.config import CppIdentifier
+from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
-class DoxygenCommentRenderer(BaseCommentRenderer):
+class DoxygenCommentRenderer(MarkdownRenderer):
 
-    def render_heading(self, token: block_token.Heading) -> str:
-        return f"{'#' * token.level} {self.render_inner(token)}{self.NEWLINE * 2}"
+    def __init__(self, identifier_style: CppIdentifier):
+        super().__init__()
+        self.identifier_style = identifier_style
 
-    def render_list(self, token: block_token.List) -> str:
-        if token.start is None:
-            prefix = "-"
-        else:
-            prefix = "1."
-        inner = ''.join([f"{prefix} {self.render(child)}" for child in token.children])
-        return f"{self.NEWLINE * 2}{inner}{self.NEWLINE}"
+    def returns(self, token: dict[str, Any], state: BlockState) -> str:
+        return f"@returns {self.render_children(token, state)}\n"
 
-    def render_list_item(self, token: block_token.ListItem) -> str:
-        return f"{self.render_inner(token)}{self.NEWLINE}"
+    def param(self, token: dict[str, Any], state: BlockState) -> str:
+        name = token['attrs']['name']
+        return f"@param {Identifier(name).convert(self.identifier_style.field)} {self.render_children(token, state)}\n"
 
-    def render_returns(self, token):
-        return f"{self.NEWLINE}@return {self.render_inner(token)}"
+    def deprecated(self, token: dict[str, Any], state: BlockState) -> str:
+        return f"@deprecated {self.render_children(token, state)}\n"

@@ -54,6 +54,16 @@ data = record {
 }
 ```
 
+### Extensions
+
+To support extra fields and/or methods, a record can be "extended" in any language.
+To extend a record in a language, you can add a language target flag after the record tag.
+The generated type will have a Base suffix, and you should create a derived type without the suffix that extends 
+the record type.
+
+The derived type must be constructible in the same way as the Base type.
+Interfaces will always use the derived type.
+
 ### Deriving
 
 For record types, Haskell-style "deriving" declarations are supported to generate some common methods.
@@ -184,15 +194,23 @@ namespace foo {
 
 The specified namespace is appended to the base namespace that is defined in the generator configuration.
 
-## Comments
+## Comments { .new-badge }
 
 Comments starting with `#` are converted to documentation comments in the generated interfaces.
 
-## PEG grammar
+[CommonMark](https://commonmark.org) flavored Markdown can be used to format the text.
 
-The grammar of the IDL is defined in [Parsing Expression Grammars](https://bford.info/pub/lang/peg.pdf){ target=_blank }
-(PEG) notation. The grammar below is the actual definition used by the `arpeggio` parser.
+The following special commands are available:
 
-{{ idl_grammar("src/pydjinni/parser/grammar/idl.cleanpeg") }}
+{{ markdown_special_commands() }}
+
+Both JavaDoc or Doxygen style commands can be used: `@deprecated`, `\deprecated`.
+
+
+## ANTLR grammar
+
+The grammar of the IDL is defined with ANTRL. The grammar below is the actual definition used by the parser:
+
+{{ idl_grammar("src/pydjinni/parser/grammar/Idl.g4") }}
 
 

@@ -25,6 +25,7 @@ from .base_models import BaseType, TypeReference, BaseField
 from pydjinni.generator.target import Target
 from pydjinni.position import Position, Cursor
 from pydjinni.file.file_reader_writer import FileReaderWriter
+from .comment_processor import ParserCommentProcessor
 from .identifier import IdentifierType as Identifier
 from .grammar.IdlLexer import IdlLexer
 from .grammar.IdlParser import IdlParser
@@ -201,7 +202,7 @@ class Parser(IdlVisitor):
         self.field_decls.append(parameter)
         return parameter
 
-    def visitProp(self, ctx:IdlParser.PropContext) -> Interface.Property:
+    def visitProp(self, ctx: IdlParser.PropContext) -> Interface.Property:
         return Interface.Property(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
@@ -339,7 +340,8 @@ class Parser(IdlVisitor):
         return targets
 
     def visitNamespaceBegin(self, ctx: IdlParser.NamespaceBeginContext):
-        namespace: list[Identifier] = [Identifier(identifier) for identifier in self.visit(ctx.nsIdentifier()).split('.')]
+        namespace: list[Identifier] = [Identifier(identifier) for identifier in
+                                       self.visit(ctx.nsIdentifier()).split('.')]
         self.current_namespace += namespace
         self.current_namespace_stack_size.append(len(namespace))
 
@@ -347,7 +349,7 @@ class Parser(IdlVisitor):
         for _ in range(self.current_namespace_stack_size.pop()):
             self.current_namespace.pop()
 
-    def visitFilepath(self, ctx:IdlParser.FilepathContext):
+    def visitFilepath(self, ctx: IdlParser.FilepathContext):
         path = Path(ctx.FILEPATH().getText()[1:-1])
         search_paths = [path] + [include_dir / path for include_dir in self.include_dirs]
         for search_path in search_paths:
@@ -376,8 +378,6 @@ class Parser(IdlVisitor):
         ).parse()
         self.type_decls += imported_type_decls
 
-
-
     def _position(self, ctx) -> Position:
         return Position(
             start=Cursor(line=ctx.start.line, col=ctx.start.column),
@@ -404,6 +404,9 @@ class Parser(IdlVisitor):
             parser.addErrorListener(Parser.ParsingErrorListener(self.idl))
             tree = parser.idl()
             self.visit(tree)
+            for decl in self.type_decls + self.field_decls:
+                if decl.comment:
+                    ParserCommentProcessor(decl).render_tokens(*decl.parsed_comment)
             for type_ref in self.type_refs:
                 if not type_ref.type_def:
                     type_ref.type_def = self.resolver.resolve(type_ref)

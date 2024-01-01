@@ -253,7 +253,8 @@ class API:
 
     class ConfiguredContext:
         def __init__(self, config: BaseModel, external_types_model: type[BaseExternalType],
-                     generate_targets: dict[str, Target], package_targets: dict[str, PackageTarget],
+                     generate_targets: dict[str, Target],
+                     package_targets: dict[str, PackageTarget],
                      build_targets: dict[str, BuildTarget], file_reader_writer: FileReaderWriter):
             self._config = config
             self._external_types_builder = ExternalTypesBuilder(external_types_model)
@@ -292,6 +293,7 @@ class API:
             generate_targets: list[str] = list(generate_config.model_fields_set) if generate_config else []
             targets: list[Target] = [target for key, target in self._generate_targets.items() if
                                      key in generate_targets]
+
             for target in targets:
                 target.register_external_types(self._external_types_builder)
                 target.configure(generate_config)
@@ -404,7 +406,8 @@ class API:
                 return self._target.package(clean=clean)
 
         class GenerateContext:
-            def __init__(self, generate_targets: dict[str, Target], file_writer: FileReaderWriter, ast: list[BaseType],
+            def __init__(self, generate_targets: dict[str, Target],
+                         file_writer: FileReaderWriter, ast: list[BaseType],
                          config: GenerateBaseConfig):
                 self._generate_targets = generate_targets
                 self._file_reader_writer = file_writer
