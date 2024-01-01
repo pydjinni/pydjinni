@@ -7,8 +7,8 @@
 
 namespace test::record {
 struct BinaryTypes final {
-    std::vector<uint8_t> binary_t;
-    std::optional<std::vector<uint8_t>> binary_optional;
+    const std::vector<uint8_t> binary_t;
+    const std::optional<std::vector<uint8_t>> binary_optional;
     BinaryTypes(std::vector<uint8_t> binary_t_, std::optional<std::vector<uint8_t>> binary_optional_)
     : binary_t(std::move(binary_t_))
     , binary_optional(std::move(binary_optional_))

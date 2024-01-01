@@ -14,7 +14,7 @@
 
 from pathlib import Path
 
-from antlr4 import InputStream, CommonTokenStream, ParseTreeWalker
+from antlr4 import InputStream, CommonTokenStream
 from antlr4.error.ErrorListener import ErrorListener
 
 from pydjinni.generator.cpp.cpp.generator import CppGenerator

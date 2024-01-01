@@ -23,4 +23,4 @@ class CppTarget(Target):
     """
     key = "cpp"
     generators = [CppGenerator]
-    supported_deriving = {Record.Deriving.init, Record.Deriving.eq, Record.Deriving.ord}
+    supported_deriving = {Record.Deriving.eq, Record.Deriving.ord, Record.Deriving.str}

@@ -14,6 +14,7 @@
 
 #include "catch2/catch_test_macros.hpp"
 #include "helper.hpp"
+#include <sstream>
 
 TEST_CASE("Cpp.RecordTest") {
     GIVEN("a PrimitiveTypes record instance") {
@@ -36,6 +37,25 @@ TEST_CASE("Cpp.RecordTest") {
                 REQUIRE(returned_record.double_t < 65);
                 REQUIRE(returned_record.string_t == "test string");
                 REQUIRE(returned_record.date_t == std::chrono::time_point<std::chrono::system_clock>(std::chrono::seconds(1688213309)));
+            }
+            THEN("the records should pass the equality check") {
+                REQUIRE(record == returned_record);
+            }
+        }
+        #ifdef __cpp_lib_format
+        WHEN("formatting the type as string (for debugging)") {
+            const auto result = std::format("{}", record);
+            THEN("a string representation of the record should be returned") {
+                REQUIRE(result == "::test::record::PrimitiveTypes(booleanT=true, byteT=8, shortT=16, intT=32, longT=64, floatT=32.32, doubleT=64.64, stringT=test string, dateT=2023-07-01T12:08:29Z)");
+            }
+        }
+        #endif
+        WHEN("streaming the type to ostream") {
+            std::stringstream ss;
+            ss << record;
+            const auto result = ss.str();
+            THEN("a string representation of the type should be returned") {
+                REQUIRE(result == "::test::record::PrimitiveTypes(boolean_t=1, byte_t=8, short_t=16, int_t=32, long_t=64, float_t=32.320000, double_t=64.640000, string_t=test string, date_t=1688213309000000)");
             }
         }
     }

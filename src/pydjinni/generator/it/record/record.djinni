@@ -8,7 +8,7 @@ primitive_types = record {
     double_t: f64;
     string_t: string;
     date_t: date;
-} deriving (str)
+} deriving (str, eq)
 
 collection_types = record {
     int_list: list<i32>;

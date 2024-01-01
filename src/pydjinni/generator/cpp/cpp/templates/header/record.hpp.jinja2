@@ -19,6 +19,13 @@ limitations under the License.
 {% block header %}
 #pragma once
 #include <algorithm>
+{% if 'str' in type_def.deriving %}
+#include <ostream>
+#include <version>
+#ifdef __cpp_lib_format
+#include <format>
+#endif
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -36,7 +43,7 @@ struct {{ type_def.cpp.name }}{{ " final" if not type_def.cpp.base_type }} {
     {% if field.comment %}
     {{ comment(field, indentation=4) }}
     {% endif %}
-    {{ field.cpp.type_spec }} {{ field.cpp.name }};
+    const {{ field.cpp.type_spec }} {{ field.cpp.name }};
 {% endfor %}
     {{ type_def.cpp.name }}(
     {%- for field in type_def.fields %}
@@ -47,12 +54,57 @@ struct {{ type_def.cpp.name }}{{ " final" if not type_def.cpp.base_type }} {
     {% endfor %}
     {}
 
-{% if 'init' in type_def.deriving and type_def.fields %}
-    {{ type_def.cpp.name }}()
-    {% for field in type_def.fields %}
-    {{ (": " if loop.first else ', ') ~ field.cpp.name }}()
-    {% endfor %}
-    {}
+{% if 'eq' in type_def.deriving and type_def.fields %}
+    friend bool operator==(const {{ type_def.cpp.name }}& lhs, const {{ type_def.cpp.name }}& rhs);
+    friend bool operator!=(const {{ type_def.cpp.name }}& lhs, const {{ type_def.cpp.name }}& rhs);
+{% endif %}
+{% if 'ord' in type_def.deriving and type_def.fields %}
+    friend bool operator<(const {{ type_def.cpp.name }}& lhs, const {{ type_def.cpp.name }}& rhs);
+    friend bool operator>(const {{ type_def.cpp.name }}& lhs, const {{ type_def.cpp.name }}& rhs);
+    friend bool operator<=(const {{ type_def.cpp.name }}& lhs, const {{ type_def.cpp.name }}& rhs);
+    friend bool operator>=(const {{ type_def.cpp.name }}& lhs, const {{ type_def.cpp.name }}& rhs);
+{% endif %}
+{% if 'str' in type_def.deriving %}
+    friend std::ostream& operator<<( std::ostream& os, {{ type_def.cpp.name }} const& value ) {
+        os << "{{ type_def.cpp.typename }}(";
+        {% for field in type_def.fields %}
+        os << "{{ field.cpp.name }}=
+        {%- if field.type_ref.name in ["bool", "i8", "i16", "i32", "i64", "f32", "f64", "date"] and not field.type_ref.optional -%}
+            " << std::to_string(value.{{ field.cpp.name }}
+            {%- if field.type_ref.name == "date" -%}
+                .time_since_epoch().count()
+            {%- endif -%}){{ ' << ", "' if not loop.last }}
+        {%- elif field.type_ref.name == "string" and not field.type_ref.optional -%}
+            " << value.{{ field.cpp.name }}{{ ' << ", "' if not loop.last }}
+        {%- else -%}
+            {?}{{ ', ' if not loop.last }}"
+        {%- endif -%}
+        ;
+        {% endfor %}
+        os << ")";
+        return os;
+    }
 {% endif %}
 };
+{% endblock %}
+
+{% block no_namespace %}
+{% if 'str' in type_def.deriving %}
+#ifdef __cpp_lib_format
+template <>
+struct std::formatter<{{ type_def.cpp.typename }}> {
+    auto format(const {{ type_def.cpp.typename }}& obj, std::format_context& ctx) const {
+        return std::format_to(ctx.out(), "{{ type_def.cpp.typename }}(
+        {%- for field in type_def.fields -%}
+            {{ field.cpp.name }}={}{{ ", " if not loop.last }}
+        {%- endfor -%}
+        )"
+        {%- for field in type_def.fields -%}
+            , obj.{{field.cpp.name }}
+        {%- endfor -%}
+        );
+    }
+};
+#endif
+{% endif %}
 {% endblock %}
