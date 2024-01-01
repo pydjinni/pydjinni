@@ -17,14 +17,8 @@ limitations under the License.
 {% from "macros.jinja2" import comment, deprecated %}
 
 {% block content %}
-{% if type_def.comment %}
+{% if type_def.objc.comment %}
 {{ comment(type_def) }}
-{% endif %}
-{% if config.swift.rename_interfaces %}
-NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
-{% endif %}
-{% if type_def.deprecated %}
-{{ deprecated(type_def) }}
 {% endif %}
 typedef NS_ENUM(NSUInteger, {{ type_def.objc.typename }}) {
 {% for item in type_def.items %}
@@ -33,5 +27,11 @@ typedef NS_ENUM(NSUInteger, {{ type_def.objc.typename }}) {
     {% endif %}
     {{ type_def.objc.typename ~ item.objc.name ~ ("," if not loop.last) }}
 {% endfor %}
-};
+}
+{%- if config.swift.rename_interfaces %}
+ NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
+{%- endif -%}
+{%- if type_def.deprecated %}
+ {{ deprecated(type_def) }}
+{%- endif -%};
 {% endblock %}

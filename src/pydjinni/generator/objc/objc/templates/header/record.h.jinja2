@@ -26,7 +26,7 @@ See the License for the specific language governing permissions and
 {% if type_def.objc.base_type %}
 @class {{ type_def.objc.derived_name }};
 {% endif %}
-{% if type_def.comment %}
+{% if type_def.objc.comment %}
 {{ comment(type_def) }}
 {% endif %}
 {% if config.swift.rename_interfaces %}

@@ -22,4 +22,3 @@ class YamlTarget(Target):
     """
     key = "yaml"
     generators = [YamlGenerator]
-    documentation = []

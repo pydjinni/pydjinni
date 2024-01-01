@@ -14,9 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #}
 {%- macro comment(def, indentation = 0) -%}
-{{ def.objc.comment | indent('/// ', true, true) | indent(indentation, true) }}
+{{ def.objc.comment | indent('/// ', true, true) | indent(indentation) }}
 {%- endmacro -%}
 
 {%- macro deprecated(def) -%}
-__attribute__((deprecated{{ '("' ~ def.deprecated | replace('\n', ' "\n"') | indent() ~ '")' if def.deprecated is string }}))
+{%- if def.deprecated is string -%}
+DEPRECATED_MSG_ATTRIBUTE("{{  def.deprecated | replace('\n', ' "\n"') | indent()  }}")
+{%- else -%}
+DEPRECATED_ATTRIBUTE
+{%- endif %}
 {%- endmacro -%}

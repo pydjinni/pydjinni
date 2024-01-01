@@ -6,17 +6,17 @@
 
 NS_SWIFT_NAME(Calculator)
 @interface Calculator : NSObject
-+ (nullable Calculator *)getInstance  __attribute__((swift_name("getInstance()")));
++ (nullable Calculator *)getInstance NS_SWIFT_NAME(getInstance());
 /// adds up two values
 /// 
 /// - Parameter a: the first value
 /// - Parameter b: the second value
 /// - Returns: the sum of both values
 - (int8_t)add:(int8_t)a
- b:(int8_t)b
-  __attribute__((swift_name("add(a:b:)")));
+            b:(int8_t)b
+ NS_SWIFT_NAME(add(a:b:));
 - (int8_t)getPlatformValue:(nullable id<PlatformInterface>)platform
-  __attribute__((swift_name("getPlatformValue(platform:)")));
-- (void)noParametersNoReturn  __attribute__((swift_name("noParametersNoReturn()")));
-- (void)throwingException  __attribute__((swift_name("throwingException()")));
+ NS_SWIFT_NAME(getPlatformValue(platform:));
+- (void)noParametersNoReturn NS_SWIFT_NAME(noParametersNoReturn());
+- (void)throwingException NS_SWIFT_NAME(throwingException());
 @end
