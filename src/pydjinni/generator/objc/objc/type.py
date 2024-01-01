@@ -182,10 +182,52 @@ class ObjcRecord(ObjcBaseClassType):
 
     class ObjcField(ObjcBaseField):
         @cached_property
-        def type_decl(self) -> str: return type_decl(self.decl.type_ref)
+        def type_decl(self) -> str:
+            return type_decl(self.decl.type_ref)
 
         @cached_property
-        def annotation(self) -> str: return annotation(self.decl.type_ref)
+        def annotation(self) -> str:
+            return annotation(self.decl.type_ref)
+
+        @cached_property
+        def hash_code(self) -> str:
+            if self.decl.type_ref.type_def.primitive in [
+                BaseExternalType.Primitive.enum,
+                BaseExternalType.Primitive.flags
+            ]:
+                return f"(NSUInteger)self.{self.decl.objc.name}"
+            elif self.decl.type_ref.optional or self.decl.type_ref.type_def.objc.typename == self.decl.type_ref.type_def.objc.boxed:
+                return f"self.{self.decl.objc.name}.hash"
+            else:
+                return f"(NSUInteger)self.{self.decl.objc.name}"
+
+        @cached_property
+        def equals(self) -> str:
+            if self.decl.type_ref.type_def.primitive in [
+                BaseExternalType.Primitive.enum,
+                BaseExternalType.Primitive.flags
+            ]:
+                return f"self.{self.decl.objc.name} == typedOther.{self.decl.objc.name}"
+            elif self.decl.type_ref.optional:
+                return f"((self.{self.decl.objc.name} == nil && typedOther.{self.decl.objc.name} == nil) || (self.{self.decl.objc.name} != nil && [self.{self.decl.objc.name} isEqual:typedOther.{self.decl.objc.name}]))"
+            elif self.decl.type_ref.type_def.objc.typename == self.decl.type_ref.type_def.objc.boxed:
+                match self.decl.type_ref.type_def.name:
+                    case 'binary':
+                        return f"[self.{self.decl.objc.name} isEqualToData:typedOther.{self.decl.objc.name}]"
+                    case 'list':
+                        return f"[self.{self.decl.objc.name} isEqualToArray:typedOther.{self.decl.objc.name}]"
+                    case 'set':
+                        return f"[self.{self.decl.objc.name} isEqualToSet:typedOther.{self.decl.objc.name}]"
+                    case 'map':
+                        return f"[self.{self.decl.objc.name} isEqualToDictionary:typedOther.{self.decl.objc.name}]"
+                    case 'string':
+                        return f"[self.{self.decl.objc.name} isEqualToString:typedOther.{self.decl.objc.name}]"
+                    case 'date':
+                        return f"[self.{self.decl.objc.name} isEqualToDate:typedOther.{self.decl.objc.name}]"
+                    case _:
+                        return f"[self.{self.decl.objc.name} isEqual:typedOther.{self.decl.objc.name}]"
+            else:
+                return f"self.{self.decl.objc.name} == typedOther.{self.decl.objc.name}"
 
 
 class ObjcParameter(ObjcBaseField):
