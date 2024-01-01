@@ -19,6 +19,7 @@
 TEST_CASE("Cpp.RecordTest") {
     std::string tz = "TZ=Etc/GMT-0";
     putenv(tz.data());
+    tzset();
     GIVEN("a PrimitiveTypes record instance") {
         const auto record = test::record::PrimitiveTypes(
                 true, 8, 16, 32, 64, 32.32, 64.64,
