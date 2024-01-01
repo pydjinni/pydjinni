@@ -45,6 +45,12 @@ class TestPrimitiveTypes {
     }
 
     @Test
+    void testPrimitiveTypesEqual() {
+        var returned_record = Helper.getPrimitiveTypes(record);
+        assertEquals(record, returned_record);
+    }
+
+    @Test
     void testToString() {
         assertEquals("test.record.PrimitiveTypes{booleanT=true,byteT=8,shortT=16,intT=32,longT=64,floatT=32.32,doubleT=64.64,stringT=test string,dateT=2023-07-01T12:08:29Z}", record.toString());
     }

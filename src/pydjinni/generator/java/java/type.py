@@ -22,7 +22,7 @@ from pydjinni.generator.java.java.config import JavaConfig
 from pydjinni.generator.java.java.keywords import keywords
 from pydjinni.generator.validator import validate
 from pydjinni.parser.ast import Record, Function
-from pydjinni.parser.base_models import BaseType, BaseField
+from pydjinni.parser.base_models import BaseType, BaseField, BaseExternalType
 from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
@@ -131,6 +131,36 @@ class JavaRecord(JavaBaseType):
             if self.config.use_final_for_record:
                 output += "final "
             return output
+
+        @cached_property
+        def hash_code(self) -> str:
+            if self.decl.type_ref.optional:
+                return f"{self.decl.java.name} == null ? 0 : {self.decl.java.name}.hashCode()"
+            elif self.decl.type_ref.type_def.java.typename == self.decl.type_ref.type_def.java.boxed:
+                match self.decl.type_ref.type_def.name:
+                    case "binary": return f"java.util.Arrays.hashCode({self.decl.java.name})"
+                    case _: return f"{self.decl.java.name}.hashCode()"
+            else:
+                match self.decl.type_ref.type_def.java.typename:
+                    case "long": return f"((int) ({self.decl.java.name} ^ ({self.decl.java.name} >>> 32)))"
+                    case "float": return f"Float.floatToIntBits({self.decl.java.name})"
+                    case "double": return f"((int) (Double.doubleToLongBits({self.decl.java.name}) ^ (Double.doubleToLongBits({self.decl.java.name}) >>> 32)))"
+                    case "boolean": return f"({self.decl.java.name} ? 1 : 0)"
+                    case _: return self.decl.java.name
+
+        @cached_property
+        def equals(self) -> str:
+            if self.decl.type_ref.optional:
+                return f"((this.{self.decl.java.name} == null & & other.{self.decl.java.name} == null) | | (this.{self.decl.java.name} != null & & this.{self.decl.java.name}.equals(other.{self.decl.java.name})))"
+            elif self.decl.type_ref.type_def.primitive == BaseExternalType.Primitive.enum:
+                return f"this.{self.decl.java.name} == other.{self.decl.java.name}"
+            elif self.decl.type_ref.type_def.java.typename == self.decl.type_ref.type_def.java.boxed:
+                match self.decl.type_ref.type_def.name:
+                    case "binary": return f"java.util.Arrays.equals({self.decl.java.name}, other.{self.decl.java.name})"
+                    case _: return f"{self.decl.java.name}.equals(other.{self.decl.java.name})"
+            else:
+                return f"this.{self.decl.java.name} == other.{self.decl.java.name}"
+
 
 
 class JavaFlags(JavaBaseType):
