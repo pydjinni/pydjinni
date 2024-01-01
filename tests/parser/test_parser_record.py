@@ -18,6 +18,7 @@ from pathlib import Path
 import pytest
 
 from pydjinni.parser.ast import Record
+from pydjinni.parser.base_models import BaseExternalType
 from pydjinni.parser.parser import Parser
 from test_parser import given, when, given_mocks, assert_field
 
@@ -113,6 +114,21 @@ def test_parsing_record_default_deriving(tmp_path: Path, deriving, expected: set
     record = when(parser, Record, "foo")
     assert record.deriving == expected
 
+def test_parsing_record_ord_deriving_collection(tmp_path: Path):
+    # GIVEN an idl file that defines a record with a collection that is deriving 'ord'
+    parser, resolver_mock = given(
+        tmp_path=tmp_path,
+        input_idl="""
+        foo = record {
+            baz: list<i8>;
+        } deriving(ord)
+        """
+    )
+    resolver_mock.resolve.return_value = BaseExternalType(name='list', params=['T'], primitive=BaseExternalType.Primitive.collection)
+    # WHEN parsing the input
+    # THEN an exception should be thrown, because 'ord' is not allowed with collections
+    with pytest.raises(Parser.ParsingException, match="Cannot compare collections in 'ord' deriving"):
+        parser.parse()
 
 def test_parsing_base_record(tmp_path: Path):
     # GIVEN an idl file that defines a record will be extended in C++

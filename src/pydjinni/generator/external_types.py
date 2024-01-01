@@ -62,19 +62,22 @@ class ExternalTypesBuilder:
         "list": BaseExternalType(
             name='list',
             comment="a list of items of type T",
-            params=["T"]
+            params=["T"],
+            primitive=BaseExternalType.Primitive.collection
 
         ),
         "set": BaseExternalType(
             name='set',
             comment="a set of unique items of type T",
-            params=["T"]
+            params=["T"],
+            primitive=BaseExternalType.Primitive.collection
 
         ),
         "map": BaseExternalType(
             name='map',
             comment="a map of key-value pairs of type K, V",
-            params=["K", "V"]
+            params=["K", "V"],
+            primitive=BaseExternalType.Primitive.collection
         )
     }
 

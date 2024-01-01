@@ -20,7 +20,7 @@ from antlr4.error.ErrorListener import ErrorListener
 from pydjinni.generator.cpp.cpp.generator import CppGenerator
 
 from pydjinni.exceptions import ApplicationException, FileNotFoundException
-from .base_models import BaseType, TypeReference, BaseField
+from .base_models import BaseType, TypeReference, BaseField, BaseExternalType
 
 from pydjinni.generator.target import Target
 from pydjinni.position import Position, Cursor
@@ -270,6 +270,7 @@ class Parser(IdlVisitor):
 
     def visitRecord(self, ctx: IdlParser.RecordContext) -> Record:
         fields = [self.visit(field) for field in ctx.field()]
+        deriving = (self.visit(ctx.deriving()) | self.default_deriving) if ctx.deriving() else self.default_deriving
         return Record(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
@@ -278,7 +279,7 @@ class Parser(IdlVisitor):
             targets=self.visit(ctx.targets()),
             namespace=self.current_namespace,
             dependencies=self._dependencies([field.type_ref for field in fields]),
-            deriving=(self.visit(ctx.deriving()) | self.default_deriving) if ctx.deriving() else self.default_deriving
+            deriving=deriving
         )
 
     def visitField(self, ctx: IdlParser.FieldContext):
@@ -423,6 +424,15 @@ class Parser(IdlVisitor):
                             f"but {len(type_ref.parameters)} where given.",
                             type_ref.position
                         )
+            for decl in self.type_decls:
+                if isinstance(decl, Record):
+                    if Record.Deriving.ord in decl.deriving:
+                        for field in decl.fields:
+                            if field.type_ref.type_def.primitive == BaseExternalType.Primitive.collection:
+                                raise Parser.ParsingException(
+                                    "Cannot compare collections in 'ord' deriving",
+                                    position=field.position
+                                )
             for target in self.targets:
                 target.marshal(self.type_decls, self.field_decls)
         except FileNotFoundError as e:
