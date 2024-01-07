@@ -20,5 +20,5 @@ limitations under the License.
 {%- endmacro -%}
 
 {%- macro deprecated(def, indentation = 0) -%}
-[Obsolete{{ '("' ~ def.deprecated | replace('\n', ' "\n"') | indent(indentation) ~ '")'  if def.deprecated is string }}]
+[System::Obsolete{{ '("' ~ def.deprecated | replace('\n', ' "\n"') | indent(indentation) ~ '")'  if def.deprecated is string }}]
 {%- endmacro -%}

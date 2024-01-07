@@ -6,10 +6,10 @@
 #include "pydjinni/cppcli/Marshal.hpp"
 
 namespace Test::Interface::CppCli {
-[Obsolete("testing class deprecation annotation")]
+[System::Obsolete("testing class deprecation annotation")]
 public ref class DeprecationTest abstract {
 public:
-    [Obsolete("testing method deprecation annotation")]
+    [System::Obsolete("testing method deprecation annotation")]
     virtual int DeprecationTestMethod() abstract;
 internal:
     using CppType = std::shared_ptr<::test::interface_test::DeprecationTest>;
