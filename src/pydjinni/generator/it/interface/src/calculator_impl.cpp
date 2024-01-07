@@ -16,7 +16,7 @@
 #include <cassert>
 #include <stdexcept>
 
-using namespace test::interface;
+using namespace test::interface_test;
 
 int8_t CalculatorImpl::add(int8_t a, int8_t b) {
     return a + b;

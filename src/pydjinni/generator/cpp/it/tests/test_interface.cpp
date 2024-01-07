@@ -19,7 +19,7 @@
 
 TEST_CASE("Cpp.InterfaceTest") {
     GIVEN("a Calculator interface instance") {
-        auto calculator = test::interface::Calculator::get_instance();
+        auto calculator = test::interface_test::Calculator::get_instance();
         WHEN("using the calculator interface") {
             auto result = calculator->add(40, 2);
             THEN("the C++ implementation of the calculator should have returned the correct sum") {
@@ -27,7 +27,7 @@ TEST_CASE("Cpp.InterfaceTest") {
             }
         }
         AND_GIVEN("an implementation for the PlatformInterface interface") {
-            class PlatformInterfaceImpl : public test::interface::PlatformInterface {
+            class PlatformInterfaceImpl : public test::interface_test::PlatformInterface {
                 int8_t get_value() override { return 5; }
             };
             WHEN("passing using the implementation") {

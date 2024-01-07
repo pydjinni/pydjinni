@@ -18,13 +18,17 @@ from pydjinni.parser.base_models import TypeReference
 
 
 def quote(header: Path):
-    return header if str(header).startswith("<") and str(header).endswith(">") else f'"{header}"'
+    return header if str(header).startswith("<") and str(header).endswith(">") else f'"{header.as_posix()}"'
 
 
 def headers(dependencies: list[TypeReference], target: str) -> list[str]:
     header_paths: list[Path] = []
     for dependency_def in dependencies:
-        header_path = getattr(dependency_def.type_def, target).header
+        target_type_def = getattr(dependency_def.type_def, target)
+        if hasattr(target_type_def, 'base_type') and target_type_def.base_type and hasattr(target_type_def, 'derived_header'):
+            header_path = target_type_def.derived_header
+        else:
+            header_path = target_type_def.header
         if header_path and (header_path not in header_paths):
             header_paths.append(header_path)
     return [quote(header) for header in header_paths]

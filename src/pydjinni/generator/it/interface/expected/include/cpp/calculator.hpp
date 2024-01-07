@@ -6,10 +6,10 @@
 #include <cstdint>
 #include "platform_interface.hpp"
 
-namespace test::interface {
+namespace test::interface_test {
 class Calculator {
 public:
-    static std::shared_ptr<::test::interface::Calculator> get_instance();
+    static std::shared_ptr<::test::interface_test::Calculator> get_instance();
     /**
      * adds up two values
      * 
@@ -18,8 +18,8 @@ public:
      * @returns the sum of both values
      */
     virtual int8_t add(int8_t a, int8_t b) = 0;
-    virtual int8_t get_platform_value(const std::shared_ptr<::test::interface::PlatformInterface> & platform) = 0;
+    virtual int8_t get_platform_value(const std::shared_ptr<::test::interface_test::PlatformInterface> & platform) = 0;
     virtual void no_parameters_no_return() = 0;
     virtual void throwing_exception() = 0;
 };
-}  // namespace test::interface
+}  // namespace test::interface_test

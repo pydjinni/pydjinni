@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pydjinni.generator.cpp.cpp.keywords import keywords as cpp_keywords
+from pydjinni.generator.validator import validate
+
 try:
     from enum import StrEnum
 except ImportError:
@@ -144,6 +147,7 @@ class JniBaseType(BaseModel):
         return "_".join(["Java"] + segments)
 
     @cached_property
+    @validate(cpp_keywords, separator="::")
     def namespace(self): return '::'.join(self.config.namespace + [identifier.convert(self.config.identifier.namespace)
                                                                    for identifier in self.decl.namespace])
 

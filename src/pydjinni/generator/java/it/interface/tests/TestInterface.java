@@ -39,6 +39,7 @@ class TestInterface {
                 return 5;
             }
         });
+        assertEquals(5, result);
     }
 
     @Test
