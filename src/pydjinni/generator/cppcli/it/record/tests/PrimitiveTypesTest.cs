@@ -51,7 +51,7 @@ namespace Testing.Unit.Record
         [Test]
         public void TestToString()
         {
-            Assert.That(record.ToString(), Is.EqualTo("Test.Record.CppCli.PrimitiveTypes(BooleanT=True, ByteT=8, ShortT=16, IntT=32, LongT=64, FloatT=32,32, DoubleT=64,64, StringT=test string, DateT=01.07.2023 12:08:29)"));
+            Assert.That(record.ToString(), Is.EqualTo("Test.Record.CppCli.PrimitiveTypes(BooleanT=True, ByteT=8, ShortT=16, IntT=32, LongT=64, FloatT=32.32, DoubleT=64.64, StringT=test string, DateT=01.07.2023 12:08:29)"));
         }
 
 
