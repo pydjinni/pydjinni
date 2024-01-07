@@ -12,7 +12,7 @@ public abstract class DeprecationTest {
      * @deprecated testing method deprecation annotation
      */
     @Deprecated
-    public abstract int deprecationTest();
+    public abstract int deprecationTestMethod();
     private static final class CppProxy extends DeprecationTest {
         private final long nativeRef;
         private final AtomicBoolean destroyed = new AtomicBoolean(false);
@@ -35,10 +35,10 @@ public abstract class DeprecationTest {
             super.finalize();
         }
         @Override
-        public int deprecationTest() {
+        public int deprecationTestMethod() {
             assert !this.destroyed.get() : "trying to use a destroyed object";
-            return native_deprecationTest(this.nativeRef );
+            return native_deprecationTestMethod(this.nativeRef );
         }
-        private native int native_deprecationTest(long _nativeRef);
+        private native int native_deprecationTestMethod(long _nativeRef);
     }
 }
