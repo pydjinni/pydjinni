@@ -36,6 +36,8 @@ hide:
         objc:
             type_prefix: FB
             swift_bridging_header: bridging_header.h
+        cppcli:
+            namespace: foo::bar::cppcli
     </textarea>
     </span>
 

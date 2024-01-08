@@ -153,7 +153,11 @@ async function main(version, localFallback) {
             reportInstalledPackages(micropip);
         }, 200);
         await micropip.install("pygments==2.15");
-        await micropip.install(`https://pydjinni.github.io/pydjinni/${version}/assets/packages/pydantic_core-2.10.1-cp311-cp311-emscripten_3_1_32_wasm32.whl`);
+        if(localFallback) {
+            await micropip.install("https://github.com/pydantic/pydantic-core/releases/download/v2.10.1/pydantic_core-2.10.1-cp311-cp311-emscripten_3_1_32_wasm32.whl")
+        } else {
+            await micropip.install(`https://pydjinni.github.io/pydjinni/${version}/assets/packages/pydantic_core-2.10.1-cp311-cp311-emscripten_3_1_32_wasm32.whl`);
+        }
         await micropip.install("pydantic==2.4.2")
         if(localFallback) {
             await micropip.install(`http://localhost:8001/pydjinni-${version}-py3-none-any.whl`)
@@ -211,6 +215,7 @@ async function generate(idlContent, configContent) {
             try:
                 api = API().configure("/pydjinni.yaml", options={
                     "generate": {
+                        "support_lib_sources": False,
                         "cpp": {
                             "out": {
                                 "header": cpp_header_path,
@@ -340,8 +345,9 @@ function demoInit() {
         const version = document.getElementById("pydjinni_version").innerText
         const localFallback = location.hostname === "localhost" || location.hostname === "127.0.0.1"
         if(localFallback) {
-            console.info("This demo has been detected to run on 'localhost'.")
-            console.info("run 'python -m build && python -m http.server --directory ./dist 8001' before loading the demo.")
+            console.info("This demo has been detected to run on 'localhost'. To make it work:")
+            console.info("-> Disable CORS restrictions in your browser!")
+            console.info("-> run 'python -m build && python -m http.server --directory ./dist 8001' before loading the demo.")
         }
 
         pyodideReadyPromise = pyodideReadyPromise || main(version, localFallback);

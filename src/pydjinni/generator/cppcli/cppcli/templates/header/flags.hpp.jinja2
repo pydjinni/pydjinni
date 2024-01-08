@@ -32,6 +32,9 @@ limitations under the License.
 {% endif %}
 public enum class {{ type_def.cppcli.name }} {
     {% for flag in type_def.flags %}
+    {% if flag.cppcli.comment %}
+    {{ comment(flag, indentation=4) }}
+    {% endif %}
     {{ flag.cppcli.name ~ " = "-}}
     {% if flag.none %}
         {{- "0" -}}
