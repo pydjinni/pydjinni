@@ -5,7 +5,7 @@
 #import "CollectionTypes.h"
 #import "OptionalTypes.h"
 #import "BinaryTypes.h"
-#import "BaseRecordBase.h"
+#import "BaseRecord.h"
 
 NS_SWIFT_NAME(Helper)
 @interface Helper : NSObject
