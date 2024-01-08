@@ -1,8 +1,8 @@
 prune docs
-global-include support_lib/**/*
-global-include templates/**/*
-global-include template/**/*
 global-exclude CMakeLists.txt
 global-exclude tests/**
 global-exclude it/**
 global-exclude .gitignore
+exclude .github/**
+exclude .idea/**
+exclude cmake-build-*/**
