@@ -123,5 +123,5 @@ keywords = LanguageKeywords("C++/CLI", [
     "sealed",
     "value",
     "virtual",
-    "abstract_enum",
+    "abstract_enum"
 ])

@@ -41,7 +41,6 @@ namespace Testing.Unit.Interface
         [Test]
         public void TestPlatformImplementation()
         {
-
             var result = calculator.GetPlatformValue(new CsPlatformInterface());
             Assert.That(result, Is.EqualTo(5));
         }
