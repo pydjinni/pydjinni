@@ -19,20 +19,23 @@ from pydantic import BaseModel, HttpUrl, Field
 
 class NuGetPublishConfig(BaseModel):
     """
-    Maven publishing information
+    NuGet packaging and publishing configuration
     """
     source: HttpUrl | Path = Field(
         default="https://api.nuget.org/v3/index.json",
-        description="NuGet server URL or local folder where the package should be published to"
+        description="NuGet server URL or local folder where the package should be published.",
+        examples=[
+            "https://nuget.pkg.github.com/NAMESPACE/index.json",
+            r"C:\Users\Foo\Path\To\Local\Install"
+        ]
     )
     repository: HttpUrl = Field(
         default=None,
-        description="URL to the source Git repository"
+        description="URL to the source Git repository."
     )
     description: str = Field(
         default="",
         description="(short) description of the package."
-
     )
     readme: Path = Field(
         default=None,
@@ -40,11 +43,13 @@ class NuGetPublishConfig(BaseModel):
     )
     net_version: str = Field(
         default="net8.0",
-        description=".NET version used to compile the binaries"
+        description=".NET version used to compile the binaries. "
+                    "The packaged binaries have to be compiled for the configured .NET version!"
     )
     authors: list[str] = Field(
         default=[],
-        description="A comma-separated list of packages authors (matching the profile names on nuget.org)"
+        description="A comma-separated list of packages authors "
+                    "(matching the related profile names on `nuget.org` if published to the public registry)"
     )
     username: str = Field(
         default=None,

@@ -204,6 +204,8 @@ async function generate(idlContent, configContent) {
             java_html_path = Path("/out/java/html")
             objc_source_path = Path("/out/objc/header")
             objc_html_path = Path("/out/objc/html")
+            cppcli_source_path = Path("/out/cppcli/header")
+            cppcli_html_path = Path("/out/cppcli/html")
             yaml_source_path = Path("/out/yaml")
             yaml_html_path = Path("/out/yaml/html")
             try:
@@ -236,11 +238,17 @@ async function generate(idlContent, configContent) {
                                 "source": "/out/objcpp/source"
                             }
                         },
+                        "cppcli": {
+                            "out": {
+                                "header": "/out/cppcli/header",
+                                "source": "/out/cppcli/source"
+                            }
+                        },
                         "yaml": {
                             "out": "/out/yaml"
                         }
                     }
-                }).parse("/input.djinni").generate("cpp", clean=True).generate("java", clean=True).generate("objc", clean=True).generate("yaml", clean=True)
+                }).parse("/input.djinni").generate("cpp", clean=True).generate("java", clean=True).generate("objc", clean=True).generate("cppcli", clean=True).generate("yaml", clean=True)
                 
                 def render_generated_files(source_path: Path, target_path: Path, lexer, id: str):
                     files = source_path.rglob("*")
@@ -265,6 +273,7 @@ async function generate(idlContent, configContent) {
                 render_generated_files(cpp_header_path, cpp_html_path, CppLexer(), id="generated_cpp_files")
                 render_generated_files(java_source_path, java_html_path, JavaLexer(), id="generated_java_files")
                 render_generated_files(objc_source_path, objc_html_path, ObjectiveCLexer(), id="generated_objc_files")
+                render_generated_files(cppcli_source_path, cppcli_html_path, CppLexer(), id="generated_cppcli_files")
                 render_generated_files(yaml_source_path, yaml_html_path, YamlLexer(), id="generated_yaml_files")
                 result = (0, "success")
             except IdlParser.ParsingException as e:

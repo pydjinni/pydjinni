@@ -22,7 +22,7 @@ from pydjinni.packaging.target import PackageTarget, copy_file, execute, copy_di
 
 class NuGetTarget(PackageTarget):
     """
-    NuGet
+    NuGet Package
     """
     key = "nuget"
     platforms = {
