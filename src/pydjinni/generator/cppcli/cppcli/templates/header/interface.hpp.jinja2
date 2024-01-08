@@ -1,0 +1,59 @@
+{#
+Copyright 2024 jothepro
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+#}
+{% extends "base.jinja2" %}
+{% from "macros.jinja2" import comment, deprecated %}
+
+{% block header %}
+#pragma once
+#include {{ type_def.cpp.header | quote }}
+#include <memory>
+{% for header in type_def.dependencies | headers('cppcli') -%}
+#include {{ header }}
+{% endfor %}
+{% endblock %}
+
+{% block content %}
+{% if type_def.cppcli.comment %}
+{{ comment(type_def) }}
+{% endif %}
+{% if type_def.deprecated %}
+{{ deprecated(type_def) }}
+{% endif %}
+public ref class {{ type_def.cppcli.name }} abstract {
+public:
+    {% for method in type_def.methods %}
+    {% if method.cppcli.comment %}
+    {{ comment(method, indentation=4) }}
+    {% endif %}
+    {% if method.deprecated %}
+    {{ deprecated(method) }}
+    {% endif %}
+    {{ "static " if method.static else "virtual " }}{{ method.cppcli.typename }} {{ method.cppcli.name }}(
+    {%- for param in method.parameters -%}
+        {{ param.cppcli.typename }} {{ param.cppcli.name ~ (", " if not loop.last) }}
+    {%- endfor -%}
+    ){{ " abstract" if not method.static }};
+    {% endfor %}
+internal:
+    using CppType = std::shared_ptr<{{ type_def.cpp.typename }}>;
+    using CppOptType = std::shared_ptr<{{ type_def.cpp.typename }}>;
+    using CsType = {{ type_def.cppcli.name }}^;
+
+    static CppType ToCpp(CsType cs);
+    static CsType FromCppOpt(const CppOptType& cpp);
+    static CsType FromCpp(const CppType& cpp) { return FromCppOpt(cpp); }
+};
+{% endblock %}

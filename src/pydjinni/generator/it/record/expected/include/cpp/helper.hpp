@@ -6,7 +6,7 @@
 #include "collection_types.hpp"
 #include "optional_types.hpp"
 #include "binary_types.hpp"
-#include "base_record_base.hpp"
+#include "base_record.hpp"
 
 namespace test::record {
 class Helper {

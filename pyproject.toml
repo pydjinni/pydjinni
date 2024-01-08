@@ -69,11 +69,13 @@ pydjinni = "pydjinni.__main__:main"
 cpp  = 'pydjinni.generator.cpp:CppTarget'
 java = 'pydjinni.generator.java:JavaTarget'
 objc = 'pydjinni.generator.objc:ObjcTarget'
+cppcli = 'pydjinni.generator.cppcli:CppCliTarget'
 yaml = 'pydjinni.generator.yaml:YamlTarget'
 [project.entry-points.'pydjinni.builder']
 conan = 'pydjinni.builder.conan:ConanTarget'
 [project.entry-points.'pydjinni.packaging']
 swiftpackage = 'pydjinni.packaging.swiftpackage:SwiftpackageTarget'
 aar = 'pydjinni.packaging.aar:AndroidArchiveTarget'
+nuget = 'pydjinni.packaging.nuget:NuGetTarget'
 [project.entry-points.'pygments.lexers']
 djinni='pydjinni.lexer:PyDjinniLexer'

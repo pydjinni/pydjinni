@@ -13,7 +13,7 @@
 # limitations under the License.
 from pathlib import Path
 
-from pydantic import BaseModel, Field, HttpUrl, DirectoryPath
+from pydantic import BaseModel, Field, HttpUrl
 
 
 class SwiftpackagePublishConfig(BaseModel):

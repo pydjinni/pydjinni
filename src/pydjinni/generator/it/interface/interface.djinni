@@ -17,5 +17,5 @@ calculator = main interface +cpp {
 # @deprecated testing class deprecation annotation
 deprecation_test = interface {
     # @deprecated testing method deprecation annotation
-    deprecation_test() -> i32;
+    deprecation_test_method() -> i32;
 }

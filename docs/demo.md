@@ -36,6 +36,8 @@ hide:
         objc:
             type_prefix: FB
             swift_bridging_header: bridging_header.h
+        cppcli:
+            namespace: foo::bar::cppcli
     </textarea>
     </span>
 
@@ -59,6 +61,12 @@ hide:
 
     <span id="generated_objc_files" class="generated_listing" markdown>
         <span class="teaser">:material-file-code:<br>Generated Objective-C interfaces will be displayed here.</span>
+    </span>
+
+=== "C++/CLI"
+
+    <span id="generated_cppcli_files" class="generated_listing" markdown>
+        <span class="teaser">:material-file-code:<br>Generated C++/CLI (.NET) interfaces will be displayed here.</span>
     </span>
 
 === "YAML"

@@ -4,7 +4,7 @@
 #include <memory>
 #include <cstdint>
 
-namespace test::interface {
+namespace test::interface_test {
 /**
  * @deprecated testing class deprecation annotation
  */
@@ -14,6 +14,6 @@ public:
      * @deprecated testing method deprecation annotation
      */
     [[deprecated("testing method deprecation annotation")]]
-    virtual int32_t deprecation_test() = 0;
+    virtual int32_t deprecation_test_method() = 0;
 };
-}  // namespace test::interface
+}  // namespace test::interface_test

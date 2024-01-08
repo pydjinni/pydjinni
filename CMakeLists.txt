@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2024 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     list(APPEND PYDJINNI_LANGUAGE_TARGETS_DEFAULT java)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     list(APPEND PYDJINNI_LANGUAGE_TARGETS_DEFAULT java)
+    list(APPEND PYDJINNI_LANGUAGE_TARGETS_DEFAULT cppcli)
 endif()
 
 set(PYDJINNI_LANGUAGE_TARGETS ${PYDJINNI_LANGUAGE_TARGETS_DEFAULT} CACHE STRING "List of languages that should be targeted" )

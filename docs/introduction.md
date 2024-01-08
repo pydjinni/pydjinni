@@ -59,7 +59,7 @@ The `generate` subcommand produces glue code in the specified target languages f
 The following command generates Java and C++ language bindings for Android from the `foo.pydjinni` IDL file:
 
 ```bash
-pydjinni generate foo.pydjinni cpp java
+pydjinni generate foo.pydjinni cpp java objc cppcli
 ```
 
 ## Building and Packaging { .new-badge }
@@ -73,6 +73,7 @@ The following commands produce both an Android Archive (AAR) and Swift package f
 ```
 pydjinni package aar android
 pydjinni package swiftpackage ios macos ios_simulator
+pydjinni package nuget windows
 ```
 
 ## Publishing { .new-badge }
@@ -85,6 +86,7 @@ different for every targeted platform:
 ```shell
 pydjinni publish aar
 pydjinni publish swiftpackage
+pydjinni publish nuget
 ```
 
 ## Configuration
@@ -115,6 +117,9 @@ generate:
     namespace: pydjinni::example::objcpp
     swift:
       bridging_header: PyDjinniLibrary.h
+  cppcli:
+    out: generated/cppcli
+    namespace: pydjinni::example::cppcli 
 package:
   version: 1.1.0
   target: MyLibrary
@@ -131,6 +136,12 @@ package:
       maven_registry: https://maven.pkg.github.com/foo/bar
     platforms:
       android: [x86_64, armv8]
+  nuget:
+    publish:
+      description: "package description"
+      authors: ["foo"]
+    platforms:
+      windows: [x86_64, armv8]
 ```
 
 ### Credentials
@@ -139,8 +150,13 @@ Credentials for artifact publication should not be stored in the configuration f
 Instead, they can be set as environment variables or in a `.env` file:
 
 ```sh
+# Maven credentials
 pydjinni__package__aar__publish__username=foo
 pydjinni__package__aar__publish__password=<password>
+# Swiftpackage (Git) credentials
 pydjinni__package__swiftpackage__publish__username=bar
 pydjinni__package__swiftpackage__publish__password=<password>
+# NuGet credentials
+pydjinni__package__nuget__publish__username=baz
+pydjinni__package__nuget__publish__password=<password>
 ```

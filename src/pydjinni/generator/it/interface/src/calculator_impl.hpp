@@ -14,7 +14,7 @@
 
 #pragma once
 #include "calculator.hpp"
-namespace test::interface {
+namespace test::interface_test {
 
 class CalculatorImpl : public Calculator {
 public:

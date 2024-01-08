@@ -121,6 +121,7 @@ class PackageTarget(ABC):
                         platform, architectures in self.platforms.items()}
         config_model_builder.add_package_config(self.key, create_model(
             f"{self.key}_config",
+            __doc__=inspect.cleandoc(self.__doc__),
             publish=(self.publish_config_model, None),
             platforms=(create_model(
                 f"{self.key}_platform_config",

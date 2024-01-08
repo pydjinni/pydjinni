@@ -153,7 +153,11 @@ async function main(version, localFallback) {
             reportInstalledPackages(micropip);
         }, 200);
         await micropip.install("pygments==2.15");
-        await micropip.install(`https://pydjinni.github.io/pydjinni/${version}/assets/packages/pydantic_core-2.10.1-cp311-cp311-emscripten_3_1_32_wasm32.whl`);
+        if(localFallback) {
+            await micropip.install("https://github.com/pydantic/pydantic-core/releases/download/v2.10.1/pydantic_core-2.10.1-cp311-cp311-emscripten_3_1_32_wasm32.whl")
+        } else {
+            await micropip.install(`https://pydjinni.github.io/pydjinni/${version}/assets/packages/pydantic_core-2.10.1-cp311-cp311-emscripten_3_1_32_wasm32.whl`);
+        }
         await micropip.install("pydantic==2.4.2")
         if(localFallback) {
             await micropip.install(`http://localhost:8001/pydjinni-${version}-py3-none-any.whl`)
@@ -204,11 +208,14 @@ async function generate(idlContent, configContent) {
             java_html_path = Path("/out/java/html")
             objc_source_path = Path("/out/objc/header")
             objc_html_path = Path("/out/objc/html")
+            cppcli_source_path = Path("/out/cppcli/header")
+            cppcli_html_path = Path("/out/cppcli/html")
             yaml_source_path = Path("/out/yaml")
             yaml_html_path = Path("/out/yaml/html")
             try:
                 api = API().configure("/pydjinni.yaml", options={
                     "generate": {
+                        "support_lib_sources": False,
                         "cpp": {
                             "out": {
                                 "header": cpp_header_path,
@@ -236,11 +243,17 @@ async function generate(idlContent, configContent) {
                                 "source": "/out/objcpp/source"
                             }
                         },
+                        "cppcli": {
+                            "out": {
+                                "header": "/out/cppcli/header",
+                                "source": "/out/cppcli/source"
+                            }
+                        },
                         "yaml": {
                             "out": "/out/yaml"
                         }
                     }
-                }).parse("/input.djinni").generate("cpp", clean=True).generate("java", clean=True).generate("objc", clean=True).generate("yaml", clean=True)
+                }).parse("/input.djinni").generate("cpp", clean=True).generate("java", clean=True).generate("objc", clean=True).generate("cppcli", clean=True).generate("yaml", clean=True)
                 
                 def render_generated_files(source_path: Path, target_path: Path, lexer, id: str):
                     files = source_path.rglob("*")
@@ -265,6 +278,7 @@ async function generate(idlContent, configContent) {
                 render_generated_files(cpp_header_path, cpp_html_path, CppLexer(), id="generated_cpp_files")
                 render_generated_files(java_source_path, java_html_path, JavaLexer(), id="generated_java_files")
                 render_generated_files(objc_source_path, objc_html_path, ObjectiveCLexer(), id="generated_objc_files")
+                render_generated_files(cppcli_source_path, cppcli_html_path, CppLexer(), id="generated_cppcli_files")
                 render_generated_files(yaml_source_path, yaml_html_path, YamlLexer(), id="generated_yaml_files")
                 result = (0, "success")
             except IdlParser.ParsingException as e:
@@ -331,8 +345,9 @@ function demoInit() {
         const version = document.getElementById("pydjinni_version").innerText
         const localFallback = location.hostname === "localhost" || location.hostname === "127.0.0.1"
         if(localFallback) {
-            console.info("This demo has been detected to run on 'localhost'.")
-            console.info("run 'python -m build && python -m http.server --directory ./dist 8001' before loading the demo.")
+            console.info("This demo has been detected to run on 'localhost'. To make it work:")
+            console.info("-> Disable CORS restrictions in your browser!")
+            console.info("-> run 'python -m build && python -m http.server --directory ./dist 8001' before loading the demo.")
         }
 
         pyodideReadyPromise = pyodideReadyPromise || main(version, localFallback);

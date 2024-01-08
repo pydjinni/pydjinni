@@ -4,9 +4,9 @@
 #include <memory>
 #include <cstdint>
 
-namespace test::interface {
+namespace test::interface_test {
 class PlatformInterface {
 public:
     virtual int8_t get_value() = 0;
 };
-}  // namespace test::interface
+}  // namespace test::interface_test

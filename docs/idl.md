@@ -119,7 +119,8 @@ special_methods = interface +cpp {
 ### Exception Handling
 
 When an interface implemented in C++ throws a `std::exception`, it will be translated to a `java.lang.RuntimeException`
-in Java and an `NSException` in Objective-C. The `what()` message will be translated as well.
+in Java, an `NSException` in Objective-C and a `System::Exception` in C++/CLI (.NET).
+The `what()` message will be translated as well.
 
 ### Main Interface { .new-badge }
 
@@ -155,8 +156,8 @@ class Main {
 
 Functions can be passed to and returned from interface methods.
 They are represented by [`std::function`](https://en.cppreference.com/w/cpp/utility/functional/function){target=blank} in C++, 
-[`@FunctionalInterface`](https://docs.oracle.com/javase/8/docs/api/java/lang/FunctionalInterface.html){target=blank} in Java and 
-[`blocks`](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/WorkingwithBlocks/WorkingwithBlocks.html){target=blank} in Objective-C.
+[`@FunctionalInterface`](https://docs.oracle.com/javase/8/docs/api/java/lang/FunctionalInterface.html){target=blank} in Java, 
+[`blocks`](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/WorkingwithBlocks/WorkingwithBlocks.html){target=blank} in Objective-C and [`delegate`](https://learn.microsoft.com/en-US/dotnet/csharp/programming-guide/delegates/) in C++/CLI (.NET).
 
 Functions can either be defined like a type, or can be defined inline where they are needed as anonymous functions:
 
