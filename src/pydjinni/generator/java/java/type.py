@@ -151,7 +151,7 @@ class JavaRecord(JavaBaseType):
         @cached_property
         def equals(self) -> str:
             if self.decl.type_ref.optional:
-                return f"((this.{self.decl.java.name} == null & & other.{self.decl.java.name} == null) | | (this.{self.decl.java.name} != null & & this.{self.decl.java.name}.equals(other.{self.decl.java.name})))"
+                return f"((this.{self.decl.java.name} == null && other.{self.decl.java.name} == null) | | (this.{self.decl.java.name} != null & & this.{self.decl.java.name}.equals(other.{self.decl.java.name})))"
             elif self.decl.type_ref.type_def.primitive == BaseExternalType.Primitive.enum:
                 return f"this.{self.decl.java.name} == other.{self.decl.java.name}"
             elif self.decl.type_ref.type_def.java.typename == self.decl.type_ref.type_def.java.boxed:

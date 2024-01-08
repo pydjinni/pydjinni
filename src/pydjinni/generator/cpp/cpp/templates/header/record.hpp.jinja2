@@ -71,10 +71,7 @@ struct {{ type_def.cpp.name }}{{ " final" if not type_def.cpp.base_type }} {
         {% for field in type_def.fields %}
         os << "{{ field.cpp.name }}=
         {%- if field.type_ref.name in ["bool", "i8", "i16", "i32", "i64", "f32", "f64"] and not field.type_ref.optional -%}
-            " << std::to_string(value.{{ field.cpp.name }}
-            {%- if field.type_ref.name == "date" -%}
-                .time_since_epoch().count()
-            {%- endif -%})
+            " << std::to_string(value.{{ field.cpp.name }})
         {%- elif field.type_ref.name == "date" and not field.type_ref.optional -%}
         ";
         std::time_t {{ field.cpp.name }}_t = std::chrono::system_clock::to_time_t(value.{{ field.cpp.name }});
