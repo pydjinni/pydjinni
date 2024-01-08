@@ -13,6 +13,8 @@
 // limitations under the License.
 
 using System.Collections.Generic;
+using System.Globalization;
+using System.Threading;
 using Test.Record.CppCli;
 using NUnit.Framework;
 using System;
@@ -28,6 +30,7 @@ namespace Testing.Unit.Record
         [Test]
         public void Init()
         {
+            Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
             record = new PrimitiveTypes(true, 8, 16, 32, 64, 32.32f, 64.64, "test string", new DateTime(2023, 7, 1, 12, 8, 29));
         }
 
@@ -51,7 +54,7 @@ namespace Testing.Unit.Record
         [Test]
         public void TestToString()
         {
-            Assert.That(record.ToString(), Is.EqualTo("Test.Record.CppCli.PrimitiveTypes(BooleanT=True, ByteT=8, ShortT=16, IntT=32, LongT=64, FloatT=32.32, DoubleT=64.64, StringT=test string, DateT=01.07.2023 12:08:29)"));
+            Assert.That(record.ToString(), Is.EqualTo("Test.Record.CppCli.PrimitiveTypes(BooleanT=True, ByteT=8, ShortT=16, IntT=32, LongT=64, FloatT=32.32, DoubleT=64.64, StringT=test string, DateT=7/1/2023 12:08:29 PM)"));
         }
 
 
