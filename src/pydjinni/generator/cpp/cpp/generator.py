@@ -70,7 +70,10 @@ class CppGenerator(Generator):
 
     def generate_record(self, type_def: Record):
         self.write_header("header/record.hpp.jinja2", type_def=type_def)
-        if 'eq' in type_def.deriving or 'ord' in type_def.deriving or 'str' in type_def.deriving and type_def.fields:
+        if (Record.Deriving.eq in type_def.deriving
+                or Record.Deriving.ord in type_def.deriving
+                or Record.Deriving.str in type_def.deriving
+                and type_def.fields):
             self.write_source("source/record.cpp.jinja2", type_def=type_def)
 
     def generate_interface(self, type_def: Interface):
