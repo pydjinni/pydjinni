@@ -27,7 +27,6 @@ namespace Testing.Unit.Record
         PrimitiveTypes record;
 
         [SetUp]
-        [Test]
         public void Init()
         {
             Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-US");

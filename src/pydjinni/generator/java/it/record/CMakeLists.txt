@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2024 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,4 +25,5 @@ java_test_case(RecordTest
         tests/TestOptionalTypes.java
         tests/TestBinaryTypes.java
         tests/TestBaseRecord.java
+        tests/TestNestedType.java
 )

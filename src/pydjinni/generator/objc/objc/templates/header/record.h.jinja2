@@ -50,5 +50,8 @@ NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
 {% endif %}
 @property (nonatomic, readonly{{ ", " ~ field.objc.annotation if field.objc.annotation }}) {{ field.objc.type_decl }} {{ field.objc.name }};
 {% endfor %}
+{% if 'ord' in type_def.deriving %}
+- (NSComparisonResult)compare:(nonnull {{ type_def.objc.name }} *)other;
+{% endif %}
 @end
 {% endblock %}

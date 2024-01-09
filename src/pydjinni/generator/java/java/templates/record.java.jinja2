@@ -52,8 +52,56 @@ limitations under the License.
     {% endif %}
     public {{ data_type(field.type_ref) }} {{ field.java.getter }}() { return {{ field.java.name }}; }
 {% endfor %}
+{% if 'eq' in type_def.deriving and type_def.fields %}
 
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof {{ type_def.java.name }})) {
+            return false;
+        }
+        {{ type_def.java.name }} other = ({{ type_def.java.name }}) obj;
+        return
+        {%- for field in type_def.fields %}
+{{ (" " * 15 if not loop.first else " ") ~ field.java.equals ~ (";" if loop.last else " &&") }}
+        {% endfor %}
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        {% for field in type_def.fields %}
+        hashCode = hashCode * 31 + {{ field.java.hash_code }};
+        {% endfor %}
+        return hashCode;
+    }
+{% endif %}
+{% if 'ord' in type_def.deriving and type_def.fields %}
+
+    @Override
+    public int compareTo({{ type_def.java.name }} other) {
+        int tempResult;
+        {% for field in type_def.fields %}
+        {% if field.type_ref.type_def.java.typename == field.type_ref.type_def.java.boxed %}
+            tempResult = this.{{ field.java.name }}.compareTo(other.{{ field.java.name }});
+        {% else %}
+            if (this.{{ field.java.name }} < other.{{ field.java.name }}) {
+                tempResult = -1;
+            } else if (this.{{ field.java.name }} > other.{{ field.java.name }}) {
+                tempResult = 1;
+            } else {
+                tempResult = 0;
+            }
+        {% endif %}
+        if (tempResult != 0) {
+            return tempResult;
+        }
+        {% endfor %}
+        return 0;
+    }
+{% endif %}
 {% if 'str' in type_def.deriving %}
+
     @Override
     public String toString() {
         return "{{ type_def.java.typename }}{" +

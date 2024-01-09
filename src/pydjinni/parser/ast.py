@@ -75,9 +75,6 @@ class Record(ClassType):
         type_ref: TypeReference
 
     class Deriving(DocStrEnum):
-        init = 'init', """
-        Generate a default record constructor
-        """
         eq = 'eq', """
         Equality operator. 
         All fields in the record are compared in the order they appear in the record declaration. 
@@ -88,10 +85,7 @@ class Record(ClassType):
         Is not supported for collection types, optionals, and booleans.
         """
         str = 'str', """
-        String representation of a record instance.
-        """
-        parcelable = 'parcelable', """
-        Instances can be written to and restored from a Parcel (Android)
+        String representation of a record instance (for debugging or logging).
         """
 
     primitive: BaseExternalType.Primitive = BaseExternalType.Primitive.record

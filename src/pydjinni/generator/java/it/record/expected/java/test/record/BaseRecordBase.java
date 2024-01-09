@@ -11,5 +11,4 @@ public class BaseRecordBase {
     }
 
     public int getValue() { return value; }
-
 }

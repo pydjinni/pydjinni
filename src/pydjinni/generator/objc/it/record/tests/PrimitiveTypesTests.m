@@ -51,6 +51,11 @@
     XCTAssertEqualObjects(returned_record.dateT, [NSDate dateWithTimeIntervalSince1970:1688213309]);
 }
 
+- (void)testPrimitiveTypesEqual {
+    PrimitiveTypes* returned_record = [Helper getPrimitiveTypes:self.record];
+    XCTAssertEqualObjects(returned_record, self.record);
+}
+
 - (void)testDescription {
     XCTAssertEqualObjects([self.record description], @"<PrimitiveTypes booleanT:YES byteT:8 shortT:16 intT:32 longT:64 floatT:32.32 doubleT:64.64 stringT:test string dateT:2023-07-01 12:08:29 +0000>");
 }

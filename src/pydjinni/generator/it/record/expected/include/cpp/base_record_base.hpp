@@ -7,7 +7,7 @@
 namespace test::record {
 struct BaseRecord;
 struct BaseRecordBase {
-    int32_t value;
+    const int32_t value;
     BaseRecordBase(int32_t value_)
     : value(std::move(value_))
     {}

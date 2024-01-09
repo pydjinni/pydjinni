@@ -57,7 +57,8 @@ class BaseCommentModel(BaseModel):
 
 class BaseExternalType(BaseCommentModel):
     class Primitive(StrEnum):
-        none = 'none'
+        primitive = 'primitive'
+        collection = 'collection'
         interface = 'interface'
         record = 'record'
         enum = 'enum'
@@ -72,7 +73,7 @@ class BaseExternalType(BaseCommentModel):
         description="Namespace that the type lives in"
     )
     primitive: Primitive = Field(
-        default=Primitive.none,
+        default=Primitive.primitive,
         description="The underlying primitive type"
     )
     params: list[str] = []

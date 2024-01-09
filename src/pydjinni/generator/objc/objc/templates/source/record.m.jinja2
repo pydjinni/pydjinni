@@ -45,6 +45,52 @@ limitations under the License.
     ];
 }
 
+{% if 'eq' in type_def.deriving %}
+- (BOOL)isEqual:(id)other
+{
+    if (![other isKindOfClass:[{{ type_def.objc.name }} class]]) {
+        return NO;
+    }
+    {{ type_def.objc.name }} *typedOther = ({{ type_def.objc.name }} *)other;
+    return
+    {%- for field in type_def.fields %}
+{{ (" " * 11 if not loop.first else " ") ~ field.objc.equals ~ (";" if loop.last else " &&") }}
+    {% endfor %}
+}
+
+- (NSUInteger)hash
+{
+    return NSStringFromClass([self class]).hash ^
+    {% for field in type_def.fields %}
+           {{ field.objc.hash_code ~ (";" if loop.last else " ^") }}
+    {% endfor %}
+}
+{% endif %}
+
+{% if 'ord' in type_def.deriving %}
+- (NSComparisonResult)compare:({{ type_def.objc.name }} *)other
+{
+    NSComparisonResult tempResult;
+    {% for field in type_def.fields %}
+    {% if field.type_ref.type_def.java.typename == field.type_ref.type_def.java.boxed %}
+    tempResult = [self.{{ field.objc.name }} compare:other.{{ field.objc.name }}];
+    {% else %}
+    if (self.{{ field.objc.name }} < other.{{ field.objc.name }}) {
+        tempResult = NSOrderedAscending;
+    } else if (self.{{ field.objc.name }} > other.{{ field.objc.name }}) {
+        tempResult = NSOrderedDescending;
+    } else {
+        tempResult = NSOrderedSame;
+    }
+    {% endif %}
+    if (tempResult != NSOrderedSame) {
+        return tempResult;
+    }
+    {% endfor %}
+    return NSOrderedSame;
+}
+{% endif %}
+
 {% if 'str' in type_def.deriving %}
 - (NSString *)description {
     return [NSString stringWithFormat:@"<%@

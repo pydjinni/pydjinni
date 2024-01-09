@@ -45,6 +45,39 @@ public final class PrimitiveTypes {
     public java.time.Instant getDateT() { return dateT; }
 
     @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof PrimitiveTypes)) {
+            return false;
+        }
+        PrimitiveTypes other = (PrimitiveTypes) obj;
+        return this.booleanT == other.booleanT &&
+               this.byteT == other.byteT &&
+               this.shortT == other.shortT &&
+               this.intT == other.intT &&
+               this.longT == other.longT &&
+               this.floatT == other.floatT &&
+               this.doubleT == other.doubleT &&
+               stringT.equals(other.stringT) &&
+               dateT.equals(other.dateT);
+    }
+
+    @Override
+    public int hashCode() {
+        // Pick an arbitrary non-zero starting value
+        int hashCode = 17;
+        hashCode = hashCode * 31 + (booleanT ? 1 : 0);
+        hashCode = hashCode * 31 + byteT;
+        hashCode = hashCode * 31 + shortT;
+        hashCode = hashCode * 31 + intT;
+        hashCode = hashCode * 31 + ((int) (longT ^ (longT >>> 32)));
+        hashCode = hashCode * 31 + Float.floatToIntBits(floatT);
+        hashCode = hashCode * 31 + ((int) (Double.doubleToLongBits(doubleT) ^ (Double.doubleToLongBits(doubleT) >>> 32)));
+        hashCode = hashCode * 31 + stringT.hashCode();
+        hashCode = hashCode * 31 + dateT.hashCode();
+        return hashCode;
+    }
+
+    @Override
     public String toString() {
         return "test.record.PrimitiveTypes{" +
             "booleanT=" + booleanT +

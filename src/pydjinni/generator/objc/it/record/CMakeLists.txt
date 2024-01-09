@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2024 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ objc_test_case(RecordTest
         tests/OptionalTypesTests.m
         tests/BinaryTypesTests.m
         tests/BaseRecordTests.m
+        tests/NestedTypeTests.m
 )
 target_sources(RecordTestObjc
     PUBLIC
