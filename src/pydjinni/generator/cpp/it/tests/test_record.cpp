@@ -63,8 +63,8 @@ TEST_CASE("Cpp.RecordTest") {
         const auto record = test::record::CollectionTypes(
                 {0, 1},
                 {"foo", "bar"},
-                {0, 1},
-                {"foo", "bar"},
+                {1, 0},
+                {"bar", "foo"},
                 {
                         {0, 1},
                 },
