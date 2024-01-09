@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "catch2/catch_test_macros.hpp"
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include "helper.hpp"
 #include <sstream>
 
@@ -63,8 +64,8 @@ TEST_CASE("Cpp.RecordTest") {
         const auto record = test::record::CollectionTypes(
                 {0, 1},
                 {"foo", "bar"},
-                {1, 0},
-                {"bar", "foo"},
+                {0, 1},
+                {"foo", "bar"},
                 {
                         {0, 1},
                 },
@@ -103,7 +104,7 @@ TEST_CASE("Cpp.RecordTest") {
             ss << record;
             const auto result = ss.str();
             THEN("a string representation of the type should be returned") {
-                REQUIRE(result == "::test::record::CollectionTypes(int_list=[0,1], string_list=[foo,bar], int_set=[1,0], string_set=[bar,foo], int_int_map={0:1}, string_string_map={foo:bar})");
+                REQUIRE_THAT(result, Catch::Matchers::Matches(R"(::test::record::CollectionTypes\(int_list=\[0,1\], string_list=\[foo,bar\], int_set=\[[10],[10]\], string_set=\[(foo|bar),(foo|bar)\], int_int_map=\{0:1\}, string_string_map=\{foo:bar\}\))"));
             }
         }
     }
