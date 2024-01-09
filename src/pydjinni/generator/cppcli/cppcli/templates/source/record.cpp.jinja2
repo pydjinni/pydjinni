@@ -18,9 +18,6 @@ limitations under the License.
 
 {% block header %}
 #include {{ (type_def.cppcli.derived_header if type_def.cppcli.base_type else type_def.cppcli.header) | quote }}
-{% for header in type_def.dependencies | headers('cppcli') -%}
-#include {{ header }}
-{% endfor %}
 {% endblock %}
 
 {% block content %}
@@ -75,13 +72,13 @@ bool {{ type_def.cppcli.name }}::Equals(System::Object^ other)
 {
     if (ReferenceEquals(nullptr, other)) return false;
     if (ReferenceEquals(this, other)) return true;
-    return obj->GetType() == GetType() && Equals(({{ type_def.cppcli.name }}^) obj);
+    return other->GetType() == GetType() && Equals(({{ type_def.cppcli.name }}^) other);
 }
 
 int {{ type_def.cppcli.name }}::GetHashCode()
 {
     {% for field in type_def.fields %}
-    {{ "auto " if loop.first }}hashCode = {{ ("(hashCode * 397) ^ " if not loop.first) ~ field.cppcli.property }}.GetHashCode();
+    {{ "auto " if loop.first }}hashCode = {{ ("(hashCode * 397) ^ " if not loop.first) ~ field.cppcli.property ~ ("->" if field.type_ref.type_def.cppcli.reference else ".") }}GetHashCode();
     {% endfor %}
     return hashCode;
 }

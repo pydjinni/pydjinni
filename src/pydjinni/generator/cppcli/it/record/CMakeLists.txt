@@ -24,4 +24,5 @@ cppcli_test_case(RecordTest
         tests/OptionalTypesTest.cs
         tests/CollectionTypesTest.cs
         tests/BinaryTypesTest.cs
+        tests/NestedTypeTest.cs
 )

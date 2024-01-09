@@ -44,7 +44,7 @@ def typename(type_ref: TypeReference) -> str:
         if type_ref.optional and not type_ref.type_def.cppcli.reference:
             output = f"System::Nullable<{output}>"
         if type_ref.parameters:
-            output += f"<{', '.join([type_ref.type_def.cppcli.typename + ('^' if type_ref.type_def.cppcli.reference else '') for type_ref in type_ref.parameters])}>"
+            output += f"<{', '.join([typename(type_ref) for type_ref in type_ref.parameters])}>"
         output += "^" if type_ref.type_def.cppcli.reference else ""
         return output
     else:
@@ -54,7 +54,7 @@ def typename(type_ref: TypeReference) -> str:
 def translator(type_ref: TypeReference) -> str:
     output = type_ref.type_def.cppcli.translator
     if type_ref.parameters:
-        output += f"<{', '.join([type_ref.type_def.cppcli.translator for type_ref in type_ref.parameters])}>"
+        output += f"<{', '.join([translator(type_ref) for type_ref in type_ref.parameters])}>"
     if type_ref.optional:
         output = f"::pydjinni::cppcli::translator::Optional<std::optional, {output}>"
     return output

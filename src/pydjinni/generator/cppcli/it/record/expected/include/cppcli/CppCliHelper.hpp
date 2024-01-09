@@ -8,6 +8,7 @@
 #include "CppCliOptionalTypes.hpp"
 #include "CppCliBinaryTypes.hpp"
 #include "CppCliBaseRecord.hpp"
+#include "CppCliParentType.hpp"
 
 namespace Test::Record::CppCli {
 public ref class Helper abstract {

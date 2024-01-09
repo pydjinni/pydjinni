@@ -19,6 +19,9 @@ limitations under the License.
 {% block header %}
 #pragma once
 #include {{ (type_def.cpp.derived_header if type_def.cpp.base_type else type_def.cpp.header) | quote }}
+{% for header in type_def.dependencies | headers('cppcli') -%}
+#include {{ header }}
+{% endfor %}
 {% endblock %}
 
 {% block content %}

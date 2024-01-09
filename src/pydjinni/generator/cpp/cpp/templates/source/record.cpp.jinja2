@@ -18,6 +18,9 @@ limitations under the License.
 
 {% block header %}
 #include {{ type_def.cpp.header | quote }}
+{% if 'str' in type_def.deriving %}
+#include <string>
+{% endif %}
 {% endblock %}
 
 {% block content %}
