@@ -1,4 +1,4 @@
-// Copyright 2023 jothepro
+// Copyright 2023 - 2024 jothepro
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -98,6 +98,14 @@ TEST_CASE("Cpp.RecordTest") {
                 REQUIRE(returned_record.string_string_map.at("foo") == "bar");
             }
         }
+        WHEN("streaming the type to ostream") {
+            std::stringstream ss;
+            ss << record;
+            const auto result = ss.str();
+            THEN("a string representation of the type should be returned") {
+                REQUIRE(result == "::test::record::CollectionTypes(int_list=[0,1], string_list=[foo,bar], int_set=[1,0], string_set=[bar,foo], int_int_map={0:1}, string_string_map={foo:bar})");
+            }
+        }
     }
     GIVEN("A OptionalTypes record instance") {
         const auto record = test::record::OptionalTypes(
@@ -113,6 +121,14 @@ TEST_CASE("Cpp.RecordTest") {
                 REQUIRE(returned_record.string_optional.value() == "optional");
             }
         }
+        WHEN("streaming the type to ostream") {
+            std::stringstream ss;
+            ss << record;
+            const auto result = ss.str();
+            THEN("a string representation of the type should be returned") {
+                REQUIRE(result == "::test::record::OptionalTypes(int_optional=42, string_optional=optional)");
+            }
+        }
     }
     GIVEN("A BinaryTypes record instance") {
         const auto record = test::record::BinaryTypes(std::vector<uint8_t>{0x8F}, std::make_optional<std::vector<uint8_t>>({static_cast<uint8_t>(0x8F)}));
@@ -122,6 +138,23 @@ TEST_CASE("Cpp.RecordTest") {
                 REQUIRE(returned_record.binary_t == std::vector<uint8_t>{0x8F});
                 REQUIRE(returned_record.binary_optional.has_value());
                 REQUIRE(returned_record.binary_optional.value() == std::vector<uint8_t>{0x8F});
+            }
+        }
+    }
+    GIVEN("A ParentType record instance") {
+        const auto record = test::record::ParentType(test::record::NestedType(42, {{1, 2}, {3, 4}}));
+        WHEN("passing the record through a helper interface") {
+            const auto returned_record = test::record::Helper::get_nested_type(record);
+            THEN("the record and the contained nested type should be the same") {
+                REQUIRE(returned_record.nested.a == 42);
+            }
+        }
+        WHEN("streaming the type to ostream") {
+            std::stringstream ss;
+            ss << record;
+            const auto result = ss.str();
+            THEN("a string representation of the type should be returned") {
+                REQUIRE(result == "::test::record::ParentType(nested=::test::record::NestedType(a=42, b=[[1,2],[3,4]]))");
             }
         }
     }

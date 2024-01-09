@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2024 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ class CppGenerator(Generator):
 
     def generate_record(self, type_def: Record):
         self.write_header("header/record.hpp.jinja2", type_def=type_def)
-        if 'eq' in type_def.deriving or 'ord' in type_def.deriving and type_def.fields:
+        if 'eq' in type_def.deriving or 'ord' in type_def.deriving or 'str' in type_def.deriving and type_def.fields:
             self.write_source("source/record.cpp.jinja2", type_def=type_def)
 
     def generate_interface(self, type_def: Interface):

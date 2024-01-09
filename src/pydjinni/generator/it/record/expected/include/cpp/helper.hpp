@@ -7,6 +7,7 @@
 #include "optional_types.hpp"
 #include "binary_types.hpp"
 #include "base_record.hpp"
+#include "parent_type.hpp"
 
 namespace test::record {
 class Helper {
@@ -17,5 +18,6 @@ public:
     static ::test::record::BinaryTypes get_binary_types(const ::test::record::BinaryTypes & record_type);
     static ::test::record::BaseRecord get_cpp_base_record();
     static ::test::record::BaseRecord get_host_base_record(const ::test::record::BaseRecord & record_type);
+    static ::test::record::ParentType get_nested_type(const ::test::record::ParentType & parent);
 };
 }  // namespace test::record

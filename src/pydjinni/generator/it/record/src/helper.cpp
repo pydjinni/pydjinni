@@ -1,4 +1,4 @@
-// Copyright 2023 jothepro
+// Copyright 2023 - 2024 jothepro
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -78,6 +78,11 @@ BaseRecord Helper::get_cpp_base_record() {
 BaseRecord Helper::get_host_base_record(const BaseRecord &record_type) {
     assert(record_type.value == 42);
     return record_type;
+}
+
+ParentType Helper::get_nested_type(const ::test::record::ParentType &parent) {
+    assert(parent.nested.a == 42);
+    return parent;
 }
 
 }

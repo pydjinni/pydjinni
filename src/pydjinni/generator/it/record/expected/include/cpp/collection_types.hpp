@@ -31,16 +31,6 @@ struct CollectionTypes final {
     , string_string_map(std::move(string_string_map_))
     {}
 
-    friend std::ostream& operator<<( std::ostream& os, CollectionTypes const& value ) {
-        os << "::test::record::CollectionTypes(";
-        os << "int_list={?}" << ", ";
-        os << "string_list={?}" << ", ";
-        os << "int_set={?}" << ", ";
-        os << "string_set={?}" << ", ";
-        os << "int_int_map={?}" << ", ";
-        os << "string_string_map={?}";
-        os << ")";
-        return os;
-    }
+    friend std::ostream& operator<<(std::ostream& os, CollectionTypes const& value);
 };
 }  // namespace test::record

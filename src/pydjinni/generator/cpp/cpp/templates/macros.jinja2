@@ -1,5 +1,5 @@
 {#
-Copyright 2023 jothepro
+Copyright 2023 - 2024 jothepro
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,4 +21,54 @@ limitations under the License.
 
 {%- macro deprecated(def) -%}
 [[deprecated{{ '("' ~ def.deprecated | replace('\n', ' "\n"') | indent() ~ '")'  if def.deprecated is string }}]]
+{%- endmacro -%}
+
+{%- macro to_string(name, type_ref) -%}
+    {% set temp_name = "_" ~ (name | replace(".", "_")) %}
+    {% if type_ref.optional and not type_ref.type_def.primitive == 'interface' -%}
+    if({{ name }}.has_value()) {
+    {% set get_value = ".value()" %}
+    {%- endif %}
+    {% if type_ref.name in ["bool", "i8", "i16", "i32", "i64", "f32", "f64"] -%}
+    os << std::to_string({{ name ~ get_value }});
+    {% elif type_ref.name == "string" -%}
+    os << {{ name ~ get_value }};
+    {% elif type_ref.name == "date" -%}
+    std::time_t {{ temp_name }}_t = std::chrono::system_clock::to_time_t({{ name ~ get_value }});
+    std::tm {{ temp_name }}_tm = *std::localtime(&{{ temp_name }}_t);
+    os << std::put_time(&{{ temp_name }}_tm, "%FT%T%z");
+    {% elif type_ref.name in ["list", "set"] -%}
+    os << "[";
+    auto first_{{ temp_name }} = true;
+    for(auto const& val : {{ name }}) {
+        if(!first_{{ temp_name }}) {
+            os << ",";
+        }
+        first_{{ temp_name }} = false;
+        {{ to_string("val", type_ref.parameters[0]) }}
+    }
+    os << "]";
+    {% elif type_ref.name == "map" -%}
+    os << "{";
+    auto first_{{ temp_name }} = true;
+    for(auto const& [key, val] : {{ name }}) {
+        if(!first_{{ temp_name }}) {
+            os << ",";
+        }
+        first_{{ temp_name }} = false;
+        {{ to_string("key", type_ref.parameters[0]) }}
+        os << ":";
+        {{ to_string("val", type_ref.parameters[1]) }}
+    }
+    os << "}";
+    {% elif type_ref.type_def.primitive == "record" and "str" in type_ref.type_def.deriving -%}
+    os << {{ name }};
+    {% else -%}
+    os << "{?}";
+    {% endif %}
+    {% if type_ref.optional and not type_ref.type_def.primitive == 'interface' %}
+    } else {
+        os << "{nullptr}";
+    }
+    {% endif %}
 {%- endmacro -%}

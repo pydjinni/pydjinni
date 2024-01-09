@@ -6,6 +6,7 @@
 #import "OptionalTypes.h"
 #import "BinaryTypes.h"
 #import "BaseRecord.h"
+#import "ParentType.h"
 
 NS_SWIFT_NAME(Helper)
 @interface Helper : NSObject
@@ -20,4 +21,6 @@ NS_SWIFT_NAME(Helper)
 + (nonnull BaseRecord *)getCppBaseRecord NS_SWIFT_NAME(getCppBaseRecord());
 + (nonnull BaseRecord *)getHostBaseRecord:(nonnull BaseRecord *)recordType
  NS_SWIFT_NAME(getHostBaseRecord(recordType:));
++ (nonnull ParentType *)getNestedType:(nonnull ParentType *)parent
+ NS_SWIFT_NAME(getNestedType(parent:));
 @end

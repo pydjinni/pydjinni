@@ -18,6 +18,7 @@ public:
     static ::Test::Record::CppCli::BinaryTypes^ GetBinaryTypes(::Test::Record::CppCli::BinaryTypes^ recordType);
     static ::Test::Record::CppCli::BaseRecord^ GetCppBaseRecord();
     static ::Test::Record::CppCli::BaseRecord^ GetHostBaseRecord(::Test::Record::CppCli::BaseRecord^ recordType);
+    static ::Test::Record::CppCli::ParentType^ GetNestedType(::Test::Record::CppCli::ParentType^ parent);
 internal:
     using CppType = std::shared_ptr<::test::record::Helper>;
     using CppOptType = std::shared_ptr<::test::record::Helper>;

@@ -66,27 +66,7 @@ struct {{ type_def.cpp.name }}{{ " final" if not type_def.cpp.base_type }} {
     friend bool operator>=(const {{ type_def.cpp.name }}& lhs, const {{ type_def.cpp.name }}& rhs);
 {% endif %}
 {% if 'str' in type_def.deriving %}
-    friend std::ostream& operator<<( std::ostream& os, {{ type_def.cpp.name }} const& value ) {
-        os << "{{ type_def.cpp.typename }}(";
-        {% for field in type_def.fields %}
-        os << "{{ field.cpp.name }}=
-        {%- if field.type_ref.name in ["bool", "i8", "i16", "i32", "i64", "f32", "f64"] and not field.type_ref.optional -%}
-            " << std::to_string(value.{{ field.cpp.name }})
-        {%- elif field.type_ref.name == "date" and not field.type_ref.optional -%}
-        ";
-        std::time_t {{ field.cpp.name }}_t = std::chrono::system_clock::to_time_t(value.{{ field.cpp.name }});
-        std::tm {{ field.cpp.name }}_tm = *std::localtime(&{{ field.cpp.name }}_t);
-        os << std::put_time(&{{ field.cpp.name }}_tm, "%FT%T%z");
-        {%- elif field.type_ref.name == "string" and not field.type_ref.optional -%}
-            " << value.{{ field.cpp.name }}
-        {%- else -%}
-            {?}"
-        {%- endif -%}
-        {{ ' << ", "' if not loop.last }};
-        {% endfor %}
-        os << ")";
-        return os;
-    }
+    friend std::ostream& operator<<(std::ostream& os, {{ type_def.cpp.name }} const& value);
 {% endif %}
 };
 {% endblock %}

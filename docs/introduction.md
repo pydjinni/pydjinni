@@ -6,7 +6,7 @@ library written in C++.
 ## Interface Definition
 
 The PyDjinni Interface Definition Language (IDL) is used to define the language interoperability interfaces between
-C++ and a target programming language like Java, Objective-C or Swift.
+C++ and a target programming language like Java, Swift or C#.
 
 From the IDL, glue code is generated that automatically converts data and delegates
 method calls across the language boundary.
@@ -56,7 +56,7 @@ my_cpp_interface = main interface +cpp {
 
 The `generate` subcommand produces glue code in the specified target languages from the PyDjinni IDL.
 
-The following command generates Java and C++ language bindings for Android from the `foo.pydjinni` IDL file:
+The following command generates Java, C++, Objective-C and C++/CLI language bindings for Android from the `foo.pydjinni` IDL file:
 
 ```bash
 pydjinni generate foo.pydjinni cpp java objc cppcli
@@ -68,7 +68,7 @@ PyDjinni does also come with tools supporting the building and packaging process
 
 The `package` subcommand builds and packages distributable artifacts for the specified platforms.
 
-The following commands produce both an Android Archive (AAR) and Swift package for iOS and macOS:
+The following commands produce both an Android Archive (AAR), a Swift package for iOS and macOS and a NuGet for Windows:
 
 ```
 pydjinni package aar android

@@ -21,12 +21,6 @@ struct OptionalTypes final {
     , string_optional(std::move(string_optional_))
     {}
 
-    friend std::ostream& operator<<( std::ostream& os, OptionalTypes const& value ) {
-        os << "::test::record::OptionalTypes(";
-        os << "int_optional={?}" << ", ";
-        os << "string_optional={?}";
-        os << ")";
-        return os;
-    }
+    friend std::ostream& operator<<(std::ostream& os, OptionalTypes const& value);
 };
 }  // namespace test::record

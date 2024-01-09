@@ -37,22 +37,6 @@ struct PrimitiveTypes final {
 
     friend bool operator==(const PrimitiveTypes& lhs, const PrimitiveTypes& rhs);
     friend bool operator!=(const PrimitiveTypes& lhs, const PrimitiveTypes& rhs);
-    friend std::ostream& operator<<( std::ostream& os, PrimitiveTypes const& value ) {
-        os << "::test::record::PrimitiveTypes(";
-        os << "boolean_t=" << std::to_string(value.boolean_t) << ", ";
-        os << "byte_t=" << std::to_string(value.byte_t) << ", ";
-        os << "short_t=" << std::to_string(value.short_t) << ", ";
-        os << "int_t=" << std::to_string(value.int_t) << ", ";
-        os << "long_t=" << std::to_string(value.long_t) << ", ";
-        os << "float_t=" << std::to_string(value.float_t) << ", ";
-        os << "double_t=" << std::to_string(value.double_t) << ", ";
-        os << "string_t=" << value.string_t << ", ";
-        os << "date_t=";
-        std::time_t date_t_t = std::chrono::system_clock::to_time_t(value.date_t);
-        std::tm date_t_tm = *std::localtime(&date_t_t);
-        os << std::put_time(&date_t_tm, "%FT%T%z");;
-        os << ")";
-        return os;
-    }
+    friend std::ostream& operator<<(std::ostream& os, PrimitiveTypes const& value);
 };
 }  // namespace test::record
