@@ -39,3 +39,9 @@ To get access to yet unreleased changes, PyDjinni can be installed directly from
 git clone git@github.com:pydjinni/pydjinni.git
 pip install -e pydjinni
 ```
+
+or
+
+```shell
+pip install git+https://git@github.com/pydjinni/pydjinni.git@main
+```
