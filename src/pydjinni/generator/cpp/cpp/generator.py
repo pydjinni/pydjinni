@@ -64,9 +64,13 @@ class CppGenerator(Generator):
 
     def generate_enum(self, type_def: Enum):
         self.write_header("header/enum.hpp.jinja2", type_def=type_def)
+        if self.config.string_serialization_for_enums:
+            self.write_source("source/enum.cpp.jinja2", type_def=type_def)
 
     def generate_flags(self, type_def: Flags):
         self.write_header("header/flags.hpp.jinja2", type_def=type_def)
+        if self.config.string_serialization_for_enums:
+            self.write_source("source/flags.cpp.jinja2", type_def=type_def)
 
     def generate_record(self, type_def: Record):
         self.write_header("header/record.hpp.jinja2", type_def=type_def)

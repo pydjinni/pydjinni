@@ -15,6 +15,7 @@
 #include "catch2/catch_test_macros.hpp"
 #include "example_flags.hpp"
 #include "helper.hpp"
+#include <sstream>
 
 TEST_CASE("Cpp.FlagsTest") {
     GIVEN("a ExampleFlags flag value") {
@@ -41,6 +42,26 @@ TEST_CASE("Cpp.FlagsTest") {
             auto new_enum_value = test::flags_test::Helper::get_none_flag(flag_value);
             THEN("the flag should still be the same") {
                 REQUIRE(new_enum_value == test::flags_test::ExampleFlags::NONE);
+            }
+        }
+    }
+    GIVEN("a ExampleFlags flag value with no options set") {
+        auto flag_value = test::flags_test::ExampleFlags::B;
+        WHEN("stringifying the flag") {
+            std::stringstream stringified;
+            stringified << flag_value;
+            THEN("the stringified vaue should be 'B") {
+                REQUIRE(stringified.str() == "B");
+            }
+        }
+    }
+    GIVEN("a ExampleFlags flag value with multiple options set") {
+        auto flag_value = test::flags_test::ExampleFlags::A | test::flags_test::ExampleFlags::B;
+        WHEN("stringifying the flag") {
+            std::stringstream stringified;
+            stringified << flag_value;
+            THEN("the stringified vaue should be 'A | B'") {
+                REQUIRE(stringified.str() == "A | B");
             }
         }
     }

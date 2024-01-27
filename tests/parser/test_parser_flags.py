@@ -19,7 +19,7 @@ from test_parser import given, when
 
 
 def assert_flag(flag: Flags.Flag, name: str, none: bool = False, all: bool = False):
-    """asserts that a flag has all attributes set as excepted"""
+    """asserts that a flag has all attributes set as expected"""
     assert flag.name == name
     assert flag.none == none
     assert flag.all == all
