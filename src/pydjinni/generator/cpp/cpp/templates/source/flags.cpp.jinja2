@@ -5,6 +5,7 @@
 #include {{ type_def.cpp.header | quote }}
 {% if config.string_serialization_for_enums %}
 #include <string>
+#include <utility>
 #include <vector>
 {% endif %}
 {% endblock %}

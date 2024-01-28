@@ -4,7 +4,9 @@
 {% block header %}
 #include {{ type_def.cpp.header | quote }}
 {% if config.string_serialization_for_enums %}
+#include <algorithm>
 #include <string>
+#include <utility>
 {% endif %}
 {% endblock %}
 
