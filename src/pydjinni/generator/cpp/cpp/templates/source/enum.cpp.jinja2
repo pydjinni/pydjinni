@@ -11,24 +11,26 @@
 {% endblock %}
 
 {% block content %}
-inline std::string to_string( {{ type_def.cpp.name }} value)
-{
+namespace {
+
+inline std::string to_string( {{ type_def.cpp.name }} value) {
     static const std::pair<{{ type_def.cpp.name }}, std::string> m[] = { 
 {% for item in type_def.items %}
-         { {{type_def.cpp.name}}::{{item.cpp.name}},"{{item.cpp.name}}"},
+        { {{type_def.cpp.name}}::{{item.cpp.name}},"{{item.cpp.name}}"},
 {% endfor %}
     };
     auto it = std::find_if(std::begin(m), std::end(m),
-                           [value](const std::pair<{{type_def.cpp.name}}, std::string>& vs_pair) -> bool
+                        [value](const std::pair<{{type_def.cpp.name}}, std::string>& vs_pair) -> bool
     {
         return vs_pair.first == value;
     });
     return ((it != std::end(m)) ? it : std::begin(m))->second;
 }
+
+}
 {% if config.string_serialization_for_enums %}
 
-std::ostream& operator<<(std::ostream& os, {{ type_def.cpp.name }} value)
-{
+std::ostream& operator<<(std::ostream& os, {{ type_def.cpp.name }} value) {
     os << to_string(value);
     return os;
 }

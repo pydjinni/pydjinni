@@ -46,11 +46,21 @@ TEST_CASE("Cpp.FlagsTest") {
         }
     }
     GIVEN("a ExampleFlags flag value with no options set") {
+        auto flag_value = test::flags_test::ExampleFlags::NONE;
+        WHEN("stringifying the flag") {
+            std::stringstream stringified;
+            stringified << flag_value;
+            THEN("the stringified vaue should be ''") {
+                REQUIRE(stringified.str() == "");
+            }
+        }
+    }
+    GIVEN("a ExampleFlags flag value with only the 'B' option set") {
         auto flag_value = test::flags_test::ExampleFlags::B;
         WHEN("stringifying the flag") {
             std::stringstream stringified;
             stringified << flag_value;
-            THEN("the stringified vaue should be 'B") {
+            THEN("the stringified vaue should be 'B'") {
                 REQUIRE(stringified.str() == "B");
             }
         }

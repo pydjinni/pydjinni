@@ -15,8 +15,7 @@
 {% if config.string_serialization_for_enums %}
 namespace {
 
-inline std::vector<std::string> to_string_vector( {{ type_def.cpp.name }} value)
-{
+inline std::vector<std::string> to_string_vector( {{ type_def.cpp.name }} value) {
     static const std::pair<{{ type_def.cpp.name }}, std::string> m[] = {
 {% for flag in type_def.flags %}
 {% if flag.all == false and flag.none == false %}
@@ -26,10 +25,8 @@ inline std::vector<std::string> to_string_vector( {{ type_def.cpp.name }} value)
     };
 
     std::vector<std::string> stringVector;
-    for(const auto& flagOption : m)
-    {
-        if(static_cast<unsigned>(value & flagOption.first) != 0)
-        {
+    for(const auto& flagOption : m) {
+        if(static_cast<unsigned>(value & flagOption.first) != 0) {
             stringVector.push_back(flagOption.second);
         }
     }
@@ -38,8 +35,7 @@ inline std::vector<std::string> to_string_vector( {{ type_def.cpp.name }} value)
 
 }
 
-std::ostream& operator<<(std::ostream& os, {{ type_def.cpp.name }} value)
-{
+std::ostream& operator<<(std::ostream& os, {{ type_def.cpp.name }} value) {
     auto as_string_vector = to_string_vector(value);
     for (auto const& item : as_string_vector) {
         if(&item != &as_string_vector[0]) {
