@@ -62,5 +62,5 @@ class CppConfig(BaseModel):
     identifier: CppIdentifier = CppIdentifier()
     string_serialization_for_enums: bool = Field(
         default=False,
-        description="Whether to generate to_string helpers for enums"
+        description="Whether to generate ostream << overloads for stringifying enums and flags"
     )
