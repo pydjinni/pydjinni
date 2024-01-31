@@ -32,7 +32,9 @@ dependencies = [
     'tomli_w>=1.0,<2',
     'setuptools>=65',
     'antlr4-python3-runtime==4.13.1',
-    'mistune>=3,<4'
+    'mistune>=3,<4',
+    'pygls>=1.2,<2',
+    'websockets>=12,<13'
 ]
 
 [tool.setuptools_scm]

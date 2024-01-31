@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 from pathlib import Path
 
 from antlr4 import InputStream, CommonTokenStream
@@ -19,7 +18,7 @@ from antlr4.error.ErrorListener import ErrorListener
 
 from pydjinni.generator.cpp.cpp.generator import CppGenerator
 
-from pydjinni.exceptions import ApplicationException, FileNotFoundException
+from pydjinni.exceptions import ApplicationException, FileNotFoundException, ApplicationExceptionList
 from .base_models import BaseType, TypeReference, BaseField, BaseExternalType
 
 from pydjinni.generator.target import Target
@@ -63,30 +62,35 @@ class Parser(IdlVisitor):
         self.type_refs: list[TypeReference] = []
         self.current_namespace: list[Identifier] = []
         self.current_namespace_stack_size: list[int] = []
+        self.errors: list[ApplicationException] = []
 
     class ParsingException(ApplicationException, code=150):
         """IDL Parsing error"""
 
     class ParsingErrorListener(ErrorListener):
-        def __init__(self, idl: Path):
+        def __init__(self, idl: Path, errors: list[Exception]):
             self.idl = idl
+            self.errors = errors
 
         def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-            raise Parser.ParsingException(
+            self.errors.append(Parser.ParsingException(
                 f'{msg}, {offendingSymbol}',
                 position=Position(
                     start=Cursor(line=line, col=column),
+                    end=Cursor(line=line, col=column),
                     file=self.idl
                 )
-            )
+            ))
 
     def visitComment(self, ctx: IdlParser.CommentContext):
         return "\n".join([line.getText()[1:] for line in ctx.COMMENT()])
 
     def visitTypeDecl(self, ctx: IdlParser.TypeDeclContext):
-        type_decl = self.visit(ctx.enum() or ctx.flags() or ctx.record() or ctx.interface() or ctx.namedFunction())
-        self.resolver.register(type_decl)
-        self.type_decls.append(type_decl)
+        type_decl_context = ctx.enum() or ctx.flags() or ctx.record() or ctx.interface() or ctx.namedFunction()
+        if type_decl_context:
+            type_decl = self.visit(type_decl_context)
+            self.resolver.register(type_decl)
+            self.type_decls.append(type_decl)
 
     def visitIdentifier(self, ctx: IdlParser.IdentifierContext) -> Identifier:
         return Identifier(ctx.ID().getText())
@@ -167,14 +171,14 @@ class Parser(IdlVisitor):
         )
 
         if interface.main and interface.targets != [CppGenerator.key]:
-            raise Parser.ParsingException("a 'main' interface can only be implemented in C++", interface.position)
+            self.errors.append(Parser.ParsingException("a 'main' interface can only be implemented in C++", interface.position))
 
         for method in interface.methods:
             if CppGenerator.key not in interface.targets and method.static:
-                raise Parser.ParsingException(
+                self.errors.append(Parser.ParsingException(
                     f"methods are only allowed to be static on '{CppGenerator.key}' interfaces",
                     interface.position
-                )
+                ))
 
         return interface
 
@@ -190,7 +194,7 @@ class Parser(IdlVisitor):
         )
         self.field_decls.append(method)
         if method.static and method.const:
-            raise Parser.ParsingException("method cannot be both static and const", method.position)
+            self.errors.append(Parser.ParsingException("method cannot be both static and const", method.position))
         return method
 
     def visitParameter(self, ctx: IdlParser.ParameterContext) -> Parameter:
@@ -290,10 +294,10 @@ class Parser(IdlVisitor):
             type_ref=self.visit(ctx.typeRef())
         )
         if isinstance(field.type_ref.type_def, Function):
-            raise Parser.ParsingException(
+            self.errors.append(Parser.ParsingException(
                 "functions are not allowed as record field type",
                 position=self._position(ctx.typeRef())
-            )
+            ))
         self.field_decls.append(field)
         return field
 
@@ -305,8 +309,9 @@ class Parser(IdlVisitor):
         try:
             return Record.Deriving(value)
         except ValueError:
-            raise Parser.ParsingException(
+            self.errors.append(Parser.ParsingException(
                 f"'{value}' is not a valid record extension", self._position(ctx))
+            )
 
     def visitNamedFunction(self, ctx: IdlParser.NamedFunctionContext) -> Function:
         function = self.visit(ctx.function())
@@ -334,10 +339,10 @@ class Parser(IdlVisitor):
         targets = [include for include in includes if include not in excludes]
         for target in targets:
             if target not in self.target_keys:
-                raise Parser.ParsingException(
+                self.errors.append(Parser.ParsingException(
                     f"Unknown interface target '{target}'",
                     self._position(ctx)
-                )
+                ))
         return targets
 
     def visitNamespaceBegin(self, ctx: IdlParser.NamespaceBeginContext):
@@ -367,17 +372,21 @@ class Parser(IdlVisitor):
         self.resolver.load_external(self.visit(ctx.filepath()))
 
     def visitImportDef(self, ctx: IdlParser.ImportDefContext):
-        imported_type_decls = Parser(
-            resolver=self.resolver,
-            targets=self.targets,
-            supported_target_keys=self.target_keys,
-            include_dirs=self.include_dirs,
-            default_deriving=self.default_deriving,
-            file_reader=self.file_reader,
-            idl=self.visit(ctx.filepath()),
-            position=self._position(ctx)
-        ).parse()
-        self.type_decls += imported_type_decls
+        try:
+            imported_type_decls = Parser(
+                resolver=self.resolver,
+                targets=self.targets,
+                supported_target_keys=self.target_keys,
+                include_dirs=self.include_dirs,
+                default_deriving=self.default_deriving,
+                file_reader=self.file_reader,
+                idl=self.visit(ctx.filepath()),
+                position=self._position(ctx)
+            ).parse()
+            self.type_decls += imported_type_decls
+        except FileNotFoundException as e:
+            e.position = self._position(ctx)
+            self.errors.append(e)
 
     def _position(self, ctx) -> Position:
         return Position(
@@ -398,11 +407,11 @@ class Parser(IdlVisitor):
             input_stream = InputStream(self.file_reader.read_idl(self.idl))
             lexer = IdlLexer(input_stream)
             lexer.removeErrorListeners()
-            lexer.addErrorListener(Parser.ParsingErrorListener(self.idl))
+            lexer.addErrorListener(Parser.ParsingErrorListener(self.idl, self.errors))
             stream = CommonTokenStream(lexer)
             parser = IdlParser(stream)
             parser.removeErrorListeners()
-            parser.addErrorListener(Parser.ParsingErrorListener(self.idl))
+            parser.addErrorListener(Parser.ParsingErrorListener(self.idl, self.errors))
             tree = parser.idl()
             self.visit(tree)
             for decl in self.type_decls + self.field_decls:
@@ -410,31 +419,39 @@ class Parser(IdlVisitor):
                     ParserCommentProcessor(decl).render_tokens(*decl.parsed_comment)
             for type_ref in self.type_refs:
                 if not type_ref.type_def:
-                    type_ref.type_def = self.resolver.resolve(type_ref)
+                    try:
+                        type_ref.type_def = self.resolver.resolve(type_ref)
+                    except Resolver.TypeResolvingException as e:
+                        self.errors.append(e)
                     if type_ref.parameters and not type_ref.type_def.params:
-                        raise Parser.ParsingException(
+                        self.errors.append(Parser.ParsingException(
                             f"Type '{type_ref.name}' does not accept generic parameters",
                             type_ref.position
-                        )
+                        ))
                     elif type_ref.parameters and len(type_ref.type_def.params) != len(type_ref.parameters):
                         expected_parameters = ", ".join(type_ref.type_def.params)
-                        raise Parser.ParsingException(
+                        self.errors.append(Parser.ParsingException(
                             f"Invalid number of generic parameters given to '{type_ref.name}'. "
                             f"Expects {len(type_ref.type_def.params)} ({expected_parameters}), "
                             f"but {len(type_ref.parameters)} where given.",
                             type_ref.position
-                        )
+                        ))
             for decl in self.type_decls:
                 if isinstance(decl, Record):
                     if Record.Deriving.ord in decl.deriving:
                         for field in decl.fields:
-                            if field.type_ref.type_def.primitive == BaseExternalType.Primitive.collection:
-                                raise Parser.ParsingException(
+                            if field.type_ref.type_def and field.type_ref.type_def.primitive == BaseExternalType.Primitive.collection:
+                                self.errors.append(Parser.ParsingException(
                                     "Cannot compare collections in 'ord' deriving",
                                     position=field.position
-                                )
+                                ))
             for target in self.targets:
                 target.marshal(self.type_decls, self.field_decls)
+            if self.errors:
+                if len(self.errors) == 1:
+                    raise self.errors[0]
+                else:
+                    raise ApplicationExceptionList(self.errors)
         except FileNotFoundError as e:
             raise FileNotFoundException(Path(e.filename))
         except RecursionError:

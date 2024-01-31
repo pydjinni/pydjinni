@@ -16,9 +16,12 @@ from __future__ import annotations
 
 import json
 from functools import cached_property
-from importlib.metadata import entry_points, EntryPoint
+from importlib.metadata import entry_points, EntryPoint, version
 from pathlib import Path
 from typing import Any
+
+from pygls.server import LanguageServer
+from pygls.workspace import TextDocument
 
 from pydjinni.builder.build_config import BuildBaseConfig
 from pydjinni.file.processed_files_model_builder import ProcessedFilesModelBuilder, ProcessedFiles
@@ -26,6 +29,8 @@ from pydjinni.packaging.architecture import Architecture
 from pydjinni.packaging.packaging_config import PackageBaseConfig
 from pydjinni.packaging.target import PackageTarget
 from pydjinni.parser.parser import Parser
+from pydjinni.server import ConnectionType, TextDocumentPath
+from lsprotocol import types as lsp
 
 try:
     import tomllib
@@ -37,7 +42,8 @@ import yaml
 from pydantic import BaseModel
 
 from pydjinni.config.config_model_builder import ConfigModelBuilder
-from pydjinni.exceptions import FileNotFoundException, ConfigurationException, UnknownTargetException
+from pydjinni.exceptions import FileNotFoundException, ConfigurationException, UnknownTargetException, \
+    ApplicationExceptionList, ApplicationException
 from pydjinni.generator.external_types import ExternalTypesBuilder
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.generator.generate_config import GenerateBaseConfig
@@ -298,6 +304,7 @@ class API:
                 target.register_external_types(self._external_types_builder)
                 target.configure(generate_config)
 
+            self._resolver.registry = dict()
             for external_type_def in self._external_types_builder.build():
                 self._resolver.register_external(external_type_def)
 
@@ -320,6 +327,71 @@ class API:
                 ast=ast,
                 config=generate_config
             )
+
+        def server(self, connection: ConnectionType, host: str, port: int) -> LanguageServer:
+            """
+            Starts a language server that reports parsing errors in IDL files
+
+            Args:
+                connection: protocol that the server should listen on
+                host:       host that the server should be registered for
+                port:       port that the server should listen on
+
+            Returns:
+                instance of the running LanguageServer
+            """
+            server = LanguageServer("pydjinni", version('pydjinni'))
+
+            def to_diagnostic(error: ApplicationException):
+                return lsp.Diagnostic(
+                    range=lsp.Range(
+                        start=lsp.Position(error.position.start.line - 1, error.position.start.col),
+                        end=lsp.Position(error.position.end.line - 1, error.position.end.col)
+                    ),
+                    message=f"{error.__doc__}: {error.description}",
+                    source=type(server).__name__
+                )
+
+            def validate(ls, params):
+                ls.show_message_log("Validating pydjinni IDL...")
+
+                document: TextDocument = ls.workspace.get_text_document(params.text_document.uri)
+
+                error_items = []
+                try:
+                    path = TextDocumentPath(document)
+                    self.parse(path)
+                except ApplicationException as e:
+                    error_items = [to_diagnostic(e)]
+                except ApplicationExceptionList as e:
+                    error_items = [to_diagnostic(error) for error in e.items]
+
+                ls.publish_diagnostics(document.uri, error_items)
+
+            @server.feature(lsp.TEXT_DOCUMENT_DID_CHANGE)
+            def did_change(ls, params: lsp.DidChangeTextDocumentParams):
+                """Text document did change notification."""
+                server.show_message_log("Text Document Did Change")
+                validate(ls, params)
+
+            @server.feature(lsp.TEXT_DOCUMENT_DID_CLOSE)
+            def did_close(server: LanguageServer, params: lsp.DidCloseTextDocumentParams):
+                """Text document did close notification."""
+                server.show_message_log("Text Document Did Close")
+
+            @server.feature(lsp.TEXT_DOCUMENT_DID_OPEN)
+            def did_open(ls, params: lsp.DidOpenTextDocumentParams):
+                """Text document did open notification."""
+                ls.show_message_log(f"Text Document Did Open: {params.text_document.language_id}")
+                validate(ls, params)
+
+            match connection:
+                case ConnectionType.TCP:
+                    server.start_tcp(host, port)
+                case ConnectionType.STDIO:
+                    server.start_io()
+                case ConnectionType.WEBSOCKET:
+                    server.start_ws(host, port)
 
         def package(self, target: str, configuration: str = None) -> PackageContext:
             """
