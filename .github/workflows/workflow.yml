@@ -3,14 +3,10 @@ name: Build the python package
 on:
   push:
     branches:
-      - '**'
-    tags-ignore:
-      - '**'
+      - main
   release:
     types: [published]
   pull_request:
-    branches:
-      - main
 jobs:
   test:
     strategy:
