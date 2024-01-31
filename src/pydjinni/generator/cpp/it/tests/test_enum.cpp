@@ -15,7 +15,6 @@
 #include "catch2/catch_test_macros.hpp"
 #include "example_enum.hpp"
 #include "helper.hpp"
-#include <iostream>
 #include <sstream>
 
 TEST_CASE("Cpp.EnumTest") {
