@@ -53,7 +53,7 @@ limitations under the License.
     {% if method.return_type_ref %}
     return {}; // Unreachable! (Silencing compiler warnings.)
     {% endif %}
-    {% if method.deprecated %}
+    {% if method.deprecated and not type_def.deprecated %}
     #pragma warning( pop )
     {% endif %}
 }
@@ -90,7 +90,7 @@ public:
         {% if method.return_type_ref.type_def %}
         return {}; // Unreachable! (Silencing compiler warnings.)
         {% endif %}
-        {% if method.deprecated %}
+        {% if method.deprecated and not type_def.deprecated %}
         #pragma warning( pop )
         {% endif %}
     }
@@ -133,7 +133,7 @@ public:
         {% if method.return_type_ref.type_def %}
         return {{ method.cppcli.translator }}::ToCpp(cs_result);
         {% endif %}
-        {% if method.deprecated %}
+        {% if method.deprecated and not type_def.deprecated %}
         #pragma warning( pop )
         {% endif %}
     }
