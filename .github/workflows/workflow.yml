@@ -46,7 +46,7 @@ jobs:
       - name: Install pydjinni
         run: pip install .
       - name: Cache CMake FetchContent
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: build/_deps
           key: ${{ runner.os }}-cmake-cache-${{ hashFiles('CMakeLists.txt') }}
@@ -93,6 +93,8 @@ jobs:
           path: site/
   build:
     runs-on: ubuntu-latest
+    env:
+      SETUPTOOLS_SCM_OVERRIDES_FOR_pydjinni: "local_scheme='no-local-version'"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -139,7 +141,6 @@ jobs:
       - name: Publish package to TestPyPI
         if: github.ref == 'refs/heads/main' && github.event_name != 'workflow_dispatch'
         env:
-          SETUPTOOLS_SCM_OVERRIDES_FOR_pydjinni: "local_scheme='no-local-version'"
           TWINE_PASSWORD: ${{ secrets.TESTPYPI_PASSWORD }}
           TWINE_USERNAME: __token__
         run: twine upload -r testpypi --disable-progress-bar dist/*.whl
