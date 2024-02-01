@@ -15,6 +15,7 @@
 #include "catch2/catch_test_macros.hpp"
 #include "example_enum.hpp"
 #include "helper.hpp"
+#include <sstream>
 
 TEST_CASE("Cpp.EnumTest") {
     GIVEN("a ExampleEnum enum value") {
@@ -23,6 +24,17 @@ TEST_CASE("Cpp.EnumTest") {
             auto new_enum_value = test::enum_test::Helper::get_enum(enum_value);
             THEN("the enum should still be the same") {
                 REQUIRE(new_enum_value == test::enum_test::ExampleEnum::A);
+            }
+        }
+    }
+    GIVEN("a ExampleEnum enum value") {
+        auto enum_value = test::enum_test::ExampleEnum::A;
+        WHEN("stringifying he enum value") {
+
+            std::stringstream stringified;
+            stringified << enum_value;
+            THEN("the stringified value should be 'A'") {
+                REQUIRE(stringified.str() == "A");
             }
         }
     }

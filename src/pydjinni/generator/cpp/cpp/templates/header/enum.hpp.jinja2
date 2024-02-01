@@ -18,6 +18,9 @@ limitations under the License.
 
 {% block header %}
 #pragma once
+{% if config.string_serialization_for_enums %}
+#include <ostream>
+{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -35,4 +38,8 @@ enum class {{ type_def.cpp.name }} : int {
     {{ item.cpp.name ~ ("," if not loop.last) }}
 {% endfor %}
 };
+{% if config.string_serialization_for_enums %}
+
+std::ostream& operator<<(std::ostream& os, {{ type_def.cpp.name }} value);
+{% endif %}
 {% endblock %}

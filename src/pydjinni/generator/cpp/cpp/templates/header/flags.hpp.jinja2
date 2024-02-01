@@ -18,6 +18,9 @@ limitations under the License.
 
 {% block header %}
 #pragma once
+{% if config.string_serialization_for_enums %}
+#include <ostream>
+{% endif %}
 {% endblock %}
 
 {% set counter = namespace(value=0) %}
@@ -71,5 +74,9 @@ inline {{ type_def.cpp.name }}& operator^=({{ type_def.cpp.name }}& lhs, {{ type
 constexpr {{ type_def.cpp.name }} operator~({{ type_def.cpp.name }} x) noexcept {
     return static_cast<{{ type_def.cpp.name }}>(~static_cast<unsigned>(x));
 }
+{% if config.string_serialization_for_enums %}
+
+std::ostream& operator<<(std::ostream& os, {{ type_def.cpp.name }} value);
+{% endif %}
 
 {% endblock %}

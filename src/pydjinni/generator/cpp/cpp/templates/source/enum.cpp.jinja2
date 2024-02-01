@@ -1,0 +1,38 @@
+{% extends "base.jinja2" %}
+{% from "macros.jinja2" import to_string %}
+
+{% block header %}
+#include {{ type_def.cpp.header | quote }}
+{% if config.string_serialization_for_enums %}
+#include <algorithm>
+#include <string>
+#include <utility>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+namespace {
+
+inline std::string to_string( {{ type_def.cpp.name }} value) {
+    static const std::pair<{{ type_def.cpp.name }}, std::string> m[] = { 
+{% for item in type_def.items %}
+        { {{type_def.cpp.name}}::{{item.cpp.name}},"{{item.cpp.name}}"},
+{% endfor %}
+    };
+    auto it = std::find_if(std::begin(m), std::end(m),
+                        [value](const std::pair<{{type_def.cpp.name}}, std::string>& vs_pair) -> bool
+    {
+        return vs_pair.first == value;
+    });
+    return ((it != std::end(m)) ? it : std::begin(m))->second;
+}
+
+}
+{% if config.string_serialization_for_enums %}
+
+std::ostream& operator<<(std::ostream& os, {{ type_def.cpp.name }} value) {
+    os << to_string(value);
+    return os;
+}
+{% endif %}
+{% endblock %}
