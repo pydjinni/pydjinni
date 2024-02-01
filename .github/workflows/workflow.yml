@@ -139,6 +139,7 @@ jobs:
       - name: Publish package to TestPyPI
         if: github.ref == 'refs/heads/main' && github.event_name != 'workflow_dispatch'
         env:
+          SETUPTOOLS_SCM_OVERRIDES_FOR_pydjinni: "local_scheme='no-local-version'"
           TWINE_PASSWORD: ${{ secrets.TESTPYPI_PASSWORD }}
           TWINE_USERNAME: __token__
         run: twine upload -r testpypi --disable-progress-bar dist/*.whl
