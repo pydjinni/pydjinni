@@ -94,7 +94,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      SETUPTOOLS_SCM_OVERRIDES_FOR_pydjinni: "local_scheme='no-local-version'"
+      SETUPTOOLS_SCM_OVERRIDES_FOR_PYDJINNI: "local_scheme='no-local-version'"
     steps:
       - uses: actions/checkout@v4
         with:
