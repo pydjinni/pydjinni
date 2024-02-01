@@ -36,6 +36,10 @@ limitations under the License.
 {%- endfor -%}
 )
 {
+    {% if method.deprecated and not type_def.deprecated %}
+    #pragma warning( push )
+    #pragma warning( disable : 4996 )
+    {% endif %}
     try {
         {{ "auto cpp_result = " if method.return_type_ref -}}
         {{ type_def.cpp.typename }}::{{ method.cpp.name }}(
@@ -48,6 +52,9 @@ limitations under the License.
     } DJINNI_TRANSLATE_EXCEPTIONS()
     {% if method.return_type_ref %}
     return {}; // Unreachable! (Silencing compiler warnings.)
+    {% endif %}
+    {% if method.deprecated and not type_def.deprecated %}
+    #pragma warning( pop )
     {% endif %}
 }
 {% endfor %}
@@ -65,6 +72,10 @@ public:
     {%- endfor -%}
     ) override
     {
+        {% if method.deprecated and not type_def.deprecated %}
+        #pragma warning( push )
+        #pragma warning( disable : 4996 )
+        {% endif %}
         try {
             {{ "auto cpp_result = " if method.return_type_ref -}}
             _cppRefHandle->get()->{{ method.cpp.name }}(
@@ -78,6 +89,9 @@ public:
         } DJINNI_TRANSLATE_EXCEPTIONS()
         {% if method.return_type_ref.type_def %}
         return {}; // Unreachable! (Silencing compiler warnings.)
+        {% endif %}
+        {% if method.deprecated and not type_def.deprecated %}
+        #pragma warning( pop )
         {% endif %}
     }
     {% endfor %}
@@ -106,6 +120,10 @@ public:
     {%- endfor -%}
     )
     {
+        {% if method.deprecated and not type_def.deprecated %}
+        #pragma warning( push )
+        #pragma warning( disable : 4947 )
+        {% endif %}
         {{ "auto cs_result = " if method.return_type_ref.type_def -}}
         djinni_private_get_proxied_cs_object()->{{ method.cppcli.name }}(
         {% for param in method.parameters %}
@@ -114,6 +132,9 @@ public:
         );
         {% if method.return_type_ref.type_def %}
         return {{ method.cppcli.translator }}::ToCpp(cs_result);
+        {% endif %}
+        {% if method.deprecated and not type_def.deprecated %}
+        #pragma warning( pop )
         {% endif %}
     }
     {% endfor %}
@@ -154,6 +175,7 @@ private:
     if (auto cpp_ptr = dynamic_cast<{{ type_def.cppcli.name }}CsProxy*>(cpp.get())) {
         return cpp_ptr->djinni_private_get_proxied_cs_object();
     }
+    return ::pydjinni::get_cpp_proxy<{{ type_def.cppcli.name }}CppProxy^>(cpp);
     {% else %}
     return dynamic_cast<{{ type_def.cppcli.name }}CsProxy*>(cpp.get())->djinni_private_get_proxied_cs_object();
     {% endif %}

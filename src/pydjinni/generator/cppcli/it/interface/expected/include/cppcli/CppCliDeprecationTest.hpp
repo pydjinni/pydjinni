@@ -6,6 +6,9 @@
 #include "pydjinni/cppcli/Marshal.hpp"
 
 namespace Test::Interface::CppCli {
+#pragma warning( push )
+#pragma warning( disable : 4947 )
+#pragma warning( disable : 4996 )
 [System::Obsolete("testing class deprecation annotation")]
 public ref class DeprecationTest abstract {
 public:
@@ -20,4 +23,5 @@ internal:
     static CsType FromCppOpt(const CppOptType& cpp);
     static CsType FromCpp(const CppType& cpp) { return FromCppOpt(cpp); }
 };
+#pragma warning( pop )
 }  // namespace Test::Interface::CppCli

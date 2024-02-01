@@ -20,9 +20,17 @@ limitations under the License.
 
 {% if type_def.cppcli.namespace %}
 namespace {{ type_def.cppcli.namespace }} {
+{% if type_def.deprecated %}
+#pragma warning( push )
+#pragma warning( disable : 4947 )
+#pragma warning( disable : 4996 )
+{% endif %}
 {% endif %}
 {% block content %}
 {% endblock content %}
+{% if type_def.deprecated %}
+#pragma warning( pop )
+{% endif %}
 {% if type_def.cppcli.namespace -%}
 }  // namespace {{ type_def.cppcli.namespace }}
 {% endif %}
