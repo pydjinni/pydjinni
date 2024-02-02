@@ -156,7 +156,7 @@ async function main(version, localFallback) {
         if(localFallback) {
             await micropip.install("https://github.com/pydantic/pydantic-core/releases/download/v2.10.1/pydantic_core-2.10.1-cp311-cp311-emscripten_3_1_32_wasm32.whl")
         } else {
-            await micropip.install(`https://pydjinni.github.io/pydjinni/${version}/assets/packages/pydantic_core-2.10.1-cp311-cp311-emscripten_3_1_32_wasm32.whl`);
+            await micropip.install(`https://pydjinni.github.io/pydjinni/v${version}/assets/packages/pydantic_core-2.10.1-cp311-cp311-emscripten_3_1_32_wasm32.whl`);
         }
         await micropip.install("pydantic==2.4.2")
         if(localFallback) {

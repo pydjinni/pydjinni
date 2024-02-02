@@ -122,7 +122,7 @@ Here is what is planned for the near future:
 - [x] Publish initial preview
 - [ ] Add project setup wizard
 - [ ] Add language server (LSP) support
-- [ ] Add C#/Windows support
+- [x] Add C#/Windows support
 - [ ] Release stable version 1.0
 - [ ] Publish IDE plugins
 </div>
