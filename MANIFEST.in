@@ -6,3 +6,5 @@ global-exclude .gitignore
 exclude .github/**
 exclude .idea/**
 exclude cmake-build-*/**
+exclude cmake/**
+include src/pydjinni/cmake/modules/PyDjinni.cmake
