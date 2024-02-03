@@ -153,14 +153,14 @@ class PublishCli(MultiCommand):
 @click.version_option()
 @click.pass_context
 @click.option('--option', '-o', multiple=True, type=str,
-              help="overwrite or extend configuration. Example: `-o generate.java.out=java_out`")
+              help="Overwrite or extend configuration. Example: `-o generate.java.out=java_out`")
 @click.option('--config', '-c', default=DEFAULT_CONFIG_PATH, type=Path,
-              help="path to the config file. Set to `None` if no config should be parsed. "
+              help="Path to the config file. Set to `None` if no config should be parsed. "
                    "File format is determined based on the file extension. "
                    "Supported extensions: `.yaml`, `.yml`, `.json`, `.toml`")
 @click.option("--log-level", "-l", default="info",
               type=click.Choice(["debug", "info", "warn", "error"], case_sensitive=False),
-              help="log level")
+              help="Log level")
 def cli(ctx, log_level, config, option):
     def parse_option(option: str) -> dict:
         """
@@ -219,7 +219,7 @@ def cli(ctx, log_level, config, option):
 @click.argument('idl', type=Path)
 def generate(ctx, cli_context: CliContext, idl: Path, clean: bool):
     """
-    generate glue-code from the provided IDL file.
+    Generate glue-code from the provided IDL file.
 
     COMMAND specifies the target languages.
     """
@@ -253,6 +253,9 @@ def generate_callback(generate_context, idl, clean):
     help="If enabled, deletes all used build directories before building new output. "
          "Caution: This deletes the entire folders, including all files that are inside it!")
 def package(ctx, cli_context: CliContext, clean: bool, configuration: str):
+    """
+    Bundle an artifact for distribution.
+    """
     ctx.obj = PackageConfigurationContext(
         api=cli_context.api,
         context=cli_context.context,
@@ -274,6 +277,9 @@ def package_callback(package_context, clean: bool, configuration: str):
 @click.option("--configuration", type=str,
               help="The build configuration that should be published")
 def publish(ctx, cli_context: CliContext, configuration: str):
+    """
+    Publish an artifact to a registry/repository.
+    """
     ctx.obj = PublishConfigurationContext(
         api=cli_context.api,
         context=cli_context.context,

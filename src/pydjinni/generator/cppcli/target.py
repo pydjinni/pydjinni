@@ -19,7 +19,7 @@ from .cppcli.generator import CppCliGenerator
 
 class CppCliTarget(Target):
     """
-    Generate C++ interfaces.
+    Generate C++/CLI interfaces.
     """
     key = "cppcli"
     generators = [CppCliGenerator]
