@@ -24,11 +24,14 @@ from rich.pretty import pretty_repr
 from pydjinni.api import API, combine_into
 from pydjinni.defs import DEFAULT_CONFIG_PATH
 from pydjinni.exceptions import ApplicationException, ApplicationExceptionList
-from .context import CliContext, pass_cli_context, GenerateContext, pass_generate_context, PackageContext, \
-    pass_package_context, PackageConfigurationContext, pass_package_configuration_context, PublishConfigurationContext, \
-    pass_publish_configuration_context
-from ..packaging.architecture import Architecture
-from ..server import ConnectionType
+from .context import (
+    CliContext, pass_cli_context,
+    GenerateContext, pass_generate_context,
+    PackageContext, pass_package_context,
+    PackageConfigurationContext, pass_package_configuration_context,
+    PublishConfigurationContext, pass_publish_configuration_context
+)
+from pydjinni.packaging.architecture import Architecture
 
 logger = logging.getLogger(__name__)
 
@@ -211,22 +214,6 @@ def cli(ctx, log_level, config, option):
         api=api,
         context=context
     )
-
-
-@cli.command()
-@pass_cli_context
-@click.pass_context
-@click.option('--connection',
-              type=click.Choice([connection for connection in ConnectionType], case_sensitive=False),
-              default=ConnectionType.TCP,
-              help="Connection type of the language server")
-@click.option('--host', type=str, default='127.0.0.1')
-@click.option('--port', type=int, default=8080)
-def server(ctx, cli_context: CliContext, connection: ConnectionType, host: str, port: int):
-    """
-    starting a language server for the Djinni IDL
-    """
-    cli_context.context.server(connection, host, port)
 
 
 @cli.group(cls=GenerateCli, chain=True)

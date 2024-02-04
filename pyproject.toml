@@ -66,6 +66,7 @@ Homepage = "https://pydjinni.github.io/pydjinni"
 
 [project.scripts]
 pydjinni = "pydjinni.__main__:main"
+pydjinni-language-server = "pydjinni.language_server:main"
 
 [project.entry-points.'pydjinni.generator']
 cpp  = 'pydjinni.generator.cpp:CppTarget'
