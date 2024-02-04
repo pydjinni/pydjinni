@@ -19,7 +19,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from pydjinni.exceptions import FileNotFoundException
+from pydjinni.exceptions import FileNotFoundException, ApplicationExceptionList
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.file.processed_files_model_builder import ProcessedFiles
 from pydjinni.parser.ast import Record
@@ -109,8 +109,11 @@ def test_parsing_invalid_input(tmp_path: Path):
 
     # WHEN parsing the input
     # THEN a IdlParser.ParsingException should be raised
-    with pytest.raises(Parser.ParsingException):
+    with pytest.raises(ApplicationExceptionList) as exception_info:
         parser.parse()
+    assert len(exception_info.value.items) == 4
+    for item in exception_info.value.items:
+        assert isinstance(item, Parser.ParsingException)
 
 
 def test_parsing_non_existing_file(tmp_path: Path):

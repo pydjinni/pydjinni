@@ -302,9 +302,9 @@ class Parser(IdlVisitor):
         return field
 
     def visitDeriving(self, ctx: IdlParser.DerivingContext) -> set[str]:
-        return set([self.visit(decl) for decl in ctx.declaration()])
+        return set(filter(None, [self.visit(decl) for decl in ctx.declaration()]))
 
-    def visitDeclaration(self, ctx: IdlParser.DeclarationContext):
+    def visitDeclaration(self, ctx: IdlParser.DeclarationContext) -> str:
         value = ctx.ID().getText()
         try:
             return Record.Deriving(value)
