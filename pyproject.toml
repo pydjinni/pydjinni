@@ -34,7 +34,6 @@ dependencies = [
     'antlr4-python3-runtime==4.13.1',
     'mistune>=3,<4',
     'pygls>=1.2,<2',
-    'websockets>=12,<13'
 ]
 
 [tool.setuptools_scm]
@@ -66,7 +65,7 @@ Homepage = "https://pydjinni.github.io/pydjinni"
 
 [project.scripts]
 pydjinni = "pydjinni.__main__:main"
-pydjinni-language-server = "pydjinni.language_server:main"
+pydjinni-language-server = "pydjinni_language_server.__main__:main"
 
 [project.entry-points.'pydjinni.generator']
 cpp  = 'pydjinni.generator.cpp:CppTarget'

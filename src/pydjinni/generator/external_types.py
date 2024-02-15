@@ -49,7 +49,7 @@ class ExternalTypesBuilder:
         ),
         "string": BaseExternalType(
             name='string',
-            comment="string"
+            comment="UTF-8 string type"
         ),
         "binary": BaseExternalType(
             name='binary',

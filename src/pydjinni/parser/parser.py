@@ -67,6 +67,12 @@ class Parser(IdlVisitor):
     class ParsingException(ApplicationException, code=150):
         """IDL Parsing error"""
 
+    class ParsingExceptionList(ApplicationExceptionList):
+        def __init__(self, errors: list[ApplicationException], ast: list[BaseType], type_refs: list[TypeReference]):
+            super().__init__(errors)
+            self.ast = ast
+            self.type_refs = type_refs
+
     class ParsingErrorListener(ErrorListener):
         def __init__(self, idl: Path, errors: list[Exception]):
             self.idl = idl
@@ -140,10 +146,10 @@ class Parser(IdlVisitor):
     def visitModifier(self, ctx: IdlParser.ModifierContext) -> tuple[bool, bool]:
         value = ctx.ID().getText()
         if value not in ["all", "none"]:
-            raise Parser.ParsingException(
+            self.errors.append(Parser.ParsingException(
                 f"expected 'all' or 'none', got '{value}'",
                 position=self._position(ctx)
-            )
+            ))
         return value == "all", value == "none"
 
     def visitInterface(self, ctx: IdlParser.InterfaceContext) -> Interface:
@@ -171,7 +177,8 @@ class Parser(IdlVisitor):
         )
 
         if interface.main and interface.targets != [CppGenerator.key]:
-            self.errors.append(Parser.ParsingException("a 'main' interface can only be implemented in C++", interface.position))
+            self.errors.append(
+                Parser.ParsingException("a 'main' interface can only be implemented in C++", interface.position))
 
         for method in interface.methods:
             if CppGenerator.key not in interface.targets and method.static:
@@ -355,43 +362,48 @@ class Parser(IdlVisitor):
         for _ in range(self.current_namespace_stack_size.pop()):
             self.current_namespace.pop()
 
-    def visitFilepath(self, ctx: IdlParser.FilepathContext):
+    def visitFilepath(self, ctx: IdlParser.FilepathContext) -> Path | None:
         path = Path(ctx.FILEPATH().getText()[1:-1])
-        search_paths = [path] + [include_dir / path for include_dir in self.include_dirs]
+        search_paths = [path, self.idl.parent] + [include_dir / path for include_dir in self.include_dirs]
         for search_path in search_paths:
             if search_path.exists():
                 if search_path == self.idl:
-                    raise Parser.ParsingException(
+                    self.errors.append(Parser.ParsingException(
                         f"Circular import detected: file {self.idl} directly references itself!",
                         position=self._position(ctx)
-                    )
-                return search_path
-        raise FileNotFoundException(path)
+                    ))
+                    return None
+                return search_path.absolute()
+        self.errors.append(FileNotFoundException(path, self._position(ctx)))
 
     def visitExtern(self, ctx: IdlParser.ExternContext):
         self.resolver.load_external(self.visit(ctx.filepath()))
 
     def visitImportDef(self, ctx: IdlParser.ImportDefContext):
-        try:
-            imported_type_decls = Parser(
-                resolver=self.resolver,
-                targets=self.targets,
-                supported_target_keys=self.target_keys,
-                include_dirs=self.include_dirs,
-                default_deriving=self.default_deriving,
-                file_reader=self.file_reader,
-                idl=self.visit(ctx.filepath()),
-                position=self._position(ctx)
-            ).parse()
-            self.type_decls += imported_type_decls
-        except FileNotFoundException as e:
-            e.position = self._position(ctx)
-            self.errors.append(e)
+        import_path = self.visit(ctx.filepath())
+        if import_path:
+            try:
+                imported_type_decls, type_refs = Parser(
+                    resolver=self.resolver,
+                    targets=self.targets,
+                    supported_target_keys=self.target_keys,
+                    include_dirs=self.include_dirs,
+                    default_deriving=self.default_deriving,
+                    file_reader=self.file_reader,
+                    idl=self.visit(ctx.filepath()),
+                    position=self._position(ctx)
+                ).parse()
+                self.type_decls += imported_type_decls
+                self.type_refs += type_refs
+            except Parser.ParsingExceptionList as e:
+                self.type_decls += e.ast
+                self.type_refs += e.type_refs
+                self.errors += e.items
 
     def _position(self, ctx) -> Position:
         return Position(
             start=Cursor(line=ctx.start.line, col=ctx.start.column),
-            end=Cursor(line=ctx.stop.line, col=ctx.stop.column),
+            end=Cursor(line=ctx.stop.line, col=ctx.stop.column + len(ctx.stop.text)),
             file=self.idl
         )
 
@@ -402,7 +414,7 @@ class Parser(IdlVisitor):
             output += self._dependencies(type_ref.parameters)
         return output
 
-    def parse(self) -> list[BaseType]:
+    def parse(self) -> tuple[list[BaseType], list[TypeReference]]:
         try:
             input_stream = InputStream(self.file_reader.read_idl(self.idl))
             lexer = IdlLexer(input_stream)
@@ -447,16 +459,13 @@ class Parser(IdlVisitor):
                                 ))
             for target in self.targets:
                 target.marshal(self.type_decls, self.field_decls)
-            if self.errors:
-                if len(self.errors) == 1:
-                    raise self.errors[0]
-                else:
-                    raise ApplicationExceptionList(self.errors)
         except FileNotFoundError as e:
             raise FileNotFoundException(Path(e.filename))
         except RecursionError:
-            raise Parser.ParsingException(
+            self.errors.append(Parser.ParsingException(
                 f"Circular import detected: file {self.idl} indirectly imports itself!",
                 self.position
-            )
-        return self.type_decls
+            ))
+        if self.errors:
+            raise Parser.ParsingExceptionList(self.errors, self.type_decls, self.type_refs)
+        return self.type_decls, self.type_refs
