@@ -100,6 +100,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                 start=lsp.Position(error.position.start.line - 1, error.position.start.col),
                 end=lsp.Position(error.position.end.line - 1, error.position.end.col)
             ),
+            severity=lsp.DiagnosticSeverity.Error,
             message=f"{error.__doc__}: {error.description}",
             source=type(server).__name__
         )
@@ -142,6 +143,20 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
         except ConfigurationException as e:
             ls.show_message_log(str(e), lsp.MessageType.Error)
             ls.show_message(f"PyDjinni: {e}", lsp.MessageType.Error)
+
+        for ref in refs:
+            if ref.type_def and ref.type_def.deprecated:
+                error_items.append(
+                    lsp.Diagnostic(
+                        range=lsp.Range(
+                            start=lsp.Position(ref.position.start.line - 1, ref.position.start.col),
+                            end=lsp.Position(ref.position.end.line - 1, ref.position.end.col)
+                        ),
+                        severity=lsp.DiagnosticSeverity.Warning,
+                        message=f"deprecated: {ref.type_def.deprecated if isinstance(ref.type_def.deprecated, str) else ''}",
+                        source=type(server).__name__
+                    )
+                )
 
         ls.publish_diagnostics(document.uri, error_items)
 
