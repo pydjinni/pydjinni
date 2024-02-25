@@ -82,11 +82,14 @@ def config_schema():
 @click.option('--host', '-h', type=str, default='127.0.0.1', help="Hostname for the TCP server.")
 @click.option('--port', '-p', type=int, default=8080, help="Port for the TCP server.")
 @click.option('--config', '-c', default=DEFAULT_CONFIG_PATH, type=Path, help="Path to the PyDjinni configuration file.")
-def start(connection, host: str, port: int, config: Path):
+@click.option('--log', '-l', default=None, type=Path, help="Log file for the Language Server.")
+def start(connection, host: str, port: int, config: Path, log: Path = None):
     """
     Start a Language Server
     """
     server = LanguageServer("pydjinni-language-server", version('pydjinni'))
+    if log:
+        logging.basicConfig(filename=log, filemode='w', level=logging.DEBUG)
 
     hover_cache: dict[str, dict[int, dict[int, TypeReference]]] = {}
     dependency_cache: dict[str, set[str]] = {}
