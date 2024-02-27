@@ -96,8 +96,12 @@ def test_parsing_interface_unknown_target(tmp_path: Path):
     )
     # WHEN parsing the input
     # THEN a IdlParser.UnknownInterfaceTargetException should be raised
-    with pytest.raises(Parser.ParsingException, match="Unknown interface target 'foo'"):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, Parser.ParsingException)
+    assert exception.description == "Unknown interface target 'foo'"
 
 
 def test_parsing_interface_no_target(tmp_path: Path):
@@ -147,8 +151,12 @@ def test_parsing_interface_static_not_allowed(tmp_path):
     )
 
     # THEN a StaticNotAllowedException should be raised
-    with pytest.raises(Parser.ParsingException, match="methods are only allowed to be static on 'cpp' interfaces"):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, Parser.ParsingException)
+    assert exception.description == "methods are only allowed to be static on 'cpp' interfaces"
 
 
 def test_parsing_interface_static_and_const_not_allowed(tmp_path):
@@ -163,8 +171,12 @@ def test_parsing_interface_static_and_const_not_allowed(tmp_path):
     )
 
     # THEN a StaticAndConstException should be raised
-    with pytest.raises(Parser.ParsingException, match="method cannot be both static and const"):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, Parser.ParsingException)
+    assert exception.description == "method cannot be both static and const"
 
 
 def test_parsing_main_interface(tmp_path):
@@ -193,8 +205,12 @@ def test_parsing_main_interface_not_cpp(tmp_path, targets):
     )
     # WHEN parsing the input
     # THEN a ParsingException should be thrown because the 'main' interface is not implemented in C++
-    with pytest.raises(Parser.ParsingException, match=re.escape("a 'main' interface can only be implemented in C++")):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, Parser.ParsingException)
+    assert exception.description == "a 'main' interface can only be implemented in C++"
 
 
 def test_parsing_interface_comment(tmp_path: Path):

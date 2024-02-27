@@ -83,7 +83,7 @@ def when(parser: Parser, type_type: type[TypeDef], type_name: str = None) -> Typ
         the one element in the AST that was returned by the parser
     """
     # WHEN parsing the input file
-    ast = parser.parse()
+    ast, _ = parser.parse()
 
     # THEN the resulting AST should contain one element
     assert len(ast) == 1
@@ -162,8 +162,11 @@ def test_missing_import(tmp_path: Path):
             """)
     # WHEN parsing the file
     # THEN a FileNotFoundException should be raised
-    with pytest.raises(FileNotFoundException):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, FileNotFoundException)
 
 
 def test_detect_direct_recursive_import(tmp_path: Path):
@@ -189,9 +192,12 @@ def test_detect_direct_recursive_import(tmp_path: Path):
 
     # WHEN parsing the input
     # THEN a recursive input should be detected
-    with pytest.raises(Parser.ParsingException,
-                       match=f"Circular import detected: file .* directly references itself!"):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, Parser.ParsingException)
+    assert exception.description == f"Circular import detected: file {input_file} directly references itself!"
 
 
 def test_detect_indirect_recursive_import(tmp_path: Path):
@@ -221,8 +227,12 @@ def test_detect_indirect_recursive_import(tmp_path: Path):
 
     # WHEN parsing the input
     # THEN a recursive input should be detected
-    with pytest.raises(Parser.ParsingException, match=f"Circular import detected: file .* indirectly imports itself!"):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, Parser.ParsingException)
+    assert "Circular import detected" in exception.description
 
 
 def test_extern(tmp_path: Path):
@@ -239,7 +249,7 @@ def test_extern(tmp_path: Path):
     extern_file.touch()
 
     # WHEN parsing the file
-    ast = parser.parse()
+    ast, _ = parser.parse()
 
     # THEN the Resolver should have been called in order to load the external type
     resolver_mock.load_external.assert_called_once()
@@ -260,8 +270,12 @@ def test_missing_extern(tmp_path: Path):
 
     # WHEN parsing the file
     # THEN a FileNotFoundException should be raised
-    with pytest.raises(FileNotFoundException):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, FileNotFoundException)
+    assert exception.description == Path("extern.yaml").absolute().as_uri()
 
 
 def test_namespace(tmp_path: Path):
@@ -285,7 +299,7 @@ def test_namespace(tmp_path: Path):
     )
 
     # WHEN parsing the idl file
-    ast = parser.parse()
+    ast, _ = parser.parse()
 
     # THEN the ast should contain two types each labelled with their respective namespace
     assert len(ast) == 2
@@ -311,8 +325,13 @@ def test_generic_parameters_not_allowed(tmp_path: Path):
 
     # WHEN parsing the idl file
     # THEN an exception should be raised because of the unexpected generic parameter
-    with pytest.raises(Parser.ParsingException, match="Type 'i8' does not accept generic parameters"):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, Parser.ParsingException)
+    assert exception.description == "Type 'i8' does not accept generic parameters"
+
 
 def test_generic_parameters_invalid_number(tmp_path: Path):
     # GIVEN an idl file with a generic type reference
@@ -330,5 +349,9 @@ def test_generic_parameters_invalid_number(tmp_path: Path):
 
     # WHEN parsing the idl file
     # THEN an exception should be raised because of the number of generic parameters is not correct
-    with pytest.raises(Parser.ParsingException, match=re.escape("Invalid number of generic parameters given to 'list'. Expects 1 (T), but 2 where given.")):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, Parser.ParsingException)
+    assert exception.description == "Invalid number of generic parameters given to 'list'. Expects 1 (T), but 2 where given."

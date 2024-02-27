@@ -79,8 +79,12 @@ def test_parsing_record_unknown_deriving(tmp_path: Path):
 
     # WHEN parsing the input
     # THEN an error should be raised
-    with pytest.raises(Parser.ParsingException, match="'loremipsum' is not a valid record extension"):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, Parser.ParsingException)
+    assert exception.description == "'loremipsum' is not a valid record extension"
 
 
 @pytest.mark.parametrize("deriving,expected", [
@@ -127,8 +131,12 @@ def test_parsing_record_ord_deriving_collection(tmp_path: Path):
     resolver_mock.resolve.return_value = BaseExternalType(name='list', params=['T'], primitive=BaseExternalType.Primitive.collection)
     # WHEN parsing the input
     # THEN an exception should be thrown, because 'ord' is not allowed with collections
-    with pytest.raises(Parser.ParsingException, match="Cannot compare collections in 'ord' deriving"):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, Parser.ParsingException)
+    assert exception.description == "Cannot compare collections in 'ord' deriving"
 
 def test_parsing_base_record(tmp_path: Path):
     # GIVEN an idl file that defines a record will be extended in C++

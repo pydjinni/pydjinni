@@ -80,7 +80,7 @@ def test_parsing_inline_function(tmp_path):
         """
     )
     # WHEN parsing the input
-    ast = parser.parse()
+    ast, _ = parser.parse()
 
     # THEN the anonymous type should be registered in the output AST
     assert len(ast) == 2
@@ -107,9 +107,12 @@ def test_parsing_anonymous_function_not_allowed(tmp_path: Path):
 
     # WHEN parsing the input
     # THEN a ParsingException should be raised because functions are not allowed in records
-    with pytest.raises(Parser.ParsingException, match="functions are not allowed"):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
-
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, Parser.ParsingException)
+    assert exception.description == "functions are not allowed as record field type"
 
 def test_parsing_function_comment(tmp_path: Path):
     # GIVEN a named function with comment

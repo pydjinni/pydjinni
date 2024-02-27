@@ -364,9 +364,9 @@ class Parser(IdlVisitor):
 
     def visitFilepath(self, ctx: IdlParser.FilepathContext) -> Path | None:
         path = Path(ctx.FILEPATH().getText()[1:-1])
-        search_paths = [path, self.idl.parent] + [include_dir / path for include_dir in self.include_dirs]
+        search_paths = [path, self.idl.parent / path] + [include_dir / path for include_dir in self.include_dirs]
         for search_path in search_paths:
-            if search_path.exists():
+            if search_path.exists() and not search_path.is_dir():
                 if search_path == self.idl:
                     self.errors.append(Parser.ParsingException(
                         f"Circular import detected: file {self.idl} directly references itself!",
