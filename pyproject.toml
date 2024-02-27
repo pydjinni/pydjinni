@@ -41,6 +41,8 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest==7.3.1",
+    "pytest-asyncio==0.23.5",
+    "pytest-lsp==0.4.1",
     "coverage==7.2.3",
     "antlr4-tools==0.2.1"
 ]

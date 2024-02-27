@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import re
 import uuid
 from pathlib import Path
 from typing import TypeVar
@@ -355,3 +354,40 @@ def test_generic_parameters_invalid_number(tmp_path: Path):
     exception = excinfo.value.items[0]
     assert isinstance(exception, Parser.ParsingException)
     assert exception.description == "Invalid number of generic parameters given to 'list'. Expects 1 (T), but 2 where given."
+
+
+def test_multiple_errors(tmp_path: Path):
+    parser, _ = given(
+        tmp_path=tmp_path,
+        input_idl="""
+        foo = record {
+            a: i8
+        }
+        
+        # @deprecated
+        bar = interface {
+        """
+    )
+
+    # THEN an exception list should be raised
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
+        parser.parse()
+    assert len(excinfo.value.items) == 2
+    first_exception = excinfo.value.items[0]
+    assert isinstance(first_exception, Parser.ParsingException)
+    assert first_exception.description.startswith("missing ';' at '}'")
+
+    second_exception = excinfo.value.items[1]
+    assert isinstance(second_exception, Parser.ParsingException)
+    assert second_exception.description.startswith("mismatched input")
+
+    # THEN despite the errors, a syntax tree should be included in the exception list
+    assert len(excinfo.value.ast) == 2
+    foo_type = excinfo.value.ast[0]
+    assert foo_type.name == "foo"
+    assert len(foo_type.fields) == 1
+    assert foo_type.fields[0].name == "a"
+
+    bar_type = excinfo.value.ast[1]
+    assert bar_type.name == "bar"
+    assert bar_type.deprecated
