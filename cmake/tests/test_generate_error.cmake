@@ -12,8 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-include(../modules/PyDjinni.cmake)
-include(../modules/Testing.cmake)
+list(APPEND CMAKE_MODULE_PATH ../modules)
+find_package(PyDjinni)
+include(PyDjinni)
+include(Testing)
 
 scenario("Testing error in pydjinni execution because of an invalid IDL file")
 
