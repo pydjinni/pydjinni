@@ -74,7 +74,7 @@ def config_schema():
 @cli.command()
 @click.option('--connection',
               type=click.Choice(ConnectionType, case_sensitive=False),
-              default=ConnectionType.TCP,
+              default=ConnectionType.STDIO,
               help="Connection type of the language server.")
 @click.option('--host', '-h', type=str, default='127.0.0.1', help="Hostname for the TCP server.")
 @click.option('--port', '-p', type=int, default=8080, help="Port for the TCP server.")
