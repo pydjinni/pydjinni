@@ -31,9 +31,9 @@ endif()
 set(PYDJINNI_LANGUAGE_TARGETS ${PYDJINNI_LANGUAGE_TARGETS_DEFAULT} CACHE STRING "List of languages that should be targeted" )
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/src/pydjinni/cmake/modules")
-Include(FetchContent)
+find_package(PyDjinni)
 Include(PyDjinni)
+Include(FetchContent)
 
 if(BUILD_TESTING)
     Include(IntegrationTesting)
