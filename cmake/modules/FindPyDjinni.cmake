@@ -27,6 +27,7 @@ execute_process(COMMAND python -c "import pydjinni; print(pydjinni.__path__[0])"
 execute_process(COMMAND python -c "from importlib.metadata import version; print(version('pydjinni'))"
         OUTPUT_STRIP_TRAILING_WHITESPACE
         OUTPUT_VARIABLE PyDjinni_VERSION)
+file(TO_CMAKE_PATH ${PyDjinni_ROOT_DIR} PyDjinni_ROOT_DIR)
 list(APPEND CMAKE_MODULE_PATH ${PyDjinni_ROOT_DIR}/cmake/modules)
 find_package_handle_standard_args(PyDjinni
     VERSION_VAR PyDjinni_VERSION
