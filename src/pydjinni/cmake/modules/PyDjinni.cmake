@@ -30,12 +30,6 @@ function(pydjinni_generate IDL)
 
     # find Djinni executable.
     find_program(DJINNI_EXECUTABLE pydjinni REQUIRED)
-    # output djinni version
-    execute_process(COMMAND ${DJINNI_EXECUTABLE} --version
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        OUTPUT_VARIABLE DJINNI_VERSION_OUTPUT)
-    string(REGEX MATCH "version.*" VERSION "${DJINNI_VERSION_OUTPUT}")
-    message(STATUS "${MESSAGE_PREFIX} ${VERSION}")
 
     set(DJINNI_PROCESSED_FILES_OUTFILE ${CMAKE_CURRENT_BINARY_DIR}/pydjinni/out/processed-files.json)
     list(JOIN DJINNI_LANGUAGES ", " DJINNI_LANGUAGES_STRING)

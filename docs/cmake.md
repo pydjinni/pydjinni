@@ -40,32 +40,38 @@ The options are:
 
 ## Installation
 
-### FetchContent
+### Find Package
 
-The recommended installation approach is by using `FetchContent`:
+The CMake module is distributed with the Pydjinni Python package.
+It can be discovered automatically in the current Python environment with this `FindPyDjinni` module:
+
+[:octicons-download-16: FindPyDjinni.cmake](https://raw.githubusercontent.com/pydjinni/pydjinni/{{ git.tag }}/cmake/modules/FindPyDjinni.cmake){ .md-button download="FindPyDjinni.cmake" }
 
 ```cmake
-include(FetchContent)
-FetchContent_Declare(pydjinni
-    URL https://raw.githubusercontent.com/pydjinni/pydjinni/{{ git.tag }}/cmake/modules/PyDjinni.cmake
-    DOWNLOAD_NO_EXTRACT TRUE
-)
-FetchContent_MakeAvailable(pydjinni)
-list(APPEND CMAKE_MODULE_PATH ${pydjinni_SOURCE_DIR})
+list(APPEND CMAKE_MODULE_PATH 
+    # directory that contains FindPyDjinni.cmake
+    ${CMAKE_SOURCE_DIR}/cmake/modules) 
+find_package(PyDjinni)
 include(PyDjinni)
+
 ```
+
+Using `find_package()` has the advantage that the included CMake module is guaranteed to be compatible with the currently installed version of PyDjinni.
 
 ### Manual Copy
 
-The file can also be copied into the project manually, and just included from the path were it was copied to:
+The module can also be manually copied into the project:
+
+[:octicons-download-16: PyDjinni.cmake {{ git.tag }}](https://raw.githubusercontent.com/pydjinni/pydjinni/{{ git.tag }}/src/pydjinni/cmake/modules/PyDjinni.cmake){ .md-button download="PyDjinni.cmake" }
 
 ```cmake
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH 
+    # directory that contains PyDjinni.cmake
+    ${CMAKE_SOURCE_DIR}/cmake)
 include(Pydjinni)
 ```
 
-[:octicons-download-16: Download PyDjinni Module {{ git.tag }}](https://raw.githubusercontent.com/pydjinni/pydjinni/{{ git.tag }}/cmake/modules/PyDjinni.cmake){ .md-button download }
-
+The disadvantage of this approach is that the module may need to be updated manually if it becomes incompatible with PyDjinni after an update.
 
 ## Example
 
