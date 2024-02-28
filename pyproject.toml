@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools==65.5.0", "setuptools_scm[toml]==7.0.5"]
+requires = ["setuptools==69.1.1", "setuptools_scm[toml]==8.0.4"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -16,7 +16,8 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11"
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
 keywords = ["djinni"]
 dependencies = [
@@ -40,18 +41,18 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest==7.3.1",
+    "pytest==7.4.4",
     "pytest-asyncio==0.23.5",
     "pytest-lsp==0.4.1",
     "coverage==7.2.3",
     "antlr4-tools==0.2.1"
 ]
 publish = [
-    "twine==4.0.2",
-    "build==0.10.0"
+    "twine==5.0.0",
+    "build==1.0.3"
 ]
 doc = [
-    "mkdocs-material==9.5.3",
+    "mkdocs-material==9.5.11",
     "mkdocs-click==0.8.1",
     "mike==2.0.0",
     "jsonref==1.1.0",

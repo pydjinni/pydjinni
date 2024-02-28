@@ -1,10 +1,9 @@
 import json
 import logging
-import os
 import traceback
 import uuid
 from importlib.metadata import version
-from pathlib import Path, WindowsPath, PosixPath
+from pathlib import Path
 from urllib.parse import unquote
 
 import click
@@ -17,6 +16,7 @@ from pydjinni.defs import DEFAULT_CONFIG_PATH
 from pydjinni.exceptions import ApplicationException, ConfigurationException
 from pydjinni.parser.base_models import TypeReference, BaseType
 from pydjinni.parser.parser import Parser
+from pydjinni_language_server.text_document_path import TextDocumentPath
 
 try:
     from enum import StrEnum
@@ -33,19 +33,6 @@ def main():
 class ConnectionType(StrEnum):
     TCP = "TCP"
     STDIO = "STDIO"
-
-
-class TextDocumentPath(WindowsPath if os.name == 'nt' else PosixPath):
-    def __new__(cls, document: TextDocument):
-        self = super().__new__(cls, document.uri)
-        self.document = document
-        return self
-
-    def read_text(self, encoding=None, errors=None):
-        return self.document.source
-
-    def as_uri(self):
-        return self.document.uri
 
 
 def error_logger(func):

@@ -3,13 +3,7 @@ from textwrap import dedent
 
 import pytest
 import pytest_lsp
-from lsprotocol.types import (
-    InitializeParams,
-    DidOpenTextDocumentParams,
-    TextDocumentItem,
-    TEXT_DOCUMENT_PUBLISH_DIAGNOSTICS, DidChangeTextDocumentParams, HoverParams, Position, TextDocumentIdentifier,
-    Range, DiagnosticSeverity, DefinitionParams,
-)
+from lsprotocol.types import *
 from pytest_lsp import (
     ClientServerConfig,
     LanguageClient,
@@ -34,7 +28,7 @@ def when_did_open(client: LanguageClient, text: str):
 
 @pytest_lsp.fixture(
     config=ClientServerConfig(
-        server_command=[sys.executable, "-m", "pydjinni_language_server", "start", "--connection", "STDIO"],
+        server_command=[sys.executable, "-m", "pydjinni_language_server", "start", "--connection", "STDIO", "--log", "pygls.log"],
     ),
 )
 async def client(lsp_client: LanguageClient):
