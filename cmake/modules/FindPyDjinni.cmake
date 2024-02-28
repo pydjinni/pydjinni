@@ -23,9 +23,14 @@ include(FindPackageHandleStandardArgs)
 
 execute_process(COMMAND python -c "import pydjinni; print(pydjinni.__path__[0])"
         OUTPUT_STRIP_TRAILING_WHITESPACE
-        OUTPUT_VARIABLE PyDjinni_LIBRARY_DIR)
-list(APPEND CMAKE_MODULE_PATH ${PyDjinni_LIBRARY_DIR}/cmake/modules)
+        OUTPUT_VARIABLE PyDjinni_ROOT_DIR)
+execute_process(COMMAND python -c "from importlib.metadata import version; print(version('pydjinni'))"
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        OUTPUT_VARIABLE PyDjinni_VERSION)
+list(APPEND CMAKE_MODULE_PATH ${PyDjinni_ROOT_DIR}/cmake/modules)
 find_package_handle_standard_args(PyDjinni
+    VERSION_VAR PyDjinni_VERSION
     REQUIRED_VARS
-        PyDjinni_ROOT_DIR ${PyDjinni_LIBRARY_DIR}
+        PyDjinni_ROOT_DIR
+        PyDjinni_VERSION
 )

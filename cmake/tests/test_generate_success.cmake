@@ -13,7 +13,7 @@
 # limitations under the License.
 
 list(APPEND CMAKE_MODULE_PATH ../modules)
-find_package(PyDjinni)
+find_package(PyDjinni REQUIRED)
 include(PyDjinni)
 include(Testing)
 
