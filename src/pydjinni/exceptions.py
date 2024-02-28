@@ -68,11 +68,16 @@ class ApplicationException(Exception):
             return cls(joined_output)
 
 
+class ApplicationExceptionList(Exception):
+    def __init__(self, items: list[ApplicationException]):
+        self.items = items
+
+
 class FileNotFoundException(ApplicationException, code=2):
     """The file or directory could not be found"""
 
-    def __init__(self, file: Path):
-        super().__init__(str(file.absolute().as_uri()))
+    def __init__(self, file: Path, position: Position = None):
+        super().__init__(str(file.absolute().as_uri()), position)
 
 
 class UnknownTargetException(ApplicationException, code=120):

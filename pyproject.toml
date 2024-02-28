@@ -32,7 +32,8 @@ dependencies = [
     'tomli_w>=1.0,<2',
     'setuptools>=65',
     'antlr4-python3-runtime==4.13.1',
-    'mistune>=3,<4'
+    'mistune>=3,<4',
+    'pygls>=1.2,<2',
 ]
 
 [tool.setuptools_scm]
@@ -40,6 +41,8 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest==7.3.1",
+    "pytest-asyncio==0.23.5",
+    "pytest-lsp==0.4.1",
     "coverage==7.2.3",
     "antlr4-tools==0.2.1"
 ]
@@ -64,6 +67,7 @@ Homepage = "https://pydjinni.github.io/pydjinni"
 
 [project.scripts]
 pydjinni = "pydjinni.__main__:main"
+pydjinni-language-server = "pydjinni_language_server.__main__:main"
 
 [project.entry-points.'pydjinni.generator']
 cpp  = 'pydjinni.generator.cpp:CppTarget'

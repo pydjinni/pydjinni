@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import re
 import uuid
 from pathlib import Path
 from typing import TypeVar
@@ -19,7 +18,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from pydjinni.exceptions import FileNotFoundException
+from pydjinni.exceptions import FileNotFoundException, ApplicationExceptionList
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.file.processed_files_model_builder import ProcessedFiles
 from pydjinni.parser.ast import Record
@@ -83,7 +82,7 @@ def when(parser: Parser, type_type: type[TypeDef], type_name: str = None) -> Typ
         the one element in the AST that was returned by the parser
     """
     # WHEN parsing the input file
-    ast = parser.parse()
+    ast, _ = parser.parse()
 
     # THEN the resulting AST should contain one element
     assert len(ast) == 1
@@ -109,8 +108,11 @@ def test_parsing_invalid_input(tmp_path: Path):
 
     # WHEN parsing the input
     # THEN a IdlParser.ParsingException should be raised
-    with pytest.raises(Parser.ParsingException):
+    with pytest.raises(ApplicationExceptionList) as exception_info:
         parser.parse()
+    assert len(exception_info.value.items) == 4
+    for item in exception_info.value.items:
+        assert isinstance(item, Parser.ParsingException)
 
 
 def test_parsing_non_existing_file(tmp_path: Path):
@@ -159,8 +161,11 @@ def test_missing_import(tmp_path: Path):
             """)
     # WHEN parsing the file
     # THEN a FileNotFoundException should be raised
-    with pytest.raises(FileNotFoundException):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, FileNotFoundException)
 
 
 def test_detect_direct_recursive_import(tmp_path: Path):
@@ -186,9 +191,12 @@ def test_detect_direct_recursive_import(tmp_path: Path):
 
     # WHEN parsing the input
     # THEN a recursive input should be detected
-    with pytest.raises(Parser.ParsingException,
-                       match=f"Circular import detected: file .* directly references itself!"):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, Parser.ParsingException)
+    assert exception.description == f"Circular import detected: file {input_file} directly references itself!"
 
 
 def test_detect_indirect_recursive_import(tmp_path: Path):
@@ -218,8 +226,12 @@ def test_detect_indirect_recursive_import(tmp_path: Path):
 
     # WHEN parsing the input
     # THEN a recursive input should be detected
-    with pytest.raises(Parser.ParsingException, match=f"Circular import detected: file .* indirectly imports itself!"):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, Parser.ParsingException)
+    assert "Circular import detected" in exception.description
 
 
 def test_extern(tmp_path: Path):
@@ -236,7 +248,7 @@ def test_extern(tmp_path: Path):
     extern_file.touch()
 
     # WHEN parsing the file
-    ast = parser.parse()
+    ast, _ = parser.parse()
 
     # THEN the Resolver should have been called in order to load the external type
     resolver_mock.load_external.assert_called_once()
@@ -257,8 +269,12 @@ def test_missing_extern(tmp_path: Path):
 
     # WHEN parsing the file
     # THEN a FileNotFoundException should be raised
-    with pytest.raises(FileNotFoundException):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, FileNotFoundException)
+    assert exception.description == Path("extern.yaml").absolute().as_uri()
 
 
 def test_namespace(tmp_path: Path):
@@ -282,7 +298,7 @@ def test_namespace(tmp_path: Path):
     )
 
     # WHEN parsing the idl file
-    ast = parser.parse()
+    ast, _ = parser.parse()
 
     # THEN the ast should contain two types each labelled with their respective namespace
     assert len(ast) == 2
@@ -308,8 +324,13 @@ def test_generic_parameters_not_allowed(tmp_path: Path):
 
     # WHEN parsing the idl file
     # THEN an exception should be raised because of the unexpected generic parameter
-    with pytest.raises(Parser.ParsingException, match="Type 'i8' does not accept generic parameters"):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, Parser.ParsingException)
+    assert exception.description == "Type 'i8' does not accept generic parameters"
+
 
 def test_generic_parameters_invalid_number(tmp_path: Path):
     # GIVEN an idl file with a generic type reference
@@ -327,5 +348,46 @@ def test_generic_parameters_invalid_number(tmp_path: Path):
 
     # WHEN parsing the idl file
     # THEN an exception should be raised because of the number of generic parameters is not correct
-    with pytest.raises(Parser.ParsingException, match=re.escape("Invalid number of generic parameters given to 'list'. Expects 1 (T), but 2 where given.")):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, Parser.ParsingException)
+    assert exception.description == "Invalid number of generic parameters given to 'list'. Expects 1 (T), but 2 where given."
+
+
+def test_multiple_errors(tmp_path: Path):
+    parser, _ = given(
+        tmp_path=tmp_path,
+        input_idl="""
+        foo = record {
+            a: i8
+        }
+        
+        # @deprecated
+        bar = interface {
+        """
+    )
+
+    # THEN an exception list should be raised
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
+        parser.parse()
+    assert len(excinfo.value.items) == 2
+    first_exception = excinfo.value.items[0]
+    assert isinstance(first_exception, Parser.ParsingException)
+    assert first_exception.description.startswith("missing ';' at '}'")
+
+    second_exception = excinfo.value.items[1]
+    assert isinstance(second_exception, Parser.ParsingException)
+    assert second_exception.description.startswith("mismatched input")
+
+    # THEN despite the errors, a syntax tree should be included in the exception list
+    assert len(excinfo.value.ast) == 2
+    foo_type = excinfo.value.ast[0]
+    assert foo_type.name == "foo"
+    assert len(foo_type.fields) == 1
+    assert foo_type.fields[0].name == "a"
+
+    bar_type = excinfo.value.ast[1]
+    assert bar_type.name == "bar"
+    assert bar_type.deprecated
