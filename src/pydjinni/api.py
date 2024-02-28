@@ -16,12 +16,9 @@ from __future__ import annotations
 
 import json
 from functools import cached_property
-from importlib.metadata import entry_points, EntryPoint, version
+from importlib.metadata import entry_points, EntryPoint
 from pathlib import Path
 from typing import Any
-
-from pygls.server import LanguageServer
-from pygls.workspace import TextDocument
 
 from pydjinni.builder.build_config import BuildBaseConfig
 from pydjinni.file.processed_files_model_builder import ProcessedFilesModelBuilder, ProcessedFiles
@@ -40,8 +37,7 @@ import yaml
 from pydantic import BaseModel
 
 from pydjinni.config.config_model_builder import ConfigModelBuilder
-from pydjinni.exceptions import FileNotFoundException, ConfigurationException, UnknownTargetException, \
-    ApplicationExceptionList, ApplicationException
+from pydjinni.exceptions import FileNotFoundException, ConfigurationException, UnknownTargetException
 from pydjinni.generator.external_types import ExternalTypesBuilder
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.generator.generate_config import GenerateBaseConfig

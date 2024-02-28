@@ -1,23 +1,20 @@
 import json
+import logging
 import os
 import traceback
 import uuid
+from importlib.metadata import version
 from pathlib import Path, WindowsPath, PosixPath
 from urllib.parse import unquote
 
 import click
-import logging
-
-from lsprotocol import types as lsp
-from lsprotocol.types import RelativePattern, MessageType
+from lsprotocol.types import *
+from pygls.server import LanguageServer
+from pygls.workspace import TextDocument
 
 from pydjinni import API
 from pydjinni.defs import DEFAULT_CONFIG_PATH
 from pydjinni.exceptions import ApplicationException, ConfigurationException
-from pygls.server import LanguageServer
-from pygls.workspace import TextDocument
-from importlib.metadata import version
-
 from pydjinni.parser.base_models import TypeReference, BaseType
 from pydjinni.parser.parser import Parser
 
@@ -95,12 +92,12 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
     dependency_cache: dict[str, set[str]] = {}
 
     def to_diagnostic(error: ApplicationException):
-        return lsp.Diagnostic(
-            range=lsp.Range(
-                start=lsp.Position(error.position.start.line - 1, error.position.start.col),
-                end=lsp.Position(error.position.end.line - 1, error.position.end.col)
+        return Diagnostic(
+            range=Range(
+                start=Position(error.position.start.line - 1, error.position.start.col),
+                end=Position(error.position.end.line - 1, error.position.end.col)
             ),
-            severity=lsp.DiagnosticSeverity.Error,
+            severity=DiagnosticSeverity.Error,
             message=f"{error.__doc__}: {error.description}",
             source=type(server).__name__
         )
@@ -141,18 +138,18 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                            and error.position.file.document.uri == uri]
             refs = e.type_refs
         except ConfigurationException as e:
-            ls.show_message_log(str(e), lsp.MessageType.Error)
-            ls.show_message(f"PyDjinni: {e}", lsp.MessageType.Error)
+            ls.show_message_log(str(e), MessageType.Error)
+            ls.show_message(f"PyDjinni: {e}", MessageType.Error)
 
         for ref in refs:
             if ref.type_def and ref.type_def.deprecated:
                 error_items.append(
-                    lsp.Diagnostic(
-                        range=lsp.Range(
-                            start=lsp.Position(ref.position.start.line - 1, ref.position.start.col),
-                            end=lsp.Position(ref.position.end.line - 1, ref.position.end.col)
+                    Diagnostic(
+                        range=Range(
+                            start=Position(ref.position.start.line - 1, ref.position.start.col),
+                            end=Position(ref.position.end.line - 1, ref.position.end.col)
                         ),
-                        severity=lsp.DiagnosticSeverity.Warning,
+                        severity=DiagnosticSeverity.Warning,
                         message=f"deprecated: {ref.type_def.deprecated if isinstance(ref.type_def.deprecated, str) else ''}",
                         source=type(server).__name__
                     )
@@ -172,20 +169,20 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                                      and ref.type_def.position.file and ref.type_def.position.file.as_uri() != uri]
                                     + [config.absolute().as_uri()])
 
-    @server.feature(lsp.INITIALIZED)
+    @server.feature(INITIALIZED)
     @error_logger
     def init(ls, _):
         ls.show_message_log(f"Initialized PyDjinni language server {version('pydjinni')}")
         for workspace_folder in server.workspace.folders.values():
-            ls.register_capability(lsp.RegistrationParams(
+            ls.register_capability(RegistrationParams(
                 registrations=[
-                    lsp.Registration(
+                    Registration(
                         id=str(uuid.uuid4()),
-                        method=lsp.WORKSPACE_DID_CHANGE_WATCHED_FILES,
-                        register_options=lsp.DidChangeWatchedFilesRegistrationOptions(watchers=[
-                            lsp.FileSystemWatcher(
+                        method=WORKSPACE_DID_CHANGE_WATCHED_FILES,
+                        register_options=DidChangeWatchedFilesRegistrationOptions(watchers=[
+                            FileSystemWatcher(
                                 glob_pattern=RelativePattern(workspace_folder, "**/*.{pydjinni,djinni}"),
-                                kind=lsp.WatchKind.Create | lsp.WatchKind.Change | lsp.WatchKind.Delete
+                                kind=WatchKind.Create | WatchKind.Change | WatchKind.Delete
                             )
                         ])
                     )
@@ -194,32 +191,32 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
 
             if not config.exists():
                 config_uri = config.absolute().as_uri()
-                ls.show_message_log(f"{config_uri} cannot be found!", lsp.MessageType.Warning)
-                ls.show_message(f"PyDjinni: Configuration file cannot be found:\n{config_uri}", lsp.MessageType.Warning)
-            ls.register_capability(lsp.RegistrationParams(
+                ls.show_message_log(f"{config_uri} cannot be found!", MessageType.Warning)
+                ls.show_message(f"PyDjinni: Configuration file cannot be found:\n{config_uri}", MessageType.Warning)
+            ls.register_capability(RegistrationParams(
                 registrations=[
-                    lsp.Registration(
+                    Registration(
                         id=str(uuid.uuid4()),
-                        method=lsp.WORKSPACE_DID_CHANGE_WATCHED_FILES,
-                        register_options=lsp.DidChangeWatchedFilesRegistrationOptions(watchers=[
-                            lsp.FileSystemWatcher(
+                        method=WORKSPACE_DID_CHANGE_WATCHED_FILES,
+                        register_options=DidChangeWatchedFilesRegistrationOptions(watchers=[
+                            FileSystemWatcher(
                                 glob_pattern=RelativePattern(workspace_folder, config.as_posix()),
-                                kind=lsp.WatchKind.Create | lsp.WatchKind.Change | lsp.WatchKind.Delete
+                                kind=WatchKind.Create | WatchKind.Change | WatchKind.Delete
                             )
                         ])
                     )
                 ]
             ))
 
-    @server.feature(lsp.TEXT_DOCUMENT_DID_CHANGE)
+    @server.feature(TEXT_DOCUMENT_DID_CHANGE)
     @error_logger
-    def did_change(ls, params: lsp.DidChangeTextDocumentParams):
+    def did_change(ls, params: DidChangeTextDocumentParams):
         ls.show_message_log(f"Did Change: {unquote(params.text_document.uri)}")
         validate(ls, params.text_document.uri)
 
-    @server.feature(lsp.TEXT_DOCUMENT_DID_CLOSE)
+    @server.feature(TEXT_DOCUMENT_DID_CLOSE)
     @error_logger
-    def did_close(ls: LanguageServer, params: lsp.DidCloseTextDocumentParams):
+    def did_close(ls: LanguageServer, params: DidCloseTextDocumentParams):
         path = unquote(params.text_document.uri)
         ls.show_message_log(f"Did Close: {path}")
         hover_cache.pop(params.text_document.uri, {})
@@ -228,15 +225,15 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
             if path in cache:
                 cache.remove(path)
 
-    @server.feature(lsp.TEXT_DOCUMENT_DID_OPEN)
+    @server.feature(TEXT_DOCUMENT_DID_OPEN)
     @error_logger
-    def did_open(ls, params: lsp.DidOpenTextDocumentParams):
+    def did_open(ls, params: DidOpenTextDocumentParams):
         ls.show_message_log(f"Did Open: {unquote(params.text_document.uri)}")
         validate(ls, params.text_document.uri)
 
-    @server.feature(lsp.TEXT_DOCUMENT_HOVER)
+    @server.feature(TEXT_DOCUMENT_HOVER)
     @error_logger
-    def hover(ls, params: lsp.HoverParams):
+    def hover(ls, params: HoverParams):
         row = params.position.line + 1
         col = params.position.character
         uri = params.text_document.uri
@@ -244,38 +241,38 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
 
         cache_entry: TypeReference | None = hover_cache[uri].get(row, {}).get(col, None)
         if cache_entry and cache_entry.type_def and cache_entry.type_def.comment:
-            return lsp.Hover(
-                contents=lsp.MarkupContent(
-                    kind=lsp.MarkupKind.Markdown,
+            return Hover(
+                contents=MarkupContent(
+                    kind=MarkupKind.Markdown,
                     value=cache_entry.type_def.comment
                 ),
-                range=lsp.Range(
-                    start=lsp.Position(cache_entry.position.start.line - 1, cache_entry.position.start.col),
-                    end=lsp.Position(cache_entry.position.end.line - 1, cache_entry.position.end.col)
+                range=Range(
+                    start=Position(cache_entry.position.start.line - 1, cache_entry.position.start.col),
+                    end=Position(cache_entry.position.end.line - 1, cache_entry.position.end.col)
                 )
             )
 
-    @server.feature(lsp.TEXT_DOCUMENT_DEFINITION)
+    @server.feature(TEXT_DOCUMENT_DEFINITION)
     @error_logger
-    def definition(ls, params: lsp.DefinitionParams):
+    def definition(ls, params: DefinitionParams):
         row = params.position.line + 1
         col = params.position.character
         ls.show_message_log(f"Go To Definition request: {row}, {col}")
         cache_entry: TypeReference | None = hover_cache[params.text_document.uri].get(row, {}).get(col, None)
         if cache_entry and cache_entry.type_def and isinstance(cache_entry.type_def,
                                                                BaseType) and cache_entry.type_def.position.file:
-            return lsp.Location(
+            return Location(
                 uri=cache_entry.type_def.position.file.as_uri(),
-                range=lsp.Range(
-                    start=lsp.Position(cache_entry.type_def.position.start.line - 1,
+                range=Range(
+                    start=Position(cache_entry.type_def.position.start.line - 1,
                                        cache_entry.type_def.position.start.col),
-                    end=lsp.Position(cache_entry.type_def.position.end.line - 1, cache_entry.type_def.position.end.col)
+                    end=Position(cache_entry.type_def.position.end.line - 1, cache_entry.type_def.position.end.col)
                 )
             )
 
-    @server.feature(lsp.WORKSPACE_DID_CHANGE_WATCHED_FILES)
+    @server.feature(WORKSPACE_DID_CHANGE_WATCHED_FILES)
     @error_logger
-    def did_change_watched_files(ls, params: lsp.DidChangeWatchedFilesParams):
+    def did_change_watched_files(ls, params: DidChangeWatchedFilesParams):
         for change in params.changes:
             path = unquote(change.uri)
             ls.show_message_log(f"Did Change: {path}")

@@ -11,26 +11,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from pathlib import Path
 
 from antlr4 import InputStream, CommonTokenStream
 from antlr4.error.ErrorListener import ErrorListener
 
-from pydjinni.generator.cpp.cpp.generator import CppGenerator
-
 from pydjinni.exceptions import ApplicationException, FileNotFoundException, ApplicationExceptionList
-from .base_models import BaseType, TypeReference, BaseField, BaseExternalType
-
+from pydjinni.file.file_reader_writer import FileReaderWriter
+from pydjinni.generator.cpp.cpp.generator import CppGenerator
 from pydjinni.generator.target import Target
 from pydjinni.position import Position, Cursor
-from pydjinni.file.file_reader_writer import FileReaderWriter
+from .ast import (
+    Record,
+    Interface,
+    Enum,
+    Flags,
+    Parameter,
+    Function
+)
+from .base_models import BaseType, TypeReference, BaseField, BaseExternalType
 from .comment_processor import ParserCommentProcessor
-from .identifier import IdentifierType as Identifier
 from .grammar.IdlLexer import IdlLexer
 from .grammar.IdlParser import IdlParser
 from .grammar.IdlVisitor import IdlVisitor
+from .identifier import IdentifierType as Identifier
 from .resolver import Resolver
-from .ast import Record, Interface, Enum, Flags, Parameter, Function
 
 
 def unpack(list_input: []):
