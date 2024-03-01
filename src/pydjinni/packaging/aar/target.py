@@ -13,12 +13,13 @@
 # limitations under the License.
 
 import os
+from functools import cached_property
 
 from pydjinni.packaging.aar.publish_config import AndroidArchivePublishConfig
 from pydjinni.packaging.architecture import Architecture
 from pydjinni.packaging.platform import Platform
 from pydjinni.packaging.target import PackageTarget, copy_file, execute, copy_directory
-from functools import cached_property
+
 
 class AndroidArchiveTarget(PackageTarget):
     """
