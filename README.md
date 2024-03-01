@@ -8,6 +8,7 @@
 ![GitHub](https://img.shields.io/github/license/pydjinni/pydjinni)
 ![PyPI](https://img.shields.io/pypi/v/pydjinni)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pydjinni)
+[![Built with Material for MkDocs](https://img.shields.io/badge/Material_for_MkDocs-526CFE?logo=MaterialForMkDocs&logoColor=white)](https://squidfunk.github.io/mkdocs-material/)
 
 An opinionated Djinni reimplementation written in Python.
 

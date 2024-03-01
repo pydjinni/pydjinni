@@ -218,6 +218,10 @@
     .hero-buttons a.md-button:first-child {
         width: 100%;
     }
+
+    .hero-buttons a.md-button {
+        flex-grow: 1;
+    }
 }
 
 a[href="https://github.com/pydjinni/pydjinni/edit/main/docs/index.md"] > svg {

@@ -1,7 +1,7 @@
 site_name: PyDjinni
 repo_url: https://github.com/pydjinni/pydjinni
 edit_uri: edit/main/docs/
-copyright: Copyright &copy; 2023 jothepro
+copyright: Copyright &copy; 2024 jothepro
 theme:
   name: material
   favicon: assets/logo.png
