@@ -152,13 +152,9 @@ async function main(version, localFallback) {
         intervalId = window.setInterval(() => {
             reportInstalledPackages(micropip);
         }, 200);
-        await micropip.install("pygments==2.15");
-        if(localFallback) {
-            await micropip.install("https://github.com/pydantic/pydantic-core/releases/download/v2.10.1/pydantic_core-2.10.1-cp311-cp311-emscripten_3_1_32_wasm32.whl")
-        } else {
-            await micropip.install(`https://pydjinni.github.io/pydjinni/v${version}/assets/packages/pydantic_core-2.10.1-cp311-cp311-emscripten_3_1_32_wasm32.whl`);
-        }
-        await micropip.install("pydantic==2.4.2")
+        await micropip.install("pygments==2.17.2");
+        await micropip.install(`../assets/packages/pydantic_core-2.16.3-cp311-cp311-emscripten_3_1_32_wasm32.whl`);
+        await micropip.install("pydantic==2.6.3")
         if(localFallback) {
             await micropip.install(`http://localhost:8001/pydjinni-${version}-py3-none-any.whl`)
         } else {
