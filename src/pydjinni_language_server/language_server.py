@@ -73,7 +73,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
     """
     server = LanguageServer("pydjinni-language-server", version('pydjinni'))
     if log:
-        logging.basicConfig(filename=log, filemode='w', level=logging.DEBUG)
+        logging.basicConfig(filename=log, level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s')
 
     hover_cache: dict[str, dict[int, dict[int, TypeReference]]] = {}
     dependency_cache: dict[str, set[str]] = {}
