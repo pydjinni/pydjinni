@@ -60,7 +60,7 @@ def prepare(directory: Path, clean: bool = False):
     directory.mkdir(parents=True, exist_ok=True)
 
 
-def execute(command: str, arguments: list[str], working_dir: Path = Path(os.getcwd())) -> int:
+def execute(command: str | Path, arguments: list[str], working_dir: Path = Path(os.getcwd())) -> int:
     cwd = os.getcwd()
     os.chdir(working_dir)
     if shutil.which(command):
@@ -175,8 +175,9 @@ class PackageTarget(ABC):
                 output_file = self.package_build_path / file.relative_to(self._template_directory)
                 prepare(output_file.parent)
                 try:
+                    print(str(file.relative_to(self._template_directory).as_posix()))
                     output_file.write_text(
-                        self._jinja_env.get_template(str(file.relative_to(self._template_directory))).render(
+                        self._jinja_env.get_template(str(file.relative_to(self._template_directory).as_posix())).render(
                             config=self.config))
                 except UnicodeDecodeError:
                     copy_file(src=file, dst=output_file)

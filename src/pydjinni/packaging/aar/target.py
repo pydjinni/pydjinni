@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+from functools import cached_property
 
 from pydjinni.packaging.aar.publish_config import AndroidArchivePublishConfig
 from pydjinni.packaging.architecture import Architecture
@@ -37,6 +38,10 @@ class AndroidArchiveTarget(PackageTarget):
         Architecture.armv8: "arm64-v8a"
     }
 
+    @cached_property
+    def gradlew_path(self):
+        return (self.package_build_path / "gradlew").absolute()
+
     def package_build(self, clean: bool = False):
         so_name = f'lib{self.config.target}.so'
         for artifacts in self._build_artifacts.values():
@@ -45,15 +50,14 @@ class AndroidArchiveTarget(PackageTarget):
                 copy_file(src=path / so_name,
                           dst=self.package_build_path / 'src' / 'main' / 'jniLibs' / self.architecture_mapping[
                               arch] / so_name)
-        gradlew_path = self.package_build_path / "gradlew"
-        os.chmod(gradlew_path, os.stat(gradlew_path).st_mode | 0o111)  # make gradlew executable
-        execute("./gradlew", ["assembleRelease"], working_dir=self.package_build_path)
+        os.chmod(self.gradlew_path, os.stat(self.gradlew_path).st_mode | 0o111)  # make gradlew executable
+        execute(self.gradlew_path.absolute(), ["assembleRelease"], working_dir=self.package_build_path)
         copy_file(src=self.package_build_path / 'build' / 'outputs' / 'aar' / f'{self.config.target}-release.aar',
                   dst=self.package_output_path / f'{self.config.target}.aar')
 
     def publish(self):
         if self.config.aar.publish.maven_registry:
-            execute("./gradlew", [
+            execute(self.gradlew_path, [
                 "publishReleasePublicationToRemoteRepository",
                 f"-PremoteUsername={self.config.aar.publish.username}",
                 f"-PremotePassword={self.config.aar.publish.password}"
