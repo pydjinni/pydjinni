@@ -35,7 +35,7 @@ The options are:
 * `CONFIG <config>` *Optional*<br>Filename/path to the configuration file. Defaults to `pydjinni.yaml`. To disable the
   configuration with a config file completely, set `CONFIG` to `None`.
 * `OPTIONS <options>` *Optional*<br>List of additional arbitrary configuration options that should be passed to the CLI.
-* `WORKING_DIRECTORY <workdir>` *Optional*<br>The working-directory from which the generate comment should be executed.
+* `WORKING_DIRECTORY <workdir>` *Optional*<br>The working-directory from which the generate command should be executed.
   <br>Default: `CMAKE_CURRENT_SOURCE_DIR`.
 
 ## Installation
@@ -76,7 +76,7 @@ The disadvantage of this approach is that the module may need to be updated manu
 ## Example
 
 ```cmake
-pydjinni_generate(example.djinni
+pydjinni_generate(example.pydjinni
     LANGUAGES java
     OPTIONS
         generate.java.out=out/java
