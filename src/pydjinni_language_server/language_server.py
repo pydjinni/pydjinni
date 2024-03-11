@@ -129,7 +129,9 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
             ls.show_message(f"PyDjinni: {e}", MessageType.Error)
 
         for ref in refs:
-            if ref.type_def and ref.type_def.deprecated:
+            if (isinstance(ref.position.file, TextDocumentPath)
+                    and ref.position.file.document.uri == uri
+                    and ref.type_def and ref.type_def.deprecated):
                 error_items.append(
                     Diagnostic(
                         range=Range(
