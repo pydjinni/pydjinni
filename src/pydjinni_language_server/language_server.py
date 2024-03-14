@@ -1,6 +1,5 @@
 import json
 import logging
-import traceback
 import uuid
 from importlib.metadata import version
 from pathlib import Path
@@ -8,15 +7,17 @@ from urllib.parse import unquote
 
 import click
 from lsprotocol.types import *
-from pygls.server import LanguageServer
-from pygls.workspace import TextDocument
-
 from pydjinni import API
 from pydjinni.defs import DEFAULT_CONFIG_PATH
 from pydjinni.exceptions import ApplicationException, ConfigurationException
 from pydjinni.parser.base_models import TypeReference, BaseType
 from pydjinni.parser.parser import Parser
 from pydjinni_language_server.text_document_path import TextDocumentPath
+from pygls.server import LanguageServer
+from pygls.workspace import TextDocument
+
+from .error_logger import error_logger
+from .tolerant_converter import tolerant_converter
 
 try:
     from enum import StrEnum
@@ -34,14 +35,6 @@ class ConnectionType(StrEnum):
     TCP = "TCP"
     STDIO = "STDIO"
 
-
-def error_logger(func):
-    def inner_function(ls, *args, **kwargs):
-        try:
-            return func(ls, *args, **kwargs)
-        except Exception as e:
-            ls.show_message_log(traceback.format_exc(), msg_type=MessageType.Error)
-    return inner_function
 
 @click.group()
 @click.version_option(package_name="pydjinni")
@@ -71,7 +64,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
     """
     Start a Language Server
     """
-    server = LanguageServer("pydjinni-language-server", version('pydjinni'))
+    server = LanguageServer("pydjinni-language-server", version('pydjinni'), converter_factory=tolerant_converter)
     if log:
         logging.basicConfig(filename=log, level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s')
 
@@ -254,7 +247,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                 uri=cache_entry.type_def.position.file.as_uri(),
                 range=Range(
                     start=Position(cache_entry.type_def.position.start.line - 1,
-                                       cache_entry.type_def.position.start.col),
+                                   cache_entry.type_def.position.start.col),
                     end=Position(cache_entry.type_def.position.end.line - 1, cache_entry.type_def.position.end.col)
                 )
             )
