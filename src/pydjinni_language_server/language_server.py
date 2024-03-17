@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import uuid
 from importlib.metadata import version
 from pathlib import Path
@@ -155,6 +156,18 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
     @error_logger
     def init(ls, _):
         ls.show_message_log(f"Initialized PyDjinni language server {version('pydjinni')}")
+        ls.show_message_log(f"Working directory: {Path(os.getcwd()).absolute().as_uri()}")
+
+        if not config.exists():
+            config_uri = config.absolute().as_uri()
+            ls.show_message_log(f"{config_uri} cannot be found!", MessageType.Warning)
+            ls.show_message(f"PyDjinni: Configuration file cannot be found:\n{config_uri}", MessageType.Error)
+        else:
+            ls.show_message_log(f"Configuration file: {config.absolute().as_uri()}")
+        if log:
+            ls.show_message_log(f"Log files are written to: {log.absolute().as_uri()}")
+        else:
+            ls.show_message_log(f"Log files are disabled")
         for workspace_folder in server.workspace.folders.values():
             ls.register_capability(RegistrationParams(
                 registrations=[
@@ -163,18 +176,13 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                         method=WORKSPACE_DID_CHANGE_WATCHED_FILES,
                         register_options=DidChangeWatchedFilesRegistrationOptions(watchers=[
                             FileSystemWatcher(
-                                glob_pattern=RelativePattern(workspace_folder, "**/*.{pydjinni,djinni}"),
+                                glob_pattern=RelativePattern(workspace_folder, "**/*.pydjinni"),
                                 kind=WatchKind.Create | WatchKind.Change | WatchKind.Delete
                             )
                         ])
                     )
                 ]
             ))
-
-            if not config.exists():
-                config_uri = config.absolute().as_uri()
-                ls.show_message_log(f"{config_uri} cannot be found!", MessageType.Warning)
-                ls.show_message(f"PyDjinni: Configuration file cannot be found:\n{config_uri}", MessageType.Warning)
             ls.register_capability(RegistrationParams(
                 registrations=[
                     Registration(
