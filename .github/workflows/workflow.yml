@@ -90,7 +90,7 @@ jobs:
         run: pip install .[doc]
       - name: Build Documentation
         run: mkdocs build
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: site
           path: site/
@@ -112,7 +112,7 @@ jobs:
         run: python -m build
       - name: Check created package
         run: twine check dist/*
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: dist
           path: dist/
