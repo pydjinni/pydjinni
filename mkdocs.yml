@@ -94,6 +94,7 @@ nav:
       - Configuration: config.md
       - Processed Files: processed_files.md
       - CMake: cmake.md
+      - Setup Wizard: setup_wizard.md
       - Pygments: pygments.md
   - Demo: demo.md
   - Development:

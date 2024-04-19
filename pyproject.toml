@@ -69,6 +69,7 @@ Homepage = "https://pydjinni.github.io/pydjinni"
 [project.scripts]
 pydjinni = "pydjinni.__main__:main"
 pydjinni-language-server = "pydjinni_language_server.__main__:main"
+pydjinni-init = "pydjinni_init.__main__:main"
 
 [project.entry-points.'pydjinni.generator']
 cpp  = 'pydjinni.generator.cpp:CppTarget'
@@ -82,5 +83,7 @@ conan = 'pydjinni.builder.conan:ConanTarget'
 swiftpackage = 'pydjinni.packaging.swiftpackage:SwiftpackageTarget'
 aar = 'pydjinni.packaging.aar:AndroidArchiveTarget'
 nuget = 'pydjinni.packaging.nuget:NuGetTarget'
+[project.entry-points.'pydjinni.init']
+conan-cmake = 'pydjinni_init.templates.conan_cmake:ConanCMakeTarget'
 [project.entry-points.'pygments.lexers']
 djinni='pydjinni.lexer:PyDjinniLexer'

@@ -45,7 +45,7 @@ The options are:
 The CMake module is distributed with the Pydjinni Python package.
 It can be discovered automatically in the current Python environment with this `FindPyDjinni` module:
 
-[:octicons-download-16: FindPyDjinni.cmake](https://raw.githubusercontent.com/pydjinni/pydjinni/{{ git.tag }}/cmake/modules/FindPyDjinni.cmake){ .md-button download="FindPyDjinni.cmake" }
+[:octicons-download-16: FindPyDjinni.cmake](https://raw.githubusercontent.com/pydjinni/pydjinni/{{ git.tag }}/src/pydjinni/cmake/modules/FindPyDjinni.cmake){ .md-button download="FindPyDjinni.cmake" }
 
 ```cmake
 list(APPEND CMAKE_MODULE_PATH 

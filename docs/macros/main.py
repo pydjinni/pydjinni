@@ -141,6 +141,18 @@ def define_env(env):
         return '\n'.join(output)
 
     @env.macro
+    def init_cli_commands():
+        command_obj = load_command("pydjinni_init.cli", "cli")
+
+        output = make_command_docs(
+            prog_name="pydjinni-init",
+            command=command_obj,
+            depth=1,
+            style="table",
+        )
+        return '\n'.join(output)
+
+    @env.macro
     def internal_types():
         output = ""
         for type_def in api.internal_types:
