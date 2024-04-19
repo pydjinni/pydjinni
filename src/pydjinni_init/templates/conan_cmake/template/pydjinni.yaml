@@ -59,4 +59,6 @@ package:
   nuget:
     platforms:
       windows: [x86_64]
+    publish:
+      net_version: net8.0
 {% endif %}
