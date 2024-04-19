@@ -7,5 +7,6 @@ exclude .github/**
 exclude .idea/**
 exclude cmake-build-*/**
 exclude cmake/**
+include src/pydjinni/cmake/modules/FindPyDjinni.cmake
 include src/pydjinni/cmake/modules/PyDjinni.cmake
-include src/pydjinni-init/template/conan_cmake/template/CMakeLists.txt
+include src/pydjinni_init/templates/conan_cmake/template/CMakeLists.txt
