@@ -51,6 +51,9 @@ package:
   aar:
     platforms:
       android: [x86_64, armv8]
+    publish:
+      group_id: {{ cpp_namespace | replace("::", ".") }}
+      artifact_id: {{ target | lower }}
 {%- endif %}
 {%- if "windows" in platforms %}
   nuget:
