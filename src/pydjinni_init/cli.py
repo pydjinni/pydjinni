@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import logging
-import os
 from importlib.metadata import entry_points
+from pathlib import Path
 
 import click
 from rich.logging import RichHandler
@@ -41,10 +41,23 @@ class TemplatesCli(click.Group):
         target = targets.get(name)
 
         @click.command(name, help=target.__doc__)
-        @click.option("--platforms", type=str, prompt="Target platforms", help="Comma separated list of system target platforms", default=",".join(target.supported_platforms), show_default=True)
-        def command(platforms: str, **parameters):
-            logger.info(f"Generating '{target.key}' template to {os.getcwd()}")
-            return target.template(platforms.split(","), parameters)
+        @click.option(
+            "--output-dir",
+            type=Path,
+            default=Path(),
+            help="Directory where the project should be initialized"
+        )
+        @click.option(
+            "--platforms",
+            type=str,
+            prompt="Target platforms",
+            help="Comma separated list of system target platforms",
+            default=",".join(target.supported_platforms),
+            show_default=True
+        )
+        def command(output_dir: Path, platforms: str, **parameters):
+            logger.info(f"Generating '{target.key}' template to {Path().absolute()}")
+            return target.template(output_dir, platforms.split(","), parameters)
         for parameter in target.parameters:
             command = click.option(
                 f'--{parameter.key}',
@@ -68,9 +81,12 @@ def main():
 
 @click.group(cls=TemplatesCli)
 @click.version_option()
-@click.option("--log-level", "-l", default="info",
-              type=click.Choice(["debug", "info", "warn", "error"], case_sensitive=False),
-              help="Log level")
+@click.option(
+    "--log-level", "-l",
+    default="info",
+    type=click.Choice(["debug", "info", "warn", "error"], case_sensitive=False),
+    help="Log level"
+)
 def cli(log_level):
     log_level = getattr(logging, log_level.upper(), logging.INFO)
     logging.basicConfig(

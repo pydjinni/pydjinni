@@ -81,8 +81,7 @@ jobs:
       - name: Install pydjinni
         run: pip install .
       - name: generate project from template
-        run: pydjinni-init conan-cmake --platforms android,darwin,windows --target TestLibrary --cpp-namespace test::library --version 0.0.0
-        working-directory: test-library
+        run: pydjinni-init conan-cmake --output-dir test-library --platforms android,darwin,windows --target TestLibrary --cpp-namespace test::library --version 0.0.0
       - name: install requirements
         run : pip install -r requirements.txt
         working-directory: test-library

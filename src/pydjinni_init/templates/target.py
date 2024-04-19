@@ -74,13 +74,13 @@ class TemplateTarget(ABC):
             keep_trailing_newline=True
         )
 
-    def template(self, platforms: list[str], parameters: dict[str, str]):
+    def template(self, output_dir: Path, platforms: list[str], parameters: dict[str, str]):
         for platform in platforms:
             if platform not in self.supported_platforms:
                 raise UnknownTargetException(platform)
         for file in self._template_directory.rglob('*'):
             if file.is_file():
-                output_file = Path().resolve() / file.relative_to(self._template_directory)
+                output_file = output_dir.resolve() / file.relative_to(self._template_directory)
                 output_file.parent.mkdir(parents=True, exist_ok=True)
                 try:
                     output = self._jinja_env.get_template(
