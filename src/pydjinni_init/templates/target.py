@@ -93,5 +93,5 @@ class TemplateTarget(ABC):
                 except UnicodeDecodeError:
                     shutil.copy(src=file, dst=output_file)
         for file, target in self.additional_files.items():
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy(src=file, dst=target)
+            (output_dir / target).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(src=file, dst=output_dir / target)
