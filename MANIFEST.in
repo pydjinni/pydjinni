@@ -8,3 +8,4 @@ exclude .idea/**
 exclude cmake-build-*/**
 exclude cmake/**
 include src/pydjinni/cmake/modules/PyDjinni.cmake
+include src/pydjinni-init/template/conan_cmake/template/CMakeLists.txt
