@@ -59,6 +59,47 @@ jobs:
         run: cmake --build build
       - name: Run Tests
         run: ctest --test-dir build --output-on-failure -C Debug
+  package_test:
+    name: package test
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        if: matrix.target == 'android'
+        with:
+          distribution: 'corretto'
+          java-version: '11'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+      - name: Install pydjinni
+        run: pip install .
+      - name: generate project from template
+        run: pydjinni-init conan-cmake --platforms android,darwin,windows --target TestLibrary --cpp-namespace test::library --version 0.0.0
+        working-directory: test-library
+      - name: install requirements
+        run : pip install -r requirements.txt
+        working-directory: test-library
+      - name: Set up Conan
+        run: conan profile detect
+      - name: package library for android
+        run: pydjinni package aar android
+        working-directory: test-library
+      - name: package library for darwin
+        if: matrix.os == 'macos-latest'
+        run: pydjinni package swiftpackage ios ios_simulator macos
+        working-directory: test-library
+      - name: package library for windows
+        if: matrix.os == 'windows-latest'
+        run: pydjinni package nuget windows
+        working-directory: test-library
   cmake_test:
     name: CMake test
     strategy:
