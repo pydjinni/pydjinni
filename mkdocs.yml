@@ -82,6 +82,7 @@ nav:
   - Getting started:
       - Installation: installation.md
       - Introduction: introduction.md
+      - Project Setup: project_setup.md
       - Migrating from Djinni: migration.md
   - Reference:
       - Command Line Interface: cli.md
@@ -103,4 +104,5 @@ nav:
           - Generator Plugin: generator_plugin.md
           - Build Plugin: build_plugin.md
           - Package Plugin: package_plugin.md
+          - Template Plugin: template_plugin.md
 

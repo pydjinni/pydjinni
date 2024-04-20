@@ -28,8 +28,12 @@ from pydjinni_init.exceptions import ApplicationException
 class UnknownTargetException(ApplicationException, code=120):
     """Unknown packaging target"""
 
+
 @dataclass
 class Parameter:
+    """
+    Custom configuration parameter required for rendering the template.
+    """
     key: str
     name: str
     description: str
@@ -37,6 +41,9 @@ class Parameter:
 
 
 class TemplateTarget(ABC):
+    """
+    Abstract base class that all template plugins must derive from.
+    """
 
     @abstractmethod
     @cached_property
@@ -50,20 +57,27 @@ class TemplateTarget(ABC):
     @cached_property
     def supported_platforms(self) -> list[str]:
         """
-        A list of target platforms that are supported by the template
+        A list of target platforms that are supported by the template.
+        Possible values can be defined by the template plugin.
         """
         pass
 
     @abstractmethod
     @cached_property
     def parameters(self) -> list[Parameter]:
+        """
+        List of custom parameters that are required for rendering the template.
+        Each parameter will be added as mandatory command line option that will prompt for a value if not provided by
+        the user in the command call.
+        """
         pass
 
     @abstractmethod
     @cached_property
     def additional_files(self) -> dict[Path, Path]:
         """
-        List of additional files not in the templates directory that should be included in the output
+        Map of additional files not in the templates directory that should be included in the output.
+        The key is the source of the file, the value is the relative output path where the file should be written to.
         """
         pass
 

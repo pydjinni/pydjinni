@@ -6,4 +6,10 @@ When running the wizard, a new PyDjinni Library project is initialized in the cu
 
 {{ init_cli_commands() }}
 
+## Return Codes
+
+In the event of an error, the CLI tries to provide a helpful return code for further error handling in addition to the 
+error message.
+
+{{ init_return_code_list() }}
 

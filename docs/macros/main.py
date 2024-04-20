@@ -15,6 +15,7 @@ from pydjinni.api import API
 from pydjinni.exceptions import return_codes
 from pydjinni.parser.ast import Record
 from pydjinni.parser.markdown_plugins import markdown_commands
+from pydjinni_init.exceptions import init_return_codes
 
 
 def render_config_schema_table(element, indent: int, render_defaults=True):
@@ -182,6 +183,15 @@ def define_env(env):
     @env.macro
     def return_code_list():
         sorted_return_codes = OrderedDict(sorted(return_codes.items()))
+        output = "| Code | Description |\n" \
+                 "|------|-------------|\n"
+        for code, description in sorted_return_codes.items():
+            output += f"| {code} | {description} |\n"
+        return output
+
+    @env.macro
+    def init_return_code_list():
+        sorted_return_codes = OrderedDict(sorted(init_return_codes.items()))
         output = "| Code | Description |\n" \
                  "|------|-------------|\n"
         for code, description in sorted_return_codes.items():

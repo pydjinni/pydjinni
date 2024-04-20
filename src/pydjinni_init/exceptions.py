@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-return_codes: dict[int, str] = {}
+init_return_codes: dict[int, str] = {}
 
 
 class ApplicationException(Exception):
@@ -21,8 +21,8 @@ class ApplicationException(Exception):
     def __init_subclass__(cls, code: int = -1):
         if code > 0:
             cls.code = code
-            assert return_codes.get(code) is None, f"The return code '{code}' is already in use!"
-            return_codes[code] = cls.__doc__
+            assert init_return_codes.get(code) is None, f"The return code '{code}' is already in use!"
+            init_return_codes[code] = cls.__doc__
 
     def __init__(self, description: str):
         self.description = description

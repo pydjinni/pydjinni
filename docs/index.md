@@ -123,7 +123,7 @@ Here is what is planned for the near future:
 - [x] Add C#/Windows support
 - [x] Add language server (LSP) support
 - [x] Publish IDE plugins
-- [ ] Add project setup wizard
+- [x] Add project setup wizard
 - [ ] Increase test coverage
 - [ ] Release stable version 1.0
 

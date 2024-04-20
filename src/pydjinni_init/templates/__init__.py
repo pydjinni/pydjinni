@@ -1,4 +1,4 @@
-# Copyright 2024 jothepro
+# Copyright 2023 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,15 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import traceback
-
-from lsprotocol.types import MessageType
-
-
-def error_logger(func):
-    def inner_function(ls, *args, **kwargs):
-        try:
-            return func(ls, *args, **kwargs)
-        except Exception as e:
-            ls.show_message_log(traceback.format_exc(), msg_type=MessageType.Error)
-    return inner_function
+from .target import TemplateTarget
