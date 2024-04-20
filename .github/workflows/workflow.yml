@@ -92,7 +92,7 @@ jobs:
         working-directory: test-library
       - name: package library for darwin
         if: matrix.os == 'macos-latest'
-        run: pydjinni package swiftpackage ios ios_simulator macos
+        run: pydjinni package swiftpackage ios macos
         working-directory: test-library
       - name: package library for windows
         if: matrix.os == 'windows-latest'
