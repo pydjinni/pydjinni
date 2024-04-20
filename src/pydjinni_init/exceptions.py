@@ -12,15 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import traceback
-
-from lsprotocol.types import MessageType
+init_return_codes: dict[int, str] = {}
 
 
-def error_logger(func):
-    def inner_function(ls, *args, **kwargs):
-        try:
-            return func(ls, *args, **kwargs)
-        except Exception as e:
-            ls.show_message_log(traceback.format_exc(), msg_type=MessageType.Error)
-    return inner_function
+class ApplicationException(Exception):
+    """Pydjinni Application Exception"""
+
+    def __init_subclass__(cls, code: int = -1):
+        if code > 0:
+            cls.code = code
+            assert init_return_codes.get(code) is None, f"The return code '{code}' is already in use!"
+            init_return_codes[code] = cls.__doc__
+
+    def __init__(self, description: str):
+        self.description = description
+
+    def __str__(self) -> str:
+        return f"{self.__doc__}: {self.description}"

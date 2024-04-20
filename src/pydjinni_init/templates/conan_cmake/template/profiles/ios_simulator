@@ -1,0 +1,11 @@
+{%- if "darwin" in platforms -%}
+include(default)
+[settings]
+os=iOS
+os.sdk=iphonesimulator
+os.version=13.0
+compiler=apple-clang
+compiler.libcxx=libc++
+[conf]
+tools.cmake.cmaketoolchain:generator=Xcode
+{%- endif %}

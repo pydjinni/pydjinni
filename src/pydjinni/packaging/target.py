@@ -175,7 +175,6 @@ class PackageTarget(ABC):
                 output_file = self.package_build_path / file.relative_to(self._template_directory)
                 prepare(output_file.parent)
                 try:
-                    print(str(file.relative_to(self._template_directory).as_posix()))
                     output_file.write_text(
                         self._jinja_env.get_template(str(file.relative_to(self._template_directory).as_posix())).render(
                             config=self.config))

@@ -1,0 +1,3 @@
+hello_world = main interface +cpp {
+    static say_hello() -> string;
+}
