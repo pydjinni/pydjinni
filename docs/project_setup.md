@@ -20,6 +20,8 @@ and CMake.
 pydjinni-init conan-cmake
 ```
 
+For more details on how to use the setup wizard, consult the [Setup Wizard Reference](setup_wizard.md).
+
 ## Stay curious!
 
 While both methods of setting up a new projects currently only support CMake with Conan, PyDjinni is designed to be
