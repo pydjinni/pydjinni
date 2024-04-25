@@ -61,6 +61,10 @@ class XmlCommentRenderer(HTMLRenderer):
         self.params_doc.append(f'<param name="{Identifier(name).convert(self.identifier_style.local)}">{text}</param>\n')
         return ""
 
+    def throws(self, text: str, name: str) -> str:
+        self.params_doc.append(f'<exception cref="{Identifier(name).convert(self.identifier_style.type)}">{text}</exception>\n')
+        return ""
+
     def deprecated(self, text: str) -> str:
         return ""
 

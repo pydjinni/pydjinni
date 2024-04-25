@@ -19,12 +19,15 @@ from pydjinni.parser.ast import (
     Record,
     Flags,
     Enum,
-    Parameter, Function
+    Parameter,
+    Function,
+    ErrorDomain
 )
 from pydjinni.parser.base_models import (
     BaseType,
     BaseField,
-    SymbolicConstantField
+    SymbolicConstantField,
+    DataField
 )
 from .config import ObjcConfig
 from .external_types import external_types
@@ -35,8 +38,10 @@ from .type import (
     ObjcInterface,
     ObjcSymbolicConstantField,
     ObjcRecord,
+    ObjcDataField,
     ObjcParameter,
-    ObjcFunction
+    ObjcFunction,
+    ObjcErrorDomain,
 )
 
 
@@ -53,8 +58,10 @@ class ObjcGenerator(Generator):
         Function: ObjcFunction,
         SymbolicConstantField: ObjcSymbolicConstantField,
         Record: ObjcRecord,
-        Record.Field: ObjcRecord.ObjcField,
-        Parameter: ObjcParameter
+        DataField: ObjcDataField,
+        Parameter: ObjcParameter,
+        ErrorDomain: ObjcErrorDomain,
+        ErrorDomain.ErrorCode: ObjcErrorDomain.ObjcErrorCode
     }
     writes_header = True
     writes_source = True
@@ -74,7 +81,11 @@ class ObjcGenerator(Generator):
         self.write_header("header/interface.h.jinja2", type_def=type_def)
 
     def generate_function(self, type_def: Function):
-        pass
+        self.write_header("header/function.h.jinja2", type_def=type_def)
+
+    def generate_error_domain(self, type_def: ErrorDomain):
+        self.write_header("header/error_domain.h.jinja2", type_def=type_def)
+        self.write_source("source/error_domain.m.jinja2", type_def=type_def)
 
     def generate_bridging_header(self, ast: list[BaseType]):
         if self.config.swift.bridging_header:

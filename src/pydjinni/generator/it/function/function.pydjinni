@@ -1,0 +1,14 @@
+named_function = function (param: string) -> bool;
+
+foo = record {
+    a: i32;
+}
+
+helper = main interface +cpp {
+    static named_function(callback: named_function);
+    static anonymous_function(callback: (param: string) -> bool);
+    static cpp_named_function() -> named_function;
+    static cpp_anonymous_function() -> (param: string) -> bool;
+    static cpp_function_throwing_exception() -> ();
+    static anonymous_function_passing_record(callback: (param: foo) -> bool);
+}

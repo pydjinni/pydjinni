@@ -62,5 +62,37 @@ namespace Testing.Unit.Interface
             var exception = Assert.Throws<Exception>(() => calculator.ThrowingException());
             Assert.That(exception.Message, Is.EqualTo("shit hit the fan"));
         }
+
+        [Test]
+        public void TestNoParametersNoReturnCallback()
+        {
+            var callback = new NoParametersNoReturnCallbackImpl();
+            calculator.NoParametersNoReturnCallback(callback);
+            Assert.That(callback.callbackInvoked, Is.True);
+        }
+
+        class NoParametersNoReturnCallbackImpl : NoParametersNoReturnCallback
+        {
+            public bool callbackInvoked = false;
+            public override void Invoke()
+            {
+                callbackInvoked = true;
+            }
+        }
+
+        [Test]
+        public void TestThrowingExceptionCallback()
+        {
+            var exception = Assert.Throws<Exception>(() => calculator.ThrowingCallback(new ThrowingCallbackImpl()));
+            Assert.That(exception.Message, Is.EqualTo("exception from callback"));
+        }
+
+        class ThrowingCallbackImpl : ThrowingCallback
+        {
+            public override void Invoke()
+            {
+                throw new Exception("exception from callback");
+            }
+        }
     }
 }

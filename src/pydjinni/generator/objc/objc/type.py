@@ -11,17 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 
 from pydantic import BaseModel, Field, computed_field
 
+from pydjinni.generator.filters import headers
 from pydjinni.generator.objc.objc.comment_renderer import DocCCommentRenderer
 from pydjinni.generator.objc.objc.config import ObjcConfig
 from pydjinni.generator.objc.objc.keywords import swift_keywords, keywords
 from pydjinni.generator.validator import validate
-from pydjinni.parser.ast import Record, Interface, Parameter, Function
+from pydjinni.parser.ast import Record, Interface, Parameter, Function, ErrorDomain
 from pydjinni.parser.base_models import BaseType, BaseExternalType, BaseField, TypeReference
 from pydjinni.parser.identifier import IdentifierType as Identifier
 
@@ -34,34 +35,32 @@ class ObjcExternalType(BaseModel):
 
 
 def type_decl(type_ref: TypeReference, parameter: bool = False, boxed: bool = False) -> str:
-    type_def: BaseExternalType | BaseType = type_ref.type_def
-    generic_types = ""
-    pointer = type_def.objc.pointer
-    optional = type_ref.optional
-    typename = type_def.objc.boxed if boxed or optional else type_def.objc.typename
-    if type_ref.parameters:
-        generic_types = "<"
-        for parameter_ref in type_ref.parameters:
-            if len(generic_types) > 1:
-                generic_types += ", "
-            generic_types += type_decl(parameter_ref, boxed=True)
-        generic_types += ">"
-    if type_def.primitive == BaseExternalType.Primitive.interface:
-        if parameter:
-            typename = f"id<{typename}>"
-            pointer = False
+    if type_ref:
+        type_def: BaseExternalType | BaseType = type_ref.type_def
+        generic_types = ""
+        pointer = type_def.objc.pointer
+        optional = type_ref.optional
+        typename = type_def.objc.boxed if boxed or optional else type_def.objc.typename
+        if type_ref.parameters:
+            generic_types = f'<{", ".join([type_decl(parameter_ref, boxed=True) for parameter_ref in type_ref.parameters])}>'
+        if type_def.primitive == BaseExternalType.Primitive.interface:
+            if parameter:
+                typename = f"id<{typename}>"
+                pointer = False
 
-    return f"{typename}{generic_types}{' *' if pointer or boxed or optional else ''}"
+        return f"{typename}{generic_types}{' *' if pointer or boxed or optional else ''}"
+    else:
+        return "void"
 
 
-def annotation(type_ref: TypeReference):
+def annotation(type_ref: TypeReference, macro_style: bool = False):
     if type_ref and ((isinstance(type_ref.type_def, Interface) or
                       (isinstance(type_ref.type_def, BaseExternalType) and
                        type_ref.type_def.primitive == BaseExternalType.Primitive.interface)) or
                      type_ref.optional):
-        return "nullable"
+        return "_Nullable" if macro_style else "nullable"
     elif type_ref and type_ref.type_def.objc.pointer:
-        return "nonnull"
+        return "_Nonnull" if macro_style else "nonnull"
     else:
         return ""
 
@@ -98,7 +97,10 @@ class ObjcBaseType(BaseModel):
     @cached_property
     @validate(swift_keywords)
     def swift_typename(self) -> str:
-        return f"{self.namespace}.{self.name}" if self.namespace else self.name
+        output = self.decl.name.convert(self.config.identifier.type)
+        if self.namespace:
+            output = f"{self.namespace}.{output}"
+        return output
 
     @cached_property
     def comment(self):
@@ -106,8 +108,12 @@ class ObjcBaseType(BaseModel):
             if self.decl.comment else ''
 
     @cached_property
-    def namespace(self): return '.'.join([identifier.convert(self.config.identifier.type)
-                                          for identifier in self.decl.namespace])
+    @validate(keywords)
+    @validate(swift_keywords)
+    def namespace(self): return Identifier('_'.join(self.decl.namespace)).convert(self.config.identifier.type)
+
+    @cached_property
+    def imports(self): return headers(self.decl.dependencies, "objc")
 
 
 class ObjcFunction(ObjcBaseType):
@@ -120,9 +126,6 @@ class ObjcFunction(ObjcBaseType):
         parameter_type_decls = [type_decl(parameter.type_ref, parameter=True) for parameter in self.decl.parameters]
         return f"{return_type_decl} (^)({', '.join(parameter_type_decls)})"
 
-    @computed_field
-    @cached_property
-    def header(self) -> Path: return None
 
 
 class ObjcBaseClassType(ObjcBaseType):
@@ -155,7 +158,15 @@ class ObjcRecord(ObjcBaseClassType):
         if self.base_type:
             return f"{self.config.type_prefix}{self.namespace}{Identifier(f'{self.decl.name}_base').convert(self.config.identifier.type)}"
         else:
-            return super().typename
+            return super().name
+
+    @cached_property
+    @validate(swift_keywords)
+    def swift_typename(self) -> str:
+        output = Identifier(self.decl.name + ("_base" if self.base_type else "")).convert(self.config.identifier.type)
+        if self.namespace:
+            output = f"{self.namespace}.{output}"
+        return output
 
     @cached_property
     def derived_name(self) -> str:
@@ -180,54 +191,54 @@ class ObjcRecord(ObjcBaseClassType):
         return Identifier(f"{name}_with_{self.decl.fields[0].name}").convert(self.config.identifier.method) \
             if self.decl.fields else self.decl.name.convert(self.config.identifier.method)
 
-    class ObjcField(ObjcBaseField):
-        @cached_property
-        def type_decl(self) -> str:
-            return type_decl(self.decl.type_ref)
+class ObjcDataField(ObjcBaseField):
+    @cached_property
+    def type_decl(self) -> str:
+        return type_decl(self.decl.type_ref)
 
-        @cached_property
-        def annotation(self) -> str:
-            return annotation(self.decl.type_ref)
+    @cached_property
+    def annotation(self) -> str:
+        return annotation(self.decl.type_ref)
 
-        @cached_property
-        def hash_code(self) -> str:
-            if self.decl.type_ref.type_def.primitive in [
-                BaseExternalType.Primitive.enum,
-                BaseExternalType.Primitive.flags
-            ]:
-                return f"(NSUInteger)self.{self.decl.objc.name}"
-            elif self.decl.type_ref.optional or self.decl.type_ref.type_def.objc.typename == self.decl.type_ref.type_def.objc.boxed:
-                return f"self.{self.decl.objc.name}.hash"
-            else:
-                return f"(NSUInteger)self.{self.decl.objc.name}"
+    @cached_property
+    def hash_code(self) -> str:
+        if self.decl.type_ref.type_def.primitive in [
+            BaseExternalType.Primitive.enum,
+            BaseExternalType.Primitive.flags
+        ]:
+            return f"(NSUInteger)self.{self.decl.objc.name}"
+        elif self.decl.type_ref.optional or self.decl.type_ref.type_def.objc.typename == self.decl.type_ref.type_def.objc.boxed:
+            return f"self.{self.decl.objc.name}.hash"
+        else:
+            return f"(NSUInteger)self.{self.decl.objc.name}"
 
-        @cached_property
-        def equals(self) -> str:
-            if self.decl.type_ref.type_def.primitive in [
-                BaseExternalType.Primitive.enum,
-                BaseExternalType.Primitive.flags
-            ]:
-                return f"self.{self.decl.objc.name} == typedOther.{self.decl.objc.name}"
-            elif self.decl.type_ref.optional:
-                return f"((self.{self.decl.objc.name} == nil && typedOther.{self.decl.objc.name} == nil) || (self.{self.decl.objc.name} != nil && [self.{self.decl.objc.name} isEqual:typedOther.{self.decl.objc.name}]))"
-            elif self.decl.type_ref.type_def.objc.typename == self.decl.type_ref.type_def.objc.boxed:
-                match self.decl.type_ref.type_def.name:
-                    case 'binary':
-                        return f"[self.{self.decl.objc.name} isEqualToData:typedOther.{self.decl.objc.name}]"
-                    case 'list':
-                        return f"[self.{self.decl.objc.name} isEqualToArray:typedOther.{self.decl.objc.name}]"
-                    case 'set':
-                        return f"[self.{self.decl.objc.name} isEqualToSet:typedOther.{self.decl.objc.name}]"
-                    case 'map':
-                        return f"[self.{self.decl.objc.name} isEqualToDictionary:typedOther.{self.decl.objc.name}]"
-                    case 'string':
-                        return f"[self.{self.decl.objc.name} isEqualToString:typedOther.{self.decl.objc.name}]"
-                    case 'date':
-                        return f"[self.{self.decl.objc.name} isEqualToDate:typedOther.{self.decl.objc.name}]"
-                    case _:
-                        return f"[self.{self.decl.objc.name} isEqual:typedOther.{self.decl.objc.name}]"
-            else:
-                return f"self.{self.decl.objc.name} == typedOther.{self.decl.objc.name}"
+    @cached_property
+    def equals(self) -> str:
+        if self.decl.type_ref.type_def.primitive in [
+            BaseExternalType.Primitive.enum,
+            BaseExternalType.Primitive.flags
+        ]:
+            return f"self.{self.decl.objc.name} == typedOther.{self.decl.objc.name}"
+        elif self.decl.type_ref.optional:
+            return f"((self.{self.decl.objc.name} == nil && typedOther.{self.decl.objc.name} == nil) || (self.{self.decl.objc.name} != nil && [self.{self.decl.objc.name} isEqual:typedOther.{self.decl.objc.name}]))"
+        elif self.decl.type_ref.type_def.objc.typename == self.decl.type_ref.type_def.objc.boxed:
+            match self.decl.type_ref.type_def.name:
+                case 'binary':
+                    return f"[self.{self.decl.objc.name} isEqualToData:typedOther.{self.decl.objc.name}]"
+                case 'list':
+                    return f"[self.{self.decl.objc.name} isEqualToArray:typedOther.{self.decl.objc.name}]"
+                case 'set':
+                    return f"[self.{self.decl.objc.name} isEqualToSet:typedOther.{self.decl.objc.name}]"
+                case 'map':
+                    return f"[self.{self.decl.objc.name} isEqualToDictionary:typedOther.{self.decl.objc.name}]"
+                case 'string':
+                    return f"[self.{self.decl.objc.name} isEqualToString:typedOther.{self.decl.objc.name}]"
+                case 'date':
+                    return f"[self.{self.decl.objc.name} isEqualToDate:typedOther.{self.decl.objc.name}]"
+                case _:
+                    return f"[self.{self.decl.objc.name} isEqual:typedOther.{self.decl.objc.name}]"
+        else:
+            return f"self.{self.decl.objc.name} == typedOther.{self.decl.objc.name}"
 
 
 class ObjcParameter(ObjcBaseField):
@@ -254,13 +265,51 @@ class ObjcInterface(ObjcBaseClassType):
         @computed_field
         @cached_property
         @validate(keywords)
-        def name(self) -> str: return self.decl.name.convert(self.config.identifier.method)
+        def name(self) -> str:
+            name = self.decl.name
+            return Identifier(name).convert(self.config.identifier.method)
 
         @cached_property
-        def type_decl(self) -> str: return type_decl(self.decl.return_type_ref) if self.decl.return_type_ref else "void"
+        def type_decl(self) -> str: return type_decl(self.decl.return_type_ref)
 
         @cached_property
-        def specifier(self) -> str: return "+" if self.decl.static else "-"
+        def completion_handler(self):
+            if (not self.decl.return_type_ref) and self.decl.throwing:
+                return "nonnull void (^)(NSError* _Nullable)"
+            else:
+                return f"nonnull void (^)({self.type_decl} {annotation(self.decl.return_type_ref, macro_style=True)}{', NSError* _Nullable' if self.decl.throwing else ''})"
 
         @cached_property
-        def annotation(self) -> str: return annotation(self.decl.return_type_ref)
+        def specifier(self) -> str:
+            return "+" if self.decl.static else "-"
+
+        @cached_property
+        def annotation(self) -> str:
+            return annotation(self.decl.return_type_ref)
+
+
+class ObjcErrorDomain(ObjcBaseClassType):
+    decl: ErrorDomain = Field(exclude=True, repr=False)
+
+    class ObjcErrorCode(ObjcBaseClassType):
+        @cached_property
+        @validate(keywords)
+        def name(self) -> str: return self.decl.name.convert(self.config.identifier.type)
+
+    @dataclass
+    class UserInfoKey:
+        objc: str
+        swift: str
+    @property
+    def domain_name(self) -> str:
+        return f"{super().name}Domain"
+
+    @property
+    def user_info_keys(self) -> list[UserInfoKey]:
+        return [
+            ObjcErrorDomain.UserInfoKey(
+                self.typename + error_code.objc.name + parameter.name.convert(self.config.identifier.type),
+                self.swift_typename + error_code.objc.name + parameter.name.convert(self.config.identifier.type)
+            ) for error_code in self.decl.error_codes for parameter in error_code.parameters]
+
+

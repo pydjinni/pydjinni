@@ -25,7 +25,6 @@ theme:
       toggle:
         icon: octicons/sun-16
         name: Switch to dark mode
-
     # Palette toggle for dark mode
     - media: "(prefers-color-scheme: dark)"
       primary: blue

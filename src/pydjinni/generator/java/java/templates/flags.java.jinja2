@@ -20,10 +20,16 @@ limitations under the License.
 {% if type_def.comment %}
 {{ comment(type_def) }}
 {% endif %}
+{% if type_def.deprecated %}
+@Deprecated
+{% endif %}
 public enum {{ type_def.java.name }} {
 {% for flag in type_def.flags if not flag.none and not flag.all %}
     {% if flag.comment %}
     {{ comment(flag, 4) }}
+    {% endif %}
+    {% if type_def.deprecated %}
+    @Deprecated
     {% endif %}
     {{ flag.java.name ~ (";" if loop.last else ",") }}
 {% endfor %}

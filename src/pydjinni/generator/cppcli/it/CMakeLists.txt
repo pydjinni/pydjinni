@@ -62,7 +62,7 @@ function(cppcli_test_case TEST_CASE_NAME)
 
     set_target_properties(${CS_TARGET_NAME}  PROPERTIES
         VS_DOTNET_REFERENCES "System;System.Core"
-        VS_PACKAGE_REFERENCES "nunit_3.13.1;NUnit3TestAdapter_3.17.0;Microsoft.NET.Test.Sdk_16.9.4"
+        VS_PACKAGE_REFERENCES "nunit_4.2.2;NUnit3TestAdapter_4.6.0;Microsoft.NET.Test.Sdk_17.12.0"
     )
 
     target_link_libraries(${CS_TARGET_NAME} PUBLIC test::cppcli::${TEST_CASE_NAME})
@@ -77,3 +77,5 @@ add_subdirectory(interface)
 add_subdirectory(enum)
 add_subdirectory(flags)
 add_subdirectory(function)
+add_subdirectory(async)
+add_subdirectory(error)

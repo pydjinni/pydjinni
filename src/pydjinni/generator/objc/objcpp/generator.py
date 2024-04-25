@@ -14,11 +14,18 @@
 
 from pydjinni.generator.filters import quote, headers
 from pydjinni.generator.generator import Generator
-from pydjinni.parser.ast import Interface, Record, Flags, Enum, Function
+from pydjinni.parser.ast import Interface, Record, Flags, Enum, Function, ErrorDomain
 from pydjinni.parser.base_models import BaseType, BaseField, SymbolicConstantField
 from .config import ObjcppConfig
 from .external_types import external_types
-from .type import ObjcppExternalType, ObjcppBaseType, ObjcppBaseField, ObjcppSymbolicConstantField, ObjcppFunction
+from .type import (
+    ObjcppExternalType,
+    ObjcppBaseType,
+    ObjcppBaseField,
+    ObjcppSymbolicConstantField,
+    ObjcppFunction,
+    ObjcppInterface
+)
 
 
 class ObjcppGenerator(Generator):
@@ -30,6 +37,7 @@ class ObjcppGenerator(Generator):
         BaseType: ObjcppBaseType,
         BaseField: ObjcppBaseField,
         Function: ObjcppFunction,
+        Interface: ObjcppInterface,
         SymbolicConstantField: ObjcppSymbolicConstantField
     }
     writes_header = True
@@ -54,3 +62,7 @@ class ObjcppGenerator(Generator):
     def generate_function(self, type_def: Function):
         self.write_header("header/function.h.jinja2", type_def=type_def)
         self.write_source("source/function.mm.jinja2", type_def=type_def)
+
+    def generate_error_domain(self, type_def: ErrorDomain):
+        self.write_header("header/error_domain.h.jinja2", type_def=type_def)
+        self.write_source("source/error_domain.mm.jinja2", type_def=type_def)

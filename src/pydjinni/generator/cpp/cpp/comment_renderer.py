@@ -35,3 +35,7 @@ class DoxygenCommentRenderer(MarkdownRenderer):
 
     def deprecated(self, token: dict[str, Any], state: BlockState) -> str:
         return f"@deprecated {self.render_children(token, state)}\n"
+
+    def throws(self, token: dict[str, Any], state: BlockState) -> str:
+        name = token['attrs']['name']
+        return f"@throws {Identifier(name).convert(self.identifier_style.type)} {self.render_children(token, state)}\n"

@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2024 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,14 +15,23 @@
 from pathlib import Path
 
 from pydjinni.generator.generator import Generator
-from pydjinni.parser.ast import Enum, Flags, Record, Interface, Function
+from pydjinni.parser.ast import (
+    Enum,
+    Flags,
+    Record,
+    Interface,
+    Function,
+    ErrorDomain, Parameter
+)
 from pydjinni.parser.base_models import (
     BaseType,
     BaseField,
-    SymbolicConstantField
+    SymbolicConstantField,
+    DataField
 )
 from .config import JavaConfig
 from .external_types import external_types
+from .metadata import JavaMetadata
 from .type import (
     JavaExternalType,
     JavaBaseType,
@@ -31,7 +40,11 @@ from .type import (
     JavaFunction,
     JavaBaseField,
     JavaSymbolicConstantField,
-    JavaInterface
+    JavaInterface,
+    JavaErrorDomain,
+    JavaDataField,
+    NativeLibLoader,
+    NativeCleaner
 )
 
 
@@ -43,14 +56,18 @@ class JavaGenerator(Generator):
     marshal_models = {
         BaseType: JavaBaseType,
         Record: JavaRecord,
-        Record.Field: JavaRecord.JavaField,
+        DataField: JavaDataField,
+        Parameter: JavaDataField,
         Flags: JavaFlags,
         Function: JavaFunction,
         BaseField: JavaBaseField,
         SymbolicConstantField: JavaSymbolicConstantField,
         Interface: JavaInterface,
-        Interface.Method: JavaInterface.JavaMethod
+        Interface.Method: JavaInterface.JavaMethod,
+        ErrorDomain: JavaErrorDomain,
+        ErrorDomain.ErrorCode: JavaErrorDomain.JavaErrorCode,
     }
+    metadata_model = JavaMetadata
     writes_source = True
 
     def generate_enum(self, type_def: Enum):
@@ -63,23 +80,74 @@ class JavaGenerator(Generator):
         self.write_source("record.java.jinja2", type_def=type_def)
 
     def generate_interface(self, type_def: Interface):
-        self.write_source("interface.java.jinja2", type_def=type_def)
+        self.write_source(
+            template="interface.java.jinja2",
+            type_def=type_def,
+            native_lib_loader=NativeLibLoader(self.config),
+            native_cleaner=NativeCleaner(self.config)
+        )
 
     def generate_function(self, type_def: Function):
-        self.write_source("function.java.jinja2", type_def=type_def)
+        self.write_source(
+            template="function.java.jinja2",
+            type_def=type_def,
+            native_cleaner=NativeCleaner(self.config)
+        )
+
+    def generate_error_domain(self, type_def: ErrorDomain):
+        self.write_source(
+            template="error_domain.java.jinja2",
+            type_def=type_def
+        )
 
     def generate_loader(self):
-        if self.config.native_lib:
-            loader = f"{self.config.native_lib}Loader"
-            package = '.'.join(self.config.package + ["native_lib"])
-            package_path = Path("/".join(package.split(".")))
-            self.write_source(
-                template="loader.java.jinja2",
-                filename=package_path / f"{loader}.java",
-                loader=loader,
-                package=package
-            )
+        native_lib_loader = NativeLibLoader(self.config)
+        self.write_source(
+            template="loader.java.jinja2",
+            filename=native_lib_loader.source,
+            native_lib_loader=native_lib_loader
+        )
+
+    def generate_runnable(self):
+        package = '.'.join(self.config.package + self.config.support_types_package)
+        package_path = Path("/".join(package.split(".")))
+        self.write_source(
+            template="runnable.java.jinja2",
+            filename=package_path / f"NativeRunnable.java",
+            package=package,
+            native_cleaner=NativeCleaner(self.config)
+        )
+
+    def generate_completion(self):
+        package = '.'.join(self.config.package + self.config.support_types_package)
+        package_path = Path("/".join(package.split(".")))
+        self.write_source(
+            template="completion.java.jinja2",
+            filename=package_path / f"NativeCompletion.java",
+            package=package,
+            native_cleaner=NativeCleaner(self.config)
+        )
+
+    def generate_cleaner(self):
+        native_cleaner = NativeCleaner(self.config)
+        self.write_source(
+            template="cleaner.java.jinja2",
+            filename=native_cleaner.source,
+            native_cleaner=native_cleaner
+        )
 
     def generate(self, ast: list[BaseType], copy_support_lib_sources: bool = True):
         super().generate(ast, copy_support_lib_sources)
-        self.generate_loader()
+        self.generate_cleaner()
+        if self.config.native_lib:
+            self.generate_loader()
+        if any(
+            isinstance(type_def, Interface) and "cpp" in type_def.targets and any(method.asynchronous for method in type_def.methods)
+            for type_def in ast
+        ):
+            self.generate_runnable()
+        if any(
+            isinstance(type_def, Interface) and "java" in type_def.targets and any(method.asynchronous for method in type_def.methods)
+            for type_def in ast
+        ):
+            self.generate_completion()

@@ -24,28 +24,28 @@ class TestFunction {
     @Test
     void testNamedFunction() {
         Helper.namedFunction(input -> {
-            return input == 42;
+            return input.equals("foo");
         });
     }
 
     @Test
     void testAnonymousFunction() {
         Helper.anonymousFunction(input -> {
-            return input == 42;
+            return input.equals("foo");
         });
     }
 
     @Test
     void testCppNamedFunction() {
         var function = Helper.cppNamedFunction();
-        var result = function.invoke(42);
+        var result = function.invoke("foo");
         assertTrue(result);
     }
 
     @Test
     void testCppAnonymousFunction() {
         var function = Helper.cppAnonymousFunction();
-        var result = function.invoke(42);
+        var result = function.invoke("foo");
         assertTrue(result);
     }
 
@@ -54,5 +54,12 @@ class TestFunction {
         var function = Helper.cppFunctionThrowingException();
         Exception exception = assertThrows(RuntimeException.class, () -> function.invoke());
         assertTrue(exception.getMessage().equals("shit hit the fan"));
+    }
+
+    @Test
+    void testAnonymousFunctionPassingRecord() {
+        Helper.anonymousFunctionPassingRecord(foo -> {
+            return foo.getA() == 32;
+        });
     }
 }

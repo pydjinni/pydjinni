@@ -18,7 +18,7 @@
 
 namespace test::record {
 
-PrimitiveTypes Helper::get_primitive_types(const PrimitiveTypes &record_type) {
+PrimitiveTypes Helper::get_primitive_types(const PrimitiveTypes &record_type) noexcept {
     assert(record_type.boolean_t == true);
     assert(record_type.byte_t == 8);
     assert(record_type.short_t == 16);
@@ -31,7 +31,7 @@ PrimitiveTypes Helper::get_primitive_types(const PrimitiveTypes &record_type) {
     return record_type;
 }
 
-CollectionTypes Helper::get_collection_types(const CollectionTypes &record_type) {
+CollectionTypes Helper::get_collection_types(const CollectionTypes &record_type) noexcept {
     assert(record_type.int_list.size() == 2);
     assert(record_type.int_list[0] == 0);
     assert(record_type.int_list[1] == 1);
@@ -57,7 +57,7 @@ CollectionTypes Helper::get_collection_types(const CollectionTypes &record_type)
     return record_type;
 }
 
-OptionalTypes Helper::get_optional_types(const OptionalTypes &record_type) {
+OptionalTypes Helper::get_optional_types(const OptionalTypes &record_type) noexcept {
     assert(record_type.int_optional.has_value());
     assert(record_type.int_optional.value() == 42);
     assert(record_type.string_optional.has_value());
@@ -65,22 +65,22 @@ OptionalTypes Helper::get_optional_types(const OptionalTypes &record_type) {
     return record_type;
 }
 
-BinaryTypes Helper::get_binary_types(const BinaryTypes &record_type) {
+BinaryTypes Helper::get_binary_types(const BinaryTypes &record_type) noexcept {
     assert(record_type.binary_t.size() == 1);
     assert(record_type.binary_t == std::vector<uint8_t>{0x8F});
     return record_type;
 }
 
-BaseRecord Helper::get_cpp_base_record() {
+BaseRecord Helper::get_cpp_base_record() noexcept {
     return {};
 }
 
-BaseRecord Helper::get_host_base_record(const BaseRecord &record_type) {
+BaseRecord Helper::get_host_base_record(const BaseRecord &record_type) noexcept {
     assert(record_type.value == 42);
     return record_type;
 }
 
-ParentType Helper::get_nested_type(const ::test::record::ParentType &parent) {
+ParentType Helper::get_nested_type(const ::test::record::ParentType &parent) noexcept {
     assert(parent.nested.a == 42);
     return parent;
 }

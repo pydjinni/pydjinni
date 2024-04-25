@@ -18,6 +18,7 @@ limitations under the License.
 
 {% block header %}
 #include {{ (type_def.cppcli.derived_header if type_def.cppcli.base_type else type_def.cppcli.header) | quote }}
+#include "pydjinni/cppcli/Assert.hpp"
 {% endblock %}
 
 {% block content %}

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from pydjinni.generator.cpp.cpp.keywords import keywords as cpp_keywords
+from pydjinni.generator.filters import headers, quote
 from pydjinni.generator.validator import validate
 
 try:
@@ -80,18 +81,28 @@ def get_typename(type_ref: TypeReference) -> str:
         return ""
 
 
-def routine_name(type_ref: TypeReference) -> str:
-    if type_ref:
+def routine_name(type_ref: TypeReference, asynchronous: bool = False) -> str:
+    if asynchronous:
+        native_type = NativeType.object
+    elif type_ref:
         native_type = type_ref.type_def.jni.typename
         if native_type in [NativeType.string, NativeType.byte_array] or type_ref.optional:
             native_type = NativeType.object
-        native_type = native_type[1:].capitalize()
     else:
-        native_type = "Void"
-    return f"Call{native_type}Method"
+        native_type = " void"
+    return f"Call{native_type[1:].capitalize()}Method"
 
+def translator(type_ref: TypeReference, asynchronous: bool = False):
+    output = type_ref.type_def.jni.translator
+    if asynchronous and type_ref.type_def.jni.typename is not NativeType.object:
+        output += "::Boxed"
+    if type_ref.parameters:
+        output = f"{output}<{','.join([translator(parameter) for parameter in type_ref.parameters])}>"
+    if type_ref.optional:
+        output = f"::pydjinni::jni::translator::Optional<std::optional,{output}>"
+    return output
 
-def type_signature(parameters: list[Parameter], return_type_ref: TypeReference):
+def type_signature(parameters: list[Parameter], return_type_ref: TypeReference, asynchronous: bool = False):
     parameter_type_signatures = ""
     for parameter in parameters:
         if parameter.type_ref.optional:
@@ -99,13 +110,19 @@ def type_signature(parameters: list[Parameter], return_type_ref: TypeReference):
         else:
             parameter_type_signatures += parameter.type_ref.type_def.jni.type_signature
     return_type_signature = "V"
-    if return_type_ref:
+    if asynchronous:
+        return_type_signature = "Ljava/util/concurrent/CompletableFuture;"
+    elif return_type_ref:
         if return_type_ref.optional:
             return_type_signature = return_type_ref.type_def.jni.boxed_type_signature
         else:
             return_type_signature = return_type_ref.type_def.jni.type_signature
     return f"({parameter_type_signatures}){return_type_signature}"
 
+def jni_prefix(segments: list[str]):
+    segments = [segment.replace("_", "_1") for segment in segments]
+    segments = [segment.replace("$", "_00024") for segment in segments]
+    return "_".join(["Java"] + segments)
 
 class JniBaseType(BaseModel):
     decl: BaseType = Field(exclude=True, repr=False)
@@ -140,11 +157,10 @@ class JniBaseType(BaseModel):
     def name(self) -> str: return self.decl.name.convert(self.config.identifier.class_name)
 
     @cached_property
-    def jni_prefix(self) -> str:
-        segments = self.decl.java.package.split('.') + [self.name]
-        segments = [segment.replace("_", "_1") for segment in segments]
-        segments = [segment.replace("$", "_00024") for segment in segments]
-        return "_".join(["Java"] + segments)
+    def includes(self) -> list[str]: return headers(self.decl.dependencies, "jni")
+
+    @cached_property
+    def jni_prefix(self) -> str: return jni_prefix(self.decl.java.package.split('.') + [self.name])
 
     @cached_property
     @validate(cpp_keywords, separator="::")
@@ -174,6 +190,9 @@ class JniFunction(JniBaseType):
     def return_type_spec(self) -> str:
         return self.decl.return_type_ref.type_def.jni.typename if self.decl.return_type_ref else "void"
 
+    @cached_property
+    def return_type_translator(self) -> str: return translator(self.decl.return_type_ref)
+
 
 class JniBaseField(BaseModel):
     decl: BaseField = Field(exclude=True, repr=False)
@@ -191,6 +210,20 @@ class JniSymbolicConstantField(JniBaseField):
 
 
 class JniInterface(JniBaseType):
+
+    @cached_property
+    def includes(self) -> list[str]:
+        dependency_headers = super().includes
+        if any(method.asynchronous for method in self.decl.methods):
+            dependency_headers.append(quote(Path("pydjinni/coroutine/task.hpp")))
+            dependency_headers.append(quote(Path("pydjinni/coroutine/schedule.hpp")))
+            if "java" in self.decl.targets:
+                dependency_headers.append(quote(Path("pydjinni/coroutine/callback_awaitable.hpp")))
+                dependency_headers.append(quote(Path("pydjinni/coroutine/completion.hpp")))
+                dependency_headers.append(quote(Path("pydjinni/jni/support.hpp")))
+
+        return dependency_headers
+
     class JniMethod(JniBaseField):
         decl: Interface.Method = Field(exclude=True, repr=False)
 
@@ -200,14 +233,20 @@ class JniInterface(JniBaseType):
             return self.decl.name.convert(self.config.identifier.method)
 
         @cached_property
-        def type_signature(self) -> str: return type_signature(self.decl.parameters, self.decl.return_type_ref)
+        def type_signature(self) -> str: return type_signature(self.decl.parameters, self.decl.return_type_ref, self.decl.asynchronous)
 
         @cached_property
-        def routine_name(self) -> str: return routine_name(self.decl.return_type_ref)
+        def routine_name(self) -> str: return routine_name(self.decl.return_type_ref, self.decl.asynchronous)
 
         @cached_property
         def return_type_spec(self) -> str:
-            return self.decl.return_type_ref.type_def.jni.typename if self.decl.return_type_ref else "void"
+            if self.decl.asynchronous:
+                return NativeType.object
+            else:
+                return self.decl.return_type_ref.type_def.jni.typename if self.decl.return_type_ref else "void"
+
+        @cached_property
+        def return_type_translator(self) -> str: return translator(self.decl.return_type_ref, self.decl.asynchronous)
 
 
 class JniParameter(JniBaseField):
@@ -221,9 +260,17 @@ class JniParameter(JniBaseField):
 
 
 class JniRecord(JniBaseType):
-    class JniField(JniBaseField):
-        @cached_property
-        def field_accessor(self): return get_field_accessor(self.decl.type_ref)
+    pass
 
-        @cached_property
-        def typename(self): return get_typename(self.decl.type_ref)
+class JniDataField(JniBaseField):
+    @cached_property
+    def field_accessor(self): return get_field_accessor(self.decl.type_ref)
+
+    @cached_property
+    def typename(self): return get_typename(self.decl.type_ref)
+
+class JniErrorDomain(JniBaseType):
+    pass
+
+    class JniErrorCode(JniBaseType):
+        pass

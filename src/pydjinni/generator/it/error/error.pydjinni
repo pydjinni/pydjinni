@@ -1,0 +1,31 @@
+
+# error comment
+foo_error = error {
+    # error code comment
+    something_wrong;
+    something_else_wrong();
+    something_with_parameters(parameter: i8);
+}
+
+helper = main interface +cpp {
+    static throwing_error() throws foo_error;
+    static throwing_with_parameters() throws foo_error;
+    static async throwing_async() throws foo_error;
+    static async throwing_async_with_return_value() throws foo_error -> bool;
+    static throwing_callback_error(callback: throwing_callback) throws foo_error;
+    static async throwing_async_callback_error(callback: async_throwing_callback) throws foo_error;
+}
+
+throwing_callback = interface -cpp {
+    throwing_error() throws foo_error;
+}
+
+async_throwing_callback = interface -cpp {
+    async throwing_error() throws foo_error;
+}
+
+# @deprecated error domain is old
+bar_error = error {
+    # @deprecated error code is old
+    old_error_code;
+}

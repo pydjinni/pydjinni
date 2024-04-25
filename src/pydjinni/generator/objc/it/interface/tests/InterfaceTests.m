@@ -13,21 +13,25 @@
 // limitations under the License.
 
 #import <XCTest/XCTest.h>
-#import "Calculator.h"
+#import "TSTCalculator.h"
 
-@interface PlatformImplementation : NSObject <PlatformInterface>
+@interface PlatformImplementation : NSObject <TSTPlatformInterface>
+@end
+
+@interface NoParametersNoReturnCallbackImpl : NSObject <TSTNoParametersNoReturnCallback>
+    @property BOOL callbackInvoked;
 @end
 
 @interface InterfaceTests : XCTestCase
 
-@property (nonatomic, strong) Calculator * calculator;
+@property (nonatomic, strong) TSTCalculator * calculator;
 
 @end
 
 @implementation InterfaceTests
 
 - (void)setUp {
-    self.calculator = [Calculator getInstance];
+    self.calculator = [TSTCalculator getInstance];
 }
 
 - (void)testCalculator {
@@ -49,10 +53,28 @@
     XCTAssertThrowsSpecificNamed([self.calculator throwingException], NSException, @"shit hit the fan");
 }
 
+- (void)testNoParametersNoReturnCallback {
+    NoParametersNoReturnCallbackImpl* callback = [[NoParametersNoReturnCallbackImpl alloc] init];
+    [self.calculator noParametersNoReturnCallback:callback];
+    XCTAssertTrue(callback.callbackInvoked, @"Callback was not invoked");
+}
+
 @end
 
 @implementation PlatformImplementation
 - (int8_t)getValue {
     return 5;
+}
+@end
+
+@implementation NoParametersNoReturnCallbackImpl
+-(id)init {
+    if (self = [super init])  {
+        self.callbackInvoked = NO;
+    }
+    return self;
+}
+- (void)invoke {
+    self.callbackInvoked = YES;
 }
 @end

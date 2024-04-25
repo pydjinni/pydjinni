@@ -18,5 +18,5 @@ project(PyDjinniCppCli_SupportLib CXX CSharp)
 
 add_library(cppcli_support_lib INTERFACE)
 target_include_directories(cppcli_support_lib INTERFACE include)
-target_link_libraries(cppcli_support_lib INTERFACE support_lib::common)
+target_link_libraries(cppcli_support_lib INTERFACE support_lib::cpp)
 add_library(support_lib::cppcli ALIAS cppcli_support_lib)

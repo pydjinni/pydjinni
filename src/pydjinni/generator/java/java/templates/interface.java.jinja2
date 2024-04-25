@@ -14,12 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #}
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import data_type, return_type, parameters, comment %}
+{% from "macros.jinja2" import parameters, comment %}
 
 {% block header %}
-{% if type_def.cpp.proxy %}
-import java.util.concurrent.atomic.AtomicBoolean;
-{% endif %}
 {% endblock %}
 
 {% block content %}
@@ -32,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 {{ type_def.java.class_modifier }}abstract class {{ type_def.java.name }} {
     {% if type_def.main and config.native_lib %}
     static {
-        new {{ config.package|join('.') }}.native_lib.{{ config.native_lib }}Loader();
+        {{ native_lib_loader.package }}.{{ native_lib_loader.name }}.loadLibrary();
     }
     {% endif %}
     {% for method in type_def.methods %}
@@ -42,10 +39,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
     {% if method.deprecated %}
     @Deprecated
     {% endif %}
-    public {{ "static" if method.static else "abstract" }} {{ return_type(method.return_type_ref) }} {{ method.java.name }}({{ parameters(method) }})
+    public {{ "static" if method.static else "abstract" }} {{ method.java.return_type }} {{ method.java.name }}({{ parameters(method) }})
+    {%- if method.throwing -%}
+        {{ " throws " }}
+        {%- for error in method.throwing -%}
+            {{ error.type_def.java.name }}
+        {%- endfor -%}
+    {%- endif -%}
     {%- if method.static -%}
     {
-        {{ "return " if method.return_type_ref }}CppProxy.{{ method.java.name }}(
+        {{ "return " if method.return_type_ref or method.asynchronous }}CppProxy.{{ method.java.name }}(
         {%- for parameter in method.parameters -%}
         {{ parameter.java.name ~ (", " if not loop.last) }}
         {%- endfor -%}
@@ -58,35 +61,36 @@ import java.util.concurrent.atomic.AtomicBoolean;
     {% if type_def.cpp.proxy %}
     private static final class CppProxy extends {{ type_def.java.name }} {
         private final long nativeRef;
-        private final AtomicBoolean destroyed = new AtomicBoolean(false);
 
-        private CppProxy(long nativeRef)
-        {
+        static class CleanupTask implements Runnable {
+            private final long nativeRef;
+            CleanupTask(long nativeRef) {
+                this.nativeRef = nativeRef;
+            }
+
+            @Override
+            public void run() {
+                nativeDestroy(this.nativeRef);
+            }
+
+            private native void nativeDestroy(long nativeRef);
+        }
+
+        private CppProxy(long nativeRef) {
             if (nativeRef == 0) throw new RuntimeException("nativeRef is zero");
             this.nativeRef = nativeRef;
+            {{ native_cleaner.package }}.{{ native_cleaner.name }}.register(this, new CleanupTask(nativeRef));
         }
-        private native void nativeDestroy(long nativeRef);
-        public void _djinni_private_destroy()
-        {
-            boolean destroyed = this.destroyed.getAndSet(true);
-            if (!destroyed) nativeDestroy(this.nativeRef);
-        }
-        @SuppressWarnings("deprecation")
-        protected void finalize() throws java.lang.Throwable
-        {
-            _djinni_private_destroy();
-            super.finalize();
-        }
+
         {% for method in type_def.methods %}
         {% if method.static %}
-        public static native {{ return_type(method.return_type_ref) }} {{ method.java.name }}({{ parameters(method) }});
+        public static native {{ method.java.return_type }} {{ method.java.name }}({{ parameters(method) }});
         {% else %}
         @Override
-        public {{ return_type(method.return_type_ref) }} {{ method.java.name }}({{ parameters(method) }}) {
-            assert !this.destroyed.get() : "trying to use a destroyed object";
-            {{ "return" if method.return_type_ref }} native_{{ method.java.name }}(this.nativeRef {{ (", " if method.parameters) ~ parameters(method, with_types=False) }});
+        public {{ method.java.return_type }} {{ method.java.name }}({{ parameters(method) }}) {
+            {{ "return " if method.return_type_ref or method.asynchronous }}native_{{ method.java.name }}(this.nativeRef {{ (", " if method.parameters) ~ parameters(method, with_types=False) }});
         }
-        private native {{ return_type(method.return_type_ref) }} native_{{ method.java.name }}(long _nativeRef{{ (", " if method.parameters) ~ parameters(method) }});
+        private native {{ method.java.return_type }} native_{{ method.java.name }}(long _nativeRef{{ (", " if method.parameters) ~ parameters(method) }});
         {% endif %}
         {% endfor %}
     }

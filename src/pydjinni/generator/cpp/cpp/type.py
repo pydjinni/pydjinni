@@ -20,9 +20,10 @@ from pydantic import BaseModel, Field, computed_field
 from pydjinni.generator.cpp.cpp.comment_renderer import DoxygenCommentRenderer
 from pydjinni.generator.cpp.cpp.config import CppConfig
 from pydjinni.generator.cpp.cpp.keywords import keywords
+from pydjinni.generator.filters import headers, quote
 from pydjinni.generator.validator import validate
-from pydjinni.parser.ast import Parameter, Record, Interface
-from pydjinni.parser.base_models import BaseType, BaseField, TypeReference, BaseExternalType
+from pydjinni.parser.ast import Parameter, Record, Interface, Function
+from pydjinni.parser.base_models import BaseType, BaseField, TypeReference, BaseExternalType, DataField
 from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
@@ -61,13 +62,15 @@ class CppBaseType(BaseModel):
     config: CppConfig = Field(exclude=True, repr=False)
 
     @cached_property
-    def name(self): return self.decl.name.convert(self.config.identifier.type)
+    def name(self):
+        return self.decl.name.convert(self.config.identifier.type)
 
     @cached_property
     @validate(keywords, separator="::")
-    def namespace(self): return '::'.join(
-        self.config.namespace + [identifier.convert(self.config.identifier.namespace) for
-                                 identifier in self.decl.namespace])
+    def namespace(self):
+        return '::'.join(
+            self.config.namespace + [identifier.convert(self.config.identifier.namespace) for
+                                     identifier in self.decl.namespace])
 
     @computed_field
     @cached_property
@@ -84,8 +87,9 @@ class CppBaseType(BaseModel):
             *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}"
 
     @cached_property
-    def source(self): return Path(
-        *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.source_extension}"
+    def source(self):
+        return Path(
+            *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.source_extension}"
 
     @cached_property
     def comment(self):
@@ -94,10 +98,19 @@ class CppBaseType(BaseModel):
 
     @computed_field
     @cached_property
-    def by_value(self) -> bool: return True
+    def by_value(self) -> bool:
+        return True
 
     @cached_property
-    def proxy(self): return False
+    def proxy(self):
+        return False
+
+    @cached_property
+    def includes(self):
+        dependency_headers = headers(self.decl.dependencies, 'cpp')
+        if any(dependency.optional for dependency in self.decl.dependencies):
+            dependency_headers.append("<optional>")
+        return dependency_headers
 
 
 class CppBaseField(BaseModel):
@@ -116,12 +129,21 @@ class CppBaseField(BaseModel):
 
 
 class CppInterface(CppBaseType):
+    decl: Interface = Field(exclude=True, repr=False)
+
     @cached_property
     def proxy(self): return "cpp" in self.decl.targets
 
     @computed_field
     @cached_property
     def by_value(self) -> bool: return False
+
+    @cached_property
+    def includes(self):
+        dependency_headers = super().includes
+        if any(method.asynchronous for method in self.decl.methods):
+            dependency_headers = dependency_headers + [quote(Path("pydjinni/coroutine/task.hpp"))]
+        return dependency_headers
 
     class CppMethod(CppBaseField):
         decl: Interface.Method = Field(exclude=True, repr=False)
@@ -132,10 +154,20 @@ class CppInterface(CppBaseType):
         def name(self) -> str: return self.decl.name.convert(self.config.identifier.method)
 
         @cached_property
-        def type_spec(self): return type_specifier(self.decl.return_type_ref)
+        def type_spec(self):
+            type_spec = type_specifier(self.decl.return_type_ref)
+            return type_spec if not self.decl.asynchronous else f"pydjinni::coroutine::task<{type_spec}>"
+
+        # used for coroutine callback parameters
+        @cached_property
+        def callback_type_spec(self):
+            return type_specifier(self.decl.return_type_ref, is_parameter=True)
 
         @cached_property
         def attribute(self): return "static" if self.decl.static else "virtual"
+
+        @cached_property
+        def noexcept(self) -> bool: return self.decl.throwing is None
 
 
 class CppRecord(CppBaseType):
@@ -192,22 +224,20 @@ class CppRecord(CppBaseType):
         return Path(
             *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}"
 
-    class CppField(CppBaseField):
-        decl: Record.Field = Field(exclude=True, repr=False)
+class CppDataField(CppBaseField):
+    decl: DataField = Field(exclude=True, repr=False)
 
-        @cached_property
-        def type_spec(self): return type_specifier(self.decl.type_ref)
+    @cached_property
+    def type_spec(self): return type_specifier(self.decl.type_ref)
 
 
 class CppFunction(CppBaseType):
+    decl: Function = Field(exclude=True, repr=False)
+
     @computed_field
     @cached_property
     def typename(self) -> str: return f"std::function<{type_specifier(self.decl.return_type_ref)}" \
                                       f"({','.join([type_specifier(parameter.type_ref) for parameter in self.decl.parameters])})>"
-
-    @computed_field
-    @cached_property
-    def header(self) -> Path: return Path("<functional>")
 
     @computed_field
     @cached_property
@@ -218,6 +248,13 @@ class CppFunction(CppBaseType):
 
     @cached_property
     def type_spec(self): return type_specifier(self.decl.return_type_ref)
+
+    @cached_property
+    def includes(self):
+        return super().includes + [Path("<functional>")]
+
+    @cached_property
+    def noexcept(self) -> bool: return self.decl.throwing is None
 
 
 class CppSymbolicConstantField(CppBaseField):
@@ -232,3 +269,12 @@ class CppParameter(CppBaseField):
 
     @cached_property
     def type_spec(self): return type_specifier(self.decl.type_ref, is_parameter=True)
+
+class CppErrorDomain(CppBaseType):
+    @computed_field
+    @cached_property
+    def by_value(self) -> bool:
+        return False
+
+    class CppErrorCode(CppBaseType):
+        pass

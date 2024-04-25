@@ -104,6 +104,11 @@ class IdlVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by IdlParser#throwing.
+    def visitThrowing(self, ctx:IdlParser.ThrowingContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by IdlParser#targets.
     def visitTargets(self, ctx:IdlParser.TargetsContext):
         return self.visitChildren(ctx)
@@ -136,6 +141,16 @@ class IdlVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by IdlParser#method.
     def visitMethod(self, ctx:IdlParser.MethodContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by IdlParser#errorDomain.
+    def visitErrorDomain(self, ctx:IdlParser.ErrorDomainContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by IdlParser#errorCode.
+    def visitErrorCode(self, ctx:IdlParser.ErrorCodeContext):
         return self.visitChildren(ctx)
 
 

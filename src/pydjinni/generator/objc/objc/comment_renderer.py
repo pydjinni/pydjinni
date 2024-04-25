@@ -35,3 +35,6 @@ class DocCCommentRenderer(MarkdownRenderer):
 
     def deprecated(self, token: dict[str, Any], state: BlockState) -> str:
         return ""
+
+    def throws(self, token: dict[str, Any], state: BlockState) -> str:
+        return f"- Throws: {self.render_children(token, state)}\n"

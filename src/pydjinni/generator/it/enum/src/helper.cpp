@@ -17,7 +17,7 @@
 
 using namespace test::enum_test;
 
-ExampleEnum Helper::get_enum(ExampleEnum example_enum) {
+ExampleEnum Helper::get_enum(ExampleEnum example_enum) noexcept {
     assert(example_enum == ExampleEnum::A);
     return example_enum;
 }

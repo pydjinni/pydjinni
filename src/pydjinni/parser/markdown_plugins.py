@@ -31,7 +31,8 @@ class MarkdownCommand:
 markdown_commands = [
     MarkdownCommand("returns", "documents the return value of a method"),
     MarkdownCommand("deprecated", "marks a type, field or method as deprecated"),
-    MarkdownCommand("param", "documents a method parameter", parameter="name")
+    MarkdownCommand("param", "documents a method parameter", parameter="name"),
+    MarkdownCommand("throws", "documents an exception type that a method may throw", parameter="name")
 ]
 
 

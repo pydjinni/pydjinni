@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #import <XCTest/XCTest.h>
-#import "Helper.h"
+#import "TSTHelper.h"
 
 @interface EnumTests : XCTestCase
 @end
@@ -21,7 +21,7 @@
 @implementation EnumTests
 
 - (void)testEnum {
-    XCTAssertEqual([Helper getEnum:ExampleEnumA], ExampleEnumA, @"Returned Enum does not match input");
+    XCTAssertEqual([TSTHelper getEnum:TSTExampleEnumA], TSTExampleEnumA, @"Returned Enum does not match input");
 }
 
 @end

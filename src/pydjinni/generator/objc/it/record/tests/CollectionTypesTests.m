@@ -13,18 +13,18 @@
 // limitations under the License.
 
 #import <XCTest/XCTest.h>
-#import "Helper.h"
+#import "TSTHelper.h"
 
 @interface CollectionTypesTests : XCTestCase
 
-@property (nonatomic, strong) CollectionTypes * record;
+@property (nonatomic, strong) TSTCollectionTypes * record;
 
 @end
 
 @implementation CollectionTypesTests
 
 - (void)setUp {
-    self.record = [CollectionTypes
+    self.record = [TSTCollectionTypes
             collectionTypesWithIntList:@[@0, @1]
                             stringList:@[@"foo", @"bar"]
                                 intSet:[NSSet setWithObjects: @0, @1, nil]
@@ -37,7 +37,7 @@
 }
 
 - (void)testCollectionTypes {
-    CollectionTypes* returned_record = [Helper getCollectionTypes:self.record];
+    TSTCollectionTypes* returned_record = [TSTHelper getCollectionTypes:self.record];
 
     XCTAssertEqual(returned_record.intList.count, 2);
     XCTAssertEqualObjects([returned_record.intList objectAtIndex:0], @0);
@@ -63,7 +63,7 @@
 }
 
 - (void)testDescription {
-    XCTAssertEqualObjects([self.record description], @"<CollectionTypes intList:(\n"
+    XCTAssertEqualObjects([self.record description], @"<TSTCollectionTypes intList:(\n"
                                                      @"    0,\n"
                                                      @"    1\n"
                                                      @") stringList:(\n"

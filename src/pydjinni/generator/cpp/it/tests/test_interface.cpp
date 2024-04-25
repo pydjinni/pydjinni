@@ -19,16 +19,22 @@
 
 TEST_CASE("Cpp.InterfaceTest") {
     GIVEN("a Calculator interface instance") {
-        auto calculator = test::interface_test::Calculator::get_instance();
+        auto calculator = ::test::interface_test::Calculator::get_instance();
         WHEN("using the calculator interface") {
             auto result = calculator->add(40, 2);
             THEN("the C++ implementation of the calculator should have returned the correct sum") {
                 REQUIRE(result == 42);
             }
         }
+        WHEN("calling the `no_parameters_no_return` method") {
+            calculator->no_parameters_no_return();
+            THEN("it should finish successfully") {
+                SUCCEED();
+            }
+        }
         AND_GIVEN("an implementation for the PlatformInterface interface") {
-            class PlatformInterfaceImpl : public test::interface_test::PlatformInterface {
-                int8_t get_value() override { return 5; }
+            class PlatformInterfaceImpl : public ::test::interface_test::PlatformInterface {
+                int8_t get_value() noexcept override { return 5; }
             };
             WHEN("passing using the implementation") {
                 auto result = calculator->get_platform_value(std::make_shared<PlatformInterfaceImpl>());
@@ -39,8 +45,40 @@ TEST_CASE("Cpp.InterfaceTest") {
         }
         WHEN("calling a method that throws an exception") {
             THEN("the exception should be received") {
-                REQUIRE_THROWS_MATCHES(calculator->throwing_exception(), std::runtime_error, Catch::Matchers::Message("shit hit the fan"));
+                REQUIRE_THROWS_MATCHES(
+                    calculator->throwing_exception(),
+                    std::runtime_error,
+                    Catch::Matchers::Message("shit hit the fan")
+                );
             }
+        }
+        WHEN("calling the `no_parameters_no_return_callback` method") {
+            struct NoParametersNoReturnCallbackImpl : public ::test::interface_test::NoParametersNoReturnCallback {
+                bool callbackInvoked = false;
+                void invoke() noexcept override {
+                    callbackInvoked = true;
+                }
+            };
+            auto callback = std::make_shared<NoParametersNoReturnCallbackImpl>();
+            calculator->no_parameters_no_return_callback(callback);
+            THEN("it should be executed successfully") {
+                REQUIRE(callback->callbackInvoked);
+            }
+        }
+        WHEN("calling the `throwing_callback` method") {
+            struct ThrowingCallbackImpl : public ::test::interface_test::ThrowingCallback {
+                void invoke() override {
+                    throw std::runtime_error("exception from callback");
+                }
+            };
+            THEN("the exception should be received") {
+                REQUIRE_THROWS_MATCHES(
+                    calculator->throwing_callback(std::make_shared<ThrowingCallbackImpl>()),
+                    std::runtime_error,
+                    Catch::Matchers::Message("exception from callback")
+                );
+            }
+
         }
     }
 }

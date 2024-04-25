@@ -16,8 +16,8 @@ from pathlib import Path
 
 from pydjinni.generator.filters import quote, headers
 from pydjinni.generator.generator import Generator
-from pydjinni.parser.ast import Enum, Flags, Record, Interface, Parameter, Function
-from pydjinni.parser.base_models import BaseType, BaseField, SymbolicConstantField
+from pydjinni.parser.ast import Enum, Flags, Record, Interface, Parameter, Function, ErrorDomain
+from pydjinni.parser.base_models import BaseType, BaseField, SymbolicConstantField, DataField
 from .config import JniConfig
 from .external_types import external_types
 from .type import (
@@ -27,8 +27,11 @@ from .type import (
     JniBaseField,
     JniSymbolicConstantField,
     JniRecord,
+    JniDataField,
     JniParameter,
-    JniFunction
+    JniFunction,
+    JniErrorDomain,
+    jni_prefix
 )
 
 
@@ -45,8 +48,9 @@ class JniGenerator(Generator):
         BaseField: JniBaseField,
         SymbolicConstantField: JniSymbolicConstantField,
         Record: JniRecord,
-        Record.Field: JniRecord.JniField,
-        Parameter: JniParameter
+        DataField: JniDataField,
+        Parameter: JniParameter,
+        ErrorDomain: JniErrorDomain
     }
     writes_header = True
     writes_source = True
@@ -71,13 +75,61 @@ class JniGenerator(Generator):
         self.write_header("header/function.hpp.jinja2", type_def=type_def)
         self.write_source("source/function.cpp.jinja2", type_def=type_def)
 
+    def generate_error_domain(self, type_def: ErrorDomain):
+        self.write_header("header/error_domain.hpp.jinja2", type_def=type_def)
+        self.write_source("source/error_domain.cpp.jinja2", type_def=type_def)
+
     def generate_loader(self):
-        if self.config.loader:
-            self.write_source(
-                template="source/loader.cpp.jinja2",
-                filename=Path("pydjinni") / "jni" / "loader.cpp"
-            )
+        self.write_source(
+            template="source/loader.cpp.jinja2",
+            filename=self.source_path / "loader.cpp"
+        )
+
+    def generate_runnable(self):
+        header_path = Path("pydjinni") / "coroutine" / "schedule.hpp"
+        java_runnable_type = self.metadata.java.base_package.split('.') + ["pydjinni", "NativeRunnable"]
+        self.write_header(
+            template="header/schedule.hpp.jinja2",
+            filename=self.header_path / header_path,
+            java_type_signature="/".join(java_runnable_type),
+            namespace='::'.join(self.config.namespace + ["schedule"])
+        )
+        self.write_source(
+            template="source/schedule.cpp.jinja2",
+            filename=self.source_path / "pydjinni" / "coroutine" / "schedule.cpp",
+            namespace='::'.join(self.config.namespace + ["schedule"]),
+            header_path=header_path,
+            jni_prefix=jni_prefix(java_runnable_type)
+        )
+
+    def generate_completion(self):
+        header_path = Path("pydjinni") / "coroutine" / "completion.hpp"
+        java_runnable_type = self.metadata.java.base_package.split('.') + ["pydjinni", "NativeCompletion"]
+        self.write_header(
+            template="header/completion.hpp.jinja2",
+            filename=self.header_path / header_path,
+            java_type_signature="/".join(java_runnable_type),
+            namespace='::'.join(self.config.namespace + ["schedule"])
+        )
+        self.write_source(
+            template="source/completion.cpp.jinja2",
+            filename=self.source_path / "pydjinni" / "coroutine" / "completion.cpp",
+            namespace='::'.join(self.config.namespace + ["schedule"]),
+            header_path=header_path,
+            jni_prefix=jni_prefix(java_runnable_type)
+        )
 
     def generate(self, ast: list[BaseType], copy_support_lib_sources: bool = True):
         super().generate(ast, copy_support_lib_sources)
-        self.generate_loader()
+        if self.config.loader:
+            self.generate_loader()
+        if any(
+            isinstance(type_def, Interface) and "cpp" in type_def.targets and any(method.asynchronous  for method in type_def.methods)
+            for type_def in ast
+        ):
+            self.generate_runnable()
+        if any(
+            isinstance(type_def, Interface) and "java" in type_def.targets and any(method.asynchronous for method in type_def.methods)
+            for type_def in ast
+        ):
+            self.generate_completion()

@@ -53,7 +53,7 @@ private:
         {%- for parameter in method.parameters -%}
             {{ parameter.cpp.type_spec }} {{ parameter.cpp.name ~ (", " if not loop.last) }}
         {%- endfor -%}
-        ) {{ "const" if method.const }} override;
+        ){{ " const" if method.const }}{{ " noexcept" if method.cpp.noexcept }} override;
         {% endfor %}
     private:
         friend ::pydjinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.translator }}>;

@@ -17,15 +17,21 @@ from pathlib import Path
 import pytest
 
 from pydjinni.parser.ast import Interface
+from pydjinni.parser.base_models import BaseExternalType
 from pydjinni.parser.parser import Parser
 from test_parser import given, when
 
 
 def assert_method(method: Interface.Method, name: str, params: list[tuple[str, str]] = None, return_type: str = None,
-                  static: bool = False, const: bool = False):
+                  static: bool = False, const: bool = False, asynchronous: bool = False, throws: list[str] = None):
     assert method.name == name
     assert method.static == static
     assert method.const == const
+    assert method.asynchronous == asynchronous
+    if method.throwing is not None:
+        assert [error.name for error in method.throwing ] == throws
+    else:
+        assert method.throwing == throws
     if return_type:
         assert method.return_type_ref.name == return_type
     else:
@@ -39,20 +45,34 @@ def assert_method(method: Interface.Method, name: str, params: list[tuple[str, s
 
 
 def test_parsing_interface(tmp_path: Path):
-    parser, _ = given(
+    method_decls = [
+        "method();",
+        "static static_method();",
+        "const const_method();",
+        "async async_method();",
+        "static async static_async_method();",
+        "method_with_return() -> i8;",
+        "method_with_parameter(param: i8);",
+        "method_with_parameters_and_return(param: i8, param2: i8) -> i8;",
+        "method_throwing() throws;",
+        "method_throwing_and_return() throws -> i8;",
+        "method_throwing_specific_error() throws application_error;",
+        "method_throwing_specific_error_and_return() throws application_error -> i8;"
+    ]
+    property_decls = [
+        "property a: i8;"
+    ]
+    parser, resolver_mock = given(
         tmp_path=tmp_path,
-        input_idl="""
-            foo = interface +cpp {
-                method();
-                static static_method();
-                const const_method();
-                method_with_return() -> i8;
-                method_with_parameter(param: i8);
-                method_with_parameters_and_return(param: i8, param2: i8) -> i8;
-                property a: i8;
-            }
+        input_idl=f"""
+            foo = interface +cpp {{
+                {" ".join(method_decls)}
+                {" ".join(property_decls)}
+            }}
             """
     )
+
+    resolver_mock.resolve.return_value = BaseExternalType(name='application_error', primitive=BaseExternalType.Primitive.error)
 
     interface = when(parser, Interface, "foo")
 
@@ -61,24 +81,28 @@ def test_parsing_interface(tmp_path: Path):
     # THEN the interface should not be marked as 'main'
     assert not interface.main
 
-    # THEN the interface should have exactly 5 methods
-    assert len(methods) == 6
-
-    # THEN the methods should have the expected names, parameters and attributes
+    # THEN all the methods should have the expected names, parameters and attributes
+    assert len(methods) == len(method_decls)
     assert_method(methods[0], "method")
     assert_method(methods[1], "static_method", static=True)
     assert_method(methods[2], "const_method", const=True)
-    assert_method(methods[3], "method_with_return", return_type="i8")
-    assert_method(methods[4], "method_with_parameter", params=[("param", "i8")])
+    assert_method(methods[3], "async_method", asynchronous=True)
+    assert_method(methods[4], "static_async_method", static=True, asynchronous=True)
+    assert_method(methods[5], "method_with_return", return_type="i8")
+    assert_method(methods[6], "method_with_parameter", params=[("param", "i8")])
     params = [("param", "i8"), ("param2", "i8")]
-    assert_method(methods[5], "method_with_parameters_and_return", params=params, return_type="i8")
+    assert_method(methods[7], "method_with_parameters_and_return", params=params, return_type="i8")
+    assert_method(methods[8], "method_throwing", throws=[])
+    assert_method(methods[9], "method_throwing_and_return", return_type="i8", throws=[])
+    assert_method(methods[10], "method_throwing_specific_error", throws=["application_error"])
+    assert_method(methods[11], "method_throwing_specific_error_and_return", return_type="i8", throws=["application_error"])
 
     # then the expected targets should be defined
     assert "cpp" in interface.targets
     assert len(interface.targets) == 1
 
     # then the defined properties should be present
-    assert len(interface.properties) == 1
+    assert len(interface.properties) == len(property_decls)
     property_def = interface.properties[0]
     assert property_def.name == "a"
     assert property_def.type_ref.name == "i8"
@@ -139,14 +163,15 @@ def test_parsing_interface_minus_target(tmp_path: Path):
     assert len(interface.targets) == 1
 
 
-def test_parsing_interface_static_not_allowed(tmp_path):
-    # GIVEN an idl file that defines an interface with a static method that is not targeting `cpp`
+@pytest.mark.parametrize("targets", ["-cpp", "+cpp +java"])
+def test_parsing_interface_static_not_allowed(tmp_path, targets: str):
+    # GIVEN an idl file that defines an interface with a static method
     parser, resolver_mock = given(
         tmp_path=tmp_path,
-        input_idl="""
-            foo = interface -cpp {
+        input_idl=f"""
+            foo = interface {targets} {{
                 static foo();
-            }       
+            }}       
             """
     )
 
@@ -159,16 +184,18 @@ def test_parsing_interface_static_not_allowed(tmp_path):
     assert exception.description == "methods are only allowed to be static on 'cpp' interfaces"
 
 
-def test_parsing_interface_static_and_const_not_allowed(tmp_path):
+def test_parsing_interface_static_and_const_not_allowed(tmp_path: Path):
     # GIVEN an idl file that defines an interface with a static const method
-    parser, _ = given(
+    parser, resolver = given(
         tmp_path=tmp_path,
         input_idl="""
             foo = interface +cpp {
-                static const foo();
+                foo() throws bar;
             }       
             """
     )
+
+    resolver.return_value = BaseExternalType(name="bar", primitive=BaseExternalType.Primitive.record)
 
     # THEN a StaticAndConstException should be raised
     with pytest.raises(Parser.ParsingExceptionList) as excinfo:
@@ -176,10 +203,20 @@ def test_parsing_interface_static_and_const_not_allowed(tmp_path):
     assert len(excinfo.value.items) == 1
     exception = excinfo.value.items[0]
     assert isinstance(exception, Parser.ParsingException)
-    assert exception.description == "method cannot be both static and const"
+    assert exception.description == "Only errors can be thrown"
 
+def test_parsing_interface_throwing_non_error_not_allowed(tmp_path: Path):
+    # GIVEN an idl file that defines an interface with method that throws a non error type
+    parser, _ = given(
+        tmp_path=tmp_path,
+        input_idl="""
+                foo = interface +cpp {
+                    static const foo();
+                }       
+                """
+    )
 
-def test_parsing_main_interface(tmp_path):
+def test_parsing_main_interface(tmp_path: Path):
     # GIVEN an idl file that defines a main interface (code entrypoint)
     parser, _ = given(
         tmp_path=tmp_path,

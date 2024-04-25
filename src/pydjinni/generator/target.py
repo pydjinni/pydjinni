@@ -11,8 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import inspect
 from abc import ABC, abstractmethod
+
+from pydantic import create_model
+from pydantic.fields import FieldInfo
 
 from pydjinni.config.config_model_builder import ConfigModelBuilder
 from pydjinni.file.file_reader_writer import FileReaderWriter
@@ -22,6 +25,7 @@ from pydjinni.parser.base_models import BaseType, BaseField
 from pydjinni.parser.type_model_builder import TypeModelBuilder
 from .external_types import ExternalTypesBuilder
 from .generator import Generator, ConfigModel
+from .metadata import MetadataBase
 
 
 class Target(ABC):
@@ -85,6 +89,18 @@ class Target(ABC):
         for generator in self.generator_instances:
             generator.register_external_types(external_types_factory)
 
+
     def configure(self, config: ConfigModel):
+        metadata_model = create_model(
+            "Metadata",
+            __base__=MetadataBase,
+            **{generator.key: (
+                generator.metadata_model,
+                FieldInfo(
+                    default=generator.metadata_model(config=getattr(config, generator.key)),
+                    description=inspect.cleandoc(generator.metadata_model.__doc__)
+                )
+            ) for generator in self.generator_instances if generator.metadata_model is not None}
+        )
         for generator in self.generator_instances:
-            generator.configure(getattr(config, generator.key))
+            generator.configure(getattr(config, generator.key), metadata_model())

@@ -69,13 +69,13 @@ def test_parsing_function_minus_target(tmp_path: Path):
     assert len(function.targets) == 1
 
 
-def test_parsing_inline_function(tmp_path):
+def test_parsing_inline_function(tmp_path: Path):
     # GIVEN an interface with an inline function definition
     parser, _ = given(
         tmp_path=tmp_path,
         input_idl="""
         foo = interface {
-            method(callback: function (var: i8));
+            method0(callback: function (var: i8));
         }
         """
     )
@@ -87,12 +87,16 @@ def test_parsing_inline_function(tmp_path):
     assert isinstance(ast[0], Function)
     assert isinstance(ast[1], Interface)
 
-    # THEN the method should reference an anonymous (nameless) function
     interface: Interface = ast[1]
-    function = interface.methods[0].parameters[0].type_ref.type_def
-    assert isinstance(function, Function)
-    assert function.parameters[0].name == "var"
-    assert function.return_type_ref is None
+
+    def assert_function(index: int):
+        # THEN the method should reference an anonymous (nameless) function
+        function = interface.methods[index].parameters[0].type_ref.type_def
+        assert isinstance(function, Function)
+        assert function.parameters[0].name == "var"
+        assert function.return_type_ref is None
+
+    assert_function(0)
 
 
 def test_parsing_anonymous_function_not_allowed(tmp_path: Path):
@@ -113,6 +117,7 @@ def test_parsing_anonymous_function_not_allowed(tmp_path: Path):
     exception = excinfo.value.items[0]
     assert isinstance(exception, Parser.ParsingException)
     assert exception.description == "functions are not allowed as record field type"
+
 
 def test_parsing_function_comment(tmp_path: Path):
     # GIVEN a named function with comment
