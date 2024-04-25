@@ -203,6 +203,7 @@ class Parser(IdlVisitor):
             return_type_ref=self.visit(ctx.typeRef()) if ctx.typeRef() else None,
             static=ctx.STATIC() is not None,
             const=ctx.CONST() is not None,
+            asynchronous=ctx.ASYNC() is not None,
             comment=self.visit(ctx.comment()) if ctx.comment() else None
         )
         self.field_decls.append(method)
@@ -279,6 +280,7 @@ class Parser(IdlVisitor):
             name=Identifier(name),
             position=self._position(ctx),
             parameters=parameters,
+            asynchronous=ctx.ASYNC() is not None,
             targets=targets,
             namespace=self.current_namespace,
             return_type_ref=return_type_ref,

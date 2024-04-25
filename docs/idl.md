@@ -12,7 +12,7 @@ available types.
 
 Suffixing a type with a `?` marks it as optional. Optional values may be null.
 
-```djinni
+```pydjinni
 foo = record {
     bar: i32?;
 }
@@ -71,7 +71,7 @@ This way for example equality and order comparators or a method for giving a str
 can be added. Not all features may be available in all target languages. 
 Consult the [Deriving Reference](deriving.md) for a full list of available declarations.
 
-```djinni
+```pydjinni
 foo = record {
     bar: i32;
 } deriving (str, eq, ord)
@@ -132,7 +132,7 @@ Usually this requires a `System.loadLibrary("FooBar");` call ahead of time.
 
 To automate the native library loading, any C++ interface can be marked as `main`:
 
-```djinni
+```pydjinni
 foo = main interface +cpp {
    static get_instance(): foo
 }
@@ -162,7 +162,7 @@ They are represented by [`std::function`](https://en.cppreference.com/w/cpp/util
 Functions can either be defined like a type, or can be defined inline where they are needed as anonymous functions:
 
 
-```djinni
+```pydjinni
 named_func = function (input: i32) -> bool;
 
 foo = interface {
@@ -174,20 +174,34 @@ foo = interface {
 There is a short and a long form for defining functions.
 The long form allows target flags to be added in order to optimize the generated code:
 
-```djinni
+```pydjinni
 callback = function -cpp (input: i32) -> bool;
 ```
 
 The short form doesn't allow for code optimization, but in return is a lot more brief:
-```djinni
+```pydjinni
 callback = (input: i32) -> bool;
+```
+
+## Async { .new-badge }
+
+The `async` modifier can be used to specify that a method or function is asynchronous.
+
+```pydjinni
+callback = async function (input: i32) -> bool;
+```
+
+```pydjinni
+foo = main interface +cpp {
+   async get_instance(): foo
+}
 ```
 
 ## Namespaces { .new-badge }
 
 The interface file can be structured with namespaces:
 
-```djinni
+```pydjinni
 namespace foo {
     bar = record {}
 }

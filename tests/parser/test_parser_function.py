@@ -38,6 +38,7 @@ def test_parsing_function(tmp_path):
     # THEN all the specified language target should be set
     assert "cpp" in function.targets
     assert len(function.targets) == 1
+    assert not function.asynchronous
 
 
 def test_parsing_function_no_target(tmp_path: Path):
@@ -55,6 +56,21 @@ def test_parsing_function_no_target(tmp_path: Path):
     assert len(function.targets) == 2
 
 
+@pytest.mark.parametrize("input_idl", [
+    "foo = async function () -> bool;",
+    "foo = async (param: i8);"
+])
+def test_parsing_async_function(tmp_path: Path, input_idl: str):
+    # GIVEN a named async function definition
+    parser, _ = given(
+        tmp_path=tmp_path,
+        input_idl=input_idl
+    )
+
+    function = when(parser, Function, "foo")
+    assert function.asynchronous
+
+
 def test_parsing_function_minus_target(tmp_path: Path):
     # GIVEN a named function definition
     parser, _ = given(
@@ -69,13 +85,15 @@ def test_parsing_function_minus_target(tmp_path: Path):
     assert len(function.targets) == 1
 
 
-def test_parsing_inline_function(tmp_path):
+def test_parsing_inline_function(tmp_path: Path):
     # GIVEN an interface with an inline function definition
     parser, _ = given(
         tmp_path=tmp_path,
         input_idl="""
         foo = interface {
-            method(callback: function (var: i8));
+            method0(callback: function (var: i8));
+            method1(callback: async function (var: i8));
+            method2(callback: async (var: i8));
         }
         """
     )
@@ -83,16 +101,25 @@ def test_parsing_inline_function(tmp_path):
     ast, _ = parser.parse()
 
     # THEN the anonymous type should be registered in the output AST
-    assert len(ast) == 2
+    assert len(ast) == 4
     assert isinstance(ast[0], Function)
-    assert isinstance(ast[1], Interface)
+    assert isinstance(ast[1], Function)
+    assert isinstance(ast[2], Function)
+    assert isinstance(ast[3], Interface)
 
-    # THEN the method should reference an anonymous (nameless) function
-    interface: Interface = ast[1]
-    function = interface.methods[0].parameters[0].type_ref.type_def
-    assert isinstance(function, Function)
-    assert function.parameters[0].name == "var"
-    assert function.return_type_ref is None
+    interface: Interface = ast[3]
+
+    def assert_function(index: int, asynchronous: bool = False):
+        # THEN the method should reference an anonymous (nameless) function
+        function = interface.methods[index].parameters[0].type_ref.type_def
+        assert isinstance(function, Function)
+        assert function.parameters[0].name == "var"
+        assert function.return_type_ref is None
+        assert function.asynchronous == asynchronous
+
+    assert_function(0)
+    assert_function(1, asynchronous=True)
+    assert_function(2, asynchronous=True)
 
 
 def test_parsing_anonymous_function_not_allowed(tmp_path: Path):
@@ -113,6 +140,7 @@ def test_parsing_anonymous_function_not_allowed(tmp_path: Path):
     exception = excinfo.value.items[0]
     assert isinstance(exception, Parser.ParsingException)
     assert exception.description == "functions are not allowed as record field type"
+
 
 def test_parsing_function_comment(tmp_path: Path):
     # GIVEN a named function with comment

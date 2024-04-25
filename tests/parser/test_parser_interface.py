@@ -22,10 +22,11 @@ from test_parser import given, when
 
 
 def assert_method(method: Interface.Method, name: str, params: list[tuple[str, str]] = None, return_type: str = None,
-                  static: bool = False, const: bool = False):
+                  static: bool = False, const: bool = False, asynchronous: bool = False):
     assert method.name == name
     assert method.static == static
     assert method.const == const
+    assert method.asynchronous == asynchronous
     if return_type:
         assert method.return_type_ref.name == return_type
     else:
@@ -46,6 +47,8 @@ def test_parsing_interface(tmp_path: Path):
                 method();
                 static static_method();
                 const const_method();
+                async async_method();
+                static async static_async_method();
                 method_with_return() -> i8;
                 method_with_parameter(param: i8);
                 method_with_parameters_and_return(param: i8, param2: i8) -> i8;
@@ -62,16 +65,18 @@ def test_parsing_interface(tmp_path: Path):
     assert not interface.main
 
     # THEN the interface should have exactly 5 methods
-    assert len(methods) == 6
+    assert len(methods) == 8
 
     # THEN the methods should have the expected names, parameters and attributes
     assert_method(methods[0], "method")
     assert_method(methods[1], "static_method", static=True)
     assert_method(methods[2], "const_method", const=True)
-    assert_method(methods[3], "method_with_return", return_type="i8")
-    assert_method(methods[4], "method_with_parameter", params=[("param", "i8")])
+    assert_method(methods[3], "async_method", asynchronous=True)
+    assert_method(methods[4], "static_async_method", static=True, asynchronous=True)
+    assert_method(methods[5], "method_with_return", return_type="i8")
+    assert_method(methods[6], "method_with_parameter", params=[("param", "i8")])
     params = [("param", "i8"), ("param2", "i8")]
-    assert_method(methods[5], "method_with_parameters_and_return", params=params, return_type="i8")
+    assert_method(methods[7], "method_with_parameters_and_return", params=params, return_type="i8")
 
     # then the expected targets should be defined
     assert "cpp" in interface.targets
