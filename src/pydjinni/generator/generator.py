@@ -30,9 +30,11 @@ from pydjinni.file.processed_files_model_builder import ProcessedFilesModelBuild
 from pydjinni.parser.base_models import BaseExternalType, BaseType, BaseField
 from pydjinni.parser.type_model_builder import TypeModelBuilder
 from .external_types import ExternalTypesBuilder
+from .metadata import MetadataBase
 
 ConfigModel = TypeVar("ConfigModel", bound=BaseModel)
 ExternalTypeModel = TypeVar("ExternalTypeModel", bound=BaseModel)
+MetadataModel = TypeVar("MetadataModel", bound=BaseModel)
 
 
 class Generator(ABC):
@@ -116,6 +118,10 @@ class Generator(ABC):
         return {}
 
     @property
+    def metadata_model(self) -> type[MetadataModel] | None:
+        return None
+
+    @property
     def writes_header(self) -> bool:
         """
         Whether the generator will generate header files. This information is required for documentation purposes and
@@ -161,6 +167,7 @@ class Generator(ABC):
         self._file_writer = file_writer
         self._generator_directory = Path(inspect.getfile(self.__class__)).parent
         self.config: ConfigModel | None = None
+        self.metadata: MetadataBase | None = None
 
         self._jinja_env = Environment(
             loader=FileSystemLoader(self._generator_directory / "templates"),
@@ -181,8 +188,9 @@ class Generator(ABC):
         if self.external_types:
             external_types_factory.register(self.key, self.external_types)
 
-    def configure(self, config: ConfigModel):
+    def configure(self, config: ConfigModel, metadata: MetadataBase):
         self.config = config
+        self.metadata = metadata
         if self.writes_header:
             self._file_writer.setup_include_dir(self.key, self.header_path)
         if self.writes_source:
@@ -236,6 +244,7 @@ class Generator(ABC):
             filename=self.header_path / filename,
             content=self._jinja_env.get_template(template).render(
                 config=self.config,
+                metadata=self.metadata,
                 **kwargs
             )
         )
@@ -256,6 +265,7 @@ class Generator(ABC):
             filename=self.source_path / filename,
             content=self._jinja_env.get_template(template).render(
                 config=self.config,
+                metadata=self.metadata,
                 **kwargs
             )
         )
@@ -353,7 +363,7 @@ class Generator(ABC):
             During attachment of the marshalling models, no actual marshalling is happening. Only during rendering of
             the Jinja templates the marshalling model properties are evaluated.
 
-        The method may be overriden with custom marshalling logic if the default behaviour doesn't fit the
+        The method may be overridden with custom marshalling logic if the default behaviour doesn't fit the
         requirements. But the outcome must always be a Pydantic model being attached to each given type and field
         declaration passed to the method!
         """

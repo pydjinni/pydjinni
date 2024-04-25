@@ -32,6 +32,7 @@ function(objc_test_case TEST_CASE_NAME)
     implement_test_case(${TEST_CASE_NAME} LANGUAGE objc
         OPTIONS
             ${TEST_CASE_OPTIONS}
+            generate.objc.type_prefix=TST
             generate.objc.out.header=${CMAKE_CURRENT_LIST_DIR}/generated/include/objc
             generate.objc.out.source=${CMAKE_CURRENT_LIST_DIR}/generated/src/objc
             generate.objcpp.out.header=${CMAKE_CURRENT_LIST_DIR}/generated/include/objcpp
@@ -56,3 +57,5 @@ add_subdirectory(flags)
 add_subdirectory(record)
 add_subdirectory(interface)
 add_subdirectory(function)
+add_subdirectory(async)
+add_subdirectory(error)

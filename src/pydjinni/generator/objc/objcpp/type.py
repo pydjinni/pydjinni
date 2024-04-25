@@ -18,8 +18,9 @@ from pathlib import Path
 from pydantic import BaseModel, Field, computed_field
 
 from pydjinni.config.types import IdentifierStyle
+from pydjinni.generator.filters import headers, quote
 from pydjinni.generator.objc.objcpp.config import ObjcppConfig
-from pydjinni.parser.ast import Function
+from pydjinni.parser.ast import Function, Interface
 from pydjinni.parser.base_models import BaseType, BaseField
 
 
@@ -54,12 +55,29 @@ class ObjcppBaseType(BaseModel):
     def namespace(self): return '::'.join(self.config.namespace + [identifier.convert(IdentifierStyle.Case.pascal)
                                                                    for identifier in self.decl.namespace])
 
+    @cached_property
+    def includes(self): return headers(self.decl.dependencies, "objcpp")
+
 
 class ObjcppFunction(ObjcppBaseType):
     decl: Function = Field(exclude=True, repr=False)
 
     @cached_property
     def name(self): return self.decl.name.title() if self.decl.anonymous else super().name
+
+
+class ObjcppInterface(ObjcppBaseType):
+    decl: Interface = Field(exclude=True, repr=False)
+
+    @cached_property
+    def includes(self):
+        dependency_headers = super().includes
+        if any(method.asynchronous for method in self.decl.methods):
+            dependency_headers.append(quote(Path("pydjinni/coroutine/task.hpp")))
+            dependency_headers.append(quote(Path("pydjinni/coroutine/schedule.h")))
+            if "objc" in self.decl.targets:
+                dependency_headers.append(quote(Path("pydjinni/coroutine/callback_awaitable.hpp")))
+        return dependency_headers
 
 
 class ObjcppBaseField(BaseModel):

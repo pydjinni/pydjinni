@@ -64,6 +64,7 @@ class BaseExternalType(BaseCommentModel):
         enum = 'enum'
         flags = 'flags'
         function = 'function'
+        error = 'error'
 
     name: Identifier = Field(
         description="Name of the type in the IDL"
@@ -111,3 +112,6 @@ class SymbolicConstantField(BaseField):
 
 class SymbolicConstantType(BaseType):
     pass
+
+class DataField(BaseField):
+    type_ref: TypeReference

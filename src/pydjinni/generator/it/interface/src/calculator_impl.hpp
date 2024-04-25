@@ -18,10 +18,12 @@ namespace test::interface_test {
 
 class CalculatorImpl : public Calculator {
 public:
-    int8_t add(int8_t a, int8_t b) override;
-    int8_t get_platform_value(const std::shared_ptr<PlatformInterface>& platform) override;
-    void no_parameters_no_return() override;
+    int8_t add(int8_t a, int8_t b) noexcept override;
+    int8_t get_platform_value(const std::shared_ptr<PlatformInterface>& platform) noexcept override;
+    void no_parameters_no_return() noexcept override;
     void throwing_exception() override;
+    void no_parameters_no_return_callback(const std::shared_ptr<NoParametersNoReturnCallback>& callback) noexcept override;
+    void throwing_callback(const std::shared_ptr<ThrowingCallback>& callback) override;
 };
 
 }

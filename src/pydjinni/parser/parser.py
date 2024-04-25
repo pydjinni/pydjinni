@@ -28,9 +28,10 @@ from .ast import (
     Enum,
     Flags,
     Parameter,
-    Function
+    Function,
+    ErrorDomain
 )
-from .base_models import BaseType, TypeReference, BaseField, BaseExternalType
+from .base_models import BaseType, TypeReference, BaseField, BaseExternalType, DataField
 from .comment_processor import ParserCommentProcessor
 from .grammar.IdlLexer import IdlLexer
 from .grammar.IdlParser import IdlParser
@@ -98,7 +99,7 @@ class Parser(IdlVisitor):
         return "\n".join([line.getText()[1:] for line in ctx.COMMENT()])
 
     def visitTypeDecl(self, ctx: IdlParser.TypeDeclContext):
-        type_decl_context = ctx.enum() or ctx.flags() or ctx.record() or ctx.interface() or ctx.namedFunction()
+        type_decl_context = ctx.enum() or ctx.flags() or ctx.record() or ctx.interface() or ctx.namedFunction() or ctx.errorDomain()
         if type_decl_context:
             type_decl = self.visit(type_decl_context)
             self.resolver.register(type_decl)
@@ -166,6 +167,9 @@ class Parser(IdlVisitor):
         for method in methods:
             for param in method.parameters:
                 dependencies.append(param.type_ref)
+            if method.throwing:
+                for error_domain_ref in method.throwing:
+                    dependencies.append(error_domain_ref)
             if method.return_type_ref:
                 dependencies.append(method.return_type_ref)
         for prop in properties:
@@ -187,10 +191,10 @@ class Parser(IdlVisitor):
                 Parser.ParsingException("a 'main' interface can only be implemented in C++", interface.position))
 
         for method in interface.methods:
-            if CppGenerator.key not in interface.targets and method.static:
+            if not interface.targets == [CppGenerator.key] and method.static:
                 self.errors.append(Parser.ParsingException(
                     f"methods are only allowed to be static on '{CppGenerator.key}' interfaces",
-                    interface.position
+                    method.position
                 ))
 
         return interface
@@ -203,6 +207,8 @@ class Parser(IdlVisitor):
             return_type_ref=self.visit(ctx.typeRef()) if ctx.typeRef() else None,
             static=ctx.STATIC() is not None,
             const=ctx.CONST() is not None,
+            asynchronous=ctx.ASYNC() is not None,
+            throwing=self.visit(ctx.throwing()) if ctx.throwing() else None,
             comment=self.visit(ctx.comment()) if ctx.comment() else None
         )
         self.field_decls.append(method)
@@ -218,6 +224,10 @@ class Parser(IdlVisitor):
         )
         self.field_decls.append(parameter)
         return parameter
+
+    def visitThrowing(self, ctx:IdlParser.ThrowingContext) -> list[TypeReference]:
+        return [self.visit(typeRef) for typeRef in ctx.typeRef()]
+
 
     def visitProp(self, ctx: IdlParser.PropContext) -> Interface.Property:
         return Interface.Property(
@@ -282,7 +292,8 @@ class Parser(IdlVisitor):
             targets=targets,
             namespace=self.current_namespace,
             return_type_ref=return_type_ref,
-            dependencies=dependencies
+            dependencies=dependencies,
+            throwing=self.visit(ctx.throwing()) if ctx.throwing() else None,
         )
 
     def visitRecord(self, ctx: IdlParser.RecordContext) -> Record:
@@ -299,8 +310,34 @@ class Parser(IdlVisitor):
             deriving=deriving
         )
 
+    def visitErrorDomain(self, ctx: IdlParser.ErrorDomainContext) -> ErrorDomain:
+        error_codes = [self.visit(errorCode) for errorCode in ctx.errorCode()]
+        dependencies = []
+        for errorCode in error_codes:
+            for param in errorCode.parameters:
+                dependencies.append(param.type_ref)
+        return ErrorDomain(
+            name=self.visit(ctx.identifier()),
+            position=self._position(ctx),
+            comment=self.visit(ctx.comment()) if ctx.comment() else None,
+            error_codes=error_codes,
+            namespace=self.current_namespace,
+            dependencies=dependencies,
+        )
+
+    def visitErrorCode(self, ctx: IdlParser.ErrorCodeContext) -> ErrorDomain.ErrorCode:
+        parameters = [self.visit(parameter) for parameter in ctx.parameter()]
+        error_code = ErrorDomain.ErrorCode(
+            name=self.visit(ctx.identifier()),
+            position=self._position(ctx),
+            comment=self.visit(ctx.comment()) if ctx.comment() else None,
+            parameters=parameters,
+        )
+        self.field_decls.append(error_code)
+        return error_code
+
     def visitField(self, ctx: IdlParser.FieldContext):
-        field = Record.Field(
+        field = DataField(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
             comment=self.visit(ctx.comment()) if ctx.comment() else None,
@@ -455,7 +492,7 @@ class Parser(IdlVisitor):
                             type_ref.position
                         ))
             for decl in self.type_decls:
-                if isinstance(decl, Record):
+                if decl.primitive == BaseExternalType.Primitive.record:
                     if Record.Deriving.ord in decl.deriving:
                         for field in decl.fields:
                             if field.type_ref.type_def and field.type_ref.type_def.primitive == BaseExternalType.Primitive.collection:
@@ -463,6 +500,15 @@ class Parser(IdlVisitor):
                                     "Cannot compare collections in 'ord' deriving",
                                     position=field.position
                                 ))
+                if decl.primitive == BaseExternalType.Primitive.interface:
+                    for method in decl.methods:
+                        if method.throwing is not None:
+                            for type_ref in method.throwing:
+                                if (type_ref.type_def is not None) and not type_ref.type_def.primitive == BaseExternalType.Primitive.error:
+                                    self.errors.append(Parser.ParsingException(
+                                        "Only errors can be thrown",
+                                        position=type_ref.position
+                                    ))
             for target in self.targets:
                 target.marshal(self.type_decls, self.field_decls)
         except FileNotFoundError as e:

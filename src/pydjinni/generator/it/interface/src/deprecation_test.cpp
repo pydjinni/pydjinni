@@ -16,5 +16,5 @@
 
 using namespace test::interface_test;
 
-int32_t DeprecationTest::deprecation_test_method() { return 42; }
+int32_t DeprecationTest::deprecation_test_method() noexcept { return 42; }
 

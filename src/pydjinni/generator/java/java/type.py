@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 
@@ -22,9 +22,27 @@ from pydjinni.generator.java.java.config import JavaConfig
 from pydjinni.generator.java.java.keywords import keywords
 from pydjinni.generator.validator import validate
 from pydjinni.parser.ast import Record, Function
-from pydjinni.parser.base_models import BaseType, BaseField, BaseExternalType
+from pydjinni.parser.base_models import BaseType, BaseField, BaseExternalType, TypeReference
 from pydjinni.parser.identifier import IdentifierType as Identifier
 
+
+def return_type(type_ref: TypeReference | None, asynchronous: bool = False) -> str:
+    if type_ref:
+        output = data_type(type_ref, boxed=asynchronous)
+    else:
+        output = "Void" if asynchronous else "void"
+    return output
+
+
+def data_type(type_ref: TypeReference, boxed: bool = False) -> str:
+    output = type_ref.type_def.java.boxed if boxed or type_ref.optional else type_ref.type_def.java.typename
+    if type_ref.parameters:
+        output += f"<{', '.join([data_type(parameter, boxed=True) for parameter in type_ref.parameters])}>"
+    return output
+
+
+def filename(package, name):
+    return Path(*package.split('.')) / f"{name}.java"
 
 class JavaExternalType(BaseModel):
     """Java type information"""
@@ -93,6 +111,9 @@ class JavaBaseField(BaseModel):
         return JavaDocCommentRenderer(self.config.identifier).render_tokens(*self.decl.parsed_comment).strip() \
             if self.decl.comment else ''
 
+    @cached_property
+    def data_type(self) -> str: return data_type(self.decl.type_ref)
+
 
 class JavaRecord(JavaBaseType):
     decl: Record = Field(exclude=True, repr=False)
@@ -121,47 +142,55 @@ class JavaRecord(JavaBaseType):
             output += "final "
         return output
 
-    class JavaField(JavaBaseField):
-        @cached_property
-        def getter(self): return Identifier(f"get_{self.decl.name}").convert(self.config.identifier.method)
+class JavaDataField(JavaBaseField):
+    @cached_property
+    def getter(self):
+        return Identifier(f"get_{self.decl.name}").convert(self.config.identifier.method)
 
-        @cached_property
-        def field_modifier(self):
-            output = ""
-            if self.config.use_final_for_record:
-                output += "final "
-            return output
+    @cached_property
+    def field_modifier(self):
+        output = ""
+        if self.config.use_final_for_record:
+            output += "final "
+        return output
 
-        @cached_property
-        def hash_code(self) -> str:
-            if self.decl.type_ref.optional:
-                return f"{self.decl.java.name} == null ? 0 : {self.decl.java.name}.hashCode()"
-            elif self.decl.type_ref.type_def.java.typename == self.decl.type_ref.type_def.java.boxed:
-                match self.decl.type_ref.type_def.name:
-                    case "binary": return f"java.util.Arrays.hashCode({self.decl.java.name})"
-                    case _: return f"{self.decl.java.name}.hashCode()"
-            else:
-                match self.decl.type_ref.type_def.java.typename:
-                    case "long": return f"((int) ({self.decl.java.name} ^ ({self.decl.java.name} >>> 32)))"
-                    case "float": return f"Float.floatToIntBits({self.decl.java.name})"
-                    case "double": return f"((int) (Double.doubleToLongBits({self.decl.java.name}) ^ (Double.doubleToLongBits({self.decl.java.name}) >>> 32)))"
-                    case "boolean": return f"({self.decl.java.name} ? 1 : 0)"
-                    case _: return self.decl.java.name
+    @cached_property
+    def hash_code(self) -> str:
+        if self.decl.type_ref.optional:
+            return f"{self.decl.java.name} == null ? 0 : {self.decl.java.name}.hashCode()"
+        elif self.decl.type_ref.type_def.java.typename == self.decl.type_ref.type_def.java.boxed:
+            match self.decl.type_ref.type_def.name:
+                case "binary":
+                    return f"java.util.Arrays.hashCode({self.decl.java.name})"
+                case _:
+                    return f"{self.decl.java.name}.hashCode()"
+        else:
+            match self.decl.type_ref.type_def.java.typename:
+                case "long":
+                    return f"((int) ({self.decl.java.name} ^ ({self.decl.java.name} >>> 32)))"
+                case "float":
+                    return f"Float.floatToIntBits({self.decl.java.name})"
+                case "double":
+                    return f"((int) (Double.doubleToLongBits({self.decl.java.name}) ^ (Double.doubleToLongBits({self.decl.java.name}) >>> 32)))"
+                case "boolean":
+                    return f"({self.decl.java.name} ? 1 : 0)"
+                case _:
+                    return self.decl.java.name
 
-        @cached_property
-        def equals(self) -> str:
-            if self.decl.type_ref.optional:
-                return f"((this.{self.decl.java.name} == null && other.{self.decl.java.name} == null) | | (this.{self.decl.java.name} != null & & this.{self.decl.java.name}.equals(other.{self.decl.java.name})))"
-            elif self.decl.type_ref.type_def.primitive == BaseExternalType.Primitive.enum:
-                return f"this.{self.decl.java.name} == other.{self.decl.java.name}"
-            elif self.decl.type_ref.type_def.java.typename == self.decl.type_ref.type_def.java.boxed:
-                match self.decl.type_ref.type_def.name:
-                    case "binary": return f"java.util.Arrays.equals({self.decl.java.name}, other.{self.decl.java.name})"
-                    case _: return f"{self.decl.java.name}.equals(other.{self.decl.java.name})"
-            else:
-                return f"this.{self.decl.java.name} == other.{self.decl.java.name}"
-
-
+    @cached_property
+    def equals(self) -> str:
+        if self.decl.type_ref.optional:
+            return f"((this.{self.decl.java.name} == null && other.{self.decl.java.name} == null) | | (this.{self.decl.java.name} != null & & this.{self.decl.java.name}.equals(other.{self.decl.java.name})))"
+        elif self.decl.type_ref.type_def.primitive == BaseExternalType.Primitive.enum:
+            return f"this.{self.decl.java.name} == other.{self.decl.java.name}"
+        elif self.decl.type_ref.type_def.java.typename == self.decl.type_ref.type_def.java.boxed:
+            match self.decl.type_ref.type_def.name:
+                case "binary":
+                    return f"java.util.Arrays.equals({self.decl.java.name}, other.{self.decl.java.name})"
+                case _:
+                    return f"{self.decl.java.name}.equals(other.{self.decl.java.name})"
+        else:
+            return f"this.{self.decl.java.name} == other.{self.decl.java.name}"
 
 class JavaFlags(JavaBaseType):
     @computed_field
@@ -173,11 +202,16 @@ class JavaFunction(JavaBaseType):
     decl: Function = Field(exclude=True, repr=False)
 
     @cached_property
+    @validate(keywords)
     def name(self) -> str:
         if self.decl.anonymous:
             return self.decl.name.title()
         else:
             return super().name
+
+    @cached_property
+    def return_type(self) -> str:
+        return return_type(self.decl.return_type_ref)
 
 
 class JavaSymbolicConstantField(JavaBaseField):
@@ -193,3 +227,54 @@ class JavaInterface(JavaBaseType):
         @cached_property
         @validate(keywords)
         def name(self) -> str: return self.decl.name.convert(self.config.identifier.method)
+
+        @cached_property
+        def return_type(self) -> str:
+            output = return_type(self.decl.return_type_ref, self.decl.asynchronous)
+            if self.decl.asynchronous:
+                output = f"java.util.concurrent.CompletableFuture<{output}>"
+            return output
+
+        @cached_property
+        def callback_type(self) -> str:
+            return return_type(self.decl.return_type_ref, self.decl.asynchronous)
+
+class JavaErrorDomain(JavaBaseType):
+    pass
+
+    class JavaErrorCode(JavaBaseType):
+        pass
+
+@dataclass
+class NativeLibLoader:
+    config: JavaConfig
+
+    @property
+    def name(self):
+        return f"Native{self.config.native_lib}Loader"
+
+    @property
+    def package(self) -> str:
+        return '.'.join(self.config.package + self.config.support_types_package)
+
+    @property
+    def native_lib(self) -> str:
+        return self.config.native_lib
+
+    @property
+    def source(self) -> Path: return filename(self.package, self.name)
+
+@dataclass
+class NativeCleaner:
+    config: JavaConfig
+
+    @property
+    def name(self) -> str:
+        return f"NativeCleaner"
+
+    @property
+    def package(self) -> str:
+        return '.'.join(self.config.package + self.config.support_types_package)
+
+    @property
+    def source(self) -> Path: return filename(self.package, self.name)

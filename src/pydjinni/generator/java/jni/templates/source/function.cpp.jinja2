@@ -1,5 +1,5 @@
 {#
-Copyright 2023 jothepro
+Copyright 2024 jothepro
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -73,21 +73,21 @@ limitations under the License.
     );
     ::pydjinni::jniExceptionCheck(jniEnv);
     {% if type_def.return_type_ref %}
-    return {{ translator(type_def.return_type_ref) }}::toCpp(jniEnv, jret);
+    return {{ type_def.jni.return_type_translator }}::toCpp(jniEnv, jret);
     {% endif %}
 }
 
 {% endif %}
 
 {% if 'cpp' in type_def.targets %}
-CJNIEXPORT void JNICALL {{ type_def.jni.jni_prefix }}_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef)
+CJNIEXPORT void JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_00024CleanupTask_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef)
 {
     ::pydjinni::translate_exceptions(jniEnv, [&](){
         delete reinterpret_cast<::pydjinni::CppProxyHandle<{{ type_def.jni.wrapper }}>*>(nativeRef);
     });
 }
 
-CJNIEXPORT {{ type_def.jni.return_type_spec }} JNICALL {{ type_def.jni.jni_prefix }}CppProxy_native_1invoke(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef
+CJNIEXPORT {{ type_def.jni.return_type_spec }} JNICALL {{ type_def.jni.jni_prefix }}CppProxy_nativeInvoke(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef
     {%- for parameter in type_def.parameters -%}
     , {{ parameter.type_ref.type_def.jni.typename.value }} {{ parameter.jni.name }}
     {%- endfor -%}

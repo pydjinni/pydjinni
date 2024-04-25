@@ -18,23 +18,23 @@
 
 TEST_CASE("Cpp.FunctionTest") {
     WHEN("passing a lambda to the named_function method") {
-        THEN("the internal asser should not be triggered") {
-            test::function::Helper::named_function([](int32_t input) -> bool {
-                return input == 42;
+        THEN("the internal assert should not be triggered") {
+            test::function::Helper::named_function([](std::string input) -> bool {
+                return input == "foo";
             });
         }
     }
     WHEN("passing a lambda to the named_function method") {
-        THEN("the internal asser should not be triggered") {
-            test::function::Helper::anonymous_function([](int32_t input) -> bool {
-                return input == 42;
+        THEN("the internal assert should not be triggered") {
+            test::function::Helper::anonymous_function([](std::string input) -> bool {
+                return input == "foo";
             });
         }
     }
     GIVEN("a (named) lambda returned by the helper") {
         auto lambda = test::function::Helper::cpp_named_function();
         WHEN("calling the lambda with the correct value") {
-            auto result = lambda(42);
+            auto result = lambda("foo");
             THEN("true should be returned") {
                 REQUIRE(result == true);
             }
@@ -43,7 +43,7 @@ TEST_CASE("Cpp.FunctionTest") {
     GIVEN("an (anonymous) lambda returned by the helper") {
         auto lambda = test::function::Helper::cpp_anonymous_function();
         WHEN("calling the lambda with the correct value") {
-            auto result = lambda(42);
+            auto result = lambda("foo");
             THEN("true should be returned") {
                 REQUIRE(result == true);
             }
@@ -55,6 +55,13 @@ TEST_CASE("Cpp.FunctionTest") {
             THEN("an exception should be thrown") {
                 REQUIRE_THROWS_MATCHES(lambda(), std::runtime_error, Catch::Matchers::Message("shit hit the fan"));
             }
+        }
+    }
+    WHEN("passing a lambda to the anonymous_function_passing_record method") {
+        THEN("the internal assert should not be triggered") {
+            test::function::Helper::anonymous_function_passing_record([](::test::function::Foo foo) -> bool {
+                return foo.a == 32;
+            });
         }
     }
 }

@@ -28,7 +28,6 @@ class CppIdentifier(BaseModel):
     method: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.snake
     namespace: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.snake
 
-
 CppNamespace = Annotated[
     str,
     AfterValidator(lambda x: x.split('::')),

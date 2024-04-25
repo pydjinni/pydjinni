@@ -2,6 +2,6 @@
 
 using namespace pydjinni::example;
 
-std::string HelloWorld::say_hello() {
+std::string HelloWorld::say_hello() noexcept {
     return "hello from C++!";
 }

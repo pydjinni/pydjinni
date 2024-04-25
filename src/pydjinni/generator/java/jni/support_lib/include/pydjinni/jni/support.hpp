@@ -112,12 +112,11 @@ typename LocalRef<T>::pointer release(LocalRef<T>&& x) noexcept { return x.relea
  */
 class jni_exception : public std::exception {
     GlobalRef<jthrowable> m_java_exception;
+    std::string message;
 public:
-    jni_exception(JNIEnv * env, jthrowable java_exception)
-        : m_java_exception(env, java_exception) {
-        assert(java_exception);
-    }
+    jni_exception(JNIEnv * env, jthrowable java_exception);
     jthrowable java_exception() const { return m_java_exception.get(); }
+    [[nodiscard]] const char * what() const noexcept override;
 
     /*
      * Sets the pending JNI exception using this Java exception.
@@ -236,6 +235,14 @@ GlobalRef<jclass> jniFindClass(const char * name);
 jmethodID jniGetStaticMethodID(jclass clazz, const char * name, const char * sig);
 jmethodID jniGetMethodID(jclass clazz, const char * name, const char * sig);
 jfieldID jniGetFieldID(jclass clazz, const char * name, const char * sig);
+
+/*
+ * async (CompletableFuture) helpers
+ */
+
+LocalRef<jobject> jniNewCompletableFuture(JNIEnv* jniEnv);
+jmethodID jniGetCompletableFutureCompleteMethodID();
+jmethodID jniGetCompletableFutureCompleteExceptionallyMethodID();
 
 /*
  * Helper for maintaining shared_ptrs to wrapped Java objects.
@@ -684,6 +691,8 @@ auto translate_exceptions(JNIEnv* jniEnv, F&& f) -> std::enable_if_t<std::is_voi
         ::pydjinni::jniSetPendingFromCurrent(jniEnv, __func__);
     }
 }
+
+jthrowable jniNewThrowable(JNIEnv* env, jstring what);
 
 /* Catch jni_exception and translate it back to a Java exception, without catching
  * any other C++ exceptions.  Can be used to wrap code which might cause JNI

@@ -26,20 +26,20 @@ namespace Testing.Unit.Function
         [Test]
         public void TestNamedFunction()
         {
-            Helper.NamedFunction(input => input == 42);
+            Helper.NamedFunction(input => input == "foo");
         }
 
         [Test]
         public void TestAnonymousFunction()
         {
-            Helper.AnonymousFunction(input => input == 42);
+            Helper.AnonymousFunction(input => input == "foo");
         }
 
         [Test]
         public void TestCppNamedFunction()
         {
             var function = Helper.CppNamedFunction();
-            var result = function(42);
+            var result = function("foo");
             Assert.That(result);
         }
 
@@ -47,7 +47,7 @@ namespace Testing.Unit.Function
         public void TestCppAnonymousFunction()
         {
             var function = Helper.CppAnonymousFunction();
-            var result = function(42);
+            var result = function("foo");
             Assert.That(result);
         }
 
@@ -57,6 +57,12 @@ namespace Testing.Unit.Function
             var function = Helper.CppFunctionThrowingException();
             var exception = Assert.Throws<Exception>(() => function());
             Assert.That(exception.Message, Is.EqualTo("shit hit the fan"));
+        }
+
+        [Test]
+        public void TestAnonymousFunctionPassingRecord()
+        {
+            Helper.AnonymousFunctionPassingRecord(foo => foo.A == 32);
         }
 
     }

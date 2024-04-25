@@ -17,6 +17,7 @@
 #include "pydjinni/common.hpp"
 #include "pydjinni/jni/support.hpp"
 #include "pydjinni/proxy_cache_impl.hpp"
+#include "pydjinni/jni/marshal.hpp"
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
@@ -134,11 +135,21 @@ void LocalRefDeleter::operator() (jobject localRef) noexcept {
     }
 }
 
+jni_exception::jni_exception(JNIEnv *env, jthrowable java_exception) : m_java_exception(env, java_exception) {
+    auto exceptionClass = jniFindClass("java/lang/Throwable");
+    jmethodID getMessage = jniGetMethodID(exceptionClass.get(), "getMessage", "()Ljava/lang/String;");
+    message = ::pydjinni::jni::translator::String::toCpp(env, (jstring)env->CallObjectMethod(m_java_exception.get(), getMessage));
+    assert(java_exception);
+}
+
 void jni_exception::set_as_pending(JNIEnv * env) const noexcept {
     assert(env);
     env->Throw(java_exception());
 }
 
+const char* jni_exception::what() const noexcept {
+    return message.c_str();
+}
 
 void jniExceptionCheck(JNIEnv * env) {
     if (!env) {
@@ -256,6 +267,24 @@ jfieldID jniGetFieldID(jclass clazz, const char * name, const char * sig) {
         jniThrowAssertionError(env, __FILE__, __LINE__, "GetFieldID returned null");
     }
     return id;
+}
+
+const char* COMPLETABLE_FUTURE_CLASS = "java/util/concurrent/CompletableFuture";
+
+LocalRef<jobject> jniNewCompletableFuture(JNIEnv* jniEnv) {
+    auto completableFutureClass = jniFindClass(COMPLETABLE_FUTURE_CLASS);
+    auto completableFutureInit = jniGetMethodID(completableFutureClass.get(), "<init>", "()V");
+    return ::pydjinni::LocalRef(jniEnv->NewObject(completableFutureClass.get(), completableFutureInit));
+}
+
+jmethodID jniGetCompletableFutureCompleteMethodID() {
+    auto completableFutureClass = jniFindClass(COMPLETABLE_FUTURE_CLASS);
+    return jniGetMethodID(completableFutureClass.get(), "complete", "(Ljava/lang/Object;)Z");
+}
+
+jmethodID jniGetCompletableFutureCompleteExceptionallyMethodID() {
+    auto completableFutureClass = jniFindClass(COMPLETABLE_FUTURE_CLASS);
+    return jniGetMethodID(completableFutureClass.get(), "completeExceptionally", "(Ljava/lang/Throwable;)Z");
 }
 
 JniEnum::JniEnum(const std::string & name)
@@ -610,6 +639,12 @@ void jniDefaultSetPendingFromCurrentImpl(JNIEnv * env) {
     } catch (const std::exception & e) {
         env->ThrowNew(env->FindClass("java/lang/RuntimeException"), e.what());
     }
+}
+
+jthrowable jniNewThrowable(JNIEnv* env, jstring what) {
+    auto exceptionClass = jniFindClass("java/lang/RuntimeException");
+    jmethodID init = jniGetMethodID(exceptionClass.get(), "<init>", "(Ljava/lang/String;)V");
+    return (jthrowable) env->NewObject(exceptionClass.get(), init, what);
 }
 
 void jniDefaultSetPendingFromCurrent(JNIEnv * env, const char * /*ctx*/) noexcept {

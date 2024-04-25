@@ -15,6 +15,7 @@ def test_markdown_plugins():
 @deprecated
 
 @returns foo
+@throws foo bar
 hello world""")
 
     # THEN the special commands should be parsed correctly
@@ -28,3 +29,6 @@ hello world""")
     assert tokens[4]['children'][0]['raw'] == ""
     assert tokens[6]['type'] == "returns"
     assert tokens[6]['children'][0]['raw'] == "foo"
+    assert tokens[7]['type'] == "throws"
+    assert tokens[1]['attrs']['name'] == "foo"
+    assert tokens[7]['children'][0]['raw'] == "bar"

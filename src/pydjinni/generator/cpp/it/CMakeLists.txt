@@ -22,7 +22,7 @@ function(cpp_test_case TEST_CASE_NAME)
             # one-value keywords
             ""
             # multi-value keywords
-            "SOURCES"
+            "SOURCES;INCLUDES"
             # args
             ${ARGN}
             )
@@ -34,6 +34,10 @@ function(cpp_test_case TEST_CASE_NAME)
         PRIVATE
             Catch2::Catch2WithMain
             test::${TEST_CASE_NAME}
+    )
+    target_include_directories(${TEST_CASE_NAME}Cpp
+        PRIVATE
+            ${TEST_CASE_INCLUDES}
     )
 
 catch_discover_tests(${TEST_CASE_NAME}Cpp)
@@ -63,4 +67,18 @@ cpp_test_case(FlagsTest
 cpp_test_case(FunctionTest
     SOURCES
         tests/test_function.cpp
+)
+
+cpp_test_case(AsyncTest
+    SOURCES
+        tests/test_async.cpp
+    INCLUDES
+        include
+)
+
+cpp_test_case(ErrorTest
+    SOURCES
+        tests/test_error.cpp
+    INCLUDES
+        include
 )

@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2024 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ class JniConfig(BaseModel):
         description="The output folder for the generated files. Separate folders for `source` and `header` files can be specified."
     )
     namespace: CppNamespace | list[Identifier] = Field(
-        default=[],
         description="The namespace name to use for generated JNI C++ classes"
     )
     include_prefix: Path = Field(

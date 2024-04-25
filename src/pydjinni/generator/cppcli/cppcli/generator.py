@@ -18,12 +18,15 @@ from pydjinni.parser.ast import (
     Record,
     Flags,
     Enum,
-    Function
+    Function,
+    ErrorDomain
 )
 from pydjinni.parser.base_models import (
     BaseType,
     BaseField,
-    SymbolicConstantField, SymbolicConstantType
+    DataField,
+    SymbolicConstantField,
+    SymbolicConstantType
 )
 from .config import CppCliConfig
 from .external_types import external_types
@@ -32,8 +35,11 @@ from .type import (
     CppCliBaseType,
     CppCliBaseField,
     CppCliRecord,
-    CppCliMethodField,
-    CppCliSymbolicConstant, CppCliFunction
+    CppCliDataField,
+    CppCliSymbolicConstant,
+    CppCliFunction,
+    CppCliInterface,
+    CppCliErrorDomain
 )
 from pydjinni.generator.filters import quote, headers
 
@@ -47,11 +53,13 @@ class CppCliGenerator(Generator):
         BaseType: CppCliBaseType,
         BaseField: CppCliBaseField,
         Record: CppCliRecord,
-        Record.Field: CppCliRecord.Field,
-        Interface.Method: CppCliMethodField,
+        DataField: CppCliDataField,
+        Interface: CppCliInterface,
+        Interface.Method: CppCliInterface.CppCliMethod,
         SymbolicConstantField: CppCliSymbolicConstant.Field,
         SymbolicConstantType: CppCliSymbolicConstant,
-        Function: CppCliFunction
+        Function: CppCliFunction,
+        ErrorDomain: CppCliErrorDomain
     }
     filters = [quote, headers]
     support_lib_commons = True
@@ -77,3 +85,7 @@ class CppCliGenerator(Generator):
     def generate_function(self, type_def: Function):
         self.write_header("header/function.hpp.jinja2", type_def=type_def)
         self.write_source("source/function.cpp.jinja2", type_def=type_def)
+
+    def generate_error_domain(self, type_def: ErrorDomain):
+        self.write_header("header/error_domain.hpp.jinja2", type_def=type_def)
+        self.write_source("source/error_domain.cpp.jinja2", type_def=type_def)

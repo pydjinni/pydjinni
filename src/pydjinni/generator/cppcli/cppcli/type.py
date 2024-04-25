@@ -25,8 +25,10 @@ from pydjinni.parser.ast import Function
 from .comment_renderer import XmlCommentRenderer
 from .config import CppCliConfig
 from .keywords import keywords
-from pydjinni.parser.base_models import BaseType, BaseField, TypeReference
+from pydjinni.parser.base_models import BaseType, BaseField, TypeReference, DataField
 from pydjinni.generator.validator import validate
+
+from pydjinni.generator.filters import headers, quote
 
 
 class CppCliExternalType(BaseModel):
@@ -38,7 +40,7 @@ class CppCliExternalType(BaseModel):
     reference: bool = True
 
 
-def typename(type_ref: TypeReference) -> str:
+def typename(type_ref: TypeReference, asynchronous: bool = False) -> str:
     if type_ref:
         output = type_ref.type_def.cppcli.typename
         if type_ref.optional and not type_ref.type_def.cppcli.reference:
@@ -46,9 +48,9 @@ def typename(type_ref: TypeReference) -> str:
         if type_ref.parameters:
             output += f"<{', '.join([typename(type_ref) for type_ref in type_ref.parameters])}>"
         output += "^" if type_ref.type_def.cppcli.reference else ""
-        return output
+        return output if not asynchronous else f"System::Threading::Tasks::Task<{output}>^"
     else:
-        return "void"
+        return "void" if not asynchronous else "System::Threading::Tasks::Task^"
 
 
 def translator(type_ref: TypeReference) -> str:
@@ -113,6 +115,9 @@ class CppCliBaseType(BaseModel):
     def reference(self) -> bool:
         return True
 
+    @cached_property
+    def includes(self): return headers(self.decl.dependencies, "cppcli")
+
 
 class CppCliBaseField(BaseModel):
     decl: BaseField = Field(exclude=True, repr=False)
@@ -121,6 +126,10 @@ class CppCliBaseField(BaseModel):
     @cached_property
     def name(self) -> str:
         return self.decl.name.convert(self.config.identifier.local)
+
+    @cached_property
+    def property(self) -> str:
+        return self.decl.name.convert(self.config.identifier.property)
 
     @cached_property
     def typename(self) -> str:
@@ -136,20 +145,39 @@ class CppCliBaseField(BaseModel):
             if self.decl.comment else ''
 
 
-class CppCliMethodField(CppCliBaseField):
-    decl: Interface.Method = Field(exclude=True, repr=False)
+class CppCliInterface(CppCliBaseType):
 
     @cached_property
-    def name(self) -> str:
-        return self.decl.name.convert(self.config.identifier.method)
+    def includes(self):
+        dependency_headers = super().includes
+        if any(method.asynchronous for method in self.decl.methods):
+            dependency_headers.append(quote(Path("pydjinni/coroutine/task.hpp")))
+            dependency_headers.append(quote(Path("pydjinni/coroutine/schedule.hpp")))
+            if "cppcli" in self.decl.targets:
+                dependency_headers.append(quote(Path("pydjinni/coroutine/callback_awaitable.hpp")))
+        return dependency_headers
 
-    @cached_property
-    def typename(self) -> str:
-        return typename(self.decl.return_type_ref)
+    class CppCliMethod(CppCliBaseField):
+        decl: Interface.Method = Field(exclude=True, repr=False)
 
-    @cached_property
-    def translator(self) -> str:
-        return translator(self.decl.return_type_ref)
+        @cached_property
+        def name(self) -> str:
+            return self.decl.name.convert(self.config.identifier.method)
+
+        @cached_property
+        def typename(self) -> str:
+            return typename(self.decl.return_type_ref, self.decl.asynchronous)
+
+        @cached_property
+        def synchronous_typename(self) -> str:
+            return typename(self.decl.return_type_ref)
+
+        @cached_property
+        def translator(self) -> str:
+            return translator(self.decl.return_type_ref)
+
+        @cached_property
+        def async_proxy_name(self) -> str: return Identifier(self.decl.name + "_proxy").convert(self.config.identifier.method)
 
 
 class CppCliRecord(CppCliBaseType):
@@ -195,26 +223,22 @@ class CppCliRecord(CppCliBaseType):
         return Path(
             *self.decl.namespace) / f"{self.base_name().convert(self.config.identifier.file)}.cpp"
 
-    class Field(CppCliBaseField):
-        decl: Record.Field = Field(exclude=True, repr=False)
+class CppCliDataField(CppCliBaseField):
+    decl: DataField = Field(exclude=True, repr=False)
 
-        @cached_property
-        def property(self) -> str:
-            return self.decl.name.convert(self.config.identifier.property)
+    @cached_property
+    def equals(self) -> str:
+        if self.decl.type_ref.type_def.cppcli.reference:
+            return f"{self.property}->Equals(other->{self.property})"
+        else:
+            return f"{self.property} == other->{self.property}"
 
-        @cached_property
-        def equals(self) -> str:
-            if self.decl.type_ref.type_def.cppcli.reference:
-                return f"{self.property}->Equals(other->{self.property})"
-            else:
-                return f"{self.property} == other->{self.property}"
-
-        @cached_property
-        def compare(self) -> str:
-            if self.decl.type_ref.type_def.name == 'string':
-                return f"System::String::Compare({self.property}, other->{self.property}, System::StringComparison::Ordinal);"
-            else:
-                return f"{self.property}.CompareTo(other->{self.property})"
+    @cached_property
+    def compare(self) -> str:
+        if self.decl.type_ref.type_def.name == 'string':
+            return f"System::String::Compare({self.property}, other->{self.property}, System::StringComparison::Ordinal);"
+        else:
+            return f"{self.property}.CompareTo(other->{self.property})"
 
 
 class CppCliSymbolicConstant(CppCliBaseType):
@@ -269,3 +293,11 @@ class CppCliFunction(CppCliBaseType):
     def translator(self) -> str:
         return f"{self.namespace}::{self.delegate_name}"
 
+
+class CppCliErrorDomain(CppCliBaseType):
+    pass
+
+    class CppCliErrorCode(CppCliBaseField):
+        @cached_property
+        def name(self) -> str:
+            return self.decl.name.convert(self.config.identifier.type)

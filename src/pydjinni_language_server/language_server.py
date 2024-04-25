@@ -274,6 +274,11 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                 )
             )
 
+    @server.feature(TEXT_DOCUMENT_CODE_ACTION)
+    @error_logger
+    def code_action(ls, params: CodeActionParams):
+        pass
+
     @server.feature(WORKSPACE_DID_CHANGE_WATCHED_FILES)
     @error_logger
     def did_change_watched_files(ls, params: DidChangeWatchedFilesParams):
@@ -284,6 +289,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
             for uri, dependencies in dependency_cache.items():
                 if path in dependencies:
                     validate(ls, uri)
+
 
     match connection:
         case ConnectionType.TCP:

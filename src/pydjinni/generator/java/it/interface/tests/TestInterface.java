@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.*;
 import test.interface_test.Calculator;
 import test.interface_test.PlatformInterface;
+import test.interface_test.NoParametersNoReturnCallback;
 
 class TestInterface {
     Calculator calculator;
@@ -29,7 +30,7 @@ class TestInterface {
     @Test
     void testCalculator() {
         var result = calculator.add((byte)40, (byte)2);
-        assertEquals(result, 42);
+        assertEquals(42, result);
     }
 
     @Test
@@ -50,7 +51,19 @@ class TestInterface {
     @Test
     void testMethodThrowingException() {
         Exception exception = assertThrows(RuntimeException.class, () -> calculator.throwingException());
-        assertTrue(exception.getMessage().equals("shit hit the fan"));
+        assertEquals("shit hit the fan", exception.getMessage());
+    }
+
+    @Test
+    void testMethodNoParametersNoReturnCallback() {
+        var callback = new NoParametersNoReturnCallback() {
+            boolean callbackInvoked = false;
+            public void invoke() {
+                callbackInvoked = true;
+            }
+        };
+        calculator.noParametersNoReturnCallback(callback);
+        assertTrue(callback.callbackInvoked);
     }
 
 }

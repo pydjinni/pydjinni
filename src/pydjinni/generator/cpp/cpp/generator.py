@@ -20,11 +20,13 @@ from pydjinni.parser.ast import (
     Flags,
     Enum,
     Function,
-    Parameter
+    Parameter,
+    ErrorDomain
 )
 from pydjinni.parser.base_models import (
     BaseType,
     BaseField,
+    DataField,
     SymbolicConstantField
 )
 from .config import CppConfig
@@ -38,7 +40,9 @@ from .type import (
     CppFunction,
     CppBaseField,
     CppSymbolicConstantField,
-    CppParameter
+    CppParameter,
+    CppDataField,
+    CppErrorDomain
 )
 
 
@@ -52,11 +56,13 @@ class CppGenerator(Generator):
         Interface: CppInterface,
         Interface.Method: CppInterface.CppMethod,
         Record: CppRecord,
-        Record.Field: CppRecord.CppField,
+        DataField: CppDataField,
         Function: CppFunction,
         BaseField: CppBaseField,
         SymbolicConstantField: CppSymbolicConstantField,
-        Parameter: CppParameter
+        Parameter: CppParameter,
+        ErrorDomain: CppErrorDomain,
+        ErrorDomain.ErrorCode: CppErrorDomain.CppErrorCode
     }
     writes_header = True
     writes_source = True
@@ -84,4 +90,7 @@ class CppGenerator(Generator):
         self.write_header("header/interface.hpp.jinja2", type_def=type_def)
 
     def generate_function(self, type_def: Function):
-        pass
+        self.write_header("header/function.hpp.jinja2", type_def=type_def)
+
+    def generate_error_domain(self, type_def: ErrorDomain):
+        self.write_header("header/error_domain.hpp.jinja2", type_def=type_def)

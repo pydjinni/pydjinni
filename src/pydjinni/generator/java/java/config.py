@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2024 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -55,9 +55,12 @@ class JavaConfig(BaseModel):
         package = 'package'
 
     package: Package | list[Identifier] = Field(
-        default=[],
         examples=["my.package.name", "other.package.name"],
         description="The package name to use for generated Java classes"
+    )
+    support_types_package: Package | list[Identifier] = Field(
+        default=["pydjinni"],
+        description="The subpackage name where required support types are generated to"
     )
     interfaces: bool = Field(
         default=False,

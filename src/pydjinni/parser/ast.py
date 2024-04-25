@@ -19,7 +19,9 @@ from pydjinni.parser.base_models import (
     TypeReference,
     DocStrEnum,
     SymbolicConstantField,
-    SymbolicConstantType, BaseExternalType
+    SymbolicConstantType,
+    BaseExternalType,
+    DataField
 
 )
 
@@ -52,6 +54,8 @@ class Interface(ClassType):
         return_type_ref: TypeReference | None = None
         static: bool = False
         const: bool = False
+        asynchronous: bool = False
+        throwing: list[TypeReference] | None = None
 
     class Property(BaseField):
         type_ref: TypeReference
@@ -68,12 +72,10 @@ class Function(BaseType):
     parameters: list[Parameter] = []
     return_type_ref: TypeReference | None = None
     targets: list[str] = []
+    throwing: list[TypeReference] | None = None
 
 
 class Record(ClassType):
-    class Field(BaseField):
-        type_ref: TypeReference
-
     class Deriving(DocStrEnum):
         eq = 'eq', """
         Equality operator. 
@@ -89,5 +91,12 @@ class Record(ClassType):
         """
 
     primitive: BaseExternalType.Primitive = BaseExternalType.Primitive.record
-    fields: list[Field] = []
+    fields: list[DataField] = []
     deriving: set[Deriving] = set()
+
+class ErrorDomain(BaseType):
+    class ErrorCode(BaseType):
+        parameters: list[Parameter] = []
+
+    primitive: BaseExternalType.Primitive = BaseExternalType.Primitive.error
+    error_codes: list[ErrorCode] = []

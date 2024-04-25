@@ -41,5 +41,8 @@ class JavaDocCommentRenderer(HTMLRenderer):
     def param(self, text: str, name: str) -> str:
         return f"@param {Identifier(name).convert(self.identifier_style.field)} {text}\n"
 
+    def throws(self, text: str, name: str) -> str:
+        return f"@throws {Identifier(name).convert(self.identifier_style.type)} {text}\n"
+
     def deprecated(self, text: str) -> str:
         return f"@deprecated {text}\n"

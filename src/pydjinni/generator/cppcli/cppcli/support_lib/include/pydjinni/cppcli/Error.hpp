@@ -24,6 +24,15 @@ void ThrowUnimplemented(const char * ctx, const char * msg);
 // Helper function for exception translation. Do not call directly!
 void ThrowNativeExceptionFromCurrent(const char * ctx);
 
+class CppCliException : public std::exception {
+public:
+    CppCliException(System::Exception^ exception);
+
+    const char* what() const noexcept override;
+private:
+    std::string _what;
+};
+
 }
 
 #define DJINNI_UNIMPLEMENTED(msg) \

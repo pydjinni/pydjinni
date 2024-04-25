@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "Error.hpp"
+#include "Marshal.hpp"
 
 namespace pydjinni {
 
@@ -26,6 +27,13 @@ void ThrowNativeExceptionFromCurrent(const char *) {
     } catch (const std::exception & e) {
         throw gcnew System::Exception(msclr::interop::marshal_as<System::String^>(e.what()));
     }
+}
+
+CppCliException::CppCliException(System::Exception^ exception)
+        : _what(::pydjinni::cppcli::translator::String::ToCpp(exception->Message)) {}
+
+const char* CppCliException::what() const noexcept {
+    return _what.c_str();
 }
 
 }

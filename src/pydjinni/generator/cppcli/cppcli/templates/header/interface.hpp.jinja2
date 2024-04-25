@@ -20,7 +20,7 @@ limitations under the License.
 #pragma once
 #include {{ type_def.cpp.header | quote }}
 #include <memory>
-{% for header in type_def.dependencies | headers('cppcli') -%}
+{% for header in type_def.cppcli.includes -%}
 #include {{ header }}
 {% endfor %}
 {% endblock %}
@@ -55,5 +55,17 @@ internal:
     static CppType ToCpp(CsType cs);
     static CsType FromCppOpt(const CppOptType& cpp);
     static CsType FromCpp(const CppType& cpp) { return FromCppOpt(cpp); }
+    {% for method in type_def.methods if method.asynchronous and not method.static %}
+    ref class {{ method.cppcli.name }}CallbackHandleProxy {
+    public:
+        {{ method.cppcli.name }}CallbackHandleProxy(::pydjinni::coroutine::CallbackHandle<{{ method.cpp.callback_type_spec }}>& handle);
+        void HandleCallback(System::Threading::Tasks::Task
+        {%- if method.return_type_ref -%}
+        <{{ method.cppcli.synchronous_typename }}>
+        {%- endif -%}^ task);
+    private:
+        ::pydjinni::coroutine::CallbackHandle<{{ method.cpp.callback_type_spec }}>* _handle;
+    };
+    {% endfor %}
 };
 {% endblock %}

@@ -1,5 +1,5 @@
 {#
-Copyright 2023 jothepro
+Copyright 2024 jothepro
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,53 +14,53 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #}
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import return_type, parameters, comment %}
+{% from "macros.jinja2" import parameters, comment %}
 
 {% block header %}
-{% if type_def.cpp.proxy -%}
-import java.util.concurrent.atomic.AtomicBoolean;
-{% endif %}
 {% endblock %}
 
 {% block content %}
 {% if type_def.comment %}
 {{ comment(type_def) }}
 {% endif %}
+{% if type_def.deprecated %}
+@Deprecated
+{% endif %}
 @FunctionalInterface
 {{ type_def.java.class_modifier }}interface {{ type_def.java.name }} {
-    {{ return_type(type_def.return_type_ref) }} invoke({{ parameters(type_def) }});
+    {{ type_def.java.return_type }} invoke({{ parameters(type_def) }});
 }
 
 {% if type_def.cpp.proxy %}
 final class {{ type_def.java.name }}CppProxy implements {{ type_def.java.name }} {
     private final long nativeRef;
-    private final AtomicBoolean destroyed = new AtomicBoolean(false);
+
+    static class CleanupTask implements Runnable {
+        private final long nativeRef;
+        CleanupTask(long nativeRef) {
+            this.nativeRef = nativeRef;
+        }
+
+        @Override
+        public void run() {
+            nativeDestroy(this.nativeRef);
+        }
+
+        private native void nativeDestroy(long nativeRef);
+    }
 
     private {{ type_def.java.name }}CppProxy(long nativeRef)
     {
         if (nativeRef == 0) throw new RuntimeException("nativeRef is zero");
         this.nativeRef = nativeRef;
-    }
-
-    private native void nativeDestroy(long nativeRef);
-    public void _djinni_private_destroy()
-    {
-        boolean destroyed = this.destroyed.getAndSet(true);
-        if (!destroyed) nativeDestroy(this.nativeRef);
-    }
-    @SuppressWarnings("deprecation")
-    protected void finalize() throws java.lang.Throwable
-    {
-        _djinni_private_destroy();
-        super.finalize();
+        {{ native_cleaner.package }}.{{ native_cleaner.name }}.register(this, new CleanupTask(nativeRef));
     }
 
     @Override
-    public {{ return_type(type_def.return_type_ref) }} invoke({{ parameters(type_def) }}) {
-        assert !this.destroyed.get() : "trying to use a destroyed object";
-        {{ "return" if type_def.return_type_ref }} native_invoke(this.nativeRef{{ (", " if type_def.parameters) ~ parameters(type_def, with_types=False) }});
+    public {{ type_def.java.return_type }} invoke({{ parameters(type_def) }}) {
+        {{ "return" if type_def.return_type_ref }} nativeInvoke(this.nativeRef{{ (", " if type_def.parameters) ~ parameters(type_def, with_types=False) }});
     }
-    private native {{ return_type(type_def.return_type_ref) }} native_invoke(long _nativeRef{{ (", " if type_def.parameters) ~ parameters(type_def) }});
+    private native {{ type_def.java.return_type }} nativeInvoke(long _nativeRef{{ (", " if type_def.parameters) ~ parameters(type_def) }});
 }
 {% endif %}
 {% endblock %}

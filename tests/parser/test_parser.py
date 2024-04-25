@@ -22,7 +22,7 @@ from pydjinni.exceptions import FileNotFoundException, ApplicationExceptionList
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.file.processed_files_model_builder import ProcessedFiles
 from pydjinni.parser.ast import Record
-from pydjinni.parser.base_models import BaseType, BaseExternalType
+from pydjinni.parser.base_models import BaseType, BaseExternalType, DataField
 from pydjinni.parser.parser import Parser
 from pydjinni.parser.resolver import Resolver
 
@@ -94,7 +94,7 @@ def when(parser: Parser, type_type: type[TypeDef], type_name: str = None) -> Typ
     return type_def
 
 
-def assert_field(field: Record.Field, name: str, typename: str, optional: bool = False):
+def assert_field(field: DataField, name: str, typename: str, optional: bool = False):
     assert field.name == name
     assert field.type_ref.name == typename
     assert field.type_ref.optional == optional

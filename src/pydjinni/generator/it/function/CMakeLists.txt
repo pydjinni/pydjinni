@@ -15,7 +15,7 @@
 project(PyDjinniIntegrationTestFunction CXX)
 
 define_test_case(FunctionTest
-    INTERFACE function.djinni
+    INTERFACE function.pydjinni
     SOURCES src/helper.cpp
     OPTIONS
         generate.cpp.namespace=test::function

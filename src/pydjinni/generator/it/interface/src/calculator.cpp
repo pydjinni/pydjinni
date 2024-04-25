@@ -17,7 +17,7 @@
 
 using namespace test::interface_test;
 
-std::shared_ptr<Calculator> Calculator::get_instance() {
+std::shared_ptr<Calculator> Calculator::get_instance() noexcept {
     return std::make_shared<CalculatorImpl>();
 }
 

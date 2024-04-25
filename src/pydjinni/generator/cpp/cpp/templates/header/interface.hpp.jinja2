@@ -40,7 +40,7 @@ public:
     {%- for parameter in method.parameters -%}
         {{ parameter.cpp.type_spec }} {{ parameter.cpp.name ~ (", " if not loop.last) }}
     {%- endfor -%}
-    ){{ " const" if method.const }}{{ " = 0" if not method.static }};
+    ){{ " const" if method.const }}{{ " noexcept" if method.cpp.noexcept }}{{ " = 0" if not method.static }};
 {% endfor %}
 };
 {% endblock %}
