@@ -24,7 +24,7 @@ class PyDjinniLexer(RegexLexer):
     tokens = {
         'root': [
             (r'# .*\n', Comment),
-            (r'(function|interface|flags|enum|record|namespace|const|property)', Keyword),
+            (r'(function|interface|flags|enum|record|namespace|const|property|async)', Keyword),
             (r'->', Punctuation),
             (r'[={};():]', Punctuation),
             (r'[+-][a-z]*', Name.Attribute),
