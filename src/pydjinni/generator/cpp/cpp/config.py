@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2024 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,6 +27,20 @@ class CppIdentifier(BaseModel):
     field: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.snake
     method: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.snake
     namespace: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.snake
+
+
+class CppCoroutine(BaseModel):
+    task_type: str = Field(
+        description="The type that should be returned by the generated coroutine interfaces. "
+                    "Must be a task type that only can be co_awaited once."
+    )
+    entrypoint_type: str = Field(
+        description="The method that should be used to initiate coroutines from a host language. "
+                    "Must take a task as parameter and must co_await it."
+    )
+    headers: list[Path] = Field(
+        description="Header files that declare the task and entrypoint types."
+    )
 
 
 CppNamespace = Annotated[
@@ -59,6 +73,7 @@ class CppConfig(BaseModel):
         default="cpp",
         description="The filename extension for C++ files"
     )
+    coroutine: CppCoroutine = CppCoroutine()
     identifier: CppIdentifier = CppIdentifier()
     string_serialization_for_enums: bool = Field(
         default=False,

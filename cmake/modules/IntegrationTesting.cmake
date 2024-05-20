@@ -74,7 +74,7 @@ function(define_test_case TEST_CASE_NAME)
         # one-value keywords
         "INTERFACE"
         # multi-value keywords
-        "OPTIONS;SOURCES"
+        "OPTIONS;SOURCES;INCLUDE_DIRS"
         # args
         ${ARGN}
         )
@@ -97,13 +97,16 @@ function(define_test_case TEST_CASE_NAME)
             ${cpp_GENERATED_SOURCES}
             ${TEST_CASE_SOURCES}
     )
-    target_include_directories(${BASE_LIB_NAME} PUBLIC ${cpp_INCLUDE_DIR})
+    target_include_directories(${BASE_LIB_NAME} PUBLIC ${cpp_INCLUDE_DIR} ${TEST_CASE_INCLUDE_DIRS})
     target_compile_features(${BASE_LIB_NAME} PUBLIC cxx_std_20)
     add_library(test::${TEST_CASE_NAME} ALIAS ${BASE_LIB_NAME})
     set_target_properties(${BASE_LIB_NAME}
         PROPERTIES
             PYDJINNI_INTERFACE "${TEST_CASE_INTERFACE}"
             PYDJINNI_OPTIONS "${TEST_CASE_OPTIONS}"
+            CXX_STANDARD 20
+            CXX_STANDARD_REQUIRED true
+            CXX_EXTENSIONS false
             POSITION_INDEPENDENT_CODE ON
     )
 

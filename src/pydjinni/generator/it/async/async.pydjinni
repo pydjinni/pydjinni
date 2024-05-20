@@ -1,0 +1,9 @@
+asynchronous = interface +cpp {
+    static async get_instance() -> asynchronous;
+    async add(a: i32, b: i32) -> i32;
+    async callback(callback: callback) -> i32;
+}
+
+callback = interface -cpp {
+    async multiply(a: i32, b: i32) -> i32;
+}

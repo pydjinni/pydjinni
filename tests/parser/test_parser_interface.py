@@ -22,11 +22,12 @@ from test_parser import given, when
 
 
 def assert_method(method: Interface.Method, name: str, params: list[tuple[str, str]] = None, return_type: str = None,
-                  static: bool = False, const: bool = False, asynchronous: bool = False):
+                  static: bool = False, const: bool = False, asynchronous: bool = False, throws: bool = False):
     assert method.name == name
     assert method.static == static
     assert method.const == const
     assert method.asynchronous == asynchronous
+    assert method.throws == throws
     if return_type:
         assert method.return_type_ref.name == return_type
     else:
@@ -40,20 +41,28 @@ def assert_method(method: Interface.Method, name: str, params: list[tuple[str, s
 
 
 def test_parsing_interface(tmp_path: Path):
+    method_decls = [
+        "method();",
+        "static static_method();",
+        "const const_method();",
+        "async async_method();",
+        "static async static_async_method();",
+        "method_with_return() -> i8;",
+        "method_with_parameter(param: i8);",
+        "method_with_parameters_and_return(param: i8, param2: i8) -> i8;",
+        "throwing_method() throws -> i8;",
+        "async throwing_async_method() throws;"
+    ]
+    property_decls = [
+        "property a: i8;"
+    ]
     parser, _ = given(
         tmp_path=tmp_path,
-        input_idl="""
-            foo = interface +cpp {
-                method();
-                static static_method();
-                const const_method();
-                async async_method();
-                static async static_async_method();
-                method_with_return() -> i8;
-                method_with_parameter(param: i8);
-                method_with_parameters_and_return(param: i8, param2: i8) -> i8;
-                property a: i8;
-            }
+        input_idl=f"""
+            foo = interface +cpp {{
+                {"\n".join(method_decls)}
+                {"\n".join(property_decls)}
+            }}
             """
     )
 
@@ -65,7 +74,7 @@ def test_parsing_interface(tmp_path: Path):
     assert not interface.main
 
     # THEN the interface should have exactly 5 methods
-    assert len(methods) == 8
+    assert len(methods) == len(method_decls)
 
     # THEN the methods should have the expected names, parameters and attributes
     assert_method(methods[0], "method")
@@ -77,13 +86,15 @@ def test_parsing_interface(tmp_path: Path):
     assert_method(methods[6], "method_with_parameter", params=[("param", "i8")])
     params = [("param", "i8"), ("param2", "i8")]
     assert_method(methods[7], "method_with_parameters_and_return", params=params, return_type="i8")
+    assert_method(methods[8], "throwing_method", return_type="i8", throws=True)
+    assert_method(methods[9], "throwing_async_method", throws=True, asynchronous=True)
 
     # then the expected targets should be defined
     assert "cpp" in interface.targets
     assert len(interface.targets) == 1
 
     # then the defined properties should be present
-    assert len(interface.properties) == 1
+    assert len(interface.properties) == len(property_decls)
     property_def = interface.properties[0]
     assert property_def.name == "a"
     assert property_def.type_ref.name == "i8"

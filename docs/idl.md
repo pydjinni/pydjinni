@@ -118,9 +118,18 @@ special_methods = interface +cpp {
 
 ### Exception Handling
 
-When an interface implemented in C++ throws a `std::exception`, it will be translated to a `java.lang.RuntimeException`
+By default, the generated C++ interface methods are marked as `noexcept`.
+
+This can be disabled by marking a method with the `throws` keyword.
+Any exception thrown in C++ will then be translated to a `java.lang.RuntimeException`
 in Java, an `NSException` in Objective-C and a `System::Exception` in C++/CLI (.NET).
 The `what()` message will be translated as well.
+
+```pydjinni
+foo = interface {
+    throwing_method() throws -> i8;
+}
+```
 
 ### Main Interface { .new-badge }
 
@@ -193,7 +202,8 @@ callback = async function (input: i32) -> bool;
 
 ```pydjinni
 foo = main interface +cpp {
-   async get_instance(): foo
+    static async get_instance(): foo
+    async method(input: i32);
 }
 ```
 

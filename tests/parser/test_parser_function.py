@@ -39,6 +39,7 @@ def test_parsing_function(tmp_path):
     assert "cpp" in function.targets
     assert len(function.targets) == 1
     assert not function.asynchronous
+    assert not function.throws
 
 
 def test_parsing_function_no_target(tmp_path: Path):
@@ -69,6 +70,23 @@ def test_parsing_async_function(tmp_path: Path, input_idl: str):
 
     function = when(parser, Function, "foo")
     assert function.asynchronous
+
+
+@pytest.mark.parametrize("input_idl", [
+    "foo = function () throws -> bool;",
+    "foo = (param: i8) throws;",
+    "foo = async function () throws -> bool;",
+    "foo = async (param: i8) throws;"
+])
+def test_parsing_throwing_function(tmp_path: Path, input_idl: str):
+    # GIVEN a named function definition that throws
+    parser, _ = given(
+        tmp_path=tmp_path,
+        input_idl=input_idl
+    )
+
+    function = when(parser, Function, "foo")
+    assert function.throws
 
 
 def test_parsing_function_minus_target(tmp_path: Path):

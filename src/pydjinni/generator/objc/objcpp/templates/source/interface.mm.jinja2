@@ -17,11 +17,11 @@ limitations under the License.
 {% from "macros.jinja2" import translator %}
 
 {% block header %}
-{% for header in type_def.dependencies | headers('objc') -%}
-#import {{ header }}
+{% for import in type_def.objc.imports -%}
+#import {{ import }}
 {% endfor %}
-{% for header in type_def.dependencies | headers('objcpp') -%}
-#include {{ header }}
+{% for include in type_def.objcpp.includes -%}
+#include {{ include }}
 {% endfor %}
 #import {{ type_def.objcpp.header | quote }}
 #import {{ type_def.objc.header | quote }}
@@ -59,17 +59,26 @@ static_assert(__has_feature(objc_arc), "PyDjinni requires ARC to be enabled for 
 }
 
 {% for method in type_def.methods %}
-{{ method.objc.specifier }} ({{ method.objc.type_decl}}){{ method.objc.name }}
+{{ method.objc.specifier }} ({{ method.objc.type_decl if not method.asynchronous else "void"}}){{ method.objc.name }}
     {%- for parameter in method.parameters -%}
-        {{ ":" if loop.first else (" " ~ parameter.objc.name ~ ":") }}({{ parameter.objc.type_decl}}){{ parameter.objc.name }}
-    {% endfor %}
+        {{ (" " ~ parameter.objc.name) if not loop.first }}:({{ parameter.objc.type_decl}}){{ parameter.objc.name }}
+    {%- endfor -%}
+    {%- if method.asynchronous -%}
+        {{ " completion" if method.parameters }}:({{ method.objc.completion_handler }})completion
+    {%- endif -%}
     {
+    {% if method.asynchronous %}
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    {% endif %}
     try {
         {% if method.deprecated and not type_def.deprecated %}
         #pragma clang diagnostic push
         #pragma clang diagnostic ignored "-Wdeprecated-declarations"
         {% endif %}
         {{ "auto objcpp_result_ = " if method.return_type_ref }}
+        {%- if method.asynchronous -%}
+            {{ type_def.cpp.coroutine_entrypoint }}(
+        {%- endif -%}
         {%- if method.static -%}
             {{ type_def.cpp.typename }}::
         {%- else -%}
@@ -79,14 +88,29 @@ static_assert(__has_feature(objc_arc), "PyDjinni requires ARC to be enabled for 
         {%- for parameter in method.parameters -%}
             {{ translator(parameter.type_ref) }}::toCpp({{ parameter.objc.name }}){{ ", " if not loop.last }}
         {%- endfor -%}
-        );
+        )
+        {%- if method.asynchronous -%}
+            )
+        {%- endif -%}
+        ;
         {% if method.deprecated and not type_def.deprecated %}
         #pragma clang diagnostic pop
         {% endif %}
-        {% if method.return_type_ref %}
+        {% if method.return_type_ref and not method.asynchronous %}
         return {{ translator(method.return_type_ref) }}::fromCpp(objcpp_result_);
         {% endif %}
+        {% if method.asynchronous %}
+        dispatch_async(dispatch_get_main_queue(), ^{
+            completion(
+            {%- if method.return_type_ref -%}
+                {{ translator(method.return_type_ref) }}::fromCpp(objcpp_result_)
+            {%- endif -%});
+        });
+        {% endif %}
     } DJINNI_TRANSLATE_EXCEPTIONS()
+    {% if method.asynchronous %}
+    });
+    {% endif %}
 }
 {% endfor %}
 
@@ -120,26 +144,40 @@ public:
     {% for method in type_def.methods %}
     {{ method.cpp.type_spec }} {{ method.cpp.name }}(
     {%- for parameter in method.parameters -%}
-        {{ parameter.cpp.type_spec }} {{ parameter.cpp.name}} {{ ", " if not loop.last }}
+        {{ parameter.cpp.type_spec }} {{ parameter.cpp.name}}{{ ", " if not loop.last }}
     {%- endfor -%}
     ) override {
+        {% if method.asynchronous %}
+        {{ "auto result = " if method.return_type_ref }}co_await pydjinni::make_awaitable<{{ method.return_type_ref.type_def.cpp.typename if method.return_type_ref else "void" }}>([&](const std::function<void({{ method.return_type_ref.type_def.cpp.typename if method.return_type_ref }})>& callback){
+        {% endif %}
         @autoreleasepool {
             {% if method.deprecated and not type_def.deprecated %}
             #pragma clang diagnostic push
             #pragma clang diagnostic ignored "-Wdeprecated-declarations"
             {% endif %}
-            auto objcpp_result_ = [djinni_private_get_proxied_objc_object() {{ method.objc.name }}
+            {{ "auto objcpp_result_ = " if method.return_type_ref.type_def and not method.asynchronous }}[djinni_private_get_proxied_objc_object() {{ method.objc.name }}
             {%- for parameter in method.parameters -%}
                 {{ " " ~ parameter.objc.name if not loop.first }}:({{ translator(parameter.type_ref) }}::fromCpp({{ parameter.cpp.name }}))
             {%- endfor -%}
+            {%- if method.asynchronous -%}
+            {{ " completion" if method.parameters }}:(^ {{ ("(" ~ method.objc.type_decl ~ " value) ") if method.return_type_ref }}{
+                callback({{ (translator(method.return_type_ref) ~ "::toCpp(value)") if method.return_type_ref }});
+            })
+            {%- endif -%}
             ];
             {% if method.deprecated and not type_def.deprecated %}
             #pragma clang diagnostic pop
             {% endif %}
-            {% if method.return_type_ref.type_def %}
+            {% if method.return_type_ref.type_def and not method.asynchronous %}
             return {{ translator(method.return_type_ref) }}::toCpp(objcpp_result_);
             {% endif %}
         }
+        {% if method.asynchronous %}
+        });
+        {% if method.return_type_ref %}
+        co_return result;
+        {% endif %}
+        {% endif %}
     }
     {% endfor %}
 };

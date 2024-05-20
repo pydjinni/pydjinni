@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2024 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,9 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(record)
-add_subdirectory(interface)
-add_subdirectory(enum)
-add_subdirectory(flags)
-add_subdirectory(function)
-add_subdirectory(async)
+project(PyDjinniIntegrationTestAsync CXX)
+
+define_test_case(AsyncTest
+    INTERFACE async.pydjinni
+    SOURCES
+        src/asynchronous.cpp
+        src/asynchronous_impl.hpp
+        src/asynchronous_impl.cpp
+    INCLUDE_DIRS
+        include
+    OPTIONS
+        generate.cpp.namespace=test::async_test
+        generate.cpp.coroutine.task_type=coroutine::task
+        generate.cpp.coroutine.entrypoint_type=coroutine::run_blocking
+        generate.cpp.coroutine.headers=[coroutine.hpp]
+)
