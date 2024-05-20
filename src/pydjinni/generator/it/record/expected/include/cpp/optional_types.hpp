@@ -8,9 +8,9 @@
 #ifdef __cpp_lib_format
 #include <format>
 #endif
-#include <optional>
 #include <cstdint>
 #include <string>
+#include <optional>
 
 namespace test::record {
 struct OptionalTypes final {

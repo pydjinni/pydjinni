@@ -169,6 +169,14 @@ class ObjcRecord(ObjcBaseClassType):
             return super().typename
 
     @cached_property
+    @validate(swift_keywords)
+    def swift_typename(self) -> str:
+        output = Identifier(self.decl.name + ("_base" if self.base_type else "")).convert(self.config.identifier.type)
+        if self.namespace:
+            output = f"{self.namespace}.{output}"
+        return output
+
+    @cached_property
     def derived_name(self) -> str:
         return f"{self.config.type_prefix}{self.namespace}{self.decl.name.convert(self.config.identifier.type)}"
 

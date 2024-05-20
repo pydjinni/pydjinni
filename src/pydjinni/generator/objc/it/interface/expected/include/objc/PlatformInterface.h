@@ -4,5 +4,5 @@
 
 NS_SWIFT_NAME(PlatformInterface)
 @protocol PlatformInterface <NSObject>
-- (int8_t)getValue NS_SWIFT_NAME(getValue());
+- (int8_t)getValue  NS_SWIFT_NAME(getValue());
 @end

@@ -11,16 +11,16 @@
 NS_SWIFT_NAME(Helper)
 @interface Helper : NSObject
 + (nonnull PrimitiveTypes *)getPrimitiveTypes:(nonnull PrimitiveTypes *)recordType
- NS_SWIFT_NAME(getPrimitiveTypes(recordType:));
+  NS_SWIFT_NAME(getPrimitiveTypes(recordType:));
 + (nonnull CollectionTypes *)getCollectionTypes:(nonnull CollectionTypes *)recordType
- NS_SWIFT_NAME(getCollectionTypes(recordType:));
+  NS_SWIFT_NAME(getCollectionTypes(recordType:));
 + (nonnull OptionalTypes *)getOptionalTypes:(nonnull OptionalTypes *)recordType
- NS_SWIFT_NAME(getOptionalTypes(recordType:));
+  NS_SWIFT_NAME(getOptionalTypes(recordType:));
 + (nonnull BinaryTypes *)getBinaryTypes:(nonnull BinaryTypes *)recordType
- NS_SWIFT_NAME(getBinaryTypes(recordType:));
-+ (nonnull BaseRecord *)getCppBaseRecord NS_SWIFT_NAME(getCppBaseRecord());
+  NS_SWIFT_NAME(getBinaryTypes(recordType:));
++ (nonnull BaseRecord *)getCppBaseRecord  NS_SWIFT_NAME(getCppBaseRecord());
 + (nonnull BaseRecord *)getHostBaseRecord:(nonnull BaseRecord *)recordType
- NS_SWIFT_NAME(getHostBaseRecord(recordType:));
+  NS_SWIFT_NAME(getHostBaseRecord(recordType:));
 + (nonnull ParentType *)getNestedType:(nonnull ParentType *)parent
- NS_SWIFT_NAME(getNestedType(parent:));
+  NS_SWIFT_NAME(getNestedType(parent:));
 @end
