@@ -60,8 +60,8 @@ def test_parsing_interface(tmp_path: Path):
         tmp_path=tmp_path,
         input_idl=f"""
             foo = interface +cpp {{
-                {"\n".join(method_decls)}
-                {"\n".join(property_decls)}
+                {" ".join(method_decls)}
+                {" ".join(property_decls)}
             }}
             """
     )
