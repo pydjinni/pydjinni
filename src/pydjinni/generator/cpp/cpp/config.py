@@ -1,4 +1,4 @@
-# Copyright 2023 - 2024 jothepro
+# Copyright 2023 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,14 +31,17 @@ class CppIdentifier(BaseModel):
 
 class CppCoroutine(BaseModel):
     task_type: str = Field(
+        default="coro::task",
         description="The type that should be returned by the generated coroutine interfaces. "
                     "Must be a task type that only can be co_awaited once."
     )
     entrypoint_type: str = Field(
+        default="coro::sync_wait",
         description="The method that should be used to initiate coroutines from a host language. "
                     "Must take a task as parameter and must co_await it."
     )
     headers: list[Path] = Field(
+        default=["<coro/task.hpp>", "<coro/sync_wait.hpp>"],
         description="Header files that declare the task and entrypoint types."
     )
 
