@@ -13,27 +13,27 @@
 // limitations under the License.
 
 #import <XCTest/XCTest.h>
-#import "Helper.h"
+#import "TSTHelper.h"
 
 @interface NestedTypeTests : XCTestCase
 
-@property (nonatomic, strong) ParentType * record;
+@property (nonatomic, strong) TSTParentType * record;
 
 @end
 
 @implementation NestedTypeTests
 
 - (void)setUp {
-    self.record = [ParentType parentTypeWithNested:[NestedType nestedTypeWithA: 42 b: @[@[@1, @2], @[@3, @4]]]];
+    self.record = [TSTParentType parentTypeWithNested:[TSTNestedType nestedTypeWithA: 42 b: @[@[@1, @2], @[@3, @4]]]];
 }
 
 - (void)testNestedType {
-    ParentType* returned_record = [Helper getNestedType:self.record];
+    TSTParentType* returned_record = [TSTHelper getNestedType:self.record];
     XCTAssertEqual(returned_record.nested.a, 42);
 }
 
 - (void)testDescription {
-    XCTAssertEqualObjects([self.record description], @"<ParentType nested:<NestedType a:42 b:(\n"
+    XCTAssertEqualObjects([self.record description], @"<TSTParentType nested:<TSTNestedType a:42 b:(\n"
                                                      @"        (\n"
                                                      @"        1,\n"
                                                      @"        2\n"

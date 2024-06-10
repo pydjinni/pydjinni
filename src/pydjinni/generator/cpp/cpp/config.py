@@ -29,6 +29,23 @@ class CppIdentifier(BaseModel):
     namespace: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.snake
 
 
+class CppCoroutine(BaseModel):
+    task_type: str = Field(
+        default="coro::task",
+        description="The type that should be returned by the generated coroutine interfaces. "
+                    "Must be a task type that only can be co_awaited once."
+    )
+    entrypoint_type: str = Field(
+        default="coro::sync_wait",
+        description="The method that should be used to initiate coroutines from a host language. "
+                    "Must take a task as parameter and must co_await it."
+    )
+    headers: list[Path] = Field(
+        default=["<coro/task.hpp>", "<coro/sync_wait.hpp>"],
+        description="Header files that declare the task and entrypoint types."
+    )
+
+
 CppNamespace = Annotated[
     str,
     AfterValidator(lambda x: x.split('::')),
@@ -59,6 +76,7 @@ class CppConfig(BaseModel):
         default="cpp",
         description="The filename extension for C++ files"
     )
+    coroutine: CppCoroutine = CppCoroutine()
     identifier: CppIdentifier = CppIdentifier()
     string_serialization_for_enums: bool = Field(
         default=False,

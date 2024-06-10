@@ -74,7 +74,7 @@ class ObjcGenerator(Generator):
         self.write_header("header/interface.h.jinja2", type_def=type_def)
 
     def generate_function(self, type_def: Function):
-        pass
+        self.write_header("header/function.h.jinja2", type_def=type_def)
 
     def generate_bridging_header(self, ast: list[BaseType]):
         if self.config.swift.bridging_header:

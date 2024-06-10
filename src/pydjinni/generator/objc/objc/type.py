@@ -17,6 +17,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field, computed_field
 
+from pydjinni.generator.filters import headers
 from pydjinni.generator.objc.objc.comment_renderer import DocCCommentRenderer
 from pydjinni.generator.objc.objc.config import ObjcConfig
 from pydjinni.generator.objc.objc.keywords import swift_keywords, keywords
@@ -34,24 +35,22 @@ class ObjcExternalType(BaseModel):
 
 
 def type_decl(type_ref: TypeReference, parameter: bool = False, boxed: bool = False) -> str:
-    type_def: BaseExternalType | BaseType = type_ref.type_def
-    generic_types = ""
-    pointer = type_def.objc.pointer
-    optional = type_ref.optional
-    typename = type_def.objc.boxed if boxed or optional else type_def.objc.typename
-    if type_ref.parameters:
-        generic_types = "<"
-        for parameter_ref in type_ref.parameters:
-            if len(generic_types) > 1:
-                generic_types += ", "
-            generic_types += type_decl(parameter_ref, boxed=True)
-        generic_types += ">"
-    if type_def.primitive == BaseExternalType.Primitive.interface:
-        if parameter:
-            typename = f"id<{typename}>"
-            pointer = False
+    if type_ref:
+        type_def: BaseExternalType | BaseType = type_ref.type_def
+        generic_types = ""
+        pointer = type_def.objc.pointer
+        optional = type_ref.optional
+        typename = type_def.objc.boxed if boxed or optional else type_def.objc.typename
+        if type_ref.parameters:
+            generic_types = f'<{", ".join([type_decl(parameter_ref, boxed=True) for parameter_ref in type_ref.parameters])}>'
+        if type_def.primitive == BaseExternalType.Primitive.interface:
+            if parameter:
+                typename = f"id<{typename}>"
+                pointer = False
 
-    return f"{typename}{generic_types}{' *' if pointer or boxed or optional else ''}"
+        return f"{typename}{generic_types}{' *' if pointer or boxed or optional else ''}"
+    else:
+        return "void"
 
 
 def annotation(type_ref: TypeReference):
@@ -98,7 +97,10 @@ class ObjcBaseType(BaseModel):
     @cached_property
     @validate(swift_keywords)
     def swift_typename(self) -> str:
-        return f"{self.namespace}.{self.name}" if self.namespace else self.name
+        output = self.decl.name.convert(self.config.identifier.type)
+        if self.namespace:
+            output = f"{self.namespace}.{output}"
+        return output
 
     @cached_property
     def comment(self):
@@ -106,8 +108,12 @@ class ObjcBaseType(BaseModel):
             if self.decl.comment else ''
 
     @cached_property
-    def namespace(self): return '.'.join([identifier.convert(self.config.identifier.type)
-                                          for identifier in self.decl.namespace])
+    @validate(keywords)
+    @validate(swift_keywords)
+    def namespace(self): return Identifier('_'.join(self.decl.namespace)).convert(self.config.identifier.type)
+
+    @cached_property
+    def imports(self): return headers(self.decl.dependencies, "objc")
 
 
 class ObjcFunction(ObjcBaseType):
@@ -120,9 +126,6 @@ class ObjcFunction(ObjcBaseType):
         parameter_type_decls = [type_decl(parameter.type_ref, parameter=True) for parameter in self.decl.parameters]
         return f"{return_type_decl} (^)({', '.join(parameter_type_decls)})"
 
-    @computed_field
-    @cached_property
-    def header(self) -> Path: return None
 
 
 class ObjcBaseClassType(ObjcBaseType):
@@ -155,7 +158,15 @@ class ObjcRecord(ObjcBaseClassType):
         if self.base_type:
             return f"{self.config.type_prefix}{self.namespace}{Identifier(f'{self.decl.name}_base').convert(self.config.identifier.type)}"
         else:
-            return super().typename
+            return super().name
+
+    @cached_property
+    @validate(swift_keywords)
+    def swift_typename(self) -> str:
+        output = Identifier(self.decl.name + ("_base" if self.base_type else "")).convert(self.config.identifier.type)
+        if self.namespace:
+            output = f"{self.namespace}.{output}"
+        return output
 
     @cached_property
     def derived_name(self) -> str:
@@ -254,13 +265,20 @@ class ObjcInterface(ObjcBaseClassType):
         @computed_field
         @cached_property
         @validate(keywords)
-        def name(self) -> str: return self.decl.name.convert(self.config.identifier.method)
+        def name(self) -> str:
+            name = self.decl.name
+            return Identifier(name).convert(self.config.identifier.method)
 
         @cached_property
-        def type_decl(self) -> str: return type_decl(self.decl.return_type_ref) if self.decl.return_type_ref else "void"
+        def type_decl(self) -> str: return type_decl(self.decl.return_type_ref)
 
         @cached_property
-        def specifier(self) -> str: return "+" if self.decl.static else "-"
+        def completion_handler(self): return f"void (^)({type_decl(self.decl.return_type_ref)})"
 
         @cached_property
-        def annotation(self) -> str: return annotation(self.decl.return_type_ref)
+        def specifier(self) -> str:
+            return "+" if self.decl.static else "-"
+
+        @cached_property
+        def annotation(self) -> str:
+            return annotation(self.decl.return_type_ref)

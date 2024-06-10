@@ -20,12 +20,12 @@ limitations under the License.
 {% if type_def.objc.comment %}
 {{ comment(type_def) }}
 {% endif %}
-typedef NS_ENUM(NSUInteger, {{ type_def.objc.typename }}) {
+typedef NS_ENUM(NSUInteger, {{ type_def.objc.name }}) {
 {% for item in type_def.items %}
     {% if item.comment %}
     {{ comment(item, indentation=4) }}
     {% endif %}
-    {{ type_def.objc.typename ~ item.objc.name ~ ("," if not loop.last) }}
+    {{ type_def.objc.name ~ item.objc.name ~ ("," if not loop.last) }}
 {% endfor %}
 }
 {%- if config.swift.rename_interfaces %}

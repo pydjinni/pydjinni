@@ -52,6 +52,7 @@ class Interface(ClassType):
         return_type_ref: TypeReference | None = None
         static: bool = False
         const: bool = False
+        asynchronous: bool = False
 
     class Property(BaseField):
         type_ref: TypeReference

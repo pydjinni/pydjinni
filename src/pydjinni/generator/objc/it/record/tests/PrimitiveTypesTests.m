@@ -13,18 +13,18 @@
 // limitations under the License.
 
 #import <XCTest/XCTest.h>
-#import "Helper.h"
+#import "TSTHelper.h"
 
 @interface PrimitiveTypesTests : XCTestCase
 
-@property (nonatomic, strong) PrimitiveTypes * record;
+@property (nonatomic, strong) TSTPrimitiveTypes * record;
 
 @end
 
 @implementation PrimitiveTypesTests
 
 - (void)setUp {
-    self.record = [PrimitiveTypes primitiveTypesWithBooleanT:YES
+    self.record = [TSTPrimitiveTypes primitiveTypesWithBooleanT:YES
                                                        byteT:8
                                                       shortT:16
                                                         intT:32
@@ -36,7 +36,7 @@
 }
 
 - (void)testPrimitiveTypes {
-    PrimitiveTypes* returned_record = [Helper getPrimitiveTypes:self.record];
+    TSTPrimitiveTypes* returned_record = [TSTHelper getPrimitiveTypes:self.record];
 
     XCTAssertEqual(returned_record.booleanT, YES);
     XCTAssertEqual(returned_record.byteT, 8);
@@ -52,12 +52,12 @@
 }
 
 - (void)testPrimitiveTypesEqual {
-    PrimitiveTypes* returned_record = [Helper getPrimitiveTypes:self.record];
+    TSTPrimitiveTypes* returned_record = [TSTHelper getPrimitiveTypes:self.record];
     XCTAssertEqualObjects(returned_record, self.record);
 }
 
 - (void)testDescription {
-    XCTAssertEqualObjects([self.record description], @"<PrimitiveTypes booleanT:YES byteT:8 shortT:16 intT:32 longT:64 floatT:32.32 doubleT:64.64 stringT:test string dateT:2023-07-01 12:08:29 +0000>");
+    XCTAssertEqualObjects([self.record description], @"<TSTPrimitiveTypes booleanT:YES byteT:8 shortT:16 intT:32 longT:64 floatT:32.32 doubleT:64.64 stringT:test string dateT:2023-07-01 12:08:29 +0000>");
 }
 
 @end

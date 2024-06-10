@@ -15,7 +15,7 @@
 project(PyDjinniIntegrationTestEnum CXX)
 
 define_test_case(EnumTest
-    INTERFACE enum.djinni
+    INTERFACE enum.pydjinni
     SOURCES
         src/helper.cpp
     OPTIONS

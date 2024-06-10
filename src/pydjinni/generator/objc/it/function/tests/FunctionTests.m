@@ -13,7 +13,7 @@
 // limitations under the License.
 
 #import <XCTest/XCTest.h>
-#import "Helper.h"
+#import "TSTHelper.h"
 
 @interface FunctionTests : XCTestCase
 
@@ -23,33 +23,39 @@
 
 
 - (void)testNamedFunction {
-    [Helper namedFunction: ^ BOOL (int32_t input) {
-        return input == 42;
+    [TSTHelper namedFunction: ^ BOOL (NSString * input) {
+        return [input isEqualToString: @"foo"];
     }];
 }
 
 - (void)testAnonymousFunction {
-    [Helper anonymousFunction: ^ BOOL (int32_t input) {
-        return input == 42;
+    [TSTHelper anonymousFunction: ^ BOOL (NSString * input) {
+        return [input isEqualToString: @"foo"];
     }];
 }
 
 - (void)testCppNamedFunction {
-    BOOL (^block) (int32_t)  = [Helper cppNamedFunction];
-    BOOL result = block(42);
+    BOOL (^block) (NSString *)  = [TSTHelper cppNamedFunction];
+    BOOL result = block(@"foo");
     XCTAssertTrue(result);
 }
 
 - (void)testCppAnonymousFunction {
-    BOOL (^block) (int32_t)  = [Helper cppAnonymousFunction];
-    BOOL result = block(42);
+    BOOL (^block) (NSString *)  = [TSTHelper cppAnonymousFunction];
+    BOOL result = block(@"foo");
     XCTAssertTrue(result);
 }
 
 - (void)testCppFunctionThrowingException {
-    void(^block)() = [Helper cppFunctionThrowingException];
+    void(^block)() = [TSTHelper cppFunctionThrowingException];
     XCTAssertThrowsSpecificNamed(block(), NSException, @"shit hit the fan");
 };
+
+- (void)testAnonymousFunctionPassingRecord {
+    [TSTHelper anonymousFunctionPassingRecord: ^ BOOL (TSTFoo * foo) {
+        return foo.a == 32;
+    }];
+}
 
 
 @end

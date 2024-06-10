@@ -15,7 +15,7 @@
 project(PyDjinniIntegrationTestFlags CXX)
 
 define_test_case(FlagsTest
-    INTERFACE flags.djinni
+    INTERFACE flags.pydjinni
     SOURCES
         src/helper.cpp
     OPTIONS

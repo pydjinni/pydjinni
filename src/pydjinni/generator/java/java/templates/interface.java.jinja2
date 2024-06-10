@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #}
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import data_type, return_type, parameters, comment %}
+{% from "macros.jinja2" import parameters, comment %}
 
 {% block header %}
 {% if type_def.cpp.proxy %}
@@ -42,7 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     {% if method.deprecated %}
     @Deprecated
     {% endif %}
-    public {{ "static" if method.static else "abstract" }} {{ return_type(method.return_type_ref) }} {{ method.java.name }}({{ parameters(method) }})
+    public {{ "static" if method.static else "abstract" }} {{ method.java.return_type }} {{ method.java.name }}({{ parameters(method) }})
     {%- if method.static -%}
     {
         {{ "return " if method.return_type_ref }}CppProxy.{{ method.java.name }}(
@@ -79,14 +79,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
         }
         {% for method in type_def.methods %}
         {% if method.static %}
-        public static native {{ return_type(method.return_type_ref) }} {{ method.java.name }}({{ parameters(method) }});
+        public static native {{ method.java.return_type }} {{ method.java.name }}({{ parameters(method) }});
         {% else %}
         @Override
-        public {{ return_type(method.return_type_ref) }} {{ method.java.name }}({{ parameters(method) }}) {
+        public {{ method.java.return_type }} {{ method.java.name }}({{ parameters(method) }}) {
             assert !this.destroyed.get() : "trying to use a destroyed object";
             {{ "return" if method.return_type_ref }} native_{{ method.java.name }}(this.nativeRef {{ (", " if method.parameters) ~ parameters(method, with_types=False) }});
         }
-        private native {{ return_type(method.return_type_ref) }} native_{{ method.java.name }}(long _nativeRef{{ (", " if method.parameters) ~ parameters(method) }});
+        private native {{ method.java.return_type }} native_{{ method.java.name }}(long _nativeRef{{ (", " if method.parameters) ~ parameters(method) }});
         {% endif %}
         {% endfor %}
     }

@@ -12,7 +12,7 @@ available types.
 
 Suffixing a type with a `?` marks it as optional. Optional values may be null.
 
-```djinni
+```pydjinni
 foo = record {
     bar: i32?;
 }
@@ -71,7 +71,7 @@ This way for example equality and order comparators or a method for giving a str
 can be added. Not all features may be available in all target languages. 
 Consult the [Deriving Reference](deriving.md) for a full list of available declarations.
 
-```djinni
+```pydjinni
 foo = record {
     bar: i32;
 } deriving (str, eq, ord)
@@ -116,11 +116,6 @@ special_methods = interface +cpp {
 - `static` methods will become a `static` method of the C++ class, which can be called from other languages without an 
   object. This is often useful for factory methods to act as a cross-language constructor.
 
-### Exception Handling
-
-When an interface implemented in C++ throws a `std::exception`, it will be translated to a `java.lang.RuntimeException`
-in Java, an `NSException` in Objective-C and a `System::Exception` in C++/CLI (.NET).
-The `what()` message will be translated as well.
 
 ### Main Interface { .new-badge }
 
@@ -132,7 +127,7 @@ Usually this requires a `System.loadLibrary("FooBar");` call ahead of time.
 
 To automate the native library loading, any C++ interface can be marked as `main`:
 
-```djinni
+```pydjinni
 foo = main interface +cpp {
    static get_instance(): foo
 }
@@ -162,7 +157,7 @@ They are represented by [`std::function`](https://en.cppreference.com/w/cpp/util
 Functions can either be defined like a type, or can be defined inline where they are needed as anonymous functions:
 
 
-```djinni
+```pydjinni
 named_func = function (input: i32) -> bool;
 
 foo = interface {
@@ -174,20 +169,35 @@ foo = interface {
 There is a short and a long form for defining functions.
 The long form allows target flags to be added in order to optimize the generated code:
 
-```djinni
+```pydjinni
 callback = function -cpp (input: i32) -> bool;
 ```
 
 The short form doesn't allow for code optimization, but in return is a lot more brief:
-```djinni
+```pydjinni
 callback = (input: i32) -> bool;
+```
+
+## Async { .new-badge }
+
+The `async` modifier can be used to specify that a method or function is asynchronous.
+
+```pydjinni
+callback = async function (input: i32) -> bool;
+```
+
+```pydjinni
+foo = main interface +cpp {
+    static async get_instance(): foo
+    async method(input: i32);
+}
 ```
 
 ## Namespaces { .new-badge }
 
 The interface file can be structured with namespaces:
 
-```djinni
+```pydjinni
 namespace foo {
     bar = record {}
 }

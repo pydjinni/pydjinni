@@ -183,12 +183,15 @@ def cli(ctx, log_level, config, option):
             >>> parse_option("foo.bar=baz")
             defaultdict(None, {'foo': {'bar': 'baz'}})
         """
+        value: str
         key_list, value = option.split('=', 1)
         keys = key_list.split('.')
         result = defaultdict()
         d = result
         for subkey in keys[:-1]:
             d = d.setdefault(subkey, {})
+        if value.startswith("[") and value.endswith("]"):
+            value = value[1:-1].split(",")
         d[keys[-1]] = value
         return result
 

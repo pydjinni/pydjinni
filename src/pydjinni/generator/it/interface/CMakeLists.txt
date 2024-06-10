@@ -15,7 +15,7 @@
 project(PyDjinniIntegrationTestInterface CXX)
 
 define_test_case(InterfaceTest
-    INTERFACE interface.djinni
+    INTERFACE interface.pydjinni
     SOURCES
         src/calculator.cpp
         src/calculator_impl.cpp

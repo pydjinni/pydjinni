@@ -18,7 +18,14 @@ from pydjinni.parser.ast import Interface, Record, Flags, Enum, Function
 from pydjinni.parser.base_models import BaseType, BaseField, SymbolicConstantField
 from .config import ObjcppConfig
 from .external_types import external_types
-from .type import ObjcppExternalType, ObjcppBaseType, ObjcppBaseField, ObjcppSymbolicConstantField, ObjcppFunction
+from .type import (
+    ObjcppExternalType,
+    ObjcppBaseType,
+    ObjcppBaseField,
+    ObjcppSymbolicConstantField,
+    ObjcppFunction,
+    ObjcppInterface
+)
 
 
 class ObjcppGenerator(Generator):
@@ -30,6 +37,7 @@ class ObjcppGenerator(Generator):
         BaseType: ObjcppBaseType,
         BaseField: ObjcppBaseField,
         Function: ObjcppFunction,
+        Interface: ObjcppInterface,
         SymbolicConstantField: ObjcppSymbolicConstantField
     }
     writes_header = True

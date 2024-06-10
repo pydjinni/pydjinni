@@ -20,7 +20,7 @@ limitations under the License.
 #pragma once
 #include <functional>
 #include <vcclr.h>
-{% for header in type_def.dependencies | headers('cpp') -%}
+{% for header in type_def.dependencies | headers('cppcli') -%}
 #include {{ header }}
 {% endfor %}
 {% endblock %}

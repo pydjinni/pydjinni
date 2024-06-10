@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #}
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import return_type, parameters, comment %}
+{% from "macros.jinja2" import parameters, comment %}
 
 {% block header %}
 {% if type_def.cpp.proxy -%}
@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 {% endif %}
 @FunctionalInterface
 {{ type_def.java.class_modifier }}interface {{ type_def.java.name }} {
-    {{ return_type(type_def.return_type_ref) }} invoke({{ parameters(type_def) }});
+    {{ type_def.java.return_type }} invoke({{ parameters(type_def) }});
 }
 
 {% if type_def.cpp.proxy %}
@@ -56,11 +56,11 @@ final class {{ type_def.java.name }}CppProxy implements {{ type_def.java.name }}
     }
 
     @Override
-    public {{ return_type(type_def.return_type_ref) }} invoke({{ parameters(type_def) }}) {
+    public {{ type_def.java.return_type }} invoke({{ parameters(type_def) }}) {
         assert !this.destroyed.get() : "trying to use a destroyed object";
         {{ "return" if type_def.return_type_ref }} native_invoke(this.nativeRef{{ (", " if type_def.parameters) ~ parameters(type_def, with_types=False) }});
     }
-    private native {{ return_type(type_def.return_type_ref) }} native_invoke(long _nativeRef{{ (", " if type_def.parameters) ~ parameters(type_def) }});
+    private native {{ type_def.java.return_type }} native_invoke(long _nativeRef{{ (", " if type_def.parameters) ~ parameters(type_def) }});
 }
 {% endif %}
 {% endblock %}

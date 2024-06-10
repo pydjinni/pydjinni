@@ -13,8 +13,8 @@
 // limitations under the License.
 
 #import <XCTest/XCTest.h>
-#import "Helper.h"
-#import "BaseRecord.h"
+#import "TSTHelper.h"
+#import "TSTBaseRecord.h"
 
 @interface BaseRecordTests : XCTestCase
 @end
@@ -22,14 +22,14 @@
 @implementation BaseRecordTests
 
 - (void)testCppBaseRecord {
-    BaseRecord* record = [Helper getCppBaseRecord];
+    TSTBaseRecord* record = [TSTHelper getCppBaseRecord];
 
     XCTAssertEqual(record.value, 42);
 }
 
 - (void)testObjcBaseRecord {
-    BaseRecord* record = [BaseRecord baseRecord];
-    BaseRecord* returned_record = [Helper getHostBaseRecord:record];
+    TSTBaseRecord* record = [TSTBaseRecord baseRecord];
+    TSTBaseRecord* returned_record = [TSTHelper getHostBaseRecord:record];
     XCTAssertEqual(returned_record.value, 42);
 }
 

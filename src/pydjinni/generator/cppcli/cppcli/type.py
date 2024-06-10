@@ -38,7 +38,7 @@ class CppCliExternalType(BaseModel):
     reference: bool = True
 
 
-def typename(type_ref: TypeReference) -> str:
+def typename(type_ref: TypeReference, asynchronous: bool = False) -> str:
     if type_ref:
         output = type_ref.type_def.cppcli.typename
         if type_ref.optional and not type_ref.type_def.cppcli.reference:
@@ -46,9 +46,9 @@ def typename(type_ref: TypeReference) -> str:
         if type_ref.parameters:
             output += f"<{', '.join([typename(type_ref) for type_ref in type_ref.parameters])}>"
         output += "^" if type_ref.type_def.cppcli.reference else ""
-        return output
+        return output if not asynchronous else f"System::Threading::Tasks::Task<{output}>"
     else:
-        return "void"
+        return "void" if not asynchronous else "System::Threading::Tasks::Task"
 
 
 def translator(type_ref: TypeReference) -> str:
@@ -145,7 +145,7 @@ class CppCliMethodField(CppCliBaseField):
 
     @cached_property
     def typename(self) -> str:
-        return typename(self.decl.return_type_ref)
+        return typename(self.decl.return_type_ref, self.decl.asynchronous)
 
     @cached_property
     def translator(self) -> str:

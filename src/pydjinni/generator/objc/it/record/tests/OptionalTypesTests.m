@@ -13,29 +13,29 @@
 // limitations under the License.
 
 #import <XCTest/XCTest.h>
-#import "Helper.h"
+#import "TSTHelper.h"
 
 @interface OptionalTypesTests : XCTestCase
 
-@property (nonatomic, strong) OptionalTypes * record;
+@property (nonatomic, strong) TSTOptionalTypes * record;
 
 @end
 
 @implementation OptionalTypesTests
 
 - (void)setUp {
-    self.record = [OptionalTypes optionalTypesWithIntOptional: @42 stringOptional: @"optional"];
+    self.record = [TSTOptionalTypes optionalTypesWithIntOptional: @42 stringOptional: @"optional"];
 }
 
 - (void)testOptionalTypes {
-    OptionalTypes* returned_record = [Helper getOptionalTypes:self.record];
+    TSTOptionalTypes* returned_record = [TSTHelper getOptionalTypes:self.record];
 
     XCTAssertEqualObjects(returned_record.intOptional, @42);
     XCTAssertEqualObjects(returned_record.stringOptional, @"optional");
 }
 
 - (void)testDescription {
-    XCTAssertEqualObjects([self.record description], @"<OptionalTypes intOptional:42 stringOptional:optional>");
+    XCTAssertEqualObjects([self.record description], @"<TSTOptionalTypes intOptional:42 stringOptional:optional>");
 }
 
 @end

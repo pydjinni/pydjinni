@@ -84,4 +84,4 @@ class CppGenerator(Generator):
         self.write_header("header/interface.hpp.jinja2", type_def=type_def)
 
     def generate_function(self, type_def: Function):
-        pass
+        self.write_header("header/function.hpp.jinja2", type_def=type_def)
