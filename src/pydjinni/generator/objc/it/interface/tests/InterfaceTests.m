@@ -13,21 +13,21 @@
 // limitations under the License.
 
 #import <XCTest/XCTest.h>
-#import "Calculator.h"
+#import "TSTCalculator.h"
 
-@interface PlatformImplementation : NSObject <PlatformInterface>
+@interface PlatformImplementation : NSObject <TSTPlatformInterface>
 @end
 
 @interface InterfaceTests : XCTestCase
 
-@property (nonatomic, strong) Calculator * calculator;
+@property (nonatomic, strong) TSTCalculator * calculator;
 
 @end
 
 @implementation InterfaceTests
 
 - (void)setUp {
-    self.calculator = [Calculator getInstance];
+    self.calculator = [TSTCalculator getInstance];
 }
 
 - (void)testCalculator {

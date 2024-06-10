@@ -113,7 +113,8 @@ class CppBaseType(BaseModel):
         return dependency_headers
 
     @cached_property
-    def coroutine_entrypoint(self): return self.config.coroutine.entrypoint_type
+    def coroutine_entrypoint(self):
+        return self.config.coroutine.entrypoint_type
 
 
 class CppBaseField(BaseModel):
@@ -236,26 +237,17 @@ class CppFunction(CppBaseType):
 
     @computed_field
     @cached_property
-    def header(self) -> Path: return Path("<functional>")
-
-    @computed_field
-    @cached_property
     def by_value(self) -> bool: return False
 
     @cached_property
     def proxy(self): return "cpp" in self.decl.targets
 
     @cached_property
-    def type_spec(self):
-        type_spec = type_specifier(self.decl.return_type_ref)
-        return type_spec if not self.decl.asynchronous else f"{self.config.coroutine.task_type}<{type_spec}>"
+    def type_spec(self): return type_specifier(self.decl.return_type_ref)
 
     @cached_property
     def includes(self):
-        dependency_headers = super().includes
-        if self.decl.asynchronous:
-            dependency_headers = dependency_headers + [quote(header) for header in self.config.coroutine.headers]
-        return dependency_headers
+        return super().includes + [Path("<functional>")]
 
 
 class CppSymbolicConstantField(CppBaseField):

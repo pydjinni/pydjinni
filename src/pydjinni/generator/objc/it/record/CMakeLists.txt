@@ -25,7 +25,7 @@ objc_test_case(RecordTest
 )
 target_sources(RecordTestObjc
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/BaseRecord.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/BaseRecord.m
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/TSTBaseRecord.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/TSTBaseRecord.m
 )
 target_include_directories(RecordTestObjc PUBLIC include)

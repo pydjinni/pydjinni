@@ -38,8 +38,6 @@ def test_parsing_function(tmp_path):
     # THEN all the specified language target should be set
     assert "cpp" in function.targets
     assert len(function.targets) == 1
-    assert not function.asynchronous
-    assert not function.throws
 
 
 def test_parsing_function_no_target(tmp_path: Path):
@@ -55,38 +53,6 @@ def test_parsing_function_no_target(tmp_path: Path):
     assert "cpp" in function.targets
     assert "java" in function.targets
     assert len(function.targets) == 2
-
-
-@pytest.mark.parametrize("input_idl", [
-    "foo = async function () -> bool;",
-    "foo = async (param: i8);"
-])
-def test_parsing_async_function(tmp_path: Path, input_idl: str):
-    # GIVEN a named async function definition
-    parser, _ = given(
-        tmp_path=tmp_path,
-        input_idl=input_idl
-    )
-
-    function = when(parser, Function, "foo")
-    assert function.asynchronous
-
-
-@pytest.mark.parametrize("input_idl", [
-    "foo = function () throws -> bool;",
-    "foo = (param: i8) throws;",
-    "foo = async function () throws -> bool;",
-    "foo = async (param: i8) throws;"
-])
-def test_parsing_throwing_function(tmp_path: Path, input_idl: str):
-    # GIVEN a named function definition that throws
-    parser, _ = given(
-        tmp_path=tmp_path,
-        input_idl=input_idl
-    )
-
-    function = when(parser, Function, "foo")
-    assert function.throws
 
 
 def test_parsing_function_minus_target(tmp_path: Path):
@@ -110,8 +76,6 @@ def test_parsing_inline_function(tmp_path: Path):
         input_idl="""
         foo = interface {
             method0(callback: function (var: i8));
-            method1(callback: async function (var: i8));
-            method2(callback: async (var: i8));
         }
         """
     )
@@ -119,25 +83,20 @@ def test_parsing_inline_function(tmp_path: Path):
     ast, _ = parser.parse()
 
     # THEN the anonymous type should be registered in the output AST
-    assert len(ast) == 4
+    assert len(ast) == 2
     assert isinstance(ast[0], Function)
-    assert isinstance(ast[1], Function)
-    assert isinstance(ast[2], Function)
-    assert isinstance(ast[3], Interface)
+    assert isinstance(ast[1], Interface)
 
-    interface: Interface = ast[3]
+    interface: Interface = ast[1]
 
-    def assert_function(index: int, asynchronous: bool = False):
+    def assert_function(index: int):
         # THEN the method should reference an anonymous (nameless) function
         function = interface.methods[index].parameters[0].type_ref.type_def
         assert isinstance(function, Function)
         assert function.parameters[0].name == "var"
         assert function.return_type_ref is None
-        assert function.asynchronous == asynchronous
 
     assert_function(0)
-    assert_function(1, asynchronous=True)
-    assert_function(2, asynchronous=True)
 
 
 def test_parsing_anonymous_function_not_allowed(tmp_path: Path):

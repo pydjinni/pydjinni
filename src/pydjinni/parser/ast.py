@@ -53,7 +53,6 @@ class Interface(ClassType):
         static: bool = False
         const: bool = False
         asynchronous: bool = False
-        throws: bool = False
 
     class Property(BaseField):
         type_ref: TypeReference
@@ -68,8 +67,6 @@ class Function(BaseType):
     anonymous: bool = True
     primitive: BaseExternalType.Primitive = BaseExternalType.Primitive.function
     parameters: list[Parameter] = []
-    asynchronous: bool = False
-    throws: bool = False
     return_type_ref: TypeReference | None = None
     targets: list[str] = []
 

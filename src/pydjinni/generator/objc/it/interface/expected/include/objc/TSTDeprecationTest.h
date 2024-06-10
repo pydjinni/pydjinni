@@ -4,7 +4,7 @@
 
 NS_SWIFT_NAME(DeprecationTest)
 DEPRECATED_MSG_ATTRIBUTE("testing class deprecation annotation")
-@protocol DeprecationTest <NSObject>
+@protocol TSTDeprecationTest <NSObject>
 - (int32_t)deprecationTestMethod  DEPRECATED_MSG_ATTRIBUTE("testing method deprecation annotation")
   NS_SWIFT_NAME(deprecationTestMethod());
 @end

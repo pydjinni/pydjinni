@@ -14,24 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #}
 {% extends "base.jinja2" %}
-{% from "macros.jinja2" import comment, deprecated %}
 
 {% block content %}
-{% if type_def.objc.comment %}
-{{ comment(type_def) }}
-{% endif %}
-typedef NS_ENUM(NSUInteger, {{ type_def.objc.name }}) {
-{% for item in type_def.items %}
-    {% if item.comment %}
-    {{ comment(item, indentation=4) }}
-    {% endif %}
-    {{ type_def.objc.name ~ item.objc.name ~ ("," if not loop.last) }}
-{% endfor %}
-}
-{%- if config.swift.rename_interfaces %}
- NS_SWIFT_NAME({{ type_def.objc.swift_typename }})
-{%- endif -%}
-{%- if type_def.deprecated %}
- {{ deprecated(type_def) }}
-{%- endif -%};
+    // making sure the required headers are included
 {% endblock %}

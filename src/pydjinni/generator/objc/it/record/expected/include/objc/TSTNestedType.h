@@ -3,7 +3,7 @@
 #import <Foundation/Foundation.h>
 
 NS_SWIFT_NAME(NestedType)
-@interface NestedType : NSObject
+@interface TSTNestedType : NSObject
 - (nonnull instancetype)initWithA:(int32_t)a b:(nonnull NSArray<NSArray<NSNumber *> *> *)b;
 + (nonnull instancetype)nestedTypeWithA:(int32_t)a b:(nonnull NSArray<NSArray<NSNumber *> *> *)b;
 @property (nonatomic, readonly) int32_t a;

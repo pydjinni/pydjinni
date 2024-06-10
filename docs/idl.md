@@ -116,20 +116,6 @@ special_methods = interface +cpp {
 - `static` methods will become a `static` method of the C++ class, which can be called from other languages without an 
   object. This is often useful for factory methods to act as a cross-language constructor.
 
-### Exception Handling
-
-By default, the generated C++ interface methods are marked as `noexcept`.
-
-This can be disabled by marking a method with the `throws` keyword.
-Any exception thrown in C++ will then be translated to a `java.lang.RuntimeException`
-in Java, an `NSException` in Objective-C and a `System::Exception` in C++/CLI (.NET).
-The `what()` message will be translated as well.
-
-```pydjinni
-foo = interface {
-    throwing_method() throws -> i8;
-}
-```
 
 ### Main Interface { .new-badge }
 

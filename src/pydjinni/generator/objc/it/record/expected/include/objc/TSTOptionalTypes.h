@@ -3,7 +3,7 @@
 #import <Foundation/Foundation.h>
 
 NS_SWIFT_NAME(OptionalTypes)
-@interface OptionalTypes : NSObject
+@interface TSTOptionalTypes : NSObject
 - (nonnull instancetype)initWithIntOptional:(nullable NSNumber *)intOptional stringOptional:(nullable NSString *)stringOptional;
 + (nonnull instancetype)optionalTypesWithIntOptional:(nullable NSNumber *)intOptional stringOptional:(nullable NSString *)stringOptional;
 @property (nonatomic, readonly, nullable) NSNumber * intOptional;

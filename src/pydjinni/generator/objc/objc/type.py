@@ -42,12 +42,7 @@ def type_decl(type_ref: TypeReference, parameter: bool = False, boxed: bool = Fa
         optional = type_ref.optional
         typename = type_def.objc.boxed if boxed or optional else type_def.objc.typename
         if type_ref.parameters:
-            generic_types = "<"
-            for parameter_ref in type_ref.parameters:
-                if len(generic_types) > 1:
-                    generic_types += ", "
-                generic_types += type_decl(parameter_ref, boxed=True)
-            generic_types += ">"
+            generic_types = f'<{", ".join([type_decl(parameter_ref, boxed=True) for parameter_ref in type_ref.parameters])}>'
         if type_def.primitive == BaseExternalType.Primitive.interface:
             if parameter:
                 typename = f"id<{typename}>"
@@ -131,9 +126,6 @@ class ObjcFunction(ObjcBaseType):
         parameter_type_decls = [type_decl(parameter.type_ref, parameter=True) for parameter in self.decl.parameters]
         return f"{return_type_decl} (^)({', '.join(parameter_type_decls)})"
 
-    @computed_field
-    @cached_property
-    def header(self) -> Path: return None
 
 
 class ObjcBaseClassType(ObjcBaseType):
@@ -166,7 +158,7 @@ class ObjcRecord(ObjcBaseClassType):
         if self.base_type:
             return f"{self.config.type_prefix}{self.namespace}{Identifier(f'{self.decl.name}_base').convert(self.config.identifier.type)}"
         else:
-            return super().typename
+            return super().name
 
     @cached_property
     @validate(swift_keywords)

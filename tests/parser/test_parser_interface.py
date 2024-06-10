@@ -22,12 +22,11 @@ from test_parser import given, when
 
 
 def assert_method(method: Interface.Method, name: str, params: list[tuple[str, str]] = None, return_type: str = None,
-                  static: bool = False, const: bool = False, asynchronous: bool = False, throws: bool = False):
+                  static: bool = False, const: bool = False, asynchronous: bool = False):
     assert method.name == name
     assert method.static == static
     assert method.const == const
     assert method.asynchronous == asynchronous
-    assert method.throws == throws
     if return_type:
         assert method.return_type_ref.name == return_type
     else:
@@ -50,8 +49,6 @@ def test_parsing_interface(tmp_path: Path):
         "method_with_return() -> i8;",
         "method_with_parameter(param: i8);",
         "method_with_parameters_and_return(param: i8, param2: i8) -> i8;",
-        "throwing_method() throws -> i8;",
-        "async throwing_async_method() throws;"
     ]
     property_decls = [
         "property a: i8;"
@@ -86,8 +83,6 @@ def test_parsing_interface(tmp_path: Path):
     assert_method(methods[6], "method_with_parameter", params=[("param", "i8")])
     params = [("param", "i8"), ("param2", "i8")]
     assert_method(methods[7], "method_with_parameters_and_return", params=params, return_type="i8")
-    assert_method(methods[8], "throwing_method", return_type="i8", throws=True)
-    assert_method(methods[9], "throwing_async_method", throws=True, asynchronous=True)
 
     # then the expected targets should be defined
     assert "cpp" in interface.targets

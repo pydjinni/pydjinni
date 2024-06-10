@@ -210,7 +210,7 @@ class JavaFunction(JavaBaseType):
 
     @cached_property
     def return_type(self) -> str:
-        return return_type(self.decl.return_type_ref, self.decl.asynchronous)
+        return return_type(self.decl.return_type_ref)
 
 
 class JavaSymbolicConstantField(JavaBaseField):

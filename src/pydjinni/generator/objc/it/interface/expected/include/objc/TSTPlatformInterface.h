@@ -3,6 +3,6 @@
 #import <Foundation/Foundation.h>
 
 NS_SWIFT_NAME(PlatformInterface)
-@protocol PlatformInterface <NSObject>
+@protocol TSTPlatformInterface <NSObject>
 - (int8_t)getValue  NS_SWIFT_NAME(getValue());
 @end

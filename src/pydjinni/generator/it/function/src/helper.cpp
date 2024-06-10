@@ -18,23 +18,23 @@
 
 using namespace test::function;
 
-void Helper::named_function(const std::function<bool(int32_t)>& callback) {
-    assert(callback(42));
+void Helper::named_function(const std::function<bool(std::string)>& callback) {
+    assert(callback("foo"));
 }
 
-void Helper::anonymous_function(const std::function<bool(int32_t)>& callback) {
-    assert(callback(42));
+void Helper::anonymous_function(const std::function<bool(std::string)>& callback) {
+    assert(callback("foo"));
 }
 
-std::function<bool(int32_t)> Helper::cpp_named_function() {
-    return [](int32_t input){
-        return input == 42;
+std::function<bool(std::string)> Helper::cpp_named_function() {
+    return [](std::string input){
+        return input == "foo";
     };
 }
 
-std::function<bool(int32_t)> Helper::cpp_anonymous_function() {
-    return [](int32_t input){
-        return input == 42;
+std::function<bool(std::string)> Helper::cpp_anonymous_function() {
+    return [](std::string input){
+        return input == "foo";
     };
 }
 
@@ -42,4 +42,8 @@ std::function<void()> Helper::cpp_function_throwing_exception() {
     return [](){
         throw std::runtime_error("shit hit the fan");
     };
+}
+
+void Helper::anonymous_function_passing_record(const std::function<bool(::test::function::Foo foo)>& callback) {
+    assert(callback(Foo(32)));
 }

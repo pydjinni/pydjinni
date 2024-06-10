@@ -13,24 +13,24 @@
 // limitations under the License.
 
 #import <XCTest/XCTest.h>
-#import "Asynchronous.h"
+#import "TSTAsynchronous.h"
 
 // Runs the NSRunLoop for a short time to allow the async methods to dispatch a callback.
 #define SYNC_WAIT [[NSRunLoop mainRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]]
 
-@interface PlatformCallback : NSObject <Callback>
+@interface PlatformCallback : NSObject <TSTCallback>
 @end
 
 @interface AsyncTests : XCTestCase
 
-@property (nonatomic, strong) Asynchronous * asynchronous;
+@property (nonatomic, strong) TSTAsynchronous * asynchronous;
 
 @end
 
 @implementation AsyncTests
 
 - (void)setUp {
-    [Asynchronous getInstance: ^(Asynchronous * result){
+    [TSTAsynchronous getInstance: ^(TSTAsynchronous * result){
         self.asynchronous = result;
     }];
     SYNC_WAIT;
