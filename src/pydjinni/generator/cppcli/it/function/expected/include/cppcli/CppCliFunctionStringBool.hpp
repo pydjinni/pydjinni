@@ -6,24 +6,23 @@
 #include "pydjinni/cppcli/Marshal.hpp"
 
 namespace Test::Function::CppCli {
-public delegate bool NamedFunction(System::String^ param);
 
-ref class _NamedFunctionDelegateCppProxy
+ref class _FunctionStringBoolDelegateCppProxy
 {
 public:
-    _NamedFunctionDelegateCppProxy(const std::function<bool(std::string)>& lambda) : _lambda(new std::function<bool(std::string)>(lambda)) {}
-    ~_NamedFunctionDelegateCppProxy();
-    !_NamedFunctionDelegateCppProxy();
+    _FunctionStringBoolDelegateCppProxy(const std::function<bool(std::string)>& lambda) : _lambda(new std::function<bool(std::string)>(lambda)) {}
+    ~_FunctionStringBoolDelegateCppProxy();
+    !_FunctionStringBoolDelegateCppProxy();
 
     bool Invoke(System::String^ param);
 private:
     std::function<bool(std::string)>* _lambda;
 };
 
-class _NamedFunctionDelegate {
+class _FunctionStringBoolDelegate {
 public:
     using CppType = std::function<bool(std::string)>;
-    using CsType = ::Test::Function::CppCli::NamedFunction^;
+    using CsType = System::Func<System::String^, bool>^;
 
     static CppType ToCpp(gcroot<CsType> delegate);
     static CsType FromCpp(const CppType& function);

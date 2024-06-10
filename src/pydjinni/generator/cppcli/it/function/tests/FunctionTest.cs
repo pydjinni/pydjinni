@@ -62,7 +62,7 @@ namespace Testing.Unit.Function
         [Test]
         public void TestAnonymousFunctionPassingRecord()
         {
-            Helper.AnonymousFunctionPassingRecord(foo => foo.a == 32);
+            Helper.AnonymousFunctionPassingRecord(foo => foo.A == 32);
         }
 
     }

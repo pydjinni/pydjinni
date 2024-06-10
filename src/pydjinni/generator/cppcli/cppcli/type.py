@@ -262,7 +262,7 @@ class CppCliFunction(CppCliBaseType):
 
     @cached_property
     def return_typename(self) -> str:
-        return typename(self.decl.return_type_ref, self.decl.asynchronous)
+        return typename(self.decl.return_type_ref)
 
     @computed_field
     @cached_property
