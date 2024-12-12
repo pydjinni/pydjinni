@@ -40,6 +40,11 @@ function(cpp_test_case TEST_CASE_NAME)
             ${TEST_CASE_INCLUDES}
     )
 
+    set_target_properties(${TEST_CASE_NAME}Cpp
+        PROPERTIES
+            FOLDER "it/${TEST_CASE_NAME}"
+    )
+
 catch_discover_tests(${TEST_CASE_NAME}Cpp)
 
 endfunction()

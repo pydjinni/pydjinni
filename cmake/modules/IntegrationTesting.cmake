@@ -108,6 +108,7 @@ function(define_test_case TEST_CASE_NAME)
             CXX_STANDARD_REQUIRED true
             CXX_EXTENSIONS false
             POSITION_INDEPENDENT_CODE ON
+            FOLDER "it/${TEST_CASE_NAME}"
     )
 
 endfunction()
