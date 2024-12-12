@@ -48,6 +48,7 @@ function(java_test_case TEST_CASE_NAME)
             )
     target_include_directories(${JNI_TARGET_NAME} PUBLIC ${jni_INCLUDE_DIR} ${jni_SOURCE_DIR})
     target_link_libraries(${JNI_TARGET_NAME} PUBLIC JNI::JNI test::${TEST_CASE_NAME})
+    set_target_properties(${JNI_TARGET_NAME} PROPERTIES FOLDER "it/${TEST_CASE_NAME}")
     add_library(test::jni::${TEST_CASE_NAME} ALIAS ${JNI_TARGET_NAME})
 
     add_jar(${JAVA_TARGET_NAME}
@@ -58,6 +59,7 @@ function(java_test_case TEST_CASE_NAME)
         INCLUDE_JARS
             ${junit-platform-console-standalone_JAR}
     )
+    set_target_properties(${JAVA_TARGET_NAME} PROPERTIES FOLDER "it/${TEST_CASE_NAME}")
     add_dependencies(${JAVA_TARGET_NAME} ${JNI_TARGET_NAME})
     get_target_property(TEST_JAR_FILE ${JAVA_TARGET_NAME} JAR_FILE)
     add_test(NAME Java.${TEST_CASE_NAME} COMMAND ${Java_JAVA_EXECUTABLE}

@@ -15,6 +15,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 project(PyDjinniSupportLib C CXX)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(BUILD_TESTING "Whether testing should be enabled or not" ON)
 
