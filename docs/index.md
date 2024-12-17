@@ -10,7 +10,7 @@ hide:
 <h1 class="hero-subtitle">The C++ Cross-Platform Library<br>Development Toolkit.</h1>
 <p class="hero-abstract" markdown>
 PyDjinni is a tool for generating cross-language type declarations and interface bindings.<br>
-Heavily inspired by the original [Djinni by Dropbox](https://github.com/dropbox/djinni), it's designed to connect C++ with Java and Objective-C.
+Heavily inspired by the original [Djinni by Dropbox](https://github.com/dropbox/djinni), it's designed to connect C++ with Java, Objective-C and C#.
 </p>
 
 <div class="hero-buttons" markdown>
@@ -124,6 +124,11 @@ Here is what is planned for the near future:
 - [x] Add language server (LSP) support
 - [x] Publish IDE plugins
 - [x] Add project setup wizard
+- [x] Add seamless async (coroutine) interaction
+- [x] Add advanced exception translation
+- [ ] Add properties support
+- [ ] Add code documentation generator
+- [ ] Code generation engine refactoring
 - [ ] Increase test coverage
 - [ ] Release stable version 1.0
 
