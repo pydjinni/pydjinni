@@ -13,6 +13,10 @@ theme:
     edit: material/file-edit-outline
   custom_dir: docs/overrides
   palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
       primary: white
@@ -29,7 +33,7 @@ theme:
       scheme: slate
       toggle:
         icon: octicons/moon-16
-        name: Switch to light mode
+        name: Switch to system preference
   features:
     - navigation.instant
     - navigation.tabs

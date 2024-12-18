@@ -13,8 +13,8 @@ jobs:
     name: test
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
-        python-version: [ "3.10", "3.11", "3.12" ]
+        os: [ ubuntu-24.04, windows-2022, macos-15 ]
+        python-version: [ "3.10", "3.11", "3.12", "3.13" ]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -31,7 +31,7 @@ jobs:
     name: integration test
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        os: [ ubuntu-24.04, windows-2022, macos-15 ]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -44,7 +44,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
           cache: 'pip'
       - name: Install pydjinni
         run: pip install .
@@ -63,7 +63,7 @@ jobs:
     name: package test
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        os: [ ubuntu-24.04, windows-2022, macos-15 ]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -76,7 +76,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
           cache: 'pip'
       - name: Install pydjinni
         run: pip install .
@@ -91,25 +91,25 @@ jobs:
         run: pydjinni package aar android
         working-directory: test-library
       - name: package library for darwin
-        if: matrix.os == 'macos-latest'
+        if: ${{ startsWith(matrix.os, 'macos') }}
         run: pydjinni package swiftpackage ios macos
         working-directory: test-library
       - name: package library for windows
-        if: matrix.os == 'windows-latest'
+        if: ${{ startsWith(matrix.os, 'windows') }}
         run: pydjinni package nuget windows
         working-directory: test-library
   cmake_test:
     name: CMake test
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        os: [ ubuntu-24.04, windows-2022, macos-15 ]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
           cache: 'pip'
       - name: Install dev dependencies
         run: pip install .[dev]
@@ -117,13 +117,13 @@ jobs:
         run: pytest cmake/tests
   test_docs:
     name: documentation test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
           cache: 'pip'
       - name: Install doc dependencies
         run: pip install .[doc]
@@ -135,7 +135,7 @@ jobs:
           path: site/
   build:
     name: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -143,7 +143,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
           cache: 'pip'
       - name: Install build dependencies
         run: pip install .[publish]
@@ -158,7 +158,7 @@ jobs:
 
   publish:
     name: publish
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [build, test, integration_test, package_test, cmake_test, test_docs]
     if: github.event_name == 'release'
     steps:
@@ -170,7 +170,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
           cache: 'pip'
       - name: Install build dependencies
         run: pip install .[publish]
@@ -181,7 +181,7 @@ jobs:
         run: twine upload --disable-progress-bar dist/*.whl
   publish_docs:
     name: publish documentation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [publish]
     if: github.event_name == 'release'
     steps:
@@ -191,7 +191,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
           cache: 'pip'
       - name: Install doc dependencies
         run: pip install .[doc]

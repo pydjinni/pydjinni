@@ -12,11 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cmake_minimum_required(VERSION 3.6.0)
+cmake_minimum_required(VERSION 3.10)
 
 project(PyDjinniSupportLib C CXX)
 
 option(BUILD_TESTING "Whether testing should be enabled or not" ON)
+
+option(ADDRESS_SANITIZER "Enables address sanitizer" OFF)
+
+if(ADDRESS_SANITIZER)
+    add_compile_options(-fsanitize=address)
+    add_link_options(-fsanitize=address)
+endif()
 
 set(PYDJINNI_LANGUAGE_TARGETS_DEFAULT cpp)
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")

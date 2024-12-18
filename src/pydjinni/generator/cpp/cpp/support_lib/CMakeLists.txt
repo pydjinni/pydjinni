@@ -1,4 +1,4 @@
-# Copyright 2024 jothepro
+# Copyright 2023 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,18 +14,23 @@
 
 cmake_minimum_required(VERSION 3.10)
 
-project(PyDjinniObjc_SupportLib OBJC OBJCXX)
+project(PyDjinniCpp_SupportLib CXX)
 
-add_library(objc_support_lib
-        src/pydjinni/support.mm
-        src/pydjinni/error.mm
-        src/pydjinni/proxy_cache.mm
-)
+add_library(cpp_support_lib INTERFACE)
+target_include_directories(cpp_support_lib INTERFACE include)
+target_link_libraries(cpp_support_lib INTERFACE support_lib::common)
+add_library(support_lib::cpp ALIAS cpp_support_lib)
 
-target_compile_options(objc_support_lib PUBLIC "-fobjc-arc")
+if(BUILD_TESTING)
+    add_executable(cpp_support_lib_tests
+            tests/test_coroutine.cpp
+    )
 
-target_include_directories(objc_support_lib PUBLIC include)
+    target_link_libraries(cpp_support_lib_tests
+        PRIVATE
+            support_lib::cpp
+            Catch2::Catch2WithMain
+    )
 
-target_link_libraries(objc_support_lib PUBLIC support_lib::common)
-
-add_library(support_lib::objc ALIAS objc_support_lib)
+    catch_discover_tests(cpp_support_lib_tests)
+endif()
