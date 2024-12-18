@@ -152,9 +152,7 @@ async function main(version, localFallback) {
         intervalId = window.setInterval(() => {
             reportInstalledPackages(micropip);
         }, 200);
-        await micropip.install("pygments==2.17.2");
-        await micropip.install(`../assets/packages/pydantic_core-2.16.3-cp311-cp311-emscripten_3_1_32_wasm32.whl`);
-        await micropip.install("pydantic==2.6.3")
+        await micropip.install("pygments==2.18.0");
         if(localFallback) {
             await micropip.install(`http://localhost:8001/pydjinni-${version}-py3-none-any.whl`)
         } else {
@@ -325,7 +323,7 @@ function demoInit() {
     // a simple way to set attributes according to me
     Object.assign(pyodideScript, {
         id: "pyodide",
-        src: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js",
+        src: "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js",
     });
 
     let edit_button = document.getElementsByClassName("md-content__button")[0]

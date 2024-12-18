@@ -141,17 +141,6 @@ foo = main interface +cpp {
 Given that the name of the native library is configured in the `generator.java.native_lib` property, a static
 initialization block is added to the interface, ensuring that the native library is loaded automatically.
 
-If no interface is marked `main`, the underlying loader can be initialized manually. 
-It is named `<native_lib>Loader` and lives in the `native_lib` sub-package:
-
-```java
-class Main {
-    static {
-        new foo.bar.native_lib.FooBarLoader()
-    }
-}
-```
-
 ## Functions { .new-badge }
 
 Functions can be passed to and returned from interface methods.
