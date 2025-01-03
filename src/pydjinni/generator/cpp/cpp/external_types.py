@@ -25,7 +25,7 @@ external_types: dict[str, CppExternalType] = {
     "f32": CppExternalType(typename="float", by_value=True),
     "f64": CppExternalType(typename="double", by_value=True),
     "string": CppExternalType(typename="std::string", header=Path("<string>")),
-    "binary": CppExternalType(typename="std::vector<uint8_t>", header=Path("<vector>")),
+    "binary": CppExternalType(typename="std::vector<uint8_t>", header=Path("pydjinni/type/binary.hpp")),
     "date": CppExternalType(typename="std::chrono::system_clock::time_point", header=Path("<chrono>")),
     "list": CppExternalType(typename="std::vector", header=Path("<vector>")),
     "set": CppExternalType(typename="std::unordered_set", header=Path("<unordered_set>")),

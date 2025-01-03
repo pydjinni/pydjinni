@@ -1,15 +1,15 @@
 set(PROJECT_LANGUAGES CXX)
-{% if "darwin" in platforms -%}
+#> if "darwin" in platforms:
 set(DARWIN_SYSTEM "Darwin;iOS")
 if(CMAKE_SYSTEM_NAME IN_LIST DARWIN_SYSTEM)
   list(APPEND PROJECT_LANGUAGES OBJC OBJCXX)
 endif()
-{% endif %}
-{% if "android" in platforms -%}
+#> endif
+#> if "android" in platforms:
 if(ANDROID)
     list(APPEND PROJECT_LANGUAGES C)
 endif()
-{% endif %}
+#> endif
 
 project({{ target }} LANGUAGES ${PROJECT_LANGUAGES})
 
@@ -26,15 +26,15 @@ add_library(Cpp{{ target }} STATIC
 )
 add_library({{ target }}::Cpp ALIAS Cpp{{ target }})
 target_include_directories(Cpp{{ target }} PUBLIC ${cpp_INCLUDE_DIR})
-target_compile_features(Cpp{{ target }} PUBLIC cxx_std_20)
+target_compile_features(Cpp{{ target }} PUBLIC cxx_std_23)
 set_target_properties(Cpp{{ target }} PROPERTIES
-        CXX_STANDARD 20
+        CXX_STANDARD 23
         CXX_STANDARD_REQUIRED true
         CXX_EXTENSIONS false
         POSITION_INDEPENDENT_CODE TRUE
 )
 
-{% if "darwin" in platforms -%}
+#> if "darwin" in platforms:
 if(CMAKE_SYSTEM_NAME IN_LIST DARWIN_SYSTEM)
     add_library({{ target }} SHARED ${objc_GENERATED_SOURCES} ${objcpp_GENERATED_SOURCES} ${objc_GENERATED_HEADERS})
     target_include_directories({{ target }} PUBLIC ${objc_INCLUDE_DIR} PRIVATE ${objcpp_INCLUDE_DIR})
@@ -57,8 +57,8 @@ if(CMAKE_SYSTEM_NAME IN_LIST DARWIN_SYSTEM)
     install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/{{ target }}.framework.dSYM DESTINATION dist OPTIONAL)
     install(TARGETS {{ target }} DESTINATION dist)
 endif()
-{% endif %}
-{% if "android" in platforms -%}
+#> endif
+#> if "android" in platforms
 if(ANDROID)
     find_package(Java 1.8 REQUIRED)
     include(UseJava)
@@ -72,8 +72,8 @@ if(ANDROID)
     set_target_properties({{ target }} PROPERTIES EXCLUDE_FROM_ALL TRUE)
     install(TARGETS {{ target }} DESTINATION dist)
 endif()
-{% endif %}
-{% if "windows" in platforms -%}
+#> endif
+#> if "windows" in platforms
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     add_library({{ target }} SHARED ${cppcli_GENERATED_SOURCES} ${cppcli_GENERATED_HEADERS})
     target_include_directories({{ target }} PUBLIC ${cppcli_INCLUDE_DIR})
@@ -95,4 +95,4 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     target_link_libraries({{ target }} PRIVATE {{ target }}::Cpp)
     install(TARGETS {{ target }} DESTINATION dist)
 endif()
-{% endif %}
+#> endif

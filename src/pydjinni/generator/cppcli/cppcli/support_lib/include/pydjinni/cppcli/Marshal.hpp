@@ -72,16 +72,15 @@ struct String {
         cli::array<System::Byte>^ bytes = System::Text::Encoding::UTF8->GetBytes(string);
         CppType cpp_str;
         cpp_str.resize(bytes->Length);
-        System::Runtime::InteropServices::Marshal::Copy(bytes,0,System::IntPtr(const_cast<char*>(cpp_str.data())),cpp_str.length());
+        System::Runtime::InteropServices::Marshal::Copy(bytes,0,System::IntPtr(const_cast<char*>(cpp_str.data())), bytes->Length);
         return cpp_str;
     }
 
     static CsType FromCpp(const CppType& string) {
-        cli::array<System::Byte>^ bytes = gcnew cli::array<System::Byte>(string.length());
-        for(size_t i=0; i< string.length(); i++) {
-            bytes[i] = string[i];
+        if (string.length() > INT_MAX) {
+            throw gcnew System::ArgumentOutOfRangeException(_EXCEPTION_GREATER_THAN_INT_MAX);
         }
-        return System::Text::Encoding::UTF8->GetString(bytes);
+        return gcnew System::String(string.c_str(), 0, static_cast<int>(string.length()), System::Text::Encoding::UTF8);
     }
 };
 
@@ -134,7 +133,10 @@ struct Binary {
     }
 
     static CsType FromCpp(const CppType& bytes) {
-        auto len = bytes.size();
+        if (bytes.size() > INT_MAX) {
+            throw gcnew System::ArgumentOutOfRangeException("Size of data exceeds INT_MAX.");
+        }
+        auto len = static_cast<int>(bytes.size());
         auto ret = gcnew array<System::Byte>(len);
         System::Runtime::InteropServices::Marshal::Copy(System::IntPtr(const_cast<CppType::value_type*>(&bytes[0])), ret, 0, len);
         return ret;
@@ -274,7 +276,10 @@ struct Map {
     }
 
     static CsType FromCpp(const CppType& m) {
-        auto map = gcnew System::Collections::Generic::Dictionary<typename Key::CsType, typename Value::CsType>(m.size());
+        if (m.size() > INT_MAX) {
+            throw gcnew System::ArgumentOutOfRangeException("Size of map exceeds INT_MAX.");
+        }
+        auto map = gcnew System::Collections::Generic::Dictionary<typename Key::CsType, typename Value::CsType>(static_cast<int>(m.size()));
         for (const auto& kvp : m) {
             map->Add(Key::FromCpp(kvp.first), Value::FromCpp(kvp.second));
         }

@@ -3,9 +3,7 @@
 #pragma once
 #include "foo.hpp"
 #include "pydjinni/cppcli/Marshal.hpp"
-
 namespace Test::Function::CppCli {
-[System::Serializable]
 public ref class Foo sealed  {
 public:
     Foo(int a);
@@ -23,4 +21,4 @@ internal:
 private:
     int _a;
 };
-}  // namespace Test::Function::CppCli
+} // namespace Test::Function::CppCli

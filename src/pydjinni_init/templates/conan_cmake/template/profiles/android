@@ -1,10 +1,10 @@
-{%- if "android" in platforms -%}
+#> if "android" in platforms:
 [settings]
 compiler=clang
 compiler.libcxx=c++_static
-compiler.version=11
+compiler.version=16
 os=Android
 os.api_level=28
 [tool_requires]
-android-ndk/r25
-{%- endif %}
+android-ndk/r27
+#> endif

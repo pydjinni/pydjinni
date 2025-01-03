@@ -1,10 +1,10 @@
-{%- if "darwin" in platforms -%}
+#> if "darwin" in platforms:
 include(default)
 [settings]
 os=Macos
-os.version=11.0
+os.version=15.0
 compiler=apple-clang
 compiler.libcxx=libc++
 [conf]
 tools.cmake.cmaketoolchain:generator=Xcode
-{%- endif %}
+#> endif

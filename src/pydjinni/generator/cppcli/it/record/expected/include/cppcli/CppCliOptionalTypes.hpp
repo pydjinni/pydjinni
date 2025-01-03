@@ -3,9 +3,7 @@
 #pragma once
 #include "optional_types.hpp"
 #include "pydjinni/cppcli/Marshal.hpp"
-
 namespace Test::Record::CppCli {
-[System::Serializable]
 public ref class OptionalTypes sealed  {
 public:
     OptionalTypes(System::Nullable<int> intOptional, System::String^ stringOptional);
@@ -18,7 +16,6 @@ public:
     {
         System::String^ get();
     }
-
     System::String^ ToString() override;
 internal:
     using CppType = ::test::record::OptionalTypes;
@@ -30,4 +27,4 @@ private:
     System::Nullable<int> _intOptional;
     System::String^ _stringOptional;
 };
-}  // namespace Test::Record::CppCli
+} // namespace Test::Record::CppCli

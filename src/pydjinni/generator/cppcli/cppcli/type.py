@@ -17,7 +17,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field, computed_field
 
-from pydjinni.parser.ast import Record, Interface
+from pydjinni.parser.ast import Interface, Record
 
 from pydjinni.parser.identifier import IdentifierType as Identifier
 
@@ -25,7 +25,7 @@ from pydjinni.parser.ast import Function
 from .comment_renderer import XmlCommentRenderer
 from .config import CppCliConfig
 from .keywords import keywords
-from pydjinni.parser.base_models import BaseType, BaseField, TypeReference, DataField
+from pydjinni.parser.base_models import BaseType, BaseField, TypeReference, DataField, BaseCommentModel
 from pydjinni.generator.validator import validate
 
 from pydjinni.generator.filters import headers, quote
@@ -61,8 +61,24 @@ def translator(type_ref: TypeReference) -> str:
         output = f"::pydjinni::cppcli::translator::Optional<std::optional, {output}>"
     return output
 
+class CppCliBaseCommentModel(BaseModel):
+    decl: BaseCommentModel = Field(exclude=True, repr=False)
+    config: CppCliConfig = Field(exclude=True, repr=False)
 
-class CppCliBaseType(BaseModel):
+    @cached_property
+    def comment(self):
+        return XmlCommentRenderer(self.config.identifier).render(*self.decl.parsed_comment).strip() \
+            if self.decl.comment else ''
+
+    @property
+    def deprecated(self):
+        message = ""
+        if isinstance(self.decl.deprecated, str):
+            message = '("' + self.decl.deprecated.replace('\n', r'\n').replace('"', r'\"') + '")'
+        return f"[System::Obsolete{message}]"
+
+
+class CppCliBaseType(CppCliBaseCommentModel):
     decl: BaseType = Field(exclude=True, repr=False)
     config: CppCliConfig = Field(exclude=True, repr=False)
 
@@ -105,21 +121,26 @@ class CppCliBaseType(BaseModel):
         return Path(
             *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.cpp"
 
-    @cached_property
-    def comment(self):
-        return XmlCommentRenderer(self.config.identifier).render(*self.decl.parsed_comment).strip() \
-            if self.decl.comment else ''
 
     @computed_field
     @cached_property
     def reference(self) -> bool:
         return True
 
-    @cached_property
-    def includes(self): return headers(self.decl.dependencies, "cppcli")
+    @property
+    def header_includes(self) -> set[str]: return headers(self.decl.dependencies, "cppcli") | {
+        quote(self.decl.cpp.header)
+    }
+
+    @property
+    def source_includes(self) -> set[str]: return {
+        quote(self.header),
+        quote(Path("pydjinni/cppcli/Assert.hpp")),
+        quote(Path("pydjinni/cppcli/Marshal.hpp"))
+    }
 
 
-class CppCliBaseField(BaseModel):
+class CppCliBaseField(CppCliBaseCommentModel):
     decl: BaseField = Field(exclude=True, repr=False)
     config: CppCliConfig = Field(exclude=True, repr=False)
 
@@ -139,23 +160,26 @@ class CppCliBaseField(BaseModel):
     def translator(self) -> str:
         return translator(self.decl.type_ref)
 
-    @cached_property
-    def comment(self):
-        return XmlCommentRenderer(self.config.identifier).render(*self.decl.parsed_comment).strip() \
-            if self.decl.comment else ''
-
 
 class CppCliInterface(CppCliBaseType):
 
-    @cached_property
-    def includes(self):
-        dependency_headers = super().includes
+    @property
+    def header_includes(self) -> set[str]:
+        dependency_headers = super().header_includes
         if any(method.asynchronous for method in self.decl.methods):
-            dependency_headers.append(quote(Path("pydjinni/coroutine/task.hpp")))
-            dependency_headers.append(quote(Path("pydjinni/coroutine/schedule.hpp")))
+            dependency_headers.update([
+                quote(Path("pydjinni/coroutine/task.hpp")),
+                quote(Path("pydjinni/coroutine/schedule.hpp"))
+            ])
             if "cppcli" in self.decl.targets:
-                dependency_headers.append(quote(Path("pydjinni/coroutine/callback_awaitable.hpp")))
+                dependency_headers.add(quote(Path("pydjinni/coroutine/callback_awaitable.hpp")))
         return dependency_headers
+
+    @property
+    def source_includes(self) -> set[str]: return super().source_includes | {
+        quote(Path("pydjinni/cppcli/Error.hpp")),
+        quote(Path("pydjinni/cppcli/WrapperCache.hpp"))
+    }
 
     class CppCliMethod(CppCliBaseField):
         decl: Interface.Method = Field(exclude=True, repr=False)
@@ -181,6 +205,7 @@ class CppCliInterface(CppCliBaseType):
 
 
 class CppCliRecord(CppCliBaseType):
+    decl: Record = Field(exclude=True, repr=False)
 
     def base_name(self) -> Identifier:
         name = self.decl.name
@@ -222,6 +247,18 @@ class CppCliRecord(CppCliBaseType):
     def source(self):
         return Path(
             *self.decl.namespace) / f"{self.base_name().convert(self.config.identifier.file)}.cpp"
+
+    @property
+    def header_includes(self) -> set[str]: return headers(self.decl.dependencies, "cppcli") | {
+            quote(self.decl.cpp.derived_header) if self.decl.cpp.base_type else quote(self.decl.cpp.header)
+        }
+
+    @property
+    def source_includes(self) -> set[str]: return {
+        quote(Path("pydjinni/cppcli/Assert.hpp")),
+        quote(Path("pydjinni/cppcli/Marshal.hpp")),
+        quote(self.derived_header) if self.base_type else quote(self.header)
+    }
 
 class CppCliDataField(CppCliBaseField):
     decl: DataField = Field(exclude=True, repr=False)
@@ -292,6 +329,15 @@ class CppCliFunction(CppCliBaseType):
     @cached_property
     def translator(self) -> str:
         return f"{self.namespace}::{self.delegate_name}"
+
+    @property
+    def header_includes(self) -> set[str]:
+        return super().header_includes | { "<functional>", "<vcclr.h>" }
+
+    @property
+    def source_includes(self) -> set[str]: return super().source_includes | {
+        quote(Path("pydjinni/cppcli/Error.hpp"))
+    }
 
 
 class CppCliErrorDomain(CppCliBaseType):

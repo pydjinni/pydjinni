@@ -3,7 +3,7 @@ from typing import Any
 from mistune import BlockState
 from mistune.renderers.markdown import MarkdownRenderer
 
-from pydjinni.parser.ast import Interface
+from pydjinni.parser.ast import Interface, ErrorDomain
 from pydjinni.parser.base_models import BaseCommentModel
 
 
@@ -27,7 +27,7 @@ class ParserCommentProcessor(MarkdownRenderer):
     def param(self, token: dict[str, Any], state: BlockState):
         name = token['attrs']['name']
         description = self.render_children(token, state)
-        if isinstance(self.decl, Interface.Method) and description:
+        if (isinstance(self.decl, Interface.Method) or isinstance(self.decl, ErrorDomain.ErrorCode)) and description:
             for param in self.decl.parameters:
                 if param.name == name:
                     param.comment = description

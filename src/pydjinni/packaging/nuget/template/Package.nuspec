@@ -5,12 +5,12 @@
     <version>{{ config.version }}</version>
     <authors>{{ config.nuget.publish.authors | join(", ") }}</authors>
     <description>{{ config.nuget.publish.description }}</description>
-    {% if config.nuget.publish.readme %}
+    <!--> if config.nuget.publish.readme -->
     <readme>README.md</readme>
-    {% endif %}
-    {% if config.nuget.publish.repository %}
+    <!--> endif -->
+    <!--> if config.nuget.publish.repository -->
     <repository type="git" url="{{ config.nuget.publish.repository }}" />
-    {% endif %}
+    <!--> endif -->
     <dependencies>
       <group targetFramework="{{ config.nuget.publish.net_version }}"/>
     </dependencies>

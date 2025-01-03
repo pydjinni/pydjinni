@@ -15,11 +15,12 @@
 #include "calculator_impl.hpp"
 #include <cassert>
 #include <stdexcept>
+#include <exception>
 #include <string>
 
 using namespace test::interface_test;
 
-int8_t CalculatorImpl::add(int8_t a, int8_t b) noexcept {
+int8_t CalculatorImpl::add(int8_t a, int8_t b) const noexcept {
     return a + b;
 }
 

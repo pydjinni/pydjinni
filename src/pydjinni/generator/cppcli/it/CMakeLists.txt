@@ -52,8 +52,10 @@ function(cppcli_test_case TEST_CASE_NAME)
     set_target_properties(${CPPCLI_TARGET_NAME} PROPERTIES
         VS_DOTNET_REFERENCES "System;System.Core"
         COMMON_LANGUAGE_RUNTIME ""
+        CXX_STANDARD 20
         FOLDER "it/${TEST_CASE_NAME}"
     )
+    target_link_options(${CPPCLI_TARGET_NAME} PUBLIC "/INCREMENTAL:NO")
     target_link_libraries(${CPPCLI_TARGET_NAME} PUBLIC test::${TEST_CASE_NAME})
     add_library(test::cppcli::${TEST_CASE_NAME} ALIAS ${CPPCLI_TARGET_NAME})
 

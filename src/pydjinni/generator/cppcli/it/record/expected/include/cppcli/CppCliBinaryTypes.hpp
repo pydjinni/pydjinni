@@ -3,9 +3,7 @@
 #pragma once
 #include "binary_types.hpp"
 #include "pydjinni/cppcli/Marshal.hpp"
-
 namespace Test::Record::CppCli {
-[System::Serializable]
 public ref class BinaryTypes sealed  {
 public:
     BinaryTypes(array<System::Byte>^ binaryT, array<System::Byte>^ binaryOptional);
@@ -28,4 +26,4 @@ private:
     array<System::Byte>^ _binaryT;
     array<System::Byte>^ _binaryOptional;
 };
-}  // namespace Test::Record::CppCli
+} // namespace Test::Record::CppCli

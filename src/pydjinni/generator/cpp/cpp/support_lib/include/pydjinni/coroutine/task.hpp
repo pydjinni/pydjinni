@@ -109,7 +109,7 @@ namespace pydjinni::coroutine {
         std::coroutine_handle<promise_type> handle_;
 
         template <typename U>
-        friend class task;
+        friend struct task;
 
     };
 
@@ -199,6 +199,6 @@ namespace pydjinni::coroutine {
         std::coroutine_handle<promise_type> handle_;
 
         template <typename U>
-        friend class task;
+        friend struct task;
     };
 }

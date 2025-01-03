@@ -3,9 +3,7 @@
 #pragma once
 #include "nested_type.hpp"
 #include "pydjinni/cppcli/Marshal.hpp"
-
 namespace Test::Record::CppCli {
-[System::Serializable]
 public ref class NestedType sealed  {
 public:
     NestedType(int a, System::Collections::Generic::List<System::Collections::Generic::List<int>^>^ b);
@@ -18,7 +16,6 @@ public:
     {
         System::Collections::Generic::List<System::Collections::Generic::List<int>^>^ get();
     }
-
     System::String^ ToString() override;
 internal:
     using CppType = ::test::record::NestedType;
@@ -30,4 +27,4 @@ private:
     int _a;
     System::Collections::Generic::List<System::Collections::Generic::List<int>^>^ _b;
 };
-}  // namespace Test::Record::CppCli
+} // namespace Test::Record::CppCli

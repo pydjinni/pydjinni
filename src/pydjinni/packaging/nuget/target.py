@@ -36,6 +36,8 @@ class NuGetTarget(PackageTarget):
         Architecture.armv7: "win-arm",
         Architecture.armv8: "win-arm64"
     }
+    template_block_start_string = "<!-->"
+    template_block_end_string = "-->"
 
     def package_build(self, clean: bool = False):
         ref_copied = False
