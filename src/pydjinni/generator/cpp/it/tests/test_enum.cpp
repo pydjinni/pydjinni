@@ -30,11 +30,9 @@ TEST_CASE("Cpp.EnumTest") {
     GIVEN("a ExampleEnum enum value") {
         auto enum_value = test::enum_test::ExampleEnum::A;
         WHEN("stringifying he enum value") {
-
-            std::stringstream stringified;
-            stringified << enum_value;
+                auto result = std::format("{}", enum_value);
             THEN("the stringified value should be 'A'") {
-                REQUIRE(stringified.str() == "A");
+                REQUIRE(result == "A");
             }
         }
     }

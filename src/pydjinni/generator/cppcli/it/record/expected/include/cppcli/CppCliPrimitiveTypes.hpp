@@ -3,9 +3,7 @@
 #pragma once
 #include "primitive_types.hpp"
 #include "pydjinni/cppcli/Marshal.hpp"
-
 namespace Test::Record::CppCli {
-[System::Serializable]
 public ref class PrimitiveTypes sealed : System::IEquatable<PrimitiveTypes^> {
 public:
     PrimitiveTypes(bool booleanT, char byteT, short shortT, int intT, __int64 longT, float floatT, double doubleT, System::String^ stringT, System::DateTime dateT);
@@ -46,9 +44,7 @@ public:
     {
         System::DateTime get();
     }
-
     System::String^ ToString() override;
-
     virtual bool Equals(PrimitiveTypes^ other);
     bool Equals(System::Object^ obj) override;
     int GetHashCode() override;
@@ -69,4 +65,4 @@ private:
     System::String^ _stringT;
     System::DateTime _dateT;
 };
-}  // namespace Test::Record::CppCli
+} // namespace Test::Record::CppCli

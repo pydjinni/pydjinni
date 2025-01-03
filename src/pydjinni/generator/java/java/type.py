@@ -239,6 +239,7 @@ class JavaInterface(JavaBaseType):
         def callback_type(self) -> str:
             return return_type(self.decl.return_type_ref, self.decl.asynchronous)
 
+
 class JavaErrorDomain(JavaBaseType):
     pass
 

@@ -98,13 +98,13 @@ function(define_test_case TEST_CASE_NAME)
             ${TEST_CASE_SOURCES}
     )
     target_include_directories(${BASE_LIB_NAME} PUBLIC ${cpp_INCLUDE_DIR} ${TEST_CASE_INCLUDE_DIRS})
-    target_compile_features(${BASE_LIB_NAME} PUBLIC cxx_std_20)
+    target_compile_features(${BASE_LIB_NAME} PUBLIC cxx_std_23)
     add_library(test::${TEST_CASE_NAME} ALIAS ${BASE_LIB_NAME})
     set_target_properties(${BASE_LIB_NAME}
         PROPERTIES
             PYDJINNI_INTERFACE "${TEST_CASE_INTERFACE}"
             PYDJINNI_OPTIONS "${TEST_CASE_OPTIONS}"
-            CXX_STANDARD 20
+            CXX_STANDARD 23
             CXX_STANDARD_REQUIRED true
             CXX_EXTENSIONS false
             POSITION_INDEPENDENT_CODE ON

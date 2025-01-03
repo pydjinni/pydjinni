@@ -3,9 +3,7 @@
 #pragma once
 #include "collection_types.hpp"
 #include "pydjinni/cppcli/Marshal.hpp"
-
 namespace Test::Record::CppCli {
-[System::Serializable]
 public ref class CollectionTypes sealed  {
 public:
     CollectionTypes(System::Collections::Generic::List<int>^ intList, System::Collections::Generic::List<System::String^>^ stringList, System::Collections::Generic::HashSet<int>^ intSet, System::Collections::Generic::HashSet<System::String^>^ stringSet, System::Collections::Generic::Dictionary<int, int>^ intIntMap, System::Collections::Generic::Dictionary<System::String^, System::String^>^ stringStringMap);
@@ -34,7 +32,6 @@ public:
     {
         System::Collections::Generic::Dictionary<System::String^, System::String^>^ get();
     }
-
     System::String^ ToString() override;
 internal:
     using CppType = ::test::record::CollectionTypes;
@@ -50,4 +47,4 @@ private:
     System::Collections::Generic::Dictionary<int, int>^ _intIntMap;
     System::Collections::Generic::Dictionary<System::String^, System::String^>^ _stringStringMap;
 };
-}  // namespace Test::Record::CppCli
+} // namespace Test::Record::CppCli

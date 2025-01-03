@@ -15,7 +15,6 @@ public final class OptionalTypes {
 
     public Integer getIntOptional() { return intOptional; }
     public String getStringOptional() { return stringOptional; }
-
     @Override
     public String toString() {
         return "test.record.OptionalTypes{" +

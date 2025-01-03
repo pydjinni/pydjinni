@@ -15,7 +15,6 @@
 #include "catch2/catch_test_macros.hpp"
 #include "example_flags.hpp"
 #include "helper.hpp"
-#include <sstream>
 
 TEST_CASE("Cpp.FlagsTest") {
     GIVEN("a ExampleFlags flag value") {
@@ -48,30 +47,27 @@ TEST_CASE("Cpp.FlagsTest") {
     GIVEN("a ExampleFlags flag value with no options set") {
         auto flag_value = test::flags_test::ExampleFlags::NONE;
         WHEN("stringifying the flag") {
-            std::stringstream stringified;
-            stringified << flag_value;
+            auto result = std::format("{}", flag_value);
             THEN("the stringified vaue should be ''") {
-                REQUIRE(stringified.str() == "");
+                REQUIRE(result.empty());
             }
         }
     }
     GIVEN("a ExampleFlags flag value with only the 'B' option set") {
         auto flag_value = test::flags_test::ExampleFlags::B;
         WHEN("stringifying the flag") {
-            std::stringstream stringified;
-            stringified << flag_value;
+            auto result = std::format("{}", flag_value);
             THEN("the stringified vaue should be 'B'") {
-                REQUIRE(stringified.str() == "B");
+                REQUIRE(result == "B");
             }
         }
     }
     GIVEN("a ExampleFlags flag value with multiple options set") {
         auto flag_value = test::flags_test::ExampleFlags::A | test::flags_test::ExampleFlags::B;
         WHEN("stringifying the flag") {
-            std::stringstream stringified;
-            stringified << flag_value;
+            auto result = std::format("{}", flag_value);
             THEN("the stringified vaue should be 'A | B'") {
-                REQUIRE(stringified.str() == "A | B");
+                REQUIRE(result == "A | B");
             }
         }
     }

@@ -21,6 +21,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
+#include <format>
 
 static_assert(sizeof(jlong) >= sizeof(void*), "must be able to fit a void* into a jlong");
 
@@ -162,8 +163,8 @@ void jniExceptionCheck(JNIEnv * env) {
     }
 }
 
+[[noreturn]]
 DJINNI_WEAK_DEFINITION
-DJINNI_NORETURN_DEFINITION
 void jniThrowCppFromJavaException(JNIEnv * env, jthrowable java_exception) {
     throw jni_exception { env, java_exception };
 }

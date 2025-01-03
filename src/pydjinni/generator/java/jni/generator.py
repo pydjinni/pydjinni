@@ -58,30 +58,30 @@ class JniGenerator(Generator):
     filters = [quote, headers]
 
     def generate_enum(self, type_def: Enum):
-        self.write_header("header/enum.hpp.jinja2", type_def=type_def)
+        self.write_header("header/enum.jinja2.hpp", type_def=type_def)
 
     def generate_flags(self, type_def: Flags):
-        self.write_header("header/flags.hpp.jinja2", type_def=type_def)
+        self.write_header("header/flags.jinja2.hpp", type_def=type_def)
 
     def generate_record(self, type_def: Record):
-        self.write_header("header/record.hpp.jinja2", type_def=type_def)
-        self.write_source("source/record.cpp.jinja2", type_def=type_def)
+        self.write_header("header/record.jinja2.hpp", type_def=type_def)
+        self.write_source("source/record.jinja2.cpp", type_def=type_def)
 
     def generate_interface(self, type_def: Interface):
-        self.write_header("header/interface.hpp.jinja2", type_def=type_def)
-        self.write_source("source/interface.cpp.jinja2", type_def=type_def)
+        self.write_header("header/interface.jinja2.hpp", type_def=type_def)
+        self.write_source("source/interface.jinja2.cpp", type_def=type_def)
 
     def generate_function(self, type_def: Function):
-        self.write_header("header/function.hpp.jinja2", type_def=type_def)
-        self.write_source("source/function.cpp.jinja2", type_def=type_def)
+        self.write_header("header/function.jinja2.hpp", type_def=type_def)
+        self.write_source("source/function.jinja2.cpp", type_def=type_def)
 
     def generate_error_domain(self, type_def: ErrorDomain):
-        self.write_header("header/error_domain.hpp.jinja2", type_def=type_def)
-        self.write_source("source/error_domain.cpp.jinja2", type_def=type_def)
+        self.write_header("header/error_domain.jinja2.hpp", type_def=type_def)
+        self.write_source("source/error_domain.jinja2.cpp", type_def=type_def)
 
     def generate_loader(self):
         self.write_source(
-            template="source/loader.cpp.jinja2",
+            template="source/loader.jinja2.cpp",
             filename=self.source_path / "loader.cpp"
         )
 
@@ -89,13 +89,13 @@ class JniGenerator(Generator):
         header_path = Path("pydjinni") / "coroutine" / "schedule.hpp"
         java_runnable_type = self.metadata.java.base_package.split('.') + ["pydjinni", "NativeRunnable"]
         self.write_header(
-            template="header/schedule.hpp.jinja2",
+            template="header/schedule.jinja2.hpp",
             filename=self.header_path / header_path,
             java_type_signature="/".join(java_runnable_type),
             namespace='::'.join(self.config.namespace + ["schedule"])
         )
         self.write_source(
-            template="source/schedule.cpp.jinja2",
+            template="source/schedule.jinja2.cpp",
             filename=self.source_path / "pydjinni" / "coroutine" / "schedule.cpp",
             namespace='::'.join(self.config.namespace + ["schedule"]),
             header_path=header_path,
@@ -106,13 +106,13 @@ class JniGenerator(Generator):
         header_path = Path("pydjinni") / "coroutine" / "completion.hpp"
         java_runnable_type = self.metadata.java.base_package.split('.') + ["pydjinni", "NativeCompletion"]
         self.write_header(
-            template="header/completion.hpp.jinja2",
+            template="header/completion.jinja2.hpp",
             filename=self.header_path / header_path,
             java_type_signature="/".join(java_runnable_type),
             namespace='::'.join(self.config.namespace + ["schedule"])
         )
         self.write_source(
-            template="source/completion.cpp.jinja2",
+            template="source/completion.jinja2.cpp",
             filename=self.source_path / "pydjinni" / "coroutine" / "completion.cpp",
             namespace='::'.join(self.config.namespace + ["schedule"]),
             header_path=header_path,

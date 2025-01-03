@@ -53,3 +53,18 @@ helper = main interface +cpp {
     static get_host_base_record(record_type: base_record) -> base_record;
     static get_nested_type(parent: parent_type) -> parent_type;
 }
+
+# deprecated record with comments
+# @deprecated
+old_record = record {
+    # more comment
+    a: bool;
+} deriving (str)
+
+deprecated_field_record = record {
+    # @deprecated the field is old
+    old: i32;
+    # foo
+    # @deprecated this is optional and old
+    older: i32?;
+} deriving (str)

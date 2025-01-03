@@ -17,13 +17,13 @@ from pathlib import Path
 
 from pydantic import BaseModel, Field, computed_field
 
-from pydjinni.generator.filters import headers
+from pydjinni.generator.filters import headers, quote
 from pydjinni.generator.objc.objc.comment_renderer import DocCCommentRenderer
 from pydjinni.generator.objc.objc.config import ObjcConfig
 from pydjinni.generator.objc.objc.keywords import swift_keywords, keywords
 from pydjinni.generator.validator import validate
 from pydjinni.parser.ast import Record, Interface, Parameter, Function, ErrorDomain
-from pydjinni.parser.base_models import BaseType, BaseExternalType, BaseField, TypeReference
+from pydjinni.parser.base_models import BaseType, BaseExternalType, BaseField, TypeReference, BaseCommentModel
 from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
@@ -64,8 +64,34 @@ def annotation(type_ref: TypeReference, macro_style: bool = False):
     else:
         return ""
 
+class ObjcBaseCommentModel(BaseModel):
+    decl: BaseCommentModel = Field(exclude=True, repr=False)
+    config: ObjcConfig = Field(exclude=True, repr=False)
 
-class ObjcBaseType(BaseModel):
+    @cached_property
+    def comment(self) -> str:
+        if self.decl.comment:
+            return DocCCommentRenderer(self.config.identifier).render_tokens(*self.decl.parsed_comment).strip()
+        else:
+            return ""
+
+    @property
+    def deprecated(self) -> str:
+        if isinstance(self.decl.deprecated, str):
+            return 'DEPRECATED_MSG_ATTRIBUTE("' + self.decl.deprecated.replace('\n', r'\n').replace('"', r'\"') + '")'
+        elif self.decl.deprecated is True:
+            return "DEPRECATED_ATTRIBUTE"
+        else:
+            return ""
+
+    @property
+    def attributes(self):
+        output = []
+        if self.decl.deprecated:
+            output.append(self.deprecated)
+        return output
+
+class ObjcBaseType(ObjcBaseCommentModel):
     decl: BaseType = Field(exclude=True, repr=False)
     config: ObjcConfig = Field(exclude=True, repr=False)
 
@@ -103,17 +129,19 @@ class ObjcBaseType(BaseModel):
         return output
 
     @cached_property
-    def comment(self):
-        return DocCCommentRenderer(self.config.identifier).render_tokens(*self.decl.parsed_comment).strip() \
-            if self.decl.comment else ''
-
-    @cached_property
     @validate(keywords)
     @validate(swift_keywords)
     def namespace(self): return Identifier('_'.join(self.decl.namespace)).convert(self.config.identifier.type)
 
     @cached_property
-    def imports(self): return headers(self.decl.dependencies, "objc")
+    def imports(self) -> set[str]: return headers(self.decl.dependencies, "objc")
+
+    @property
+    def attributes(self):
+        output = super().attributes
+        if self.config.swift.rename_interfaces:
+            output.append(f"NS_SWIFT_NAME({self.swift_typename})")
+        return output
 
 
 class ObjcFunction(ObjcBaseType):
@@ -134,7 +162,7 @@ class ObjcBaseClassType(ObjcBaseType):
     def pointer(self) -> bool: return True
 
 
-class ObjcBaseField(BaseModel):
+class ObjcBaseField(ObjcBaseCommentModel):
     decl: BaseField = Field(exclude=True, repr=False)
     config: ObjcConfig = Field(exclude=True, repr=False)
 
@@ -142,11 +170,6 @@ class ObjcBaseField(BaseModel):
     @cached_property
     @validate(keywords)
     def name(self) -> str: return self.decl.name.convert(self.config.identifier.field)
-
-    @cached_property
-    def comment(self):
-        return DocCCommentRenderer(self.config.identifier).render_tokens(*self.decl.parsed_comment).strip() \
-            if self.decl.comment else ''
 
 
 class ObjcRecord(ObjcBaseClassType):
@@ -190,6 +213,13 @@ class ObjcRecord(ObjcBaseClassType):
         name = f"{self.decl.name}_base" if self.base_type else self.decl.name
         return Identifier(f"{name}_with_{self.decl.fields[0].name}").convert(self.config.identifier.method) \
             if self.decl.fields else self.decl.name.convert(self.config.identifier.method)
+
+    @property
+    def imports(self) -> set[str]:
+        output = super().imports
+        if any([field.deprecated for field in self.decl.fields]):
+            output.add(quote(Path("pydjinni/deprecated.hpp")))
+        return output
 
 class ObjcDataField(ObjcBaseField):
     @cached_property
@@ -250,12 +280,24 @@ class ObjcParameter(ObjcBaseField):
     @cached_property
     def annotation(self) -> str: return annotation(self.decl.type_ref)
 
+class CustomObjcParameter(BaseModel):
+    name: str
+    annotation: str
+    type_decl: str
+
 
 class ObjcSymbolicConstantField(ObjcBaseField):
     @computed_field
     @cached_property
     @validate(keywords)
     def name(self) -> str: return self.decl.name.convert(self.config.identifier.enum)
+
+    @property
+    def attributes(self) -> str:
+        output = ""
+        if self.decl.deprecated:
+            output += f" {self.deprecated}"
+        return output
 
 
 class ObjcInterface(ObjcBaseClassType):
@@ -268,6 +310,29 @@ class ObjcInterface(ObjcBaseClassType):
         def name(self) -> str:
             name = self.decl.name
             return Identifier(name).convert(self.config.identifier.method)
+
+        @property
+        def parameters(self) -> list[ObjcParameter|CustomObjcParameter]:
+            output = [parameter.objc for parameter in self.decl.parameters]
+            if self.decl.asynchronous:
+                output.append(CustomObjcParameter(
+                    name="completion",
+                    annotation="",
+                    type_decl=self.completion_handler
+                ))
+            elif self.decl.throwing:
+                output.append(CustomObjcParameter(
+                    name="error",
+                    annotation="",
+                    type_decl="NSError* _Nullable * _Nonnull"
+                ))
+            return output
+
+        @property
+        def _swift_name(self) -> str:
+            name = Identifier(self.decl.name).convert(self.config.identifier.method)
+            parameters = [f"{parameter.name}:" for parameter in self.parameters]
+            return f"{name}({''.join(parameters)})"
 
         @cached_property
         def type_decl(self) -> str: return type_decl(self.decl.return_type_ref)
@@ -287,11 +352,23 @@ class ObjcInterface(ObjcBaseClassType):
         def annotation(self) -> str:
             return annotation(self.decl.return_type_ref)
 
+        @property
+        def attributes(self):
+            output = super().attributes
+            if self.config.swift.rename_interfaces:
+                if self.decl.throwing :
+                    if self.decl.asynchronous:
+                        output.append("__attribute__((swift_async_error(nonnull_error)))")
+                    else:
+                        output.append("__attribute__((swift_error(nonnull_error)))")
+                output.append(f"NS_SWIFT_NAME({self._swift_name})")
+            return output
+
 
 class ObjcErrorDomain(ObjcBaseClassType):
     decl: ErrorDomain = Field(exclude=True, repr=False)
 
-    class ObjcErrorCode(ObjcBaseClassType):
+    class ObjcErrorCode(ObjcBaseCommentModel):
         @cached_property
         @validate(keywords)
         def name(self) -> str: return self.decl.name.convert(self.config.identifier.type)

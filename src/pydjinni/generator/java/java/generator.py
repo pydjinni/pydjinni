@@ -71,17 +71,17 @@ class JavaGenerator(Generator):
     writes_source = True
 
     def generate_enum(self, type_def: Enum):
-        self.write_source("enum.java.jinja2", type_def=type_def)
+        self.write_source("enum.jinja2.java", type_def=type_def)
 
     def generate_flags(self, type_def: Flags):
-        self.write_source("flags.java.jinja2", type_def=type_def)
+        self.write_source("flags.jinja2.java", type_def=type_def)
 
     def generate_record(self, type_def: Record):
-        self.write_source("record.java.jinja2", type_def=type_def)
+        self.write_source("record.jinja2.java", type_def=type_def)
 
     def generate_interface(self, type_def: Interface):
         self.write_source(
-            template="interface.java.jinja2",
+            template="interface.jinja2.java",
             type_def=type_def,
             native_lib_loader=NativeLibLoader(self.config),
             native_cleaner=NativeCleaner(self.config)
@@ -89,21 +89,21 @@ class JavaGenerator(Generator):
 
     def generate_function(self, type_def: Function):
         self.write_source(
-            template="function.java.jinja2",
+            template="function.jinja2.java",
             type_def=type_def,
             native_cleaner=NativeCleaner(self.config)
         )
 
     def generate_error_domain(self, type_def: ErrorDomain):
         self.write_source(
-            template="error_domain.java.jinja2",
+            template="error_domain.jinja2.java",
             type_def=type_def
         )
 
     def generate_loader(self):
         native_lib_loader = NativeLibLoader(self.config)
         self.write_source(
-            template="loader.java.jinja2",
+            template="loader.jinja2.java",
             filename=native_lib_loader.source,
             native_lib_loader=native_lib_loader
         )
@@ -112,7 +112,7 @@ class JavaGenerator(Generator):
         package = '.'.join(self.config.package + self.config.support_types_package)
         package_path = Path("/".join(package.split(".")))
         self.write_source(
-            template="runnable.java.jinja2",
+            template="runnable.jinja2.java",
             filename=package_path / f"NativeRunnable.java",
             package=package,
             native_cleaner=NativeCleaner(self.config)
@@ -122,7 +122,7 @@ class JavaGenerator(Generator):
         package = '.'.join(self.config.package + self.config.support_types_package)
         package_path = Path("/".join(package.split(".")))
         self.write_source(
-            template="completion.java.jinja2",
+            template="completion.jinja2.java",
             filename=package_path / f"NativeCompletion.java",
             package=package,
             native_cleaner=NativeCleaner(self.config)
@@ -131,7 +131,7 @@ class JavaGenerator(Generator):
     def generate_cleaner(self):
         native_cleaner = NativeCleaner(self.config)
         self.write_source(
-            template="cleaner.java.jinja2",
+            template="cleaner.jinja2.java",
             filename=native_cleaner.source,
             native_cleaner=native_cleaner
         )

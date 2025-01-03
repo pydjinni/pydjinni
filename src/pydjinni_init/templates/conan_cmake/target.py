@@ -48,3 +48,4 @@ class ConanCMakeTarget(TemplateTarget):
         Path(pydjinni.__path__[0]) / "cmake" / "modules" / "FindPyDjinni.cmake":
             Path("cmake") / "modules" / "FindPyDjinni.cmake"
     }
+    template_line_statement_prefix = "#>"

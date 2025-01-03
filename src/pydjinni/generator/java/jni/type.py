@@ -156,8 +156,20 @@ class JniBaseType(BaseModel):
     @cached_property
     def name(self) -> str: return self.decl.name.convert(self.config.identifier.class_name)
 
-    @cached_property
-    def includes(self) -> list[str]: return headers(self.decl.dependencies, "jni")
+    @property
+    def header_includes(self) -> set[str]:
+        output = {
+            quote(Path("pydjinni/jni/support.hpp")),
+            quote(self.decl.cpp.header)
+        }
+        if self.decl.deprecated:
+            output.add(quote(Path("pydjinni/deprecated.hpp")))
+        return output
+
+    @property
+    def source_includes(self) -> set[str]:
+        output = { quote(self.header), quote(Path("pydjinni/jni/marshal.hpp")) }
+        return output | headers(self.decl.dependencies, "jni")
 
     @cached_property
     def jni_prefix(self) -> str: return jni_prefix(self.decl.java.package.split('.') + [self.name])
@@ -169,6 +181,10 @@ class JniBaseType(BaseModel):
 
     @cached_property
     def class_descriptor(self) -> str: return '/'.join(self.decl.java.package.split('.') + [self.name])
+
+    @property
+    def deprecated(self) -> str:
+        return "[[deprecated]] " if self.decl.deprecated else ""
 
 
 class JniFunction(JniBaseType):
@@ -193,6 +209,9 @@ class JniFunction(JniBaseType):
     @cached_property
     def return_type_translator(self) -> str: return translator(self.decl.return_type_ref)
 
+    @property
+    def source_includes(self) -> set[str]: return super().source_includes | {"<memory>"}
+
 
 class JniBaseField(BaseModel):
     decl: BaseField = Field(exclude=True, repr=False)
@@ -212,17 +231,27 @@ class JniSymbolicConstantField(JniBaseField):
 class JniInterface(JniBaseType):
 
     @cached_property
-    def includes(self) -> list[str]:
-        dependency_headers = super().includes
+    def header_includes(self) -> set[str]:
+        dependency_headers = super().header_includes
         if any(method.asynchronous for method in self.decl.methods):
-            dependency_headers.append(quote(Path("pydjinni/coroutine/task.hpp")))
-            dependency_headers.append(quote(Path("pydjinni/coroutine/schedule.hpp")))
+            dependency_headers.update([
+                quote(Path("pydjinni/coroutine/task.hpp")),
+                quote(Path("pydjinni/coroutine/schedule.hpp"))
+            ])
             if "java" in self.decl.targets:
-                dependency_headers.append(quote(Path("pydjinni/coroutine/callback_awaitable.hpp")))
-                dependency_headers.append(quote(Path("pydjinni/coroutine/completion.hpp")))
-                dependency_headers.append(quote(Path("pydjinni/jni/support.hpp")))
-
+                dependency_headers.update([
+                    quote(Path("pydjinni/coroutine/callback_awaitable.hpp")),
+                    quote(Path("pydjinni/coroutine/completion.hpp")),
+                    quote(Path("pydjinni/jni/support.hpp"))
+                ])
         return dependency_headers
+
+    @property
+    def source_includes(self) -> set[str]:
+        output = super().source_includes
+        if any(method.deprecated for method in self.decl.methods):
+            output.add(quote(Path("pydjinni/deprecated.hpp")))
+        return output
 
     class JniMethod(JniBaseField):
         decl: Interface.Method = Field(exclude=True, repr=False)
@@ -260,7 +289,18 @@ class JniParameter(JniBaseField):
 
 
 class JniRecord(JniBaseType):
-    pass
+    @property
+    def header_includes(self) -> set[str]: return {
+        quote(Path("pydjinni/jni/support.hpp")),
+        quote(self.decl.cpp.derived_header) if self.decl.cpp.base_type else quote(self.decl.cpp.header)
+    }
+
+    @property
+    def source_includes(self) -> set[str]:
+        output = super().source_includes
+        if any(field.deprecated for field in self.decl.fields):
+            output.add(quote(Path("pydjinni/deprecated.hpp")))
+        return output
 
 class JniDataField(JniBaseField):
     @cached_property

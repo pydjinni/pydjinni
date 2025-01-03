@@ -81,11 +81,45 @@ class TemplateTarget(ABC):
         """
         pass
 
+    @property
+    def template_line_statement_prefix(self) -> str: return "//>"
+
+    @property
+    def template_line_comment_prefix(self) -> str: return "///"
+
+    @property
+    def template_variable_start_string(self) -> str: return "{{"
+
+    @property
+    def template_variable_end_string(self) -> str: return "}}"
+
+    @property
+    def template_block_start_string(self) -> str: return "/*>"
+
+    @property
+    def template_block_end_string(self) -> str: return "*/"
+
+    @property
+    def template_comment_start_string(self) -> str: return "/*#"
+
+    @property
+    def template_comment_end_string(self) -> str: return "*/"
+
     def __init__(self):
         self._template_directory = Path(inspect.getfile(self.__class__)).parent / "template"
         self._jinja_env = Environment(
             loader=FileSystemLoader(self._template_directory),
-            keep_trailing_newline=True
+            trim_blocks=True,
+            lstrip_blocks=True,
+            keep_trailing_newline=True,
+            line_statement_prefix=self.template_line_statement_prefix,
+            line_comment_prefix=self.template_line_comment_prefix,
+            variable_start_string=self.template_variable_start_string,
+            variable_end_string=self.template_variable_end_string,
+            block_start_string=self.template_block_start_string,
+            block_end_string=self.template_block_end_string,
+            comment_start_string=self.template_comment_start_string,
+            comment_end_string=self.template_comment_end_string
         )
 
     def template(self, output_dir: Path, platforms: list[str], parameters: dict[str, str]):

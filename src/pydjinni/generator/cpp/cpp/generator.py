@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from pathlib import Path
 
 from pydjinni.generator.filters import headers, quote
 from pydjinni.generator.generator import Generator
@@ -27,7 +28,8 @@ from pydjinni.parser.base_models import (
     BaseType,
     BaseField,
     DataField,
-    SymbolicConstantField
+    SymbolicConstantField,
+    SymbolicConstantType
 )
 from .config import CppConfig
 from .external_types import external_types
@@ -39,10 +41,12 @@ from .type import (
     CppRecord,
     CppFunction,
     CppBaseField,
-    CppSymbolicConstantField,
     CppParameter,
     CppDataField,
-    CppErrorDomain
+    CppErrorDomain,
+    CppEnum,
+    CppFlags,
+    CppSymbolicConstantType
 )
 
 
@@ -59,7 +63,9 @@ class CppGenerator(Generator):
         DataField: CppDataField,
         Function: CppFunction,
         BaseField: CppBaseField,
-        SymbolicConstantField: CppSymbolicConstantField,
+        Enum: CppEnum,
+        Flags: CppFlags,
+        SymbolicConstantField: CppSymbolicConstantType.CppSymbolicConstantField,
         Parameter: CppParameter,
         ErrorDomain: CppErrorDomain,
         ErrorDomain.ErrorCode: CppErrorDomain.CppErrorCode
@@ -69,28 +75,29 @@ class CppGenerator(Generator):
     filters = [quote, headers, needs_optional]
 
     def generate_enum(self, type_def: Enum):
-        self.write_header("header/enum.hpp.jinja2", type_def=type_def)
+        self.write_header(Path("header/enum.jinja2.hpp"), type_def=type_def)
         if self.config.string_serialization_for_enums:
-            self.write_source("source/enum.cpp.jinja2", type_def=type_def)
+            self.write_source(Path("source/enum.jinja2.cpp"), type_def=type_def)
+
+    def generate_error_domain(self, type_def: ErrorDomain):
+        self.write_header(Path("header/error_domain.jinja2.hpp"), type_def=type_def)
 
     def generate_flags(self, type_def: Flags):
-        self.write_header("header/flags.hpp.jinja2", type_def=type_def)
+        self.write_header(Path("header/flags.jinja2.hpp"), type_def=type_def)
         if self.config.string_serialization_for_enums:
-            self.write_source("source/flags.cpp.jinja2", type_def=type_def)
+            self.write_source(Path("source/flags.jinja2.cpp"), type_def=type_def)
 
     def generate_record(self, type_def: Record):
-        self.write_header("header/record.hpp.jinja2", type_def=type_def)
+        self.write_header(Path("header/record.jinja2.hpp"), type_def=type_def)
         if (Record.Deriving.eq in type_def.deriving
                 or Record.Deriving.ord in type_def.deriving
                 or Record.Deriving.str in type_def.deriving
                 and type_def.fields):
-            self.write_source("source/record.cpp.jinja2", type_def=type_def)
+            self.write_source(Path("source/record.jinja2.cpp"), type_def=type_def)
 
     def generate_interface(self, type_def: Interface):
-        self.write_header("header/interface.hpp.jinja2", type_def=type_def)
+        self.write_header(Path("header/interface.jinja2.hpp"), type_def=type_def)
 
     def generate_function(self, type_def: Function):
-        self.write_header("header/function.hpp.jinja2", type_def=type_def)
+        self.write_header(Path("header/function.jinja2.hpp"), type_def=type_def)
 
-    def generate_error_domain(self, type_def: ErrorDomain):
-        self.write_header("header/error_domain.hpp.jinja2", type_def=type_def)

@@ -22,9 +22,21 @@ from pydjinni.generator.cpp.cpp.config import CppConfig
 from pydjinni.generator.cpp.cpp.keywords import keywords
 from pydjinni.generator.filters import headers, quote
 from pydjinni.generator.validator import validate
-from pydjinni.parser.ast import Parameter, Record, Interface, Function
-from pydjinni.parser.base_models import BaseType, BaseField, TypeReference, BaseExternalType, DataField
+from pydjinni.parser.ast import Parameter, Record, Interface, Function, Enum, ErrorDomain, Flags
+from pydjinni.parser.base_models import (
+    BaseType,
+    BaseField,
+    TypeReference,
+    BaseExternalType,
+    DataField,
+    SymbolicConstantType,
+    BaseCommentModel
+)
 from pydjinni.parser.identifier import IdentifierType as Identifier
+
+
+def append_if(lst: list, item, condition) -> list:
+    return lst + ([item] if condition else [])
 
 
 class CppExternalType(BaseModel):
@@ -56,8 +68,25 @@ def type_specifier(type_ref: TypeReference, is_parameter: bool = False):
             output = f"std::optional<{output}>"
     return f"const {output} &" if is_parameter and not type_ref.type_def.cpp.by_value else output
 
+def deprecated(decl: BaseCommentModel, prefix: str = "", postfix: str = ""):
+    message = ""
+    if isinstance(decl.deprecated, str):
+        message = '("' + decl.deprecated.replace('\n', r'\n').replace('"', r'\"') + '")'
+    return f"{prefix}[[deprecated{message}]]{postfix}" if decl.deprecated else ""
 
-class CppBaseType(BaseModel):
+class CppBaseCommentModel(BaseModel):
+    decl: BaseCommentModel = Field(exclude=True, repr=False)
+    config: CppConfig = Field(exclude=True, repr=False)
+
+    @cached_property
+    def comment(self):
+        return DoxygenCommentRenderer(self.config.identifier).render_tokens(*self.decl.parsed_comment).strip()
+
+    @property
+    def deprecated(self): return deprecated(self.decl, postfix=" ")
+
+
+class CppBaseType(CppBaseCommentModel):
     decl: BaseType = Field(exclude=True, repr=False)
     config: CppConfig = Field(exclude=True, repr=False)
 
@@ -91,29 +120,29 @@ class CppBaseType(BaseModel):
         return Path(
             *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.source_extension}"
 
-    @cached_property
-    def comment(self):
-        return DoxygenCommentRenderer(self.config.identifier).render_tokens(*self.decl.parsed_comment).strip() \
-            if self.decl.comment else ''
-
     @computed_field
     @cached_property
     def by_value(self) -> bool:
         return True
 
-    @cached_property
+    @property
     def proxy(self):
         return False
 
-    @cached_property
-    def includes(self):
+    @property
+    def header_includes(self) -> set[str]:
         dependency_headers = headers(self.decl.dependencies, 'cpp')
         if any(dependency.optional for dependency in self.decl.dependencies):
-            dependency_headers.append("<optional>")
+            dependency_headers.add("<optional>")
         return dependency_headers
 
+    @property
+    def source_includes(self) -> set[str]: return {
+        quote(self.header)
+    }
 
-class CppBaseField(BaseModel):
+
+class CppBaseField(CppBaseCommentModel):
     decl: BaseField = Field(exclude=True, repr=False)
     config: CppConfig = Field(exclude=True, repr=False)
 
@@ -122,10 +151,9 @@ class CppBaseField(BaseModel):
     @validate(keywords)
     def name(self) -> str: return self.decl.name.convert(self.config.identifier.field)
 
-    @cached_property
-    def comment(self):
-        return DoxygenCommentRenderer(self.config.identifier).render_tokens(*self.decl.parsed_comment).strip() \
-            if self.decl.comment else ''
+    @property
+    def deprecated(self): return deprecated(self.decl, prefix=" ")
+
 
 
 class CppInterface(CppBaseType):
@@ -139,10 +167,10 @@ class CppInterface(CppBaseType):
     def by_value(self) -> bool: return False
 
     @cached_property
-    def includes(self):
-        dependency_headers = super().includes
+    def header_includes(self) -> set[str]:
+        dependency_headers = super().header_includes | {"<memory>"}
         if any(method.asynchronous for method in self.decl.methods):
-            dependency_headers = dependency_headers + [quote(Path("pydjinni/coroutine/task.hpp"))]
+            dependency_headers.add(quote(Path("pydjinni/coroutine/task.hpp")))
         return dependency_headers
 
     class CppMethod(CppBaseField):
@@ -163,11 +191,66 @@ class CppInterface(CppBaseType):
         def callback_type_spec(self):
             return type_specifier(self.decl.return_type_ref, is_parameter=True)
 
-        @cached_property
-        def attribute(self): return "static" if self.decl.static else "virtual"
+        def prefix_specifiers(self, implementation: bool = False) -> str:
+            specifiers = ""
+            if self.decl.return_type_ref is not None and self.decl.const:
+                specifiers += "[[nodiscard]] "
+            if self.decl.static:
+                specifiers += "static "
+            elif not implementation:
+                specifiers += "virtual "
+            return specifiers
 
+
+        def postfix_specifiers(self, implementation: bool = False) -> str:
+            specifiers = ""
+            if self.decl.const:
+                specifiers += " const"
+            if self.decl.throwing is None:
+                specifiers += " noexcept"
+            if not self.decl.static and not implementation:
+                specifiers += " = 0"
+            return specifiers
+
+        @property
+        def deprecated(self): return deprecated(self.decl, postfix=" ")
+
+
+class CppSymbolicConstantType(CppBaseType):
+    decl: SymbolicConstantType = Field(exclude=True, repr=False)
+
+    @property
+    def header_includes(self) -> set[str]:
+        output = super().header_includes
+        if self.config.string_serialization_for_enums:
+            output.add("<format>")
+        if self.decl.deprecated:
+            output.add(quote(Path("pydjinni/deprecated.hpp")))
+        return output
+
+    class CppSymbolicConstantField(CppBaseField):
+        @computed_field
         @cached_property
-        def noexcept(self) -> bool: return self.decl.throwing is None
+        @validate(keywords)
+        def name(self) -> str: return self.decl.name.convert(self.config.identifier.enum)
+
+class CppEnum(CppSymbolicConstantType):
+    decl: Enum = Field(exclude=True, repr=False)
+    @property
+    def source_includes(self) -> set[str]:
+        output = super().source_includes
+        if any(item.deprecated for item in self.decl.items):
+            output.add(quote(Path("pydjinni/deprecated.hpp")))
+        return output
+
+class CppFlags(CppSymbolicConstantType):
+    decl: Flags = Field(exclude=True, repr=False)
+    @property
+    def source_includes(self) -> set[str]:
+        output = super().source_includes
+        if any(flag.deprecated for flag in self.decl.flags):
+            output.add(quote(Path("pydjinni/deprecated.hpp")))
+        return output
 
 
 class CppRecord(CppBaseType):
@@ -224,6 +307,26 @@ class CppRecord(CppBaseType):
         return Path(
             *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}"
 
+    @property
+    def header_includes(self) -> set[str]:
+        includes = super().header_includes | { "<algorithm>" }
+        if Record.Deriving.str in self.decl.deriving:
+            includes.add("<format>")
+        if self.decl.deprecated or any(field.deprecated for field in self.decl.fields):
+            includes.add(quote(Path("pydjinni/deprecated.hpp")))
+        return includes
+
+    @property
+    def source_includes(self) -> set[str]:
+        includes = super().source_includes
+        if Record.Deriving.str in self.decl.deriving:
+            includes.add("<string>")
+        return includes
+
+    @property
+    def constructor_comment(self):
+        return '\n'.join([f"@param {field.cpp.name} {field.cpp.comment}" for field in self.decl.fields if field.comment is not None])
+
 class CppDataField(CppBaseField):
     decl: DataField = Field(exclude=True, repr=False)
 
@@ -250,18 +353,11 @@ class CppFunction(CppBaseType):
     def type_spec(self): return type_specifier(self.decl.return_type_ref)
 
     @cached_property
-    def includes(self):
-        return super().includes + [Path("<functional>")]
+    def header_includes(self) -> set[str]:
+        return super().header_includes | { "<functional>" }
 
     @cached_property
     def noexcept(self) -> bool: return self.decl.throwing is None
-
-
-class CppSymbolicConstantField(CppBaseField):
-    @computed_field
-    @cached_property
-    @validate(keywords)
-    def name(self) -> str: return self.decl.name.convert(self.config.identifier.enum)
 
 
 class CppParameter(CppBaseField):
@@ -270,11 +366,23 @@ class CppParameter(CppBaseField):
     @cached_property
     def type_spec(self): return type_specifier(self.decl.type_ref, is_parameter=True)
 
+
 class CppErrorDomain(CppBaseType):
+    decl: ErrorDomain = Field(exclude=True, repr=False)
+
     @computed_field
     @cached_property
     def by_value(self) -> bool:
         return False
 
+    @property
+    def header_includes(self) -> set[str]:
+        includes = super().header_includes | { "<exception>", "<string>", "<utility>" }
+        if any(error_code.deprecated for error_code in self.decl.error_codes):
+            includes.add(quote(Path("pydjinni/deprecated.hpp")))
+        return includes
+
     class CppErrorCode(CppBaseType):
-        pass
+        @property
+        def constructor_comment(self):
+            return '\n'.join([f"@param {parameter.cpp.name} {parameter.cpp.comment}" for parameter in self.decl.parameters])

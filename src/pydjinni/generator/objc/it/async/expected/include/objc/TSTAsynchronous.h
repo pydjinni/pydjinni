@@ -5,26 +5,20 @@
 #import "TSTMultiplyCallback.h"
 #import "TSTNoParametersNoReturnCallback.h"
 #import "TSTThrowingCallback.h"
-
 NS_SWIFT_NAME(Asynchronous)
 @interface TSTAsynchronous : NSObject
 + (void)getInstance:(nonnull void (^)(TSTAsynchronous * _Nullable))completion
   NS_SWIFT_NAME(getInstance(completion:));
-- (void)add:(int32_t)a
-             b:(int32_t)b
-    completion:(nonnull void (^)(int32_t ))completion
+- (void)add:(int32_t)a b:(int32_t)b completion:(nonnull void (^)(int32_t ))completion
   NS_SWIFT_NAME(add(a:b:completion:));
 - (void)noParametersNoReturn:(nonnull void (^)(void ))completion
   NS_SWIFT_NAME(noParametersNoReturn(completion:));
 - (void)throwingException:(nonnull void (^)(void ))completion
   NS_SWIFT_NAME(throwingException(completion:));
-- (void)multiplyCallback:(nullable id<TSTMultiplyCallback>)callback
-                 completion:(nonnull void (^)(int32_t ))completion
+- (void)multiplyCallback:(nullable id<TSTMultiplyCallback>)callback completion:(nonnull void (^)(int32_t ))completion
   NS_SWIFT_NAME(multiplyCallback(callback:completion:));
-- (void)noParametersNoReturnCallback:(nullable id<TSTNoParametersNoReturnCallback>)callback
-                          completion:(nonnull void (^)(void ))completion
+- (void)noParametersNoReturnCallback:(nullable id<TSTNoParametersNoReturnCallback>)callback completion:(nonnull void (^)(void ))completion
   NS_SWIFT_NAME(noParametersNoReturnCallback(callback:completion:));
-- (void)throwingCallback:(nullable id<TSTThrowingCallback>)callback
-              completion:(nonnull void (^)(void ))completion
+- (void)throwingCallback:(nullable id<TSTThrowingCallback>)callback completion:(nonnull void (^)(void ))completion
   NS_SWIFT_NAME(throwingCallback(callback:completion:));
 @end

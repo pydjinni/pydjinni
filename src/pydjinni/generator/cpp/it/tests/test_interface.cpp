@@ -67,7 +67,7 @@ TEST_CASE("Cpp.InterfaceTest") {
         }
         WHEN("calling the `throwing_callback` method") {
             struct ThrowingCallbackImpl : public ::test::interface_test::ThrowingCallback {
-                void invoke() override {
+                void invoke() const override {
                     throw std::runtime_error("exception from callback");
                 }
             };
