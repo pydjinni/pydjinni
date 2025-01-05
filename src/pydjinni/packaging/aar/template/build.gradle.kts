@@ -1,11 +1,11 @@
 plugins {
-    id("com.android.library") version "8.1.1"
+    id("com.android.library") version "8.1.4"
     id("maven-publish")
 }
 
 android {
     namespace = "{{ config.aar.publish.group_id }}.{{ config.aar.publish.artifact_id }}"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 24
