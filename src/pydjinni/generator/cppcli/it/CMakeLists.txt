@@ -65,7 +65,7 @@ function(cppcli_test_case TEST_CASE_NAME)
 
     set_target_properties(${CS_TARGET_NAME}  PROPERTIES
         VS_DOTNET_REFERENCES "System;System.Core"
-        VS_PACKAGE_REFERENCES "nunit_4.2.2;NUnit3TestAdapter_4.6.0;Microsoft.NET.Test.Sdk_17.12.0"
+        VS_PACKAGE_REFERENCES "nunit_4.3.2;NUnit3TestAdapter_4.6.0;Microsoft.NET.Test.Sdk_17.12.0"
         FOLDER "it/${TEST_CASE_NAME}"
     )
 

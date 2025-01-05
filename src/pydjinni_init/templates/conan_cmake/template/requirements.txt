@@ -1,2 +1,2 @@
-conan==2.9.3
+conan==2.11.0
 pydjinni=={{ pydjinni_version }}
