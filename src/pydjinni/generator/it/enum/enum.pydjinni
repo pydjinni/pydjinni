@@ -4,6 +4,24 @@ example_enum = enum {
     c;
 }
 
+# this is a multiline comment
+enum_with_comments = enum {
+    # first value
+    first;
+    # second value
+    second;
+}
+
+# @deprecated this enum is old
+deprecated_enum = enum {
+    first;
+}
+
+deprecated_enum_item = enum {
+    # @deprecated this enum item is outdated
+    outdated;
+}
+
 helper = main interface +cpp {
     static get_enum(example_enum: example_enum) -> example_enum;
 }

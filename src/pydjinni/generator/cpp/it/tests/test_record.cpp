@@ -15,7 +15,7 @@
 #include "catch2/catch_test_macros.hpp"
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include "helper.hpp"
-#include <sstream>
+#include <format>
 
 TEST_CASE("Cpp.RecordTest") {
     #ifdef _WIN32
@@ -28,7 +28,7 @@ TEST_CASE("Cpp.RecordTest") {
     #endif
     GIVEN("a PrimitiveTypes record instance") {
         const auto record = test::record::PrimitiveTypes(
-                true, 8, 16, 32, 64, 32.32, 64.64,
+                true, 8, 16, 32, 64, 32.32f, 64.64,
                 "test string",
                 std::chrono::time_point<std::chrono::system_clock>(std::chrono::seconds(1688213309))
         );
@@ -52,11 +52,9 @@ TEST_CASE("Cpp.RecordTest") {
             }
         }
         WHEN("streaming the type to ostream") {
-            std::stringstream ss;
-            ss << record;
-            const auto result = ss.str();
+            const auto result = std::format("{}", record);
             THEN("a string representation of the type should be returned") {
-                REQUIRE(result == "::test::record::PrimitiveTypes(boolean_t=1, byte_t=8, short_t=16, int_t=32, long_t=64, float_t=32.320000, double_t=64.640000, string_t=test string, date_t=2023-07-01T12:08:29+0000)");
+                REQUIRE_THAT(result, Catch::Matchers::Matches(R"(::test::record::PrimitiveTypes\(boolean_t=true, byte_t=8, short_t=16, int_t=32, long_t=64, float_t=32.32, double_t=64.64, string_t=test string, date_t=2023-07-01 12:08:29.0*\))"));
             }
         }
     }
@@ -100,11 +98,13 @@ TEST_CASE("Cpp.RecordTest") {
             }
         }
         WHEN("streaming the type to ostream") {
-            std::stringstream ss;
-            ss << record;
-            const auto result = ss.str();
+            const auto result = std::format("{}", record);;
             THEN("a string representation of the type should be returned") {
-                REQUIRE_THAT(result, Catch::Matchers::Matches(R"(::test::record::CollectionTypes\(int_list=\[0,1\], string_list=\[foo,bar\], int_set=\[[10],[10]\], string_set=\[(foo|bar),(foo|bar)\], int_int_map=\{0:1\}, string_string_map=\{foo:bar\}\))"));
+                #ifdef __cpp_lib_format_ranges
+                REQUIRE_THAT(result, Catch::Matchers::Matches(R"(::test::record::CollectionTypes\(int_list=\[0, 1\], string_list=\[\"foo\", \"bar\"\], int_set=\{[10], [10]\}, string_set=\{\"(foo|bar)\", \"(foo|bar)\"\}, int_int_map=\{0: 1\}, string_string_map=\{\"foo\": \"bar\"\}\))"));
+                #else
+                REQUIRE(result == "::test::record::CollectionTypes(int_list={?}, string_list={?}, int_set={?}, string_set={?}, int_int_map={?}, string_string_map={?})");
+                #endif
             }
         }
     }
@@ -123,9 +123,7 @@ TEST_CASE("Cpp.RecordTest") {
             }
         }
         WHEN("streaming the type to ostream") {
-            std::stringstream ss;
-            ss << record;
-            const auto result = ss.str();
+            const auto result = std::format("{}", record);;
             THEN("a string representation of the type should be returned") {
                 REQUIRE(result == "::test::record::OptionalTypes(int_optional=42, string_optional=optional)");
             }
@@ -151,11 +149,13 @@ TEST_CASE("Cpp.RecordTest") {
             }
         }
         WHEN("streaming the type to ostream") {
-            std::stringstream ss;
-            ss << record;
-            const auto result = ss.str();
+            const auto result = std::format("{}", record);;
             THEN("a string representation of the type should be returned") {
-                REQUIRE(result == "::test::record::ParentType(nested=::test::record::NestedType(a=42, b=[[1,2],[3,4]]))");
+                #ifdef __cpp_lib_format_ranges
+                REQUIRE(result == "::test::record::ParentType(nested=::test::record::NestedType(a=42, b=[[1, 2], [3, 4]]))");
+                #else
+                REQUIRE(result == "::test::record::ParentType(nested=::test::record::NestedType(a=42, b={?}))");
+                #endif
             }
         }
     }

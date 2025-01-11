@@ -66,26 +66,29 @@ class ObjcGenerator(Generator):
     writes_header = True
     writes_source = True
     filters = [quote, headers]
+    comment_start_string = None
+    comment_end_string = None
+    comment_line_prefix = "/// "
 
     def generate_enum(self, type_def: Enum):
-        self.write_header("header/enum.h.jinja2", type_def=type_def)
+        self.write_header("header/enum.jinja2.h", type_def=type_def)
 
     def generate_flags(self, type_def: Flags):
-        self.write_header("header/flags.h.jinja2", type_def=type_def)
+        self.write_header("header/flags.jinja2.h", type_def=type_def)
 
     def generate_record(self, type_def: Record):
-        self.write_header("header/record.h.jinja2", type_def=type_def)
-        self.write_source("source/record.m.jinja2", type_def=type_def)
+        self.write_header("header/record.jinja2.h", type_def=type_def)
+        self.write_source("source/record.jinja2.m", type_def=type_def)
 
     def generate_interface(self, type_def: Interface):
-        self.write_header("header/interface.h.jinja2", type_def=type_def)
+        self.write_header("header/interface.jinja2.h", type_def=type_def)
 
     def generate_function(self, type_def: Function):
-        self.write_header("header/function.h.jinja2", type_def=type_def)
+        self.write_header("header/function.jinja2.h", type_def=type_def)
 
     def generate_error_domain(self, type_def: ErrorDomain):
-        self.write_header("header/error_domain.h.jinja2", type_def=type_def)
-        self.write_source("source/error_domain.m.jinja2", type_def=type_def)
+        self.write_header("header/error_domain.jinja2.h", type_def=type_def)
+        self.write_source("source/error_domain.jinja2.m", type_def=type_def)
 
     def generate_bridging_header(self, ast: list[BaseType]):
         if self.config.swift.bridging_header:

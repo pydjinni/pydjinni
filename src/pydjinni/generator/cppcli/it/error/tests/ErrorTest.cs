@@ -72,6 +72,7 @@ namespace Testing.Unit.Error
 
             public override async Task ThrowingError()
             {
+                await Task.Delay(1);
                 callbackInvoked = true;
                 throw new FooError.SomethingWrong("some async callback error");
             }

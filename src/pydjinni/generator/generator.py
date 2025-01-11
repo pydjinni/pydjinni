@@ -36,7 +36,6 @@ ConfigModel = TypeVar("ConfigModel", bound=BaseModel)
 ExternalTypeModel = TypeVar("ExternalTypeModel", bound=BaseModel)
 MetadataModel = TypeVar("MetadataModel", bound=BaseModel)
 
-
 class Generator(ABC):
     """
     Abstract class for defining generators. Each generator can utilize one or more Marshal classes, specified as
@@ -71,6 +70,61 @@ class Generator(ABC):
         of the  JSON-Schema for the configuration file.
         """
         pass
+
+    @property
+    def template_line_statement_prefix(self) -> str: return "//>"
+
+    @property
+    def template_line_comment_prefix(self) -> str: return "///"
+
+    @property
+    def template_variable_start_string(self) -> str: return "{{"
+
+    @property
+    def template_variable_end_string(self) -> str: return "}}"
+
+    @property
+    def template_block_start_string(self) -> str: return "/*>"
+
+    @property
+    def template_block_end_string(self) -> str: return "*/"
+
+    @property
+    def template_comment_start_string(self) -> str: return "/*#"
+
+    @property
+    def template_comment_end_string(self) -> str: return "*/"
+
+    @property
+    def template_optional_variable_prefix(self) -> str: return "//?"
+
+    @property
+    def comment_start_string(self) -> str: return "/**"
+
+    @property
+    def comment_end_string(self) -> str: return " */"
+
+    @property
+    def comment_line_prefix(self) -> str: return " * "
+
+    def template_preprocessing(self, template: Path) -> str:
+        def _template_optional_variable_pattern() -> str:
+            escaped_prefix = re.escape(self.template_optional_variable_prefix)
+            return r"^( *)" + escaped_prefix + r"(.*?):(.*)$"
+
+        def _template_preprocessor_optional_variables(match):
+            return (
+                f"{match.group(1)}{self.template_line_statement_prefix} if{match.group(2)}\n"
+                f"{match.group(1)}{self.template_variable_start_string}{match.group(3)}{self.template_variable_end_string}\n"
+                f"{match.group(1)}{self.template_line_statement_prefix} endif"
+            )
+        template_content = (self._generator_directory / "templates" / template).read_text()
+        return re.sub(
+            pattern=_template_optional_variable_pattern(),
+            repl=_template_preprocessor_optional_variables,
+            string=template_content,
+            flags=re.MULTILINE
+        )
 
     @property
     def external_type_model(self) -> type[ExternalTypeModel] | None:
@@ -158,6 +212,7 @@ class Generator(ABC):
         """
         return []
 
+
     def __init__(
             self,
             file_writer: FileReaderWriter,
@@ -172,8 +227,43 @@ class Generator(ABC):
         self._jinja_env = Environment(
             loader=FileSystemLoader(self._generator_directory / "templates"),
             trim_blocks=True, lstrip_blocks=True,
-            keep_trailing_newline=True
+            keep_trailing_newline=True,
+            line_statement_prefix=self.template_line_statement_prefix,
+            line_comment_prefix=self.template_line_comment_prefix,
+            variable_start_string=self.template_variable_start_string,
+            variable_end_string=self.template_variable_end_string,
+            block_start_string=self.template_block_start_string,
+            block_end_string=self.template_block_end_string,
+            comment_start_string=self.template_comment_start_string,
+            comment_end_string=self.template_comment_end_string,
         )
+
+        def comment_filter(content: str):
+            output = ""
+            if self.comment_start_string is not None:
+                output += f'{self.comment_start_string}\n'
+            output += self.comment_line_prefix
+            output += f'\n{self.comment_line_prefix}'.join(content.split('\n'))
+            if self.comment_end_string is not None:
+                output += f'\n{self.comment_end_string}'
+            return output
+
+        def concat_filter(items: list[str], prefix: str = "", postfix: str = ""):
+            output = ""
+            for item in items:
+                if prefix:
+                    output += prefix
+                output += item
+                if postfix:
+                    output += postfix
+            return output
+
+
+
+        self._jinja_env.filters['comment'] = comment_filter
+        self._jinja_env.filters['concat'] = concat_filter
+        self._jinja_env.filters['any'] = any
+        self._jinja_env.filters['all'] = all
         for filter_callable in self.filters:
             self._jinja_env.filters[filter_callable.__name__] = filter_callable
         for test_callable in self.tests:
@@ -228,7 +318,7 @@ class Generator(ABC):
         else:
             return out
 
-    def write_header(self, template: str, filename: Path = None, **kwargs):
+    def write_header(self, template: Path, filename: Path = None, **kwargs):
         """
         Method that must be used for any header file that is written by the generator.
 
@@ -242,14 +332,15 @@ class Generator(ABC):
         self._file_writer.write_header(
             key=self.key,
             filename=self.header_path / filename,
-            content=self._jinja_env.get_template(template).render(
+            content=self._jinja_env.from_string(self.template_preprocessing(template)).render(
                 config=self.config,
+                is_header=True,
                 metadata=self.metadata,
                 **kwargs
             )
         )
 
-    def write_source(self, template: str, filename: Path = None, **kwargs):
+    def write_source(self, template: Path, filename: Path = None, **kwargs):
         """
         Method that must be used for any source file that is written by the generator.
 
@@ -263,8 +354,9 @@ class Generator(ABC):
         self._file_writer.write_source(
             key=self.key,
             filename=self.source_path / filename,
-            content=self._jinja_env.get_template(template).render(
+            content=self._jinja_env.from_string(self.template_preprocessing(template)).render(
                 config=self.config,
+                is_header=False,
                 metadata=self.metadata,
                 **kwargs
             )

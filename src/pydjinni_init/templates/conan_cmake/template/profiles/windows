@@ -1,10 +1,10 @@
-{%- if "windows" in platforms -%}
+#> if "windows" in platforms:
 [settings]
 os=Windows
 compiler=msvc
 compiler.cppstd=14
 compiler.runtime=dynamic
-compiler.version=193
+compiler.version=194
 [conf]
 tools.cmake.cmaketoolchain:generator=Visual Studio 17 2022
-{%- endif %}
+#> endif

@@ -4,6 +4,8 @@ foo_error = error {
     # error code comment
     something_wrong;
     something_else_wrong();
+    # an error with parameters
+    # @param parameter is an important additional information
     something_with_parameters(parameter: i8);
 }
 

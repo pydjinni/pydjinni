@@ -11,7 +11,6 @@ public final class ParentType {
     }
 
     public test.record.NestedType getNested() { return nested; }
-
     @Override
     public String toString() {
         return "test.record.ParentType{" +

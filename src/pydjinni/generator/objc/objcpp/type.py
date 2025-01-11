@@ -19,9 +19,10 @@ from pydantic import BaseModel, Field, computed_field
 
 from pydjinni.config.types import IdentifierStyle
 from pydjinni.generator.filters import headers, quote
+from pydjinni.generator.objc.objcpp import external_types
 from pydjinni.generator.objc.objcpp.config import ObjcppConfig
-from pydjinni.parser.ast import Function, Interface
-from pydjinni.parser.base_models import BaseType, BaseField
+from pydjinni.parser.ast import Function, Interface, Record
+from pydjinni.parser.base_models import BaseType, BaseField, BaseCommentModel
 
 
 class ObjcppExternalType(BaseModel):
@@ -29,7 +30,19 @@ class ObjcppExternalType(BaseModel):
     header: Path
 
 
-class ObjcppBaseType(BaseModel):
+class ObjcBaseModel(BaseModel):
+    decl: BaseCommentModel = Field(exclude=True, repr=False)
+    config: ObjcppConfig = Field(exclude=True, repr=False)
+
+    @property
+    def attributes(self):
+        output = []
+        if self.decl.deprecated:
+            output.append("DEPRECATED_ATTRIBUTE")
+        return output
+
+
+class ObjcppBaseType(ObjcBaseModel):
     decl: BaseType = Field(exclude=True, repr=False)
     config: ObjcppConfig = Field(exclude=True, repr=False)
 
@@ -37,7 +50,7 @@ class ObjcppBaseType(BaseModel):
     def name(self): return self.decl.name.convert(IdentifierStyle.Case.pascal)
 
     @computed_field
-    @cached_property
+    @property
     def translator(self) -> str:
         output = f"::{self.name}"
         if self.namespace:
@@ -55,8 +68,26 @@ class ObjcppBaseType(BaseModel):
     def namespace(self): return '::'.join(self.config.namespace + [identifier.convert(IdentifierStyle.Case.pascal)
                                                                    for identifier in self.decl.namespace])
 
-    @cached_property
-    def includes(self): return headers(self.decl.dependencies, "objcpp")
+    @property
+    def header_includes(self) -> set[str]: return {
+        quote(self.decl.cpp.header)
+    }
+
+    @property
+    def header_imports(self) -> set[str]: return {
+        quote(self.decl.objc.header)
+    }
+
+    @property
+    def source_includes(self) -> set[str]:
+        return headers(self.decl.dependencies, "objcpp") | {
+            "<cassert>", quote(Path("pydjinni/objc/error.h"))
+        }
+
+    @property
+    def source_imports(self) -> set[str]: return {
+        quote(self.header)
+    }
 
 
 class ObjcppFunction(ObjcppBaseType):
@@ -70,17 +101,39 @@ class ObjcppInterface(ObjcppBaseType):
     decl: Interface = Field(exclude=True, repr=False)
 
     @cached_property
-    def includes(self):
-        dependency_headers = super().includes
+    def source_includes(self) -> set[str]:
+        dependency_headers = super().source_includes
+        dependency_headers.update([
+            "<memory>",
+            quote(Path("pydjinni/cpp_wrapper_cache.h")),
+            quote(Path("pydjinni/objc_wrapper_cache.h"))
+        ])
         if any(method.asynchronous for method in self.decl.methods):
-            dependency_headers.append(quote(Path("pydjinni/coroutine/task.hpp")))
-            dependency_headers.append(quote(Path("pydjinni/coroutine/schedule.h")))
+            dependency_headers.update([
+                quote(Path("pydjinni/coroutine/task.hpp")),
+                quote(Path("pydjinni/coroutine/schedule.h"))
+            ])
             if "objc" in self.decl.targets:
-                dependency_headers.append(quote(Path("pydjinni/coroutine/callback_awaitable.hpp")))
+                dependency_headers.add(quote(Path("pydjinni/coroutine/callback_awaitable.hpp")))
+        if any(method.deprecated for method in self.decl.methods):
+            dependency_headers.add(quote(Path("pydjinni/deprecated.hpp")))
         return dependency_headers
 
 
-class ObjcppBaseField(BaseModel):
+class ObjcppRecord(ObjcppBaseType):
+    decl: Record = Field(exclude=True, repr=False)
+
+    @property
+    def header_includes(self) -> set[str]: return {
+        quote(self.decl.cpp.derived_header) if self.decl.cpp.base_type else quote(self.decl.cpp.header)
+    }
+
+    @property
+    def header_imports(self) -> set[str]: return {
+        quote(self.decl.objc.derived_header) if self.decl.objc.base_type else quote(self.decl.objc.header)
+    }
+
+class ObjcppBaseField(ObjcBaseModel):
     decl: BaseField = Field(exclude=True, repr=False)
     config: ObjcppConfig = Field(exclude=True, repr=False)
 
@@ -93,3 +146,9 @@ class ObjcppSymbolicConstantField(ObjcppBaseField):
     @computed_field
     @cached_property
     def name(self) -> str: return self.decl.name.convert(IdentifierStyle.Case.pascal)
+
+class ObjcppErrorDomain(ObjcppBaseType):
+    @property
+    def source_includes(self) -> set[str]: return super().source_includes | {
+        quote(Path(external_types.external_types["string"].header))
+    }

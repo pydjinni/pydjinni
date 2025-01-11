@@ -3,11 +3,8 @@
 #pragma once
 #include "base_record.hpp"
 #include "pydjinni/cppcli/Marshal.hpp"
-
 namespace Test::Record::CppCli {
 ref class BaseRecord;
-
-[System::Serializable]
 public ref class BaseRecordBase abstract  {
 public:
     BaseRecordBase(int value);
@@ -25,4 +22,4 @@ internal:
 private:
     int _value;
 };
-}  // namespace Test::Record::CppCli
+} // namespace Test::Record::CppCli

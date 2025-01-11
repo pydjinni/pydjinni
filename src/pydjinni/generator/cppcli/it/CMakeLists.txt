@@ -52,8 +52,10 @@ function(cppcli_test_case TEST_CASE_NAME)
     set_target_properties(${CPPCLI_TARGET_NAME} PROPERTIES
         VS_DOTNET_REFERENCES "System;System.Core"
         COMMON_LANGUAGE_RUNTIME ""
+        CXX_STANDARD 20
         FOLDER "it/${TEST_CASE_NAME}"
     )
+    target_link_options(${CPPCLI_TARGET_NAME} PUBLIC "/INCREMENTAL:NO")
     target_link_libraries(${CPPCLI_TARGET_NAME} PUBLIC test::${TEST_CASE_NAME})
     add_library(test::cppcli::${TEST_CASE_NAME} ALIAS ${CPPCLI_TARGET_NAME})
 
@@ -63,7 +65,7 @@ function(cppcli_test_case TEST_CASE_NAME)
 
     set_target_properties(${CS_TARGET_NAME}  PROPERTIES
         VS_DOTNET_REFERENCES "System;System.Core"
-        VS_PACKAGE_REFERENCES "nunit_4.2.2;NUnit3TestAdapter_4.6.0;Microsoft.NET.Test.Sdk_17.12.0"
+        VS_PACKAGE_REFERENCES "nunit_4.3.2;NUnit3TestAdapter_4.6.0;Microsoft.NET.Test.Sdk_17.12.0"
         FOLDER "it/${TEST_CASE_NAME}"
     )
 

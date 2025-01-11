@@ -31,7 +31,6 @@ public final class CollectionTypes {
     public java.util.HashSet<String> getStringSet() { return stringSet; }
     public java.util.HashMap<Integer, Integer> getIntIntMap() { return intIntMap; }
     public java.util.HashMap<String, String> getStringStringMap() { return stringStringMap; }
-
     @Override
     public String toString() {
         return "test.record.CollectionTypes{" +

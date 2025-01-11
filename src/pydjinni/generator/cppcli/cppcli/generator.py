@@ -67,25 +67,25 @@ class CppCliGenerator(Generator):
     writes_source = True
 
     def generate_enum(self, type_def: Enum):
-        self.write_header("header/enum.hpp.jinja2", type_def=type_def)
-        self.write_source("source/placeholder.cpp.jinja2", type_def=type_def)
+        self.write_header("header/enum.jinja2.hpp", type_def=type_def)
+        self.write_source("source/placeholder.jinja2.cpp", type_def=type_def)
 
     def generate_flags(self, type_def: Flags):
-        self.write_header("header/flags.hpp.jinja2", type_def=type_def)
-        self.write_source("source/placeholder.cpp.jinja2", type_def=type_def)
+        self.write_header("header/flags.jinja2.hpp", type_def=type_def)
+        self.write_source("source/placeholder.jinja2.cpp", type_def=type_def)
 
     def generate_record(self, type_def: Record):
-        self.write_header("header/record.hpp.jinja2", type_def=type_def)
-        self.write_source("source/record.cpp.jinja2", type_def=type_def)
+        self.write_header("header/record.jinja2.hpp", type_def=type_def)
+        self.write_source("source/record.jinja2.cpp", type_def=type_def)
 
     def generate_interface(self, type_def: Interface):
-        self.write_header("header/interface.hpp.jinja2", type_def=type_def)
-        self.write_source("source/interface.cpp.jinja2", type_def=type_def)
+        self.write_header("header/interface.jinja2.hpp", type_def=type_def)
+        self.write_source("source/interface.jinja2.cpp", type_def=type_def)
 
     def generate_function(self, type_def: Function):
-        self.write_header("header/function.hpp.jinja2", type_def=type_def)
-        self.write_source("source/function.cpp.jinja2", type_def=type_def)
+        self.write_header("header/function.jinja2.hpp", type_def=type_def)
+        self.write_source("source/function.jinja2.cpp", type_def=type_def)
 
     def generate_error_domain(self, type_def: ErrorDomain):
-        self.write_header("header/error_domain.hpp.jinja2", type_def=type_def)
-        self.write_source("source/error_domain.cpp.jinja2", type_def=type_def)
+        self.write_header("header/error_domain.jinja2.hpp", type_def=type_def)
+        self.write_source("source/error_domain.jinja2.cpp", type_def=type_def)

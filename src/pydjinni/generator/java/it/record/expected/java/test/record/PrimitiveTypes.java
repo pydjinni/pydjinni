@@ -43,7 +43,6 @@ public final class PrimitiveTypes {
     public double getDoubleT() { return doubleT; }
     public String getStringT() { return stringT; }
     public java.time.Instant getDateT() { return dateT; }
-
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof PrimitiveTypes)) {
@@ -76,7 +75,6 @@ public final class PrimitiveTypes {
         hashCode = hashCode * 31 + dateT.hashCode();
         return hashCode;
     }
-
     @Override
     public String toString() {
         return "test.record.PrimitiveTypes{" +

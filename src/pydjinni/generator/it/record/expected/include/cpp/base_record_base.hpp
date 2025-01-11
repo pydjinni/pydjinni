@@ -8,9 +8,8 @@ namespace test::record {
 struct BaseRecord;
 struct BaseRecordBase {
     const int32_t value;
-    BaseRecordBase(int32_t value_)
-    : value(std::move(value_))
+    BaseRecordBase(int32_t value)
+    : value(std::move(value))
     {}
-
 };
-}  // namespace test::record
+} // namespace test::record

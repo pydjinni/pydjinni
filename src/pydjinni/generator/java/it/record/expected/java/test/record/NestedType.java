@@ -15,7 +15,6 @@ public final class NestedType {
 
     public int getA() { return a; }
     public java.util.ArrayList<java.util.ArrayList<Integer>> getB() { return b; }
-
     @Override
     public String toString() {
         return "test.record.NestedType{" +

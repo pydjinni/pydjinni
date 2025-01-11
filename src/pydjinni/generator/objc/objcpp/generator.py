@@ -18,13 +18,16 @@ from pydjinni.parser.ast import Interface, Record, Flags, Enum, Function, ErrorD
 from pydjinni.parser.base_models import BaseType, BaseField, SymbolicConstantField
 from .config import ObjcppConfig
 from .external_types import external_types
+from .filters import translator
 from .type import (
     ObjcppExternalType,
     ObjcppBaseType,
     ObjcppBaseField,
     ObjcppSymbolicConstantField,
     ObjcppFunction,
-    ObjcppInterface
+    ObjcppInterface,
+    ObjcppRecord,
+    ObjcppErrorDomain
 )
 
 
@@ -38,31 +41,33 @@ class ObjcppGenerator(Generator):
         BaseField: ObjcppBaseField,
         Function: ObjcppFunction,
         Interface: ObjcppInterface,
-        SymbolicConstantField: ObjcppSymbolicConstantField
+        SymbolicConstantField: ObjcppSymbolicConstantField,
+        Record: ObjcppRecord,
+        ErrorDomain: ObjcppErrorDomain
     }
     writes_header = True
     writes_source = True
     support_lib_commons = True
-    filters = [quote, headers]
+    filters = [quote, headers, translator]
 
     def generate_enum(self, type_def: Enum):
-        self.write_header("header/enum.h.jinja2", type_def=type_def)
+        self.write_header("header/enum.jinja2.h", type_def=type_def)
 
     def generate_flags(self, type_def: Flags):
-        self.write_header("header/enum.h.jinja2", type_def=type_def)
+        self.write_header("header/enum.jinja2.h", type_def=type_def)
 
     def generate_record(self, type_def: Record):
-        self.write_header("header/record.h.jinja2", type_def=type_def)
-        self.write_source("source/record.mm.jinja2", type_def=type_def)
+        self.write_header("header/record.jinja2.h", type_def=type_def)
+        self.write_source("source/record.jinja2.mm", type_def=type_def)
 
     def generate_interface(self, type_def: Interface):
-        self.write_header("header/interface.h.jinja2", type_def=type_def)
-        self.write_source("source/interface.mm.jinja2", type_def=type_def)
+        self.write_header("header/interface.jinja2.h", type_def=type_def)
+        self.write_source("source/interface.jinja2.mm", type_def=type_def)
 
     def generate_function(self, type_def: Function):
-        self.write_header("header/function.h.jinja2", type_def=type_def)
-        self.write_source("source/function.mm.jinja2", type_def=type_def)
+        self.write_header("header/function.jinja2.h", type_def=type_def)
+        self.write_source("source/function.jinja2.mm", type_def=type_def)
 
     def generate_error_domain(self, type_def: ErrorDomain):
-        self.write_header("header/error_domain.h.jinja2", type_def=type_def)
-        self.write_source("source/error_domain.mm.jinja2", type_def=type_def)
+        self.write_header("header/error_domain.jinja2.h", type_def=type_def)
+        self.write_source("source/error_domain.jinja2.mm", type_def=type_def)

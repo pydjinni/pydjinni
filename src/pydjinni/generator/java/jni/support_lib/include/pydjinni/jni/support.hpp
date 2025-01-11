@@ -145,14 +145,12 @@ void jniExceptionCheck(JNIEnv * env);
  * can replace it by defining your own version.  The default implementation
  * will throw a jni_exception containing the given jthrowable.
  */
-DJINNI_NORETURN_DEFINITION
-void jniThrowCppFromJavaException(JNIEnv * env, jthrowable java_exception);
+[[noreturn]] void jniThrowCppFromJavaException(JNIEnv * env, jthrowable java_exception);
 
 /*
  * Set an AssertionError in env with message message, and then throw via jniExceptionCheck.
  */
-DJINNI_NORETURN_DEFINITION
-void jniThrowAssertionError(JNIEnv * env, const char * file, int line, const char * check);
+[[noreturn]] void jniThrowAssertionError(JNIEnv * env, const char * file, int line, const char * check);
 
 #define DJINNI_ASSERT_MSG(check, env, message) \
     do { \
