@@ -29,17 +29,20 @@ void forkJoinPool(const pydjinni::coroutine::ContinuationRunner& runner) {
     jniEnv->CallVoidMethod(commonPool, executeMethod, NativeRunnable::fromCpp(jniEnv, runner).get());
 }
 
-CJNIEXPORT [[maybe_unused]] void JNICALL {{ jni_prefix }}_nativeRun(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef) {
+extern "C" {
+
+[[maybe_unused]] JNIEXPORT void JNICALL {{ jni_prefix }}_nativeRun(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef) noexcept {
     ::pydjinni::translate_exceptions(jniEnv, [&]() {
         ::pydjinni::objectFromHandleAddress<pydjinni::coroutine::ContinuationRunner>(nativeRef)->run();
     });
 }
 
-CJNIEXPORT [[maybe_unused]] void JNICALL {{ jni_prefix }}_00024CleanupTask_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef)
-{
+[[maybe_unused]] JNIEXPORT void JNICALL {{ jni_prefix }}_00024CleanupTask_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef) noexcept {
     ::pydjinni::translate_exceptions(jniEnv, [&](){
         delete reinterpret_cast<::pydjinni::CppProxyHandle<pydjinni::coroutine::ContinuationRunner>*>(nativeRef);
     });
+}
+
 }
 
 }

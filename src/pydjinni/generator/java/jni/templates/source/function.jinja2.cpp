@@ -70,18 +70,19 @@ limitations under the License.
 //> endif
 
 //> if 'cpp' in type_def.targets:
-CJNIEXPORT [[maybe_unused]] void JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_00024CleanupTask_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef)
-{
+extern "C" {
+
+[[maybe_unused]] JNIEXPORT void JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_00024CleanupTask_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef) noexcept {
     ::pydjinni::translate_exceptions(jniEnv, [&](){
         delete reinterpret_cast<::pydjinni::CppProxyHandle<{{ type_def.jni.wrapper }}>*>(nativeRef);
     });
 }
 
-CJNIEXPORT [[maybe_unused]] {{ type_def.jni.return_type_spec }} JNICALL {{ type_def.jni.jni_prefix }}CppProxy_nativeInvoke(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef
+[[maybe_unused]] JNIEXPORT {{ type_def.jni.return_type_spec }} JNICALL {{ type_def.jni.jni_prefix }}CppProxy_nativeInvoke(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef
     /*>- for parameter in type_def.parameters -*/
     , {{ parameter.type_ref.type_def.jni.typename.value }} {{ parameter.jni.name }}
     /*>- endfor -*/
-    ) {
+    ) noexcept {
     {{ "return" if type_def.return_type_ref }} ::pydjinni::translate_exceptions(jniEnv, [&](){
         const auto& ref = ::pydjinni::objectFromHandleAddress<{{ type_def.jni.wrapper }}>(nativeRef);
         {{ "auto r = " if type_def.return_type_ref }}ref->invoke(
@@ -95,5 +96,6 @@ CJNIEXPORT [[maybe_unused]] {{ type_def.jni.return_type_spec }} JNICALL {{ type_
     });
 }
 
+}
 //> endif
 //> endblock

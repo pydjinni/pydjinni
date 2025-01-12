@@ -32,9 +32,6 @@
  * Djinni support library
  */
 
-// jni.h should really put extern "C" in JNIEXPORT, but it doesn't. :(
-#define CJNIEXPORT extern "C" JNIEXPORT
-
 namespace pydjinni {
 
 /*

@@ -107,8 +107,9 @@ limitations under the License.
 //> endif
 
 //> if 'cpp' in type_def.targets:
-CJNIEXPORT [[maybe_unused]] void JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_00024CleanupTask_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef)
-{
+extern "C" {
+
+[[maybe_unused]] JNIEXPORT void JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_00024CleanupTask_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef) noexcept {
     ::pydjinni::translate_exceptions(jniEnv, [&](){
         //? type_def.deprecated : "PYDJINNI_DISABLE_DEPRECATED_WARNINGS"
         delete reinterpret_cast<::pydjinni::CppProxyHandle<{{ type_def.cpp.typename }}>*>(nativeRef);
@@ -117,11 +118,11 @@ CJNIEXPORT [[maybe_unused]] void JNICALL {{ type_def.jni.jni_prefix }}_00024CppP
 }
 
 //> for method in type_def.methods:
-CJNIEXPORT [[maybe_unused]] {{ method.jni.return_type_spec }} JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_{{ "native_1" if not method.static }}{{ method.jni.name }}(JNIEnv* jniEnv, {{ "jclass" if method.static else "jobject, jlong nativeRef" }}
+[[maybe_unused]] JNIEXPORT {{ method.jni.return_type_spec }} JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_{{ "native_1" if not method.static }}{{ method.jni.name }}(JNIEnv* jniEnv, {{ "jclass" if method.static else "jobject, jlong nativeRef" }}
     /*>- for parameter in method.parameters -*/
     , {{ parameter.type_ref.type_def.jni.typename.value }} {{ parameter.jni.name }}
     /*>- endfor -*/
-    ) {
+    ) noexcept {
     {{ "return " if method.return_type_ref or method.asynchronous }}::pydjinni::translate_exceptions(jniEnv, [&](){
         //> if method.asynchronous:
         auto completableFutureLocalRef = ::pydjinni::jniNewCompletableFuture(jniEnv);
@@ -195,5 +196,6 @@ CJNIEXPORT [[maybe_unused]] {{ method.jni.return_type_spec }} JNICALL {{ type_de
     });
 }
 //> endfor
+}
 //> endif
 //> endblock

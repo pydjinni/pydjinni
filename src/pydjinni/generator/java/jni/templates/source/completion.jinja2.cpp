@@ -19,24 +19,26 @@ See the License for the specific language governing permissions and
 
 namespace {{ namespace }} {
 
+extern "C" {
 
-CJNIEXPORT [[maybe_unused]] void JNICALL {{ jni_prefix }}_nativeSuccess(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef, jobject result) {
+[[maybe_unused]] JNIEXPORT void JNICALL {{ jni_prefix }}_nativeSuccess(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef, jobject result) noexcept {
     ::pydjinni::translate_exceptions(jniEnv, [&]() {
         ::pydjinni::objectFromHandleAddress<CompletionHandler>(nativeRef)->onSuccess(result);
     });
 }
 
-CJNIEXPORT [[maybe_unused]] void JNICALL {{ jni_prefix }}_nativeException(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef, jthrowable exception) {
+[[maybe_unused]] JNIEXPORT void JNICALL {{ jni_prefix }}_nativeException(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef, jthrowable exception) noexcept {
     ::pydjinni::translate_exceptions(jniEnv, [&]() {
         ::pydjinni::objectFromHandleAddress<CompletionHandler>(nativeRef)->onError(exception);
     });
 }
 
-CJNIEXPORT void JNICALL {{ jni_prefix }}_00024CleanupTask_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef)
-{
+[[maybe_unused]] JNIEXPORT void JNICALL {{ jni_prefix }}_00024CleanupTask_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef) noexcept {
     ::pydjinni::translate_exceptions(jniEnv, [&](){
         delete reinterpret_cast<::pydjinni::CppProxyHandle<CompletionHandler>*>(nativeRef);
     });
+}
+
 }
 
 }
