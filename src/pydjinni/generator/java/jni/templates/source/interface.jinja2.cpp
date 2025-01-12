@@ -110,11 +110,9 @@ limitations under the License.
 extern "C" {
 
 [[maybe_unused]] JNIEXPORT void JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_00024CleanupTask_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef) noexcept {
-    ::pydjinni::translate_exceptions(jniEnv, [&](){
-        //? type_def.deprecated : "PYDJINNI_DISABLE_DEPRECATED_WARNINGS"
-        delete reinterpret_cast<::pydjinni::CppProxyHandle<{{ type_def.cpp.typename }}>*>(nativeRef);
-        //? type_def.deprecated : "PYDJINNI_ENABLE_WARNINGS"
-    });
+     //? type_def.deprecated : "PYDJINNI_DISABLE_DEPRECATED_WARNINGS"
+    delete reinterpret_cast<::pydjinni::CppProxyHandle<{{ type_def.cpp.typename }}>*>(nativeRef);
+    //? type_def.deprecated : "PYDJINNI_ENABLE_WARNINGS"
 }
 
 //> for method in type_def.methods:

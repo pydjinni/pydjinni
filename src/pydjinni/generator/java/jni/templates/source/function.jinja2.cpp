@@ -73,9 +73,7 @@ limitations under the License.
 extern "C" {
 
 [[maybe_unused]] JNIEXPORT void JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_00024CleanupTask_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef) noexcept {
-    ::pydjinni::translate_exceptions(jniEnv, [&](){
-        delete reinterpret_cast<::pydjinni::CppProxyHandle<{{ type_def.jni.wrapper }}>*>(nativeRef);
-    });
+    delete reinterpret_cast<::pydjinni::CppProxyHandle<{{ type_def.jni.wrapper }}>*>(nativeRef);
 }
 
 [[maybe_unused]] JNIEXPORT {{ type_def.jni.return_type_spec }} JNICALL {{ type_def.jni.jni_prefix }}CppProxy_nativeInvoke(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef
