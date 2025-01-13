@@ -27,13 +27,14 @@ public:
 
     ~{{ error_code.jni.name }}();
 
+    static ::pydjinni::GlobalRef<jclass> findClass();
     static CppType toCpp(JNIEnv* jniEnv, JniType j);
     static ::pydjinni::LocalRef<JniType> fromCpp(JNIEnv * jniEnv, const CppType& c);
 private:
     {{ error_code.jni.name }}();
     friend ::pydjinni::JniClass<{{ error_code.jni.name }}>;
 
-    const ::pydjinni::GlobalRef<jclass> clazz { ::pydjinni::jniFindClass("{{ type_def.jni.class_descriptor }}${{ error_code.java.name }}") };
+    const ::pydjinni::GlobalRef<jclass> clazz { findClass() };
     const jmethodID jconstructor { ::pydjinni::jniGetMethodID(clazz.get(), "<init>", "(
     /*>- for parameter in error_code.parameters -*/
     {{ parameter.type_ref.type_def.jni.boxed_type_signature if parameter.type_ref.optional else parameter.type_ref.type_def.jni.type_signature }}

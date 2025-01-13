@@ -22,6 +22,10 @@ namespace {{ type_def.jni.name }} {
 {{ error_code.jni.name }}::{{ error_code.jni.name }}() = default;
 {{ error_code.jni.name }}::~{{ error_code.jni.name }}() = default;
 
+auto {{ error_code.jni.name }}::findClass() -> ::pydjinni::GlobalRef<jclass> {
+    return ::pydjinni::jniFindClass("{{ type_def.jni.class_descriptor }}${{ error_code.java.name }}");
+}
+
 auto {{ error_code.jni.name }}::fromCpp(JNIEnv* jniEnv, const CppType& c) -> ::pydjinni::LocalRef<JniType> {
     const auto& data = ::pydjinni::JniClass<{{ error_code.jni.name }}>::get();
     auto r = ::pydjinni::LocalRef<JniType>{jniEnv->NewObject(

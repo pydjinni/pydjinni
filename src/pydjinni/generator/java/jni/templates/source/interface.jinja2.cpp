@@ -42,6 +42,16 @@ limitations under the License.
 //> endif
 //> endmacro
 
+//> macro coroutine(method)
+//> if method.asynchronous:
+    co_return co_await pydjinni::coroutine::CallbackAwaitable<{{ method.cpp.callback_type_spec }}>([&](pydjinni::coroutine::CallbackHandle<{{ method.cpp.callback_type_spec }}>& handle) -> void {
+    {{ caller() | indent }}
+    });
+//> else:
+{{ caller() }}
+//> endif
+//> endmacro
+
 //> block content
 {{ type_def.jni.name }}::{{ type_def.jni.name }}() : ::pydjinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.name }}>(
 /*>- if 'cpp' in type_def.targets -*/
@@ -59,43 +69,36 @@ limitations under the License.
     {{ parameter.cpp.type_spec }} {{ parameter.cpp.name ~ (", " if not loop.last) }}
 /*>- endfor -*/
 ){{ method.cpp.postfix_specifiers(implementation=True) }} {
-    //> if method.asynchronous:
-    co_return co_await pydjinni::coroutine::CallbackAwaitable<{{ method.cpp.callback_type_spec }}>([&](pydjinni::coroutine::CallbackHandle<{{ method.cpp.callback_type_spec }}>& handle){
-    //> endif
-    auto jniEnv = ::pydjinni::jniGetThreadEnv();
-    ::pydjinni::JniLocalScope jscope(jniEnv, 10);
+    //> call coroutine(method):
+    ::pydjinni::jni::ScopedJni jni {};
     const auto& data = ::pydjinni::JniClass<{{ type_def.jni.translator }}>::get();
-    {{ "auto jret = " if method.return_type_ref or method.asynchronous }}jniEnv->{{ method.jni.routine_name }}(Handle::get().get(), data.method_{{ method.java.name }}
+    {{ "auto jret = " if method.return_type_ref or method.asynchronous }}jni.env->{{ method.jni.routine_name }}(Handle::get().get(), data.method_{{ method.java.name }}
     /*>- for parameter in method.parameters -*/
-        , ::pydjinni::get({{ translator(parameter.type_ref) }}::fromCpp(jniEnv, {{ parameter.cpp.name }}))
+        , ::pydjinni::get({{ translator(parameter.type_ref) }}::fromCpp(jni.env, {{ parameter.cpp.name }}))
     /*>- endfor -*/
     );
     //> if method.throwing and not method.asynchronous:
-    const ::pydjinni::LocalRef<jthrowable> e(jniEnv->ExceptionOccurred());
-    if(e) {
-        jniEnv->ExceptionClear();
+    if(const auto& e = jni.ExceptionOccurred()) {
         //> for error_domain_ref in method.throwing:
         //> set error_domain = error_domain_ref.type_def
         //> for error_code in error_domain.error_codes:
-        {{ "else " if not loop.first }}if(jniEnv->IsInstanceOf(e.get(), ::pydjinni::jniFindClass("{{ error_domain.jni.class_descriptor }}${{ error_code.java.name }}").get())) {
-            throw ::{{ error_domain.jni.namespace }}::{{ error_domain.jni.name }}::{{ error_code.jni.name }}::toCpp(jniEnv, e);
+        {{ "else " if not loop.first }}if(jni.IsInstanceOf<::{{ error_domain.jni.namespace }}::{{ error_domain.jni.name }}::{{ error_code.jni.name }}>(e.get())) {
+            throw ::{{ error_domain.jni.namespace }}::{{ error_domain.jni.name }}::{{ error_code.jni.name }}::toCpp(jni.env, e);
         }
         //> endfor
         //> endfor
         else {
-            ::pydjinni::jniThrowCppFromJavaException(jniEnv, e.get());
+            throw ::pydjinni::jni_exception { jni.env, e.get() };
         }
     }
     //> else:
-    ::pydjinni::jniExceptionCheck(jniEnv);
+    ::pydjinni::jniExceptionCheck(jni.env);
     //> endif
     //> if method.return_type_ref and not method.asynchronous:
-    return {{ translator(method.return_type_ref) }}::toCpp(jniEnv, jret);
+    return {{ translator(method.return_type_ref) }}::toCpp(jni.env, jret);
     //> endif
     //> if method.asynchronous:
-    auto completableFutureClass = ::pydjinni::jniFindClass("java/util/concurrent/CompletableFuture");
-    auto completionMethod = ::pydjinni::jniGetMethodID(completableFutureClass.get(), "whenComplete", "(Ljava/util/function/BiConsumer;)Ljava/util/concurrent/CompletableFuture;");
-    jniEnv->CallObjectMethod(jret, completionMethod, schedule::NativeCompletion::fromCpp(jniEnv, {
+    jni.Get<::pydjinni::jni::Jni::CompletableFuture>(jret).WhenComplete({
         .onSuccess = [&handle](jobject result) -> void {
             //> if method.return_type_ref:
             auto jniEnv = ::pydjinni::jniGetThreadEnv();
@@ -105,29 +108,28 @@ limitations under the License.
             //> endif
         },
         .onError = [&handle](jthrowable exception) -> void {
-            auto jniEnv = ::pydjinni::jniGetThreadEnv();
-            jmethodID getCause = jniEnv->GetMethodID(::pydjinni::jniFindClass("java/lang/Throwable").get(), "getCause", "()Ljava/lang/Throwable;");
-            jthrowable cause = (jthrowable)jniEnv->CallObjectMethod(exception, getCause);
-            ::pydjinni::jniExceptionCheck(jniEnv);
+            ::pydjinni::jni::Jni jni {};
+            const auto cause = jni.Get<::pydjinni::jni::Jni::Throwable>(exception).GetCause();
             //> if method.throwing:
             //> for error_domain_ref in method.throwing:
             //> set error_domain = error_domain_ref.type_def
             //> for error_code in error_domain.error_codes:
-            {{ "else " if not loop.first }}if(jniEnv->IsInstanceOf(cause, ::pydjinni::jniFindClass("{{ error_domain.jni.class_descriptor }}${{ error_code.java.name }}").get())) {
-                handle.error(std::make_exception_ptr(::{{ error_domain.jni.namespace }}::{{ error_domain.jni.name }}::{{ error_code.jni.name }}::toCpp(jniEnv, cause)));
+            {{ "else " if not loop.first }}if(jni.IsInstanceOf<::{{ error_domain.jni.namespace }}::{{ error_domain.jni.name }}::{{ error_code.jni.name }}>(cause)) {
+                handle.error(std::make_exception_ptr(::{{ error_domain.jni.namespace }}::{{ error_domain.jni.name }}::{{ error_code.jni.name }}::toCpp(jni.env, cause)));
                 return;
             }
             //> endfor
             //> endfor
             //> endif
-            auto exceptionClass = ::pydjinni::jniFindClass("java/lang/Throwable");
-            jmethodID getMessage = ::pydjinni::jniGetMethodID(exceptionClass.get(), "getMessage", "()Ljava/lang/String;");
-            handle.error(std::make_exception_ptr(std::runtime_error(::pydjinni::jni::translator::String::toCpp(jniEnv, (jstring)jniEnv->CallObjectMethod(cause, getMessage)))));
+            try {
+                throw ::pydjinni::jni_exception{jni.env, cause};
+            } catch (const ::pydjinni::jni_exception& e) {
+                handle.error(std::current_exception());
+            }
         }
-    }).get());
-    ::pydjinni::jniExceptionCheck(jniEnv);
     });
     //> endif
+    //> endcall
 }
 //> endfor
 //> endif

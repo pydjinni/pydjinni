@@ -2,15 +2,31 @@
 #include <jni.h>
 #include "support.hpp"
 #include "marshal.hpp"
+#if __has_include("pydjinni/coroutine/completion.hpp")
+#define ASYNC_SUPPORTED
+#include "pydjinni/coroutine/completion.hpp"
+#endif
 
 namespace pydjinni::jni {
 
 class Jni {
-    JNIEnv* env;
-
 public:
+    JNIEnv* const env;
     explicit Jni(JNIEnv* env) : env(env) {}
     Jni() : env(::pydjinni::jniGetThreadEnv()) {}
+
+    [[nodiscard]] ::pydjinni::LocalRef<jthrowable> ExceptionOccurred() const {
+        if(auto throwable = ::pydjinni::LocalRef<jthrowable>{env, env->ExceptionOccurred()}) {
+            env->ExceptionClear();
+            return throwable;
+        }
+        return {};
+    }
+
+    template<typename Translator>
+    [[nodiscard]] jboolean IsInstanceOf(const jthrowable& obj) const {
+        return env->IsInstanceOf(obj, Translator::findClass().get());
+    }
 
     template<typename Error>
     void Throw(const Error::CppType& e) const noexcept {
@@ -31,15 +47,14 @@ public:
     }
 
     class CompletableFuture {
-        JNIEnv* env;
+        JNIEnv* const env;
         jobject ref;
-        jobject globalRef;
         explicit CompletableFuture(JNIEnv* env) : env(env) {
             auto clazz = CompletableFuture::clazz(env);
             auto init = env->GetMethodID(clazz, "<init>", "()V");
             ref = env->NewObject(clazz, init);
-            globalRef = env->NewGlobalRef(ref);
         }
+        CompletableFuture(JNIEnv* env, const jobject& ref) : env(env), ref(ref) {}
         [[nodiscard]] static jclass clazz(JNIEnv* env) {
             return env->FindClass("java/util/concurrent/CompletableFuture");
         }
@@ -89,11 +104,35 @@ public:
         };
 
         [[nodiscard]] CompletionHandler Handle() const {
-            return CompletionHandler{globalRef};
+            return CompletionHandler{env->NewGlobalRef(ref)};
         }
 
+#ifdef ASYNC_SUPPORTED
+        void WhenComplete(const ::pydjinni::jni::CompletionHandler& handler) {
+            auto clazz = CompletableFuture::clazz(env);
+            auto completionMethod = ::pydjinni::jniGetMethodID(clazz, "whenComplete", "(Ljava/util/function/BiConsumer;)Ljava/util/concurrent/CompletableFuture;");
+            env->CallObjectMethod(ref, completionMethod, ::pydjinni::release(::pydjinni::jni::NativeCompletion::fromCpp(env, handler)));
+            ::pydjinni::jniExceptionCheck(env);
+        }
+#endif
         [[nodiscard]] jobject Return() const {
             return ref;
+        }
+    };
+
+    class Throwable {
+        JNIEnv* const env;
+        jthrowable ref;
+        Throwable(JNIEnv* env, const jthrowable& ref)
+        : env(env)
+        , ref(ref) {}
+        friend class Jni;
+    public:
+        [[nodiscard]] jthrowable GetCause() const {
+            jmethodID getCause = env->GetMethodID(::pydjinni::jniFindClass("java/lang/Throwable").get(), "getCause", "()Ljava/lang/Throwable;");
+            const auto cause = (jthrowable)env->CallObjectMethod(ref, getCause);
+            ::pydjinni::jniExceptionCheck(env);
+            return cause;
         }
     };
 
@@ -102,6 +141,17 @@ public:
         return JavaObject(env);
     }
 
+    template<typename JavaObject>
+    JavaObject Get(const auto& ref) const {
+        return JavaObject(env, ref);
+    }
+
+};
+
+class ScopedJni : public Jni {
+    ::pydjinni::JniLocalScope jscope;
+public:
+    explicit ScopedJni(jint capacity = 10): Jni(), jscope(env, capacity) {}
 };
 
 }
