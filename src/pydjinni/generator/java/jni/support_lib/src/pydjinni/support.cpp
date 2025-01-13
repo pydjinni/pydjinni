@@ -74,7 +74,7 @@ void jniShutdown() {
 JNIEnv * jniGetThreadEnv() {
     assert(g_cachedJVM);
     JNIEnv * env = nullptr;
-    jint get_res = g_cachedJVM->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
+    jint get_res = g_cachedJVM->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_8);
     #ifdef EXPERIMENTAL_AUTO_CPP_THREAD_ATTACH
     if (get_res == JNI_EDETACHED) {
 #ifdef __ANDROID__
@@ -107,7 +107,7 @@ static JNIEnv * getOptThreadEnv() {
     // thread has been detached. (This is known to happen during process shutdown, when
     // there's no need to release the ref anyway.)
     JNIEnv * env = nullptr;
-    const jint get_res = g_cachedJVM->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
+    const jint get_res = g_cachedJVM->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_8);
 
     if (get_res == JNI_EDETACHED) {
         return nullptr;

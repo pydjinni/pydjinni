@@ -37,7 +37,7 @@ extern "C" {
 // Called when library is loaded by the first class which uses it.
 [[maybe_unused]] JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM * jvm, void * /*reserved*/) {
     pydjinni::jniInit(jvm);
-    return JNI_VERSION_1_6;
+    return JNI_VERSION_1_8;
 }
 
 // (Potentially) called when library is about to be unloaded.
