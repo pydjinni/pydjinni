@@ -41,11 +41,6 @@ public:
         env->ThrowNew(env->FindClass("java/lang/RuntimeException"), e.what());
     }
 
-    template<typename Translator>
-    Translator::JniType Return(const auto& value) const {
-        return release(Translator::fromCpp(env, value));
-    }
-
     class CompletableFuture {
         JNIEnv* const env;
         jobject ref;

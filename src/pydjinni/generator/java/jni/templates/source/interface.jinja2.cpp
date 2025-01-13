@@ -197,7 +197,7 @@ extern "C" {
     return future.Return();
     //> else:
     //> if method.return_type_ref:
-    return jni.Return<{{ method.jni.return_type_translator }}>(r);
+    return ::pydjinni::release({{ method.jni.return_type_translator }}::fromCpp(jni.env, r));
     //> endif
     //> endif
     //? type_def.deprecated or method.deprecated : "PYDJINNI_ENABLE_WARNINGS"
