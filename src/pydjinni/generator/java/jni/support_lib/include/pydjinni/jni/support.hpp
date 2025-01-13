@@ -57,19 +57,14 @@ JNIEnv * jniGetThreadEnv();
 struct GlobalRefDeleter { void operator() (jobject globalRef) noexcept; };
 
 template <typename PointerType>
-class GlobalRef : public std::unique_ptr<typename std::remove_pointer<PointerType>::type,
-                                         GlobalRefDeleter> {
+class GlobalRef : public std::shared_ptr<typename std::remove_pointer<PointerType>::type> {
 public:
-    GlobalRef() {}
-    GlobalRef(GlobalRef && obj)
-        : std::unique_ptr<typename std::remove_pointer<PointerType>::type, GlobalRefDeleter>(
-            std::move(obj)
-        ) {}
+    GlobalRef() = default;
     GlobalRef(JNIEnv * env, PointerType localRef)
-        : std::unique_ptr<typename std::remove_pointer<PointerType>::type, GlobalRefDeleter>(
+            : std::shared_ptr<typename std::remove_pointer<PointerType>::type>(
             static_cast<PointerType>(env->NewGlobalRef(localRef)),
             GlobalRefDeleter{}
-        ) {}
+    ) {}
 };
 
 struct LocalRefDeleter { void operator() (jobject localRef) noexcept; };
@@ -78,7 +73,7 @@ template <typename PointerType>
 class LocalRef : public std::unique_ptr<typename std::remove_pointer<PointerType>::type,
                                         LocalRefDeleter> {
 public:
-    LocalRef() {}
+    LocalRef() = default;
     LocalRef(JNIEnv * /*env*/, PointerType localRef)
         : std::unique_ptr<typename std::remove_pointer<PointerType>::type, LocalRefDeleter>(
             localRef) {}
