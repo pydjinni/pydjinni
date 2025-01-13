@@ -64,42 +64,37 @@ public:
         friend class Jni;
     public:
         class CompletionHandler {
-            jobject ref;
-            explicit CompletionHandler(jobject globalRef) : ref(globalRef) {}
+            GlobalRef<jobject> ref;
+            explicit CompletionHandler(const GlobalRef<jobject>& globalRef) : ref(globalRef) {}
             friend class CompletableFuture;
         public:
             void Complete() const {
                 const auto localEnv = ::pydjinni::jniGetThreadEnv();
-                localEnv->CallBooleanMethod(ref, complete(localEnv), nullptr);
-                localEnv->DeleteGlobalRef(ref);
+                localEnv->CallBooleanMethod(ref.get(), complete(localEnv), nullptr);
             }
             template<typename Translator>
             void Complete(Translator::CppType value) const {
                 const auto localEnv = ::pydjinni::jniGetThreadEnv();
-                localEnv->CallBooleanMethod(ref, complete(localEnv), ::pydjinni::release(Translator::Boxed::fromCpp(localEnv, value)));
-                localEnv->DeleteGlobalRef(ref);
+                localEnv->CallBooleanMethod(ref.get(), complete(localEnv), ::pydjinni::release(Translator::Boxed::fromCpp(localEnv, value)));
 
             }
             void CompleteExceptionally(const jni_exception& e) const {
                 const auto localEnv = ::pydjinni::jniGetThreadEnv();
-                localEnv->CallBooleanMethod(ref, completeExceptionally(localEnv), e.java_exception());
-                localEnv->DeleteGlobalRef(ref);
+                localEnv->CallBooleanMethod(ref.get(), completeExceptionally(localEnv), e.java_exception());
             }
             void CompleteExceptionally(const std::exception& e) const {
                 const auto localEnv = ::pydjinni::jniGetThreadEnv();
-                localEnv->CallBooleanMethod(ref, completeExceptionally(localEnv), ::pydjinni::jniNewThrowable(localEnv, ::pydjinni::release(::pydjinni::jni::translator::String::fromCpp(localEnv, e.what()))));
-                localEnv->DeleteGlobalRef(ref);
+                localEnv->CallBooleanMethod(ref.get(), completeExceptionally(localEnv), ::pydjinni::jniNewThrowable(localEnv, ::pydjinni::release(::pydjinni::jni::translator::String::fromCpp(localEnv, e.what()))));
             }
             template<typename Error>
             void CompleteExceptionally(const Error::CppType& e) const {
                 const auto localEnv = ::pydjinni::jniGetThreadEnv();
-                localEnv->CallBooleanMethod(ref, completeExceptionally(localEnv), ::pydjinni::get(Error::fromCpp(localEnv, e)));
-                localEnv->DeleteGlobalRef(ref);
+                localEnv->CallBooleanMethod(ref.get(), completeExceptionally(localEnv), ::pydjinni::get(Error::fromCpp(localEnv, e)));
             }
         };
 
         [[nodiscard]] CompletionHandler Handle() const {
-            return CompletionHandler{env->NewGlobalRef(ref)};
+            return CompletionHandler{GlobalRef<jobject>(env, ref)};
         }
 
 #ifdef ASYNC_SUPPORTED

@@ -120,12 +120,13 @@ limitations under the License.
             }
             //> endfor
             //> endfor
-            //> endif
-            try {
-                throw ::pydjinni::jni_exception{jni.env, cause};
-            } catch (const ::pydjinni::jni_exception& e) {
-                handle.error(std::current_exception());
+            else {
+                handle.error(std::make_exception_ptr(::pydjinni::jni_exception{jni.env, cause}));
             }
+            //> else
+            handle.error(std::make_exception_ptr(::pydjinni::jni_exception{jni.env, cause}));
+            //> endif
+
         }
     });
     //> endif
