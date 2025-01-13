@@ -16,6 +16,32 @@ limitations under the License.
 //> extends "base.jinja2"
 //> from "macros.jinja2" import translator
 
+//> macro error_handling(method)
+//> if not method.cpp.noexcept and not method.asynchronous
+    try {
+    {{ caller() | indent }}
+    }
+    //> if method.throwing:
+    //> for error_domain_ref in method.throwing:
+    //> set error_domain = error_domain_ref.type_def
+    //> for error_code in error_domain.error_codes:
+    catch (const {{ error_domain.cpp.typename }}::{{ error_code.cpp.name }}& e) {
+        jni.Throw<{{ error_domain.jni.translator }}::{{ error_code.jni.name }}>(e);
+    }
+    //> endfor
+    //> endfor
+    //> endif
+    catch (const ::pydjinni::jni_exception& e) {
+        jni.Throw(e);
+    }
+    catch (const std::exception& e) {
+        jni.Throw(e);
+    }
+//> else:
+{{ caller() }}
+//> endif
+//> endmacro
+
 //> block content
 {{ type_def.jni.name }}::{{ type_def.jni.name }}() : ::pydjinni::JniInterface<{{ type_def.cpp.typename }}, {{ type_def.jni.name }}>(
 /*>- if 'cpp' in type_def.targets -*/
@@ -73,7 +99,7 @@ limitations under the License.
         .onSuccess = [&handle](jobject result) -> void {
             //> if method.return_type_ref:
             auto jniEnv = ::pydjinni::jniGetThreadEnv();
-            handle.resume({{ method.jni.return_type_translator }}::toCpp(jniEnv, result));
+            handle.resume({{ method.jni.return_type_translator }}::Boxed::toCpp(jniEnv, result));
             //> else:
             handle.resume();
             //> endif
@@ -121,78 +147,61 @@ extern "C" {
     , {{ parameter.type_ref.type_def.jni.typename.value }} {{ parameter.jni.name }}
     /*>- endfor -*/
     ) noexcept {
-    {{ "return " if method.return_type_ref or method.asynchronous }}::pydjinni::translate_exceptions(jniEnv, [&](){
-        //> if method.asynchronous:
-        auto completableFutureLocalRef = ::pydjinni::jniNewCompletableFuture(jniEnv);
-        auto completableFuture = jniEnv->NewGlobalRef(completableFutureLocalRef.get());
-        //> elif method.throwing:
-        try {
-        //> endif
-        //? type_def.deprecated or method.deprecated : "PYDJINNI_DISABLE_DEPRECATED_WARNINGS"
-        //> if method.static:
-        {{ "auto r = " if (method.return_type_ref and not method.asynchronous) }}{{ type_def.cpp.typename }}::{{ method.cpp.name }}(
+    const ::pydjinni::jni::Jni jni { jniEnv };
+    //> call error_handling(method)
+    //> if method.asynchronous:
+    auto future = jni.New<::pydjinni::jni::Jni::CompletableFuture>();
+    //> endif
+    //? type_def.deprecated or method.deprecated : "PYDJINNI_DISABLE_DEPRECATED_WARNINGS"
+    //> if method.static:
+    {{ "auto r = " if (method.return_type_ref and not method.asynchronous) }}{{ type_def.cpp.typename }}::{{ method.cpp.name }}(
+    /*>- else -*/
+    const auto& ref = ::pydjinni::objectFromHandleAddress<{{ type_def.cpp.typename }}>(nativeRef);
+    {{ "auto r = " if (method.return_type_ref and not method.asynchronous) }}ref->{{ method.cpp.name }}(
+    /*>- endif -*/
+    /*>- for parameter in method.parameters -*/
+    {{ translator(parameter.type_ref) }}::toCpp(jniEnv, {{ parameter.jni.name }}){{ ", " if not loop.last }}
+    /*>- endfor -*/
+    )
+    /*>- if method.asynchronous -*/
+    .on_success([handle = future.Handle()]({{ (method.cpp.callback_type_spec ~ " result") if method.return_type_ref }}) -> void {
+        //> if method.return_type_ref:
+        handle.Complete<{{ method.jni.return_type_translator }}>(result);
         //> else:
-        const auto& ref = ::pydjinni::objectFromHandleAddress<{{ type_def.cpp.typename }}>(nativeRef);
-        {{ "auto r = " if (method.return_type_ref and not method.asynchronous) }}ref->{{ method.cpp.name }}(
-        /*>- endif -*/
-        /*>- for parameter in method.parameters -*/
-        {{ translator(parameter.type_ref) }}::toCpp(jniEnv, {{ parameter.jni.name }}){{ ", " if not loop.last }}
-        /*>- endfor -*/
-        )
-        /*>- if method.asynchronous -*/
-        .on_success([completableFuture]({{ (method.cpp.callback_type_spec ~ " r") if method.return_type_ref }}) -> void {
-            auto jniEnv = ::pydjinni::jniGetThreadEnv();
-            auto complete = ::pydjinni::jniGetCompletableFutureCompleteMethodID();
-            jniEnv->CallBooleanMethod(completableFuture, complete,
-            /*>- if method.return_type_ref -*/
-                ::pydjinni::release({{ method.jni.return_type_translator }}::fromCpp(jniEnv, r))
-            /*>- else -*/
-                nullptr
-            /*>- endif -*/);
-            jniEnv->DeleteGlobalRef(completableFuture);
-        }).on_error([completableFuture](const std::exception_ptr& e) -> void {
-            auto jniEnv = ::pydjinni::jniGetThreadEnv();
-            auto completeExceptionally = ::pydjinni::jniGetCompletableFutureCompleteExceptionallyMethodID();
-            try { std::rethrow_exception(e); }
-            /*> if method.throwing */
-            /*> for error_domain_ref in method.throwing */
-            /*> set error_domain = error_domain_ref.type_def */
-            /*> for error_code in error_domain.error_codes */
-            catch(const {{ error_domain.cpp.typename }}::{{ error_code.cpp.name }}& e) {
-                jniEnv->CallBooleanMethod(completableFuture, completeExceptionally, ::pydjinni::get({{ error_domain.jni.translator }}::{{ error_code.jni.name }}::fromCpp(jniEnv, e)));
-            }
-            /*> endfor */
-            /*> endfor */
-            /*> endif */
-            catch (const std::exception & e) {
-                jniEnv->CallBooleanMethod(completableFuture, completeExceptionally, ::pydjinni::jniNewThrowable(jniEnv, ::pydjinni::release(::pydjinni::jni::translator::String::fromCpp(jniEnv, e.what()))));
-            }
-            jniEnv->DeleteGlobalRef(completableFuture);
-        })
-        .run(schedule::forkJoinPool)
-        /*>- endif -*/
-        ;
-        //> if method.asynchronous:
-         return ::pydjinni::release(completableFutureLocalRef);
-        //> else:
-            //> if method.return_type_ref:
-            return ::pydjinni::release({{ method.jni.return_type_translator }}::fromCpp(jniEnv, r));
-            //> endif
-            //> if method.throwing:
-            }
-            //> for error_domain_ref in method.throwing:
-            //> set error_domain = error_domain_ref.type_def
-            //> for error_code in error_domain.error_codes:
-            catch (const {{ error_domain.cpp.typename }}::{{ error_code.cpp.name }}& e) {
-                jniEnv->Throw((jthrowable)::pydjinni::get({{ error_domain.jni.translator }}::{{ error_code.jni.name }}::fromCpp(jniEnv, e)));
-            }
-            //> endfor
-            //> endfor
-            //> endif
+        handle.Complete();
         //> endif
-        //? type_def.deprecated or method.deprecated : "PYDJINNI_ENABLE_WARNINGS"
-    });
+    })/*> if not method.cpp.noexcept */.on_error([handle = future.Handle()](const std::exception_ptr& e) -> void {
+        try { std::rethrow_exception(e); }
+        /*> if method.throwing */
+        /*> for error_domain_ref in method.throwing */
+        /*> set error_domain = error_domain_ref.type_def */
+        /*> for error_code in error_domain.error_codes */
+        catch(const {{ error_domain.cpp.typename }}::{{ error_code.cpp.name }}& e) {
+            handle.CompleteExceptionally<{{ error_domain.jni.translator }}::{{ error_code.jni.name }}>(e);
+        }
+        /*> endfor */
+        /*> endfor */
+        /*> endif */
+        catch (const ::pydjinni::jni_exception& e) {
+            handle.CompleteExceptionally(e);
+        }
+        catch (const std::exception & e) {
+            handle.CompleteExceptionally(e);
+        }
+    })/*> endif */.run(schedule::forkJoinPool)
+    /*>- endif -*/
+    ;
+    //> if method.asynchronous:
+    return future.Return();
+    //> else:
+    //> if method.return_type_ref:
+    return jni.Return<{{ method.jni.return_type_translator }}>(r);
+    //> endif
+    //> endif
+    //? type_def.deprecated or method.deprecated : "PYDJINNI_ENABLE_WARNINGS"
+    //> endcall
 }
+
 //> endfor
 }
 //> endif

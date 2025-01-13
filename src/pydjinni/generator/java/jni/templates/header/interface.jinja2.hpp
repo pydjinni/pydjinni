@@ -20,8 +20,8 @@ class {{ type_def.jni.name }} final : ::pydjinni::JniInterface<{{ type_def.cpp.t
 public:
     using CppType = std::shared_ptr<{{ type_def.cpp.typename }}>;
     using CppOptType = std::shared_ptr<{{ type_def.cpp.typename }}>;
-    using JniType = {{ type_def.jni.typename.value }};
-    using Boxed = {{ type_def.cpp.typename }};
+    using JniType = {{ type_def.jni.typename }};
+    using Boxed = {{ type_def.jni.translator }};
 
     ~{{ type_def.jni.name }}();
 
