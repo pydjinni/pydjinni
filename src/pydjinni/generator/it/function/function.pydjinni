@@ -4,11 +4,16 @@ foo = record {
     a: i32;
 }
 
+bar = error {
+    bad_stuff();
+}
+
 helper = main interface +cpp {
     static named_function(callback: named_function);
     static anonymous_function(callback: (param: string) -> bool);
     static cpp_named_function() -> named_function;
     static cpp_anonymous_function() -> (param: string) -> bool;
-    static cpp_function_throwing_exception() -> ();
+    static cpp_function_throwing_exception() -> () throws;
+    static cpp_function_throwing_bar_error() -> () throws bar;
     static anonymous_function_passing_record(callback: (param: foo) -> bool);
 }

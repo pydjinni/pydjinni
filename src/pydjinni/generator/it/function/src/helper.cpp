@@ -27,20 +27,26 @@ void Helper::anonymous_function(const std::function<bool(std::string)>& callback
 }
 
 std::function<bool(std::string)> Helper::cpp_named_function() noexcept {
-    return [](std::string input){
+    return [](std::string input) noexcept -> bool {
         return input == "foo";
     };
 }
 
 std::function<bool(std::string)> Helper::cpp_anonymous_function() noexcept {
-    return [](std::string input){
+    return [](std::string input) noexcept -> bool {
         return input == "foo";
     };
 }
 
 std::function<void()> Helper::cpp_function_throwing_exception() noexcept {
-    return [](){
+    return []() -> void {
         throw std::runtime_error("shit hit the fan");
+    };
+}
+
+std::function<void()> Helper::cpp_function_throwing_bar_error() noexcept {
+    return []() -> void {
+        throw Bar::BadStuff("this lambda has thrown an exception");
     };
 }
 

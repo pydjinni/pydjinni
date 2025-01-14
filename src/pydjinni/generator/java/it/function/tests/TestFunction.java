@@ -57,6 +57,13 @@ class TestFunction {
     }
 
     @Test
+    void testCppFunctionThrowingBarError() {
+        var function = Helper.cppFunctionThrowingBarError();
+        Exception exception = assertThrows(Bar.BadStuff.class, () -> function.invoke());
+        assertTrue(exception.getMessage().equals("this lambda has thrown an exception"));
+    }
+
+    @Test
     void testAnonymousFunctionPassingRecord() {
         Helper.anonymousFunctionPassingRecord(foo -> {
             return foo.getA() == 32;

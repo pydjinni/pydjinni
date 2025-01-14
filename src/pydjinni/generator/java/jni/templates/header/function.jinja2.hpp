@@ -23,7 +23,7 @@ public:
         /*>- for parameter in type_def.parameters -*/
             {{ parameter.cpp.type_spec }} {{ parameter.cpp.name ~ (", " if not loop.last) }}
         /*>- endfor -*/
-    ) = 0;
+    ){{ " noexcept" if type_def.cpp.noexcept }} = 0;
 };
 
 class {{ type_def.jni.name }} final : ::pydjinni::JniInterface<{{ type_def.jni.wrapper }}, {{ type_def.jni.name }}> {
@@ -52,7 +52,7 @@ private:
         /*>- for parameter in type_def.parameters -*/
             {{ parameter.cpp.type_spec }} {{ parameter.cpp.name ~ (", " if not loop.last) }}
         /*>- endfor -*/
-        ) override {
+        ){{ " noexcept" if type_def.cpp.noexcept }} override {
             {{ "return " if type_def.return_type_ref }}_lambda(
                 /*>- for parameter in type_def.parameters -*/
                     {{ parameter.cpp.name ~ (", " if not loop.last) }}
@@ -74,7 +74,7 @@ private:
         /*>- for parameter in type_def.parameters -*/
             {{ parameter.cpp.type_spec }} {{ parameter.cpp.name ~ (", " if not loop.last) }}
         /*>- endfor -*/
-        ) override;
+        ){{ " noexcept" if type_def.cpp.noexcept }} override;
     private:
         friend ::pydjinni::JniInterface<{{ type_def.jni.wrapper }}, {{ type_def.jni.translator }}>;
     };

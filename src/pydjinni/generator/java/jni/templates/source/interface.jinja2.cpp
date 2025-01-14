@@ -15,33 +15,6 @@ limitations under the License.
 #*/
 //> extends "base.jinja2"
 //> from "macros.jinja2" import translator
-
-//> macro error_handling(method)
-//> if not method.cpp.noexcept and not method.asynchronous
-    try {
-    {{ caller() | indent }}
-    }
-    //> if method.throwing:
-    //> for error_domain_ref in method.throwing:
-    //> set error_domain = error_domain_ref.type_def
-    //> for error_code in error_domain.error_codes:
-    catch (const {{ error_domain.cpp.typename }}::{{ error_code.cpp.name }}& e) {
-        jni.Throw<{{ error_domain.jni.translator }}::{{ error_code.jni.name }}>(e);
-    }
-    //> endfor
-    //> endfor
-    //> endif
-    catch (const ::pydjinni::jni_exception& e) {
-        jni.Throw(e);
-    }
-    catch (const std::exception& e) {
-        jni.Throw(e);
-    }
-//> else:
-{{ caller() }}
-//> endif
-//> endmacro
-
 //> macro coroutine(method)
 //> if method.asynchronous:
     co_return co_await pydjinni::coroutine::CallbackAwaitable<{{ method.cpp.callback_type_spec }}>([&](pydjinni::coroutine::CallbackHandle<{{ method.cpp.callback_type_spec }}>& handle) -> void {
@@ -77,23 +50,7 @@ limitations under the License.
         , ::pydjinni::get({{ translator(parameter.type_ref) }}::fromCpp(jni.env, {{ parameter.cpp.name }}))
     /*>- endfor -*/
     );
-    //> if method.throwing and not method.asynchronous:
-    if(const auto& e = jni.ExceptionOccurred()) {
-        //> for error_domain_ref in method.throwing:
-        //> set error_domain = error_domain_ref.type_def
-        //> for error_code in error_domain.error_codes:
-        {{ "else " if not loop.first }}if(jni.IsInstanceOf<::{{ error_domain.jni.namespace }}::{{ error_domain.jni.name }}::{{ error_code.jni.name }}>(e.get())) {
-            throw ::{{ error_domain.jni.namespace }}::{{ error_domain.jni.name }}::{{ error_code.jni.name }}::toCpp(jni.env, e);
-        }
-        //> endfor
-        //> endfor
-        else {
-            throw ::pydjinni::jni_exception { jni.env, e.get() };
-        }
-    }
-    //> else:
-    ::pydjinni::jniExceptionCheck(jni.env);
-    //> endif
+    {{ jni_error_handling(method) | indent }}
     //> if method.return_type_ref and not method.asynchronous:
     return {{ translator(method.return_type_ref) }}::toCpp(jni.env, jret);
     //> endif
@@ -151,14 +108,14 @@ extern "C" {
     /*>- endfor -*/
     ) noexcept {
     const ::pydjinni::jni::Jni jni { jniEnv };
-    //> call error_handling(method)
+    //> call cpp_error_handling(method)
     //> if method.asynchronous:
     auto future = jni.New<::pydjinni::jni::Jni::CompletableFuture>();
     //> endif
     //? type_def.deprecated or method.deprecated : "PYDJINNI_DISABLE_DEPRECATED_WARNINGS"
     //> if method.static:
     {{ "auto r = " if (method.return_type_ref and not method.asynchronous) }}{{ type_def.cpp.typename }}::{{ method.cpp.name }}(
-    /*>- else -*/
+    //>- else:
     const auto& ref = ::pydjinni::objectFromHandleAddress<{{ type_def.cpp.typename }}>(nativeRef);
     {{ "auto r = " if (method.return_type_ref and not method.asynchronous) }}ref->{{ method.cpp.name }}(
     /*>- endif -*/

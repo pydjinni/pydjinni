@@ -41,6 +41,14 @@ public:
         env->ThrowNew(env->FindClass("java/lang/RuntimeException"), e.what());
     }
 
+    void Terminate(const ::pydjinni::LocalRef<jthrowable>& e) {
+        try {
+            throw ::pydjinni::jni_exception { env, e.get() };
+        } catch (const ::pydjinni::jni_exception& _) {
+            std::terminate();
+        }
+    }
+
     class CompletableFuture {
         JNIEnv* const env;
         jobject ref;
