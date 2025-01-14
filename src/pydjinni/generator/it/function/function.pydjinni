@@ -1,4 +1,5 @@
 named_function = function (param: string) -> bool;
+throwing_function = function () throws;
 
 foo = record {
     a: i32;
@@ -16,4 +17,5 @@ helper = main interface +cpp {
     static cpp_function_throwing_exception() -> () throws;
     static cpp_function_throwing_bar_error() -> () throws bar;
     static anonymous_function_passing_record(callback: (param: foo) -> bool);
+    static function_parameter_throwing(callback: throwing_function) throws;
 }

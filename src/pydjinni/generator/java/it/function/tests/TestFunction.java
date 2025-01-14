@@ -53,14 +53,14 @@ class TestFunction {
     void testCppFunctionThrowingException() {
         var function = Helper.cppFunctionThrowingException();
         Exception exception = assertThrows(RuntimeException.class, () -> function.invoke());
-        assertTrue(exception.getMessage().equals("shit hit the fan"));
+        assertEquals("shit hit the fan", exception.getMessage());
     }
 
     @Test
     void testCppFunctionThrowingBarError() {
         var function = Helper.cppFunctionThrowingBarError();
         Exception exception = assertThrows(Bar.BadStuff.class, () -> function.invoke());
-        assertTrue(exception.getMessage().equals("this lambda has thrown an exception"));
+        assertEquals("this lambda has thrown an exception", exception.getMessage());
     }
 
     @Test
@@ -68,5 +68,13 @@ class TestFunction {
         Helper.anonymousFunctionPassingRecord(foo -> {
             return foo.getA() == 32;
         });
+    }
+
+    @Test
+    void testFunctionParameterThrowing() {
+        Exception exception = assertThrows(RuntimeException.class, () -> Helper.functionParameterThrowing(() -> {
+            throw new RuntimeException("unexpected error from host");
+        }));
+        assertEquals("unexpected error from host", exception.getMessage());
     }
 }

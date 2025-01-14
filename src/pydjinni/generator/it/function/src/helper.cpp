@@ -53,3 +53,13 @@ std::function<void()> Helper::cpp_function_throwing_bar_error() noexcept {
 void Helper::anonymous_function_passing_record(const std::function<bool(::test::function::Foo foo)>& callback) noexcept {
     assert(callback(Foo(32)));
 }
+
+void Helper::function_parameter_throwing(const std::function<void()>& callback) {
+    try {
+        callback();
+    } catch (const std::exception& e) {
+        assert(std::string("unexpected error from host") == e.what());
+        std::rethrow_exception(std::current_exception());
+    }
+    assert(false); // this should never be reached because of the exception
+}
