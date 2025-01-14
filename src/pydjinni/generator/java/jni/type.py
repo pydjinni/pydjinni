@@ -94,8 +94,6 @@ def routine_name(type_ref: TypeReference, asynchronous: bool = False) -> str:
 
 def translator(type_ref: TypeReference, asynchronous: bool = False):
     output = type_ref.type_def.jni.translator
-    if asynchronous and type_ref.type_def.jni.typename is not NativeType.object:
-        output += "::Boxed"
     if type_ref.parameters:
         output = f"{output}<{','.join([translator(parameter) for parameter in type_ref.parameters])}>"
     if type_ref.optional:
@@ -160,6 +158,7 @@ class JniBaseType(BaseModel):
     def header_includes(self) -> set[str]:
         output = {
             quote(Path("pydjinni/jni/support.hpp")),
+            quote(Path("pydjinni/jni/jni.hpp")),
             quote(self.decl.cpp.header)
         }
         if self.decl.deprecated:

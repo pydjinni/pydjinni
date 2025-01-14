@@ -33,13 +33,16 @@ limitations under the License.
 // Don't include it if your library does require a custom JNI_OnLoad implementation with custom initialization logic.
 #include "pydjinni/jni/support.hpp"
 
+extern "C" {
 // Called when library is loaded by the first class which uses it.
-CJNIEXPORT [[maybe_unused]] jint JNICALL JNI_OnLoad(JavaVM * jvm, void * /*reserved*/) {
+[[maybe_unused]] JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM * jvm, void * /*reserved*/) {
     pydjinni::jniInit(jvm);
     return JNI_VERSION_1_6;
 }
 
 // (Potentially) called when library is about to be unloaded.
-CJNIEXPORT [[maybe_unused]] void JNICALL JNI_OnUnload(JavaVM * /*jvm*/, void * /*reserved*/) {
+[[maybe_unused]] JNIEXPORT void JNICALL JNI_OnUnload(JavaVM * /*jvm*/, void * /*reserved*/) {
     pydjinni::jniShutdown();
+}
+
 }

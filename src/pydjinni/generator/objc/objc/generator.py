@@ -93,7 +93,7 @@ class ObjcGenerator(Generator):
     def generate_bridging_header(self, ast: list[BaseType]):
         if self.config.swift.bridging_header:
             self.write_header(
-                template="header/bridging_header.h.jinja2",
+                template="header/bridging_header.jinja2.h",
                 filename=self.config.swift.bridging_header,
                 ast=ast
             )

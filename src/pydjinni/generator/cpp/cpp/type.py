@@ -206,7 +206,7 @@ class CppInterface(CppBaseType):
             specifiers = ""
             if self.decl.const:
                 specifiers += " const"
-            if self.decl.throwing is None:
+            if self.noexcept:
                 specifiers += " noexcept"
             if not self.decl.static and not implementation:
                 specifiers += " = 0"
@@ -214,6 +214,9 @@ class CppInterface(CppBaseType):
 
         @property
         def deprecated(self): return deprecated(self.decl, postfix=" ")
+
+        @property
+        def noexcept(self) -> bool: return self.decl.throwing is None
 
 
 class CppSymbolicConstantType(CppBaseType):
