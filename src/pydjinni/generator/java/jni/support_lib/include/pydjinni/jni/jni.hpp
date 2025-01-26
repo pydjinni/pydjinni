@@ -44,7 +44,7 @@ public:
     void Terminate(const ::pydjinni::LocalRef<jthrowable>& e) {
         try {
             throw ::pydjinni::jni_exception { env, e.get() };
-        } catch (const ::pydjinni::jni_exception& _) {
+        } catch (const ::pydjinni::jni_exception&) {
             std::terminate();
         }
     }
