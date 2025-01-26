@@ -50,7 +50,11 @@
 }
 
 - (void)testMethodThrowingException {
-    XCTAssertThrowsSpecificNamed([self.calculator throwingException], NSException, @"shit hit the fan");
+    NSError * error;
+    [self.calculator throwingException:&error];
+    XCTAssertNotNil(error);
+    XCTAssertEqual(error.code, 0);
+    XCTAssertEqualObjects(error.localizedDescription, @"shit hit the fan");
 }
 
 - (void)testNoParametersNoReturnCallback {

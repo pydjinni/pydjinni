@@ -3,6 +3,7 @@
 #import <Foundation/Foundation.h>
 NS_SWIFT_NAME(ThrowingCallback)
 @protocol TSTThrowingCallback 
-- (void)invoke:(nonnull void (^)(void ))completion
+- (void)invoke:(nonnull void (^)(NSError* _Nullable))completion
+  __attribute__((swift_async_error(nonnull_error)))
   NS_SWIFT_NAME(invoke(completion:));
 @end

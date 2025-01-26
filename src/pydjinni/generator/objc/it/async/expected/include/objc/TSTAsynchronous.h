@@ -13,12 +13,14 @@ NS_SWIFT_NAME(Asynchronous)
   NS_SWIFT_NAME(add(a:b:completion:));
 - (void)noParametersNoReturn:(nonnull void (^)(void ))completion
   NS_SWIFT_NAME(noParametersNoReturn(completion:));
-- (void)throwingException:(nonnull void (^)(void ))completion
+- (void)throwingException:(nonnull void (^)(NSError* _Nullable))completion
+  __attribute__((swift_async_error(nonnull_error)))
   NS_SWIFT_NAME(throwingException(completion:));
 - (void)multiplyCallback:(nullable id<TSTMultiplyCallback>)callback completion:(nonnull void (^)(int32_t ))completion
   NS_SWIFT_NAME(multiplyCallback(callback:completion:));
 - (void)noParametersNoReturnCallback:(nullable id<TSTNoParametersNoReturnCallback>)callback completion:(nonnull void (^)(void ))completion
   NS_SWIFT_NAME(noParametersNoReturnCallback(callback:completion:));
-- (void)throwingCallback:(nullable id<TSTThrowingCallback>)callback completion:(nonnull void (^)(void ))completion
+- (void)throwingCallback:(nullable id<TSTThrowingCallback>)callback completion:(nonnull void (^)(NSError* _Nullable))completion
+  __attribute__((swift_async_error(nonnull_error)))
   NS_SWIFT_NAME(throwingCallback(callback:completion:));
 @end

@@ -15,6 +15,8 @@
 //
 
 #pragma once
+#include <exception>
+#include <string>
 
 namespace pydjinni {
 
@@ -23,6 +25,39 @@ namespace pydjinni {
 
 // Helper function for exception translation. Do not call directly!
 [[noreturn]] void throwNSExceptionFromCurrent(const char * ctx);
+
+struct objc_exception : std::exception {
+    const std::string message;
+    const std::string domain;
+    const int code;
+
+    objc_exception(const std::string_view& message, const std::string_view& domain, int code)
+    : message(message), domain(domain), code(code) {}
+
+    [[nodiscard]] const char* what() const noexcept override {
+        return message.c_str();
+    }
+
+    static auto fromCpp(const objc_exception& e) -> ::NSError* {
+        NSString *desc = NSLocalizedString([NSString stringWithUTF8String:e.what()], @"");
+        NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : desc};
+        return [NSError errorWithDomain:[NSString stringWithUTF8String:e.domain.c_str()]
+                                   code:e.code
+                               userInfo:userInfo];
+    }
+
+    static auto fromCpp(const std::exception& e) -> ::NSError* {
+        NSString *desc = NSLocalizedString([NSString stringWithUTF8String:e.what()], @"");
+        NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : desc};
+        return [NSError errorWithDomain:@"PyDjinniDefaultErrorDomain"
+                                   code:0
+                               userInfo:userInfo];
+    }
+
+    static auto toCpp(const NSError* error) -> objc_exception {
+        return {{[error.localizedDescription UTF8String]}, {[error.domain UTF8String]}, (int)error.code};
+    }
+};
 
 } // namespace pydjinni
 
