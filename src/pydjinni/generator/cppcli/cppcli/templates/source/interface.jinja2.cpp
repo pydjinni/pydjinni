@@ -165,9 +165,8 @@ public:
             gcnew {{ type_def.cppcli.typename }}::{{ method.cppcli.name }}CallbackHandleProxy(handle),
             &{{ type_def.cppcli.typename }}::{{ method.cppcli.name }}CallbackHandleProxy::HandleCallback
         );
-        //> else:
-        try {
         //> endif
+        //> call cppcli_error_handling(method)
         {{ "auto cs_result = " if method.return_type_ref.type_def or method.asynchronous -}}
         djinni_private_get_proxied_cs_object()->{{ method.cppcli.name }}(
         //> for param in method.parameters:
@@ -177,22 +176,7 @@ public:
         /*> if method.return_type_ref.type_def and not method.asynchronous */
         return {{ method.cppcli.translator }}::ToCpp(cs_result);
         //> endif
-        //> if not method.asynchronous:
-        }
-        //> if method.throwing:
-        //> for error_domain_ref in method.throwing:
-        //> set error_domain = error_domain_ref.type_def
-        //> for error_code in error_domain.error_codes:
-        catch ({{ error_domain.cppcli.typename }}::{{ error_code.cppcli.name }}^ e) {
-            throw {{ error_domain.cppcli.typename }}::{{ error_code.cppcli.name }}::ToCpp(e);
-        }
-        //> endfor
-        //> endfor
-        //> endif
-        catch (System::Exception^ e) {
-            throw ::pydjinni::CppCliException(e);
-        }
-        //> endif
+        //> endcall
         //> if method.asynchronous:
         });
         //> endif

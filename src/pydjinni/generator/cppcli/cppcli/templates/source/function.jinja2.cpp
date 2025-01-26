@@ -54,6 +54,7 @@ limitations under the License.
         {{ param.cpp.type_spec }} {{ param.cpp.name ~ (", " if not loop.last) }}
     /*>- endfor -*/
     ){
+        //> call cppcli_error_handling(type_def)
         {{ "auto cs_result = " if type_def.return_type_ref }}delegate->Invoke(
             //> for param in type_def.parameters:
             {{ param.cppcli.translator }}::FromCpp({{ param.cpp.name }}){{ "," if not loop.last }}
@@ -62,6 +63,7 @@ limitations under the License.
         //> if type_def.return_type_ref:
         return {{ type_def.return_type_ref.type_def.cppcli.translator }}::ToCpp(cs_result);
         //> endif
+        //> endcall
     };
 }
 
