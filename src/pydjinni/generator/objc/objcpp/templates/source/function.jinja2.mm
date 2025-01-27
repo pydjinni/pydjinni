@@ -23,11 +23,16 @@ auto {{ type_def.objcpp.name }}::toCpp(ObjcType obj) -> CppType {
             {{ parameter.cpp.type_spec }} {{ parameter.cpp.name ~ (", " if not loop.last)  }}
         /*>- endfor -*/
     ){
+        //> if not type_def.cpp.noexcept:
+        NSError* error;
+        //> endif
         {{ "auto result = " if type_def.return_type_ref }}obj(
-            //> for parameter in type_def.parameters:
+            //>- for parameter in type_def.parameters:
             {{ parameter.type_ref | translator }}::fromCpp({{ parameter.cpp.name }}){{ ", " if not loop.last }}
-            //> endfor
+            //>- endfor
+            //? not type_def.cpp.noexcept : (", " if type_def.parameters) ~ "&error"
         );
+        {{ objc_error_handling(type_def) | indent(8) }}
         //> if type_def.return_type_ref:
         return {{ type_def.return_type_ref | translator }}::toCpp(result);
         //> endif
@@ -39,17 +44,20 @@ auto {{ type_def.objcpp.name }}::fromCpp(CppType cpp) -> ObjcType {
         /*>- for parameter in type_def.parameters -*/
             {{ parameter.objc.type_decl }} {{ parameter.objc.name ~ (", " if not loop.last)  }}
         /*>- endfor -*/
+        /*>- if not type_def.cpp.noexcept -*/
+        {{ ", " if type_def.parameters}}NSError** error
+        /*>- endif -*/
     ) {
-        try {
-            {{ "auto result = " if type_def.return_type_ref }}cpp(
-                //> for parameter in type_def.parameters:
-                {{ parameter.type_ref | translator }}::toCpp({{ parameter.objc.name }}){{ ", " if not loop.last }}
-                //> endfor
-            );
-            //> if type_def.return_type_ref
-            return {{ type_def.return_type_ref | translator }}::fromCpp(result);
-            //> endif
-        } DJINNI_TRANSLATE_EXCEPTIONS()
+        //> call cpp_error_handling(type_def)
+        {{ "auto result = " if type_def.return_type_ref }}cpp(
+            //> for parameter in type_def.parameters:
+            {{ parameter.type_ref | translator }}::toCpp({{ parameter.objc.name }}){{ ", " if not loop.last }}
+            //> endfor
+        );
+        //> if type_def.return_type_ref
+        return {{ type_def.return_type_ref | translator }}::fromCpp(result);
+        //> endif
+        //> endcall
     };
 }
 //> endblock

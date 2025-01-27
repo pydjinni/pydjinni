@@ -47,9 +47,13 @@
 }
 
 - (void)testCppFunctionThrowingException {
-    void(^block)() = [TSTHelper cppFunctionThrowingException];
-    XCTAssertThrowsSpecificNamed(block(), NSException, @"shit hit the fan");
-};
+    void(^block)(NSError**) = [TSTHelper cppFunctionThrowingException];
+    NSError* error;
+    block(&error);
+    XCTAssertNotNil(error);
+    XCTAssertEqual(error.code, 0);
+    XCTAssertEqualObjects(error.localizedDescription, @"shit hit the fan");
+}
 
 - (void)testAnonymousFunctionPassingRecord {
     [TSTHelper anonymousFunctionPassingRecord: ^ BOOL (TSTFoo * foo) {

@@ -15,32 +15,6 @@ limitations under the License.
 #*/
 //> extends "base.jinja2"
 
-//> macro cpp_error_handling(method):
-//> if method.cpp.noexcept or method.asynchronous:
-{{ caller() }}
-//> else:
-    try {
-    {{ caller() | indent() }}
-    }
-    /*> if method.throwing */
-    /*> for error_domain_ref in method.throwing */
-    /*> set error_domain = error_domain_ref.type_def */
-    /*> for error_code in error_domain.error_codes */
-    catch (const {{ error_domain.cpp.typename }}::{{ error_code.cpp.name }}& e) {
-        *error = {{ error_domain.objcpp.namespace }}::{{ error_domain.objcpp.name }}::fromCpp(e);
-    }
-    /*> endfor */
-    /*> endfor */
-    /*> endif */
-    catch (const ::pydjinni::objc_exception& e) {
-        *error = ::pydjinni::objc_exception::fromCpp(e);
-    }
-    catch (const std::exception& e) {
-        *error = ::pydjinni::objc_exception::fromCpp(e);
-    }
-//> endif
-//> endmacro
-
 //> block global
 //? type_def.objcpp.attributes : type_def.objcpp.attributes | join('\n')
 @interface {{ type_def.objc.typename }}
@@ -198,23 +172,7 @@ public:
             /*>- endif -*/
             {{- ":&error" if not method.cpp.noexcept and not method.asynchronous -}}
             ];
-            /*> if not method.cpp.noexcept and not method.asynchronous */
-            if(error) {
-                //> if method.throwing:
-                //> for error_domain_ref in method.throwing
-                //> set error_domain = error_domain_ref.type_def
-                {{ "else " if not loop.first }}if(error.domain == {{ error_domain.objc.domain_name }}) {
-                    std::rethrow_exception(::{{ error_domain.objcpp.namespace }}::{{ error_domain.objcpp.name }}::toCpp(error));
-                }
-                //> endfor
-                else {
-                    throw ::pydjinni::objc_exception::toCpp(error);
-                }
-                //> else:
-                throw ::pydjinni::objc_exception::toCpp(error);
-                //> endif
-            }
-            //> endif
+            {{ objc_error_handling(method) | indent(12) }}
             //> if method.return_type_ref.type_def and not method.asynchronous
             return {{ method.return_type_ref | translator }}::toCpp(objcpp_result_);
             //> endif

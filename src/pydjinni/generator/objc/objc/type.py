@@ -152,6 +152,8 @@ class ObjcFunction(ObjcBaseType):
     def typename(self) -> str:
         return_type_decl = type_decl(self.decl.return_type_ref) if self.decl.return_type_ref else "void"
         parameter_type_decls = [f"{type_decl(parameter.type_ref, parameter=True) } {annotation(parameter.type_ref, macro_style=True)}" for parameter in self.decl.parameters]
+        if not self.decl.cpp.noexcept:
+            parameter_type_decls.append("NSError* _Nullable * _Nonnull")
         return f"{return_type_decl} (^)({', '.join(parameter_type_decls)})"
 
 
