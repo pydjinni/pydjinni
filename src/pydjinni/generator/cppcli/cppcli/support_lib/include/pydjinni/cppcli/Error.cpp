@@ -30,10 +30,10 @@ void ThrowNativeExceptionFromCurrent(const char *) {
 }
 
 CppCliException::CppCliException(System::Exception^ exception)
-        : _what(::pydjinni::cppcli::translator::String::ToCpp(exception->Message)) {}
+        : exception(exception), message(::pydjinni::cppcli::translator::String::ToCpp(exception->Message)) {}
 
 const char* CppCliException::what() const noexcept {
-    return _what.c_str();
+    return message.c_str();
 }
 
 }

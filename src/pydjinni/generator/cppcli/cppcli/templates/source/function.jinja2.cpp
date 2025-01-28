@@ -21,19 +21,16 @@ limitations under the License.
     {{ param.cppcli.typename }} {{ param.cppcli.name ~ (", " if not loop.last) }}
 //> endfor
 ) {
-    try {
-        {{ "auto cpp_result = " if type_def.return_type_ref }}(*_lambda)(
-            //> for param in type_def.parameters:
-            {{ param.cppcli.translator }}::ToCpp({{ param.cppcli.name }}){{ "," if not loop.last }}
-            //> endfor
-        );
-        //> if type_def.return_type_ref:
-        return {{ type_def.return_type_ref.type_def.cppcli.translator }}::FromCpp(cpp_result);
-        //> endif
-    } DJINNI_TRANSLATE_EXCEPTIONS()
+    //> call cpp_error_handling(type_def)
+    {{ "auto cpp_result = " if type_def.return_type_ref }}(*_lambda)(
+        //> for param in type_def.parameters:
+        {{ param.cppcli.translator }}::ToCpp({{ param.cppcli.name }}){{ "," if not loop.last }}
+        //> endfor
+    );
     //> if type_def.return_type_ref:
-    return {}; // Unreachable! (Silencing compiler warnings.)
+    return {{ type_def.return_type_ref.type_def.cppcli.translator }}::FromCpp(cpp_result);
     //> endif
+    //> endcall
 }
 
 {{ type_def.cppcli.delegate_name }}CppProxy::~{{ type_def.cppcli.delegate_name }}CppProxy()

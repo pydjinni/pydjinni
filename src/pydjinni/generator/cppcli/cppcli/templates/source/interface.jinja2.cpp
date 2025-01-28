@@ -67,33 +67,19 @@ static {{ method.cppcli.typename }} {{ method.cppcli.async_proxy_name }}(
     /*>- endfor -*/
     );
     //> else:
-    try {
-        {{ "auto cpp_result = " if method.return_type_ref -}}
-        {{ type_def.cpp.typename }}::{{ method.cpp.name }}(
-        /*>- for param in method.parameters -*/
-            {{ param.cppcli.translator }}::ToCpp({{ param.cppcli.name }}){{ "," if not loop.last }}
-        /*>- endfor -*/);
-        /*> if method.return_type_ref */
-        return {{ method.cppcli.translator }}::FromCpp(cpp_result);
-        /*> endif */
-    }
-    //> if method.throwing:
-    //> for type_ref in method.throwing:
-    //> set error_domain = type_ref.type_def
-    //> for error_code in error_domain.error_codes:
-    catch (const {{ error_domain.cpp.typename }}::{{ error_code.cpp.name }}& e) {
-        throw {{ error_domain.cppcli.typename }}::{{ error_code.cppcli.name }}::FromCpp(e);
-    }
-    //> endfor
-    //> endfor
-    //> endif
-    DJINNI_TRANSLATE_EXCEPTIONS()
+    //> call cpp_error_handling(method)
+    {{ "auto cpp_result = " if method.return_type_ref -}}
+    {{ type_def.cpp.typename }}::{{ method.cpp.name }}(
+    /*>- for param in method.parameters -*/
+        {{ param.cppcli.translator }}::ToCpp({{ param.cppcli.name }}){{ "," if not loop.last }}
+    /*>- endfor -*/);
     //> if method.return_type_ref:
-    return {}; // Unreachable! (Silencing compiler warnings.)
+    return {{ method.cppcli.translator }}::FromCpp(cpp_result);
     //> endif
-    /*> endif */
+    //> endcall
+    //> endif
 }
-/*> endfor */
+//> endfor
 
 ref class {{ type_def.cppcli.name }}CppProxy : public {{ type_def.cppcli.name }} {
     using CppType = std::shared_ptr<{{ type_def.cpp.typename }}>;
@@ -115,21 +101,18 @@ public:
         /*>- endfor -*/
         );
         //> else:
-        try {
-            {{ "auto cpp_result = " if method.return_type_ref -}}
-            {{- (type_def.cpp.coroutine_entrypoint ~ "(") if method.asynchronous -}}
-            _cppRefHandle->get()->{{ method.cpp.name }}(
-            /*> for param in method.parameters */
-                {{ param.cppcli.translator }}::ToCpp({{ param.cppcli.name }}){{ ", " if not loop.last }}
-            /*> endfor */
-            ){{ ")" if method.asynchronous }};
-            /*> if method.return_type_ref */
-            return {{ method.cppcli.translator }}::FromCpp(cpp_result);
-            /*> endif */
-        } DJINNI_TRANSLATE_EXCEPTIONS()
-        //> if method.return_type_ref.type_def:
-        return {}; // Unreachable! (Silencing compiler warnings.)
+        //> call cpp_error_handling(method)
+        {{ "auto cpp_result = " if method.return_type_ref -}}
+        {{- (type_def.cpp.coroutine_entrypoint ~ "(") if method.asynchronous -}}
+        _cppRefHandle->get()->{{ method.cpp.name }}(
+        //> for param in method.parameters
+            {{ param.cppcli.translator }}::ToCpp({{ param.cppcli.name }}){{ ", " if not loop.last }}
+        //> endfor
+        ){{ ")" if method.asynchronous }};
+        //> if method.return_type_ref
+        return {{ method.cppcli.translator }}::FromCpp(cpp_result);
         //> endif
+        //> endcall
         //> endif
     }
     //> endfor
