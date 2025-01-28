@@ -73,14 +73,16 @@
 - (void)testFunctionParameterThrowing {
     NSError* error;
     [TSTHelper functionParameterThrowing:^(NSError** functionError){
-        *functionError = [NSError errorWithDomain:NSCocoaErrorDomain code: 42 userInfo:@{
-            NSLocalizedDescriptionKey: @"unexpected error from host"
+        *functionError = [NSError errorWithDomain:NSCocoaErrorDomain code: NSFileNoSuchFileError userInfo:@{
+            NSLocalizedDescriptionKey: @"unexpected error from host",
+            NSFilePathErrorKey: @"some.file"
         }];
     } error: &error];
     XCTAssertNotNil(error);
     XCTAssertEqual(error.domain, NSCocoaErrorDomain);
-    XCTAssertEqual(error.code, 42);
+    XCTAssertEqual(error.code, NSFileNoSuchFileError);
     XCTAssertEqualObjects(error.localizedDescription, @"unexpected error from host");
+    XCTAssertEqualObjects(error.userInfo[NSFilePathErrorKey], @"some.file");
 }
 
 
