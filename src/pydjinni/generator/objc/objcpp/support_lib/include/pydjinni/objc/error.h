@@ -27,23 +27,15 @@ namespace pydjinni {
 [[noreturn]] void throwNSExceptionFromCurrent(const char * ctx);
 
 struct objc_exception : std::exception {
-    const std::string message;
-    const std::string domain;
-    const int code;
-
-    objc_exception(const std::string_view& message, const std::string_view& domain, int code)
-    : message(message), domain(domain), code(code) {}
-
+    NSError* error;
+    explicit objc_exception(NSError* error) : error(error) {}
+public:
     [[nodiscard]] const char* what() const noexcept override {
-        return message.c_str();
+        return [error.localizedDescription UTF8String];
     }
 
     static auto fromCpp(const objc_exception& e) -> ::NSError* {
-        NSString *desc = NSLocalizedString([NSString stringWithUTF8String:e.what()], @"");
-        NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : desc};
-        return [NSError errorWithDomain:[NSString stringWithUTF8String:e.domain.c_str()]
-                                   code:e.code
-                               userInfo:userInfo];
+        return e.error;
     }
 
     static auto fromCpp(const std::exception& e) -> ::NSError* {
@@ -54,8 +46,8 @@ struct objc_exception : std::exception {
                                userInfo:userInfo];
     }
 
-    static auto toCpp(const NSError* error) -> objc_exception {
-        return {{[error.localizedDescription UTF8String]}, {[error.domain UTF8String]}, (int)error.code};
+    static auto toCpp(NSError* error) -> objc_exception {
+        return objc_exception{error};
     }
 };
 

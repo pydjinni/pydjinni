@@ -55,10 +55,32 @@
     XCTAssertEqualObjects(error.localizedDescription, @"shit hit the fan");
 }
 
+- (void)testCppFunctionThrowingBarError {
+    void(^block)(NSError**) = [TSTHelper cppFunctionThrowingBarError];
+    NSError* error;
+    block(&error);
+    XCTAssertNotNil(error);
+    XCTAssertEqual(error.domain, TSTBarDomain);
+    XCTAssertEqual(error.code, TSTBarBadStuff);
+}
+
 - (void)testAnonymousFunctionPassingRecord {
     [TSTHelper anonymousFunctionPassingRecord: ^ BOOL (TSTFoo * foo) {
         return foo.a == 32;
     }];
+}
+
+- (void)testFunctionParameterThrowing {
+    NSError* error;
+    [TSTHelper functionParameterThrowing:^(NSError** functionError){
+        *functionError = [NSError errorWithDomain:NSCocoaErrorDomain code: 42 userInfo:@{
+            NSLocalizedDescriptionKey: @"unexpected error from host"
+        }];
+    } error: &error];
+    XCTAssertNotNil(error);
+    XCTAssertEqual(error.domain, NSCocoaErrorDomain);
+    XCTAssertEqual(error.code, 42);
+    XCTAssertEqualObjects(error.localizedDescription, @"unexpected error from host");
 }
 
 
