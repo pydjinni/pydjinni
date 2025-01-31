@@ -41,7 +41,7 @@ public:
         env->ThrowNew(env->FindClass("java/lang/RuntimeException"), e.what());
     }
 
-    void Terminate(const ::pydjinni::LocalRef<jthrowable>& e) {
+    void Terminate(const ::pydjinni::LocalRef<jthrowable>& e) const {
         try {
             throw ::pydjinni::jni_exception { env, e.get() };
         } catch (const ::pydjinni::jni_exception&) {

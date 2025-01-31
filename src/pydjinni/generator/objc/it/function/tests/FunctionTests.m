@@ -85,5 +85,4 @@
     XCTAssertEqualObjects(error.userInfo[NSFilePathErrorKey], @"some.file");
 }
 
-
 @end

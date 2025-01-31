@@ -15,6 +15,7 @@
 #include "catch2/catch_test_macros.hpp"
 #include "catch2/matchers/catch_matchers_exception.hpp"
 #include "helper.hpp"
+#include "bar.hpp"
 
 TEST_CASE("Cpp.FunctionTest") {
     WHEN("passing a lambda to the named_function method") {
@@ -32,7 +33,7 @@ TEST_CASE("Cpp.FunctionTest") {
         }
     }
     GIVEN("a (named) lambda returned by the helper") {
-        auto lambda = test::function::Helper::cpp_named_function();
+        const auto lambda = test::function::Helper::cpp_named_function();
         WHEN("calling the lambda with the correct value") {
             auto result = lambda("foo");
             THEN("true should be returned") {
@@ -41,7 +42,7 @@ TEST_CASE("Cpp.FunctionTest") {
         }
     }
     GIVEN("an (anonymous) lambda returned by the helper") {
-        auto lambda = test::function::Helper::cpp_anonymous_function();
+        const auto lambda = test::function::Helper::cpp_anonymous_function();
         WHEN("calling the lambda with the correct value") {
             auto result = lambda("foo");
             THEN("true should be returned") {
@@ -49,11 +50,21 @@ TEST_CASE("Cpp.FunctionTest") {
             }
         }
     }
-    GIVEN("a function returned by the helper that throws an excption") {
-        auto lambda = test::function::Helper::cpp_function_throwing_exception();
+    GIVEN("a function returned by the helper that throws an exception") {
+        const auto lambda = test::function::Helper::cpp_function_throwing_exception();
         WHEN("calling the lambda") {
             THEN("an exception should be thrown") {
                 REQUIRE_THROWS_MATCHES(lambda(), std::runtime_error, Catch::Matchers::Message("shit hit the fan"));
+            }
+        }
+    }
+    GIVEN("a function that throws a custom error type") {
+        const auto lambda = test::function::Helper::cpp_function_throwing_bar_error();
+        WHEN("using calling the function") {
+            THEN("the exception should be thrown as expected") {
+                REQUIRE_THROWS_MATCHES(lambda(), test::function::Bar,
+                    Catch::Matchers::Message("this lambda has thrown an exception")
+                );
             }
         }
     }
@@ -62,6 +73,13 @@ TEST_CASE("Cpp.FunctionTest") {
             test::function::Helper::anonymous_function_passing_record([](::test::function::Foo foo) -> bool {
                 return foo.a == 32;
             });
+        }
+    }
+    WHEN("passing a lambda that throws an exception") {
+        THEN("the exception should be passed through correctly when the lambda is called inside") {
+            REQUIRE_THROWS_MATCHES(test::function::Helper::function_parameter_throwing([]() -> void {
+                throw std::runtime_error("unexpected error from host");
+            }), std::runtime_error, Catch::Matchers::Message("unexpected error from host"));
         }
     }
 }

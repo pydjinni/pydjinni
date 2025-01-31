@@ -27,14 +27,24 @@ namespace pydjinni {
     __builtin_unreachable();
 }
 
-[[noreturn]] __attribute__((weak)) void throwNSExceptionFromCurrent(const char * /*ctx*/) {
-    try {
-        throw;
-    } catch (const std::exception & e) {
-        NSString *message = [NSString stringWithCString:e.what() encoding:NSUTF8StringEncoding];
-        [NSException raise:message format:@"%@", message];
-        __builtin_unreachable();
-    }
+const char *objc_exception::what() const noexcept {
+    return [error.localizedDescription UTF8String];
+}
+
+auto objc_exception::fromCpp(const objc_exception& e) -> NSError * {
+    return e.error;
+}
+
+auto objc_exception::fromCpp(const std::exception &e) -> NSError * {
+    NSString *desc = NSLocalizedString([NSString stringWithUTF8String:e.what()], @"");
+    NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : desc};
+    return [NSError errorWithDomain:@"PyDjinniDefaultErrorDomain"
+                               code:0
+                           userInfo:userInfo];
+}
+
+auto objc_exception::toCpp(NSError *error) -> objc_exception {
+    return objc_exception{error};
 }
 
 } // namespace pydjinni
