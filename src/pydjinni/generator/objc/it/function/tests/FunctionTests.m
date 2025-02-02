@@ -47,9 +47,22 @@
 }
 
 - (void)testCppFunctionThrowingException {
-    void(^block)() = [TSTHelper cppFunctionThrowingException];
-    XCTAssertThrowsSpecificNamed(block(), NSException, @"shit hit the fan");
-};
+    void(^block)(NSError**) = [TSTHelper cppFunctionThrowingException];
+    NSError* error;
+    block(&error);
+    XCTAssertNotNil(error);
+    XCTAssertEqual(error.code, 0);
+    XCTAssertEqualObjects(error.localizedDescription, @"shit hit the fan");
+}
+
+- (void)testCppFunctionThrowingBarError {
+    void(^block)(NSError**) = [TSTHelper cppFunctionThrowingBarError];
+    NSError* error;
+    block(&error);
+    XCTAssertNotNil(error);
+    XCTAssertEqual(error.domain, TSTBarDomain);
+    XCTAssertEqual(error.code, TSTBarBadStuff);
+}
 
 - (void)testAnonymousFunctionPassingRecord {
     [TSTHelper anonymousFunctionPassingRecord: ^ BOOL (TSTFoo * foo) {
@@ -57,5 +70,19 @@
     }];
 }
 
+- (void)testFunctionParameterThrowing {
+    NSError* error;
+    [TSTHelper functionParameterThrowing:^(NSError** functionError){
+        *functionError = [NSError errorWithDomain:NSCocoaErrorDomain code: NSFileNoSuchFileError userInfo:@{
+            NSLocalizedDescriptionKey: @"unexpected error from host",
+            NSFilePathErrorKey: @"some.file"
+        }];
+    } error: &error];
+    XCTAssertNotNil(error);
+    XCTAssertEqual(error.domain, NSCocoaErrorDomain);
+    XCTAssertEqual(error.code, NSFileNoSuchFileError);
+    XCTAssertEqualObjects(error.localizedDescription, @"unexpected error from host");
+    XCTAssertEqualObjects(error.userInfo[NSFilePathErrorKey], @"some.file");
+}
 
 @end

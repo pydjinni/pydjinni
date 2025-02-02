@@ -44,65 +44,58 @@ limitations under the License.
     {{ ":" if loop.first else ( " " ~ parameter.name ~ ":") }}({{ (parameter.annotation ~ " ") if parameter.annotation }}{{ parameter.type_decl }}){{ parameter.name }}
     /*>- endfor -*/
     {
-    try {
-        //? method.deprecated : "PYDJINNI_DISABLE_DEPRECATED_WARNINGS"
-        {{ "auto objcpp_result_ = " if (method.return_type_ref and not method.asynchronous) }}
-        /*>- if method.static -*/
-            {{ type_def.cpp.typename }}::
-        /*>- else -*/
-            _cppRefHandle.get()->
-        /*>- endif -*/
-        {{ method.cpp.name }}(
-        /*>- for parameter in method.parameters -*/
-            {{ parameter.type_ref | translator }}::toCpp({{ parameter.objc.name }}){{ ", " if not loop.last }}
-        /*>- endfor -*/
-        )
-        /*>- if method.asynchronous -*/
-        .on_success(
-            [completion]({{ method.cpp.callback_type_spec ~ " objcpp_result_" if method.return_type_ref }}) -> void {
-                completion(
-                /*>- if method.return_type_ref -*/
-                    {{ method.return_type_ref | translator }}::fromCpp(objcpp_result_)
-                /*>- endif -*/
-                /*>- if method.throwing -*/
-                    {{ ", " if method.return_type_ref }}nil
-                /*>- endif -*/
-                );
-            }).on_error([completion](const std::exception_ptr& e){
-                try {
-                    std::rethrow_exception(e);
-                }
-                /*> if method.throwing */
-                /*> for error_domain_ref in method.throwing */
-                /*> set error_domain = error_domain_ref.type_def */
-                /*> for error_code in error_domain.error_codes */
-                catch (const {{ error_domain.cpp.typename }}::{{ error_code.cpp.name }}& e) {
-                    completion({{ "{}, " if method.return_type_ref }}{{ error_domain.objcpp.namespace }}::{{ error_domain.objcpp.name }}::fromCpp(e)
-                    );
-                }
-                /*> endfor */
-                /*> endfor */
-                /*> endif */
-                DJINNI_TRANSLATE_EXCEPTIONS()
-            }).run(pydjinni::coroutine::schedule::darwin)
-        /*>- endif -*/
-        ;
-        //? method.deprecated : "PYDJINNI_ENABLE_WARNINGS"
-        /*> if method.return_type_ref and not method.asynchronous */
-        return {{ method.return_type_ref | translator }}::fromCpp(objcpp_result_);
-        /*> endif */
-    }
-    /*> if method.throwing and not method.asynchronous */
-    /*> for error_domain_ref in method.throwing */
-    /*> set error_domain = error_domain_ref.type_def */
-    /*> for error_code in error_domain.error_codes */
-    catch (const {{ error_domain.cpp.typename }}::{{ error_code.cpp.name }}& e) {
-        *error = {{ error_domain.objcpp.namespace }}::{{ error_domain.objcpp.name }}::fromCpp(e);
-    }
-    /*> endfor */
-    /*> endfor */
+    //> call cpp_error_handling(method)
+    //? method.deprecated : "PYDJINNI_DISABLE_DEPRECATED_WARNINGS"
+    {{ "auto objcpp_result_ = " if (method.return_type_ref and not method.asynchronous) }}
+    /*>- if method.static -*/
+        {{ type_def.cpp.typename }}::
+    /*>- else -*/
+        _cppRefHandle.get()->
+    /*>- endif -*/
+    {{ method.cpp.name }}(
+    /*>- for parameter in method.parameters -*/
+        {{ parameter.type_ref | translator }}::toCpp({{ parameter.objc.name }}){{ ", " if not loop.last }}
+    /*>- endfor -*/
+    )
+    /*>- if method.asynchronous -*/
+    .on_success(
+        [completion]({{ method.cpp.callback_type_spec ~ " objcpp_result_" if method.return_type_ref }}) -> void {
+            completion(
+            /*>- if method.return_type_ref -*/
+                {{ method.return_type_ref | translator }}::fromCpp(objcpp_result_)
+            /*>- endif -*/
+            /*>- if not method.cpp.noexcept -*/
+                {{ ", " if method.return_type_ref }}nil
+            /*>- endif -*/
+            );
+        })/*> if not method.cpp.noexcept */.on_error([completion](const std::exception_ptr& e){
+            try {
+                std::rethrow_exception(e);
+            }
+            /*> if method.throwing */
+            /*> for error_domain_ref in method.throwing */
+            /*> set error_domain = error_domain_ref.type_def */
+            /*> for error_code in error_domain.error_codes */
+            catch (const {{ error_domain.cpp.typename }}::{{ error_code.cpp.name }}& e) {
+                completion({{ "{}, " if method.return_type_ref }}{{ error_domain.objcpp.namespace }}::{{ error_domain.objcpp.name }}::fromCpp(e));
+            }
+            /*> endfor */
+            /*> endfor */
+            /*> endif */
+            catch (const ::pydjinni::objc_exception& e) {
+                completion({{ "{}, " if method.return_type_ref }}::pydjinni::objc_exception::fromCpp(e));
+            }
+            catch (const std::exception& e) {
+                completion({{ "{}, " if method.return_type_ref }}::pydjinni::objc_exception::fromCpp(e));
+            }
+        })/*> endif */.run(pydjinni::coroutine::schedule::darwin)
+    /*>- endif -*/
+    ;
+    //? method.deprecated : "PYDJINNI_ENABLE_WARNINGS"
+    /*> if method.return_type_ref and not method.asynchronous */
+    return {{ method.return_type_ref | translator }}::fromCpp(objcpp_result_);
     /*> endif */
-    DJINNI_TRANSLATE_EXCEPTIONS()
+    //> endcall
 }
 //> endfor
 
@@ -133,57 +126,53 @@ class {{ type_def.objcpp.name }}::ObjcProxy final : public {{ type_def.cpp.typen
     friend class {{ type_def.objcpp.translator }};
 public:
     using ObjcProxyBase::ObjcProxyBase;
-    /*> for method in type_def.methods */
+    //> for method in type_def.methods
     //? method.deprecated : "[[deprecated]]"
     {{ method.cpp.prefix_specifiers(implementation=True) ~ method.cpp.type_spec }} {{ method.cpp.name }}(
     /*>- for parameter in method.parameters -*/
         {{ parameter.cpp.type_spec }} {{ parameter.cpp.name}}{{ ", " if not loop.last }}
     /*>- endfor -*/
     ){{ method.cpp.postfix_specifiers(implementation=True) }} override {
-        /*> if method.asynchronous */
+        //> if method.asynchronous
         {{ "auto result = " if method.return_type_ref }}co_await pydjinni::coroutine::CallbackAwaitable<{{ method.return_type_ref.type_def.cpp.typename if method.return_type_ref else "void" }}> {
             [&](pydjinni::coroutine::CallbackHandle<{{ method.return_type_ref.type_def.cpp.typename if method.return_type_ref }}>& handle) -> void {
-        /*> endif */
+        //> endif
         @autoreleasepool {
-            /*> if method.throwing and not method.asynchronous */
+            //> if not method.cpp.noexcept and not method.asynchronous
             NSError* error;
-            /*> endif */
+            //> endif
             {{ "auto objcpp_result_ = " if method.return_type_ref.type_def and not method.asynchronous }}[djinni_private_get_proxied_objc_object() {{ method.objc.name }}
             /*>- for parameter in method.parameters -*/
                 {{ " " ~ parameter.objc.name if not loop.first }}:({{ parameter.type_ref | translator }}::fromCpp({{ parameter.cpp.name }}))
             /*>- endfor -*/
             /*>- if method.asynchronous -*/
-            {{ " completion" if method.parameters }}:(^ ({{ ( method.objc.type_decl ~ " value") if method.return_type_ref }} {{ "NSError* error" if method.throwing }}){
-                /*> if method.throwing */
+            {{ " completion" if method.parameters }}:(^ ({{ ( method.objc.type_decl ~ " value") if method.return_type_ref }} {{ "NSError* error" if not method.cpp.noexcept }}){
+                //> if not method.cpp.noexcept:
                 if(error) {
+                    //> if method.throwing:
                     /*> for error_domain_ref in method.throwing */
                     /*> set error_domain = error_domain_ref.type_def */
-                    if(error.domain == {{ error_domain.objc.domain_name }}) {
+                    {{ "else " if not loop.first }}if(error.domain == {{ error_domain.objc.domain_name }}) {
                         handle.error(::{{ error_domain.objcpp.namespace }}::{{ error_domain.objcpp.name }}::toCpp(error));
+                        return;
                     }
-                    /*> endfor */
-                } else {
-                /*> endif */
-                    handle.resume({{ (method.return_type_ref | translator ~ "::toCpp(value)") if method.return_type_ref }});
-                /*> if method.throwing */
+                    //> endfor
+                    else {
+                        handle.error(std::make_exception_ptr(::pydjinni::objc_exception::toCpp(error)));
+                        return;
+                    }
+                    //> else:
+                    handle.error(std::make_exception_ptr(::pydjinni::objc_exception::toCpp(error)));
+                    return;
+                    //> endif
                 }
-                /*> endif */
-
+                //> endif
+                handle.resume({{ (method.return_type_ref | translator ~ "::toCpp(value)") if method.return_type_ref }});
             })
             /*>- endif -*/
-            {{- ":&error" if method.throwing and not method.asynchronous -}}
+            {{- ":&error" if not method.cpp.noexcept and not method.asynchronous -}}
             ];
-            /*> if method.throwing and not method.asynchronous */
-            if(error) {
-                /*> for error_domain_ref in method.throwing */
-                /*> set error_domain = error_domain_ref.type_def */
-                if(error.domain == {{ error_domain.objc.domain_name }}) {
-                    std::rethrow_exception(::{{ error_domain.objcpp.namespace }}::{{ error_domain.objcpp.name }}::toCpp(error));
-                }
-                /*> endfor */
-                assert(false); // should never be reached when passing only expected error domains
-            }
-            /*> endif */
+            {{ objc_error_handling(method) | indent(12) }}
             //> if method.return_type_ref.type_def and not method.asynchronous
             return {{ method.return_type_ref | translator }}::toCpp(objcpp_result_);
             //> endif
@@ -195,7 +184,7 @@ public:
         //> endif
         //> endif
     }
-    /*> endfor */
+    //> endfor
 };
 
 auto {{ type_def.objcpp.name }}::toCpp(ObjcType objc) -> CppType {

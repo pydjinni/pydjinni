@@ -20,10 +20,12 @@ NS_SWIFT_NAME(Calculator)
   NS_SWIFT_NAME(getPlatformValue(platform:));
 - (void)noParametersNoReturn
   NS_SWIFT_NAME(noParametersNoReturn());
-- (void)throwingException
-  NS_SWIFT_NAME(throwingException());
+- (void)throwingException:(NSError* _Nullable * _Nonnull)error
+  __attribute__((swift_error(nonnull_error)))
+  NS_SWIFT_NAME(throwingException(error:));
 - (void)noParametersNoReturnCallback:(nullable id<TSTNoParametersNoReturnCallback>)callback
   NS_SWIFT_NAME(noParametersNoReturnCallback(callback:));
-- (void)throwingCallback:(nullable id<TSTThrowingCallback>)callback
-  NS_SWIFT_NAME(throwingCallback(callback:));
+- (void)throwingCallback:(nullable id<TSTThrowingCallback>)callback error:(NSError* _Nullable * _Nonnull)error
+  __attribute__((swift_error(nonnull_error)))
+  NS_SWIFT_NAME(throwingCallback(callback:error:));
 @end

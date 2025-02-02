@@ -29,8 +29,17 @@ public:
     CppCliException(System::Exception^ exception);
 
     const char* what() const noexcept override;
+
+    static System::Exception^ FromCpp(const CppCliException& e) {
+        return e.exception;
+    }
+
+    static System::Exception^ FromCpp(const std::exception& e) {
+        return gcnew System::Exception(msclr::interop::marshal_as<System::String^>(e.what()));
+    }
 private:
-    std::string _what;
+    gcroot<System::Exception^> exception;
+    const std::string message;
 };
 
 }

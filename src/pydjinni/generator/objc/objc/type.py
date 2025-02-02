@@ -151,7 +151,9 @@ class ObjcFunction(ObjcBaseType):
     @cached_property
     def typename(self) -> str:
         return_type_decl = type_decl(self.decl.return_type_ref) if self.decl.return_type_ref else "void"
-        parameter_type_decls = [type_decl(parameter.type_ref, parameter=True) for parameter in self.decl.parameters]
+        parameter_type_decls = [f"{type_decl(parameter.type_ref, parameter=True) } {annotation(parameter.type_ref, macro_style=True)}" for parameter in self.decl.parameters]
+        if not self.decl.cpp.noexcept:
+            parameter_type_decls.append("NSError* _Nullable * _Nonnull")
         return f"{return_type_decl} (^)({', '.join(parameter_type_decls)})"
 
 
@@ -320,7 +322,7 @@ class ObjcInterface(ObjcBaseClassType):
                     annotation="",
                     type_decl=self.completion_handler
                 ))
-            elif self.decl.throwing:
+            elif not self.decl.cpp.noexcept:
                 output.append(CustomObjcParameter(
                     name="error",
                     annotation="",
@@ -339,10 +341,10 @@ class ObjcInterface(ObjcBaseClassType):
 
         @cached_property
         def completion_handler(self):
-            if (not self.decl.return_type_ref) and self.decl.throwing:
+            if (not self.decl.return_type_ref) and not self.decl.cpp.noexcept:
                 return "nonnull void (^)(NSError* _Nullable)"
             else:
-                return f"nonnull void (^)({self.type_decl} {annotation(self.decl.return_type_ref, macro_style=True)}{', NSError* _Nullable' if self.decl.throwing else ''})"
+                return f"nonnull void (^)({self.type_decl} {annotation(self.decl.return_type_ref, macro_style=True)}{', NSError* _Nullable' if not self.decl.cpp.noexcept else ''})"
 
         @cached_property
         def specifier(self) -> str:
@@ -356,7 +358,7 @@ class ObjcInterface(ObjcBaseClassType):
         def attributes(self):
             output = super().attributes
             if self.config.swift.rename_interfaces:
-                if self.decl.throwing :
+                if not self.decl.cpp.noexcept:
                     if self.decl.asynchronous:
                         output.append("__attribute__((swift_async_error(nonnull_error)))")
                     else:

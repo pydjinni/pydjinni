@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using Test.Function.CppCli;
 using NUnit.Framework;
 using System;
+using System.IO;
 
 namespace Testing.Unit.Function
 {
@@ -60,9 +61,25 @@ namespace Testing.Unit.Function
         }
 
         [Test]
+        public void TestFunctionThrowingBarError() {
+            var function = Helper.CppFunctionThrowingBarError();
+            var exception = Assert.Throws<Bar.BadStuff>(() => function());
+            Assert.That(exception.Message, Is.EqualTo("this lambda has thrown an exception"));
+        }
+
+        [Test]
         public void TestAnonymousFunctionPassingRecord()
         {
             Helper.AnonymousFunctionPassingRecord(foo => foo.A == 32);
+        }
+
+        [Test]
+        public void TestFunctionParameterThrowing()
+        {
+            var exception = Assert.Throws<FileNotFoundException>(() => Helper.FunctionParameterThrowing(() => {
+                throw new FileNotFoundException("unexpected error from host");
+            }));
+            Assert.That(exception.Message, Is.EqualTo("unexpected error from host"));
         }
 
     }

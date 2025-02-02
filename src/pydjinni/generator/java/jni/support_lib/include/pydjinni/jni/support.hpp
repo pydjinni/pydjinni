@@ -32,9 +32,6 @@
  * Djinni support library
  */
 
-// jni.h should really put extern "C" in JNIEXPORT, but it doesn't. :(
-#define CJNIEXPORT extern "C" JNIEXPORT
-
 namespace pydjinni {
 
 /*
@@ -60,19 +57,14 @@ JNIEnv * jniGetThreadEnv();
 struct GlobalRefDeleter { void operator() (jobject globalRef) noexcept; };
 
 template <typename PointerType>
-class GlobalRef : public std::unique_ptr<typename std::remove_pointer<PointerType>::type,
-                                         GlobalRefDeleter> {
+class GlobalRef : public std::shared_ptr<typename std::remove_pointer<PointerType>::type> {
 public:
-    GlobalRef() {}
-    GlobalRef(GlobalRef && obj)
-        : std::unique_ptr<typename std::remove_pointer<PointerType>::type, GlobalRefDeleter>(
-            std::move(obj)
-        ) {}
+    GlobalRef() = default;
     GlobalRef(JNIEnv * env, PointerType localRef)
-        : std::unique_ptr<typename std::remove_pointer<PointerType>::type, GlobalRefDeleter>(
+            : std::shared_ptr<typename std::remove_pointer<PointerType>::type>(
             static_cast<PointerType>(env->NewGlobalRef(localRef)),
             GlobalRefDeleter{}
-        ) {}
+    ) {}
 };
 
 struct LocalRefDeleter { void operator() (jobject localRef) noexcept; };
@@ -81,7 +73,7 @@ template <typename PointerType>
 class LocalRef : public std::unique_ptr<typename std::remove_pointer<PointerType>::type,
                                         LocalRefDeleter> {
 public:
-    LocalRef() {}
+    LocalRef() = default;
     LocalRef(JNIEnv * /*env*/, PointerType localRef)
         : std::unique_ptr<typename std::remove_pointer<PointerType>::type, LocalRefDeleter>(
             localRef) {}
@@ -625,46 +617,6 @@ void jniDefaultSetPendingFromCurrent(JNIEnv * env, const char * ctx) noexcept;
 
 /* Catch C++ exceptions and translate them to Java exceptions.
  *
- * All functions called by Java must be fully wrapped by an outer try...catch block like so:
- *
- * try {
- *     ...
- * } JNI_TRANSLATE_EXCEPTIONS_RETURN(env, 0)
- * ... or JNI_TRANSLATE_EXCEPTIONS_RETURN(env, ) for functions returning void
- *
- * The second parameter is a default return value to be used if an exception is caught and
- * converted. (For JNI outer-layer calls, this result will always be ignored by JNI, so
- * it can safely be 0 for any function with a non-void return value.)
- */
-#define JNI_TRANSLATE_EXCEPTIONS_RETURN(env, ret) \
-    catch (const std::exception &) { \
-        ::pydjinni::jniSetPendingFromCurrent(env, __func__); \
-        return ret; \
-    }
-
-/* Catch jni_exception and translate it back to a Java exception, without catching
- * any other C++ exceptions.  Can be used to wrap code which might cause JNI
- * exceptions like so:
- *
- * try {
- *     ...
- * } JNI_TRANSLATE_JAVA_EXCEPTIONS_RETURN(env, 0)
- * ... or JNI_TRANSLATE_JAVA_EXCEPTIONS_RETURN(env, ) for functions returning void
- *
- * The second parameter is a default return value to be used if an exception is caught and
- * converted. (For JNI outer-layer calls, this result will always be ignored by JNI, so
- * it can safely be 0 for any function with a non-void return value.)
- */
-#define JNI_TRANSLATE_JNI_EXCEPTIONS_RETURN(env, ret) \
-    catch (const ::pydjinni::jni_exception & e) { \
-        e.set_as_pending(env); \
-        return ret; \
-    }
-
-
-
-/* Catch C++ exceptions and translate them to Java exceptions.
- *
  * All functions called by Java must be fully wrapped by translate_exceptions() like so:
  * `return translate_exceptions([](){ ... });`
  * or for functions returning void: `translate_exceptions([](){ ... });`
@@ -691,35 +643,6 @@ auto translate_exceptions(JNIEnv* jniEnv, F&& f) -> std::enable_if_t<std::is_voi
 }
 
 jthrowable jniNewThrowable(JNIEnv* env, jstring what);
-
-/* Catch jni_exception and translate it back to a Java exception, without catching
- * any other C++ exceptions.  Can be used to wrap code which might cause JNI
- * exceptions like so:
- *
- * `return translate_jni_exceptions([](){ ... });`
- * or for functions returning void: `translate_jni_exceptions([](){ ... });`
- */
-template<typename F>
-auto translate_jni_exceptions(JNIEnv* jniEnv, F&& f) -> std::enable_if_t<!std::is_void_v<std::invoke_result_t<F>>, std::invoke_result_t<F>>
-{
-    try {
-        return std::forward<F>(f)();
-    } catch (const ::pydjinni::jni_exception & e) {
-        e.set_as_pending(jniEnv);
-        return {};
-    }
-}
-
-template<typename F>
-auto translate_jni_exceptions(JNIEnv* jniEnv, F&& f) -> std::enable_if_t<std::is_void_v<std::invoke_result_t<F>>, void>
-{
-    try {
-        return std::forward<F>(f)();
-    } catch (const ::pydjinni::jni_exception & e) {
-        e.set_as_pending(jniEnv);
-    }
-}
-
 
 
 } // namespace djinni

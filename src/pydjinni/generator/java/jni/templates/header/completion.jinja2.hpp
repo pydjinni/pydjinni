@@ -18,7 +18,7 @@ limitations under the License.
 #pragma once
 #include "pydjinni/jni/support.hpp"
 
-namespace {{ namespace }} {
+namespace pydjinni::jni {
 
     struct CompletionHandler {
         std::function<void(jobject)> onSuccess;

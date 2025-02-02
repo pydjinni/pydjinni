@@ -267,9 +267,13 @@ class Parser(IdlVisitor):
         parameters = [self.visit(param) for param in ctx.parameter()]
 
         dependencies: list[TypeReference] = []
+        throwing = self.visit(ctx.throwing()) if ctx.throwing() else None
 
         for param in parameters:
             dependencies.append(param.type_ref)
+        if throwing:
+            for error_domain_ref in throwing:
+                dependencies.append(error_domain_ref)
         if return_type_ref:
             dependencies.append(return_type_ref)
 
@@ -282,8 +286,10 @@ class Parser(IdlVisitor):
 
         name = '_'.join(
             ['function'] +
+            [target for target in targets] +
             [signature(parameter.type_ref) for parameter in parameters] +
-            [signature(return_type_ref) if return_type_ref else 'void']
+            [signature(return_type_ref) if return_type_ref else 'void'] +
+            (["throws"] + [ref.name for ref in throwing] if throwing is not None else [])
         )
         return Function(
             name=Identifier(name),
@@ -293,7 +299,7 @@ class Parser(IdlVisitor):
             namespace=self.current_namespace,
             return_type_ref=return_type_ref,
             dependencies=dependencies,
-            throwing=self.visit(ctx.throwing()) if ctx.throwing() else None,
+            throwing=throwing,
         )
 
     def visitRecord(self, ctx: IdlParser.RecordContext) -> Record:

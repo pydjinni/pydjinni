@@ -15,21 +15,25 @@
 //
 
 #pragma once
+#include <exception>
+#include <string>
 
 namespace pydjinni {
 
 // Throws an exception for an unimplemented method call.
 [[noreturn]] void throwUnimplemented(const char * ctx, NSString * msg);
 
-// Helper function for exception translation. Do not call directly!
-[[noreturn]] void throwNSExceptionFromCurrent(const char * ctx);
+struct objc_exception : std::exception {
+    NSError* error;
+    explicit objc_exception(NSError* error) : error(error) {}
+public:
+    [[nodiscard]] const char* what() const noexcept override;
+    static auto fromCpp(const objc_exception& e) -> ::NSError*;
+    static auto fromCpp(const std::exception& e) -> ::NSError*;
+    static auto toCpp(NSError* error) -> objc_exception;
+};
 
 } // namespace pydjinni
 
 #define DJINNI_UNIMPLEMENTED(msg) \
     ::pydjinni::throwUnimplemented(__PRETTY_FUNCTION__, msg);
-
-#define DJINNI_TRANSLATE_EXCEPTIONS() \
-    catch (const std::exception & e) { \
-        ::pydjinni::throwNSExceptionFromCurrent(__PRETTY_FUNCTION__); \
-    }
