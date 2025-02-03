@@ -17,6 +17,7 @@ from pathlib import Path
 import pytest
 
 from pydjinni.parser.ast import Function, Interface
+from pydjinni.parser.base_models import BaseExternalType
 from pydjinni.parser.parser import Parser
 from test_parser import given, when
 
@@ -35,6 +36,7 @@ def test_parsing_function(tmp_path):
     assert function.parameters[0].name == "param"
     assert function.parameters[0].type_ref.name == "i8"
     assert function.return_type_ref.name == "bool"
+    assert function.throwing is None
     # THEN all the specified language target should be set
     assert "cpp" in function.targets
     assert len(function.targets) == 1
@@ -118,6 +120,61 @@ def test_parsing_anonymous_function_not_allowed(tmp_path: Path):
     assert isinstance(exception, Parser.ParsingException)
     assert exception.description == "functions are not allowed as record field type"
 
+def test_parsing_function_throwing(tmp_path: Path):
+    # GIVEN a function that throws
+    parser, _ = given(
+        tmp_path=tmp_path,
+        input_idl="""
+            foo = function () throws;
+            """
+    )
+
+    # WHEN parsing the input
+    ast, _ = parser.parse()
+
+    # THEN the parsed function should be marked as throwing
+    assert len(ast) == 1
+    function = ast[0]
+    assert isinstance(function, Function)
+    assert function.throwing is not None
+
+def test_parsing_function_throwing_specific_error(tmp_path: Path):
+    # GIVEN a function that throws the error `bar`
+    parser, resolver_mock = given(
+        tmp_path=tmp_path,
+        input_idl="""
+            foo = function () throws bar;
+            """
+    )
+    resolver_mock.resolve.return_value = BaseExternalType(name="bar", primitive=BaseExternalType.Primitive.error)
+
+    # WHEN parsing the input
+    ast, _ = parser.parse()
+
+    # THEN the parsed function should be marked as throwing `bar`
+    assert len(ast) == 1
+    function = ast[0]
+    assert isinstance(function, Function)
+    assert function.throwing is not None
+    assert function.throwing[0].name == "bar"
+
+def test_parsing_function_throwing_non_error_not_allowed(tmp_path: Path):
+    parser, resolver_mock = given(
+        tmp_path=tmp_path,
+        input_idl="""
+            foo = function () throws bar;
+            """
+    )
+
+    resolver_mock.resolve.return_value = BaseExternalType(name="bar", primitive=BaseExternalType.Primitive.record)
+
+    # THEN a ParsingException should be raised
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
+        parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, Parser.ParsingException)
+    assert exception.description == "Only errors can be thrown"
 
 def test_parsing_function_comment(tmp_path: Path):
     # GIVEN a named function with comment

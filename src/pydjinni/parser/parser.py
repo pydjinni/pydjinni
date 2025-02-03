@@ -497,8 +497,10 @@ class Parser(IdlVisitor):
                             f"but {len(type_ref.parameters)} where given.",
                             type_ref.position
                         ))
+            for target in self.targets:
+                target.marshal(self.type_decls, self.field_decls)
             for decl in self.type_decls:
-                if decl.primitive == BaseExternalType.Primitive.record:
+                if isinstance(decl, Record):
                     if Record.Deriving.ord in decl.deriving:
                         for field in decl.fields:
                             if field.type_ref.type_def and field.type_ref.type_def.primitive == BaseExternalType.Primitive.collection:
@@ -506,17 +508,23 @@ class Parser(IdlVisitor):
                                     "Cannot compare collections in 'ord' deriving",
                                     position=field.position
                                 ))
-                if decl.primitive == BaseExternalType.Primitive.interface:
+                if isinstance(decl, Interface):
                     for method in decl.methods:
                         if method.throwing is not None:
                             for type_ref in method.throwing:
-                                if (type_ref.type_def is not None) and not type_ref.type_def.primitive == BaseExternalType.Primitive.error:
+                                if type_ref.type_def.primitive != BaseExternalType.Primitive.error:
                                     self.errors.append(Parser.ParsingException(
                                         "Only errors can be thrown",
                                         position=type_ref.position
                                     ))
-            for target in self.targets:
-                target.marshal(self.type_decls, self.field_decls)
+                if isinstance(decl, Function):
+                    if decl.throwing is not None:
+                        for type_ref in decl.throwing:
+                            if type_ref.type_def.primitive != BaseExternalType.Primitive.error:
+                                self.errors.append(Parser.ParsingException(
+                                    "Only errors can be thrown",
+                                    position=type_ref.position
+                                ))
         except FileNotFoundError as e:
             raise FileNotFoundException(Path(e.filename))
         except RecursionError:

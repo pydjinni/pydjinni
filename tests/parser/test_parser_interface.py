@@ -166,7 +166,7 @@ def test_parsing_interface_minus_target(tmp_path: Path):
 @pytest.mark.parametrize("targets", ["-cpp", "+cpp +java"])
 def test_parsing_interface_static_not_allowed(tmp_path, targets: str):
     # GIVEN an idl file that defines an interface with a static method
-    parser, resolver_mock = given(
+    parser, _ = given(
         tmp_path=tmp_path,
         input_idl=f"""
             foo = interface {targets} {{
@@ -186,7 +186,26 @@ def test_parsing_interface_static_not_allowed(tmp_path, targets: str):
 
 def test_parsing_interface_static_and_const_not_allowed(tmp_path: Path):
     # GIVEN an idl file that defines an interface with a static const method
-    parser, resolver = given(
+    parser, _ = given(
+        tmp_path=tmp_path,
+        input_idl="""
+            foo = interface +cpp {
+                static const foo();
+            }       
+            """
+    )
+
+    # THEN a ParsingException should be raised
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
+        parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, Parser.ParsingException)
+    assert exception.description == "method cannot be both static and const"
+
+def test_parsing_interface_throwing_non_error_not_allowed(tmp_path: Path):
+    # GIVEN an idl file that defines an interface with method that throws a non error type
+    parser, resolver_mock = given(
         tmp_path=tmp_path,
         input_idl="""
             foo = interface +cpp {
@@ -195,26 +214,14 @@ def test_parsing_interface_static_and_const_not_allowed(tmp_path: Path):
             """
     )
 
-    resolver.return_value = BaseExternalType(name="bar", primitive=BaseExternalType.Primitive.record)
-
-    # THEN a StaticAndConstException should be raised
+    resolver_mock.resolve.return_value = BaseExternalType(name="bar", primitive=BaseExternalType.Primitive.record)
+    # THEN a ParsingException should be raised
     with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
     assert len(excinfo.value.items) == 1
     exception = excinfo.value.items[0]
     assert isinstance(exception, Parser.ParsingException)
     assert exception.description == "Only errors can be thrown"
-
-def test_parsing_interface_throwing_non_error_not_allowed(tmp_path: Path):
-    # GIVEN an idl file that defines an interface with method that throws a non error type
-    parser, _ = given(
-        tmp_path=tmp_path,
-        input_idl="""
-                foo = interface +cpp {
-                    static const foo();
-                }       
-                """
-    )
 
 def test_parsing_main_interface(tmp_path: Path):
     # GIVEN an idl file that defines a main interface (code entrypoint)
