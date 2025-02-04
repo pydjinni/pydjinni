@@ -367,3 +367,11 @@ a[href="https://github.com/pydjinni/pydjinni/edit/main/docs/index.md"] > svg {
     margin-right: 6px;
     vertical-align: 25%;
 }
+
+.highlight .ge {
+    font-style: italic;
+}
+
+.highlight .gs {
+    font-weight: bold;
+}

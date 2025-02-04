@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pygments.lexer import RegexLexer
+from pygments.lexer import RegexLexer, words, bygroups
 from pygments.token import *
 
 
@@ -23,11 +23,41 @@ class PyDjinniLexer(RegexLexer):
 
     tokens = {
         'root': [
-            (r'# .*\n', Comment),
-            (r'(function|interface|flags|enum|record|namespace|const|property|async)', Keyword),
-            (r'->', Punctuation),
-            (r'[={};():]', Punctuation),
-            (r'[+-][a-z]*', Name.Attribute),
+            (r'#', Comment, 'comment'), #comment
+            (r'@import|@extern', Keyword.Reserved), #import
+            (r'".*"', String.Double), #string
+            (r'(?<=\=)(\s*)(all|none)', bygroups(Whitespace, Name.Builtin)), #enum_modifiers
+            (words(('interface', 'enum', 'record', 'flags', 'error', 'function', 'namespace'), prefix=r'\b', suffix=r'\b'), Keyword.Type), #types
+            (words(('const', 'static', 'async', 'throws', 'main'), prefix=r'\b', suffix=r'\b'), Keyword.Reserved), #modifiers
+            (r'\b(deriving)(\s*)(\()', bygroups(Keyword.Reserved, Whitespace, Punctuation), 'deriving_targets'), #deriving_targets
+            (r'([_\w]+)(\s*)(?=:|\(|=\s*all|=\s*none|;)', bygroups(Name, Whitespace)), #parameter
+            (r'([_\w]+)(\s*)(?=\=)', bygroups(Name.Class, Whitespace)), #typename
+            (r'(?<=:)(\s*)([<>_\w]+)', bygroups(Whitespace, Name.Class)), #typename_reference_parameter
+            (r'(?<=->)(\s*)([<>_\w]+)', bygroups(Whitespace, Name.Class)), #typename_reference_return
+            (r'(?<=\.)([<>_\w]+)', Name.Class), #typename_reference_namespace
+            (r'(?<=throws)(\s*)([<>_\w]+)(\s*)(?=,)', bygroups(Whitespace, Name.Class, Whitespace)), #typename_reference_throws_1
+            (r'(?<=throws)(\s*)([<>_\w]+)(\s*)(?=->)', bygroups(Whitespace, Name.Class, Whitespace)), #typename_reference_throws_2
+            (r'(?<=throws)(\s*)([<>_\w]+)(\s*)(?=;)', bygroups(Whitespace, Name.Class, Whitespace)), #typename_reference_throws_3
+            (r'(?<=,)(\s*)([<>_\w]+)(\s*)(?=,)', bygroups(Whitespace, Name.Class, Whitespace)), #typename_reference_throws_4
+            (r'(?<=,)(\s*)([<>_\w]+)(\s*)(?=->)', bygroups(Whitespace, Name.Class, Whitespace)), #typename_reference_throws_5
+            (r'(?<=,)(\s*)([<>_\w]+)(\s*)(?=;)', bygroups(Whitespace, Name.Class, Whitespace)), #typename_reference_throws_6
+            (r'(?<=namespace)(\s*)([_\w]+)', bygroups(Whitespace, Name.Namespace)), #namespace_typename
+            (r'\+[\w]+', Name.Tag), #interface_targets
+            (r';|{|}|,|\.|\(|\)', Punctuation), #punctuation_*
+            (r'=|->|:', Operator), #operator_*
             (r'.', Text),
+        ],
+        'comment': [
+            (r'`.*`', Literal),
+            (r'@returns|@deprecated', Literal),
+            (r'(@param|@throws)(\s*)(\w+)?', bygroups(Literal, Whitespace, Name.Attribute)),
+            (r'\*\*[^*]+\*\*', Generic.Strong),
+            (r'\*[^*]+\*', Generic.Emph),
+            (r'.+?', Comment),
+            (r'\n', Comment, '#pop')
+        ],
+        'deriving_targets': [
+            (r'\w+', Name.Tag),
+            (r'(\))', Punctuation, '#pop'),
         ]
     }

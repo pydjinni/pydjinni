@@ -50,7 +50,7 @@ data = record {
     id: i32;
     info: string;
     store: set<string>;
-    hash: map<string, i32>;
+    hash: map<string,i32>;
 }
 ```
 
