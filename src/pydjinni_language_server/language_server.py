@@ -25,7 +25,8 @@ from lsprotocol.types import *
 from pydjinni import API
 from pydjinni.defs import DEFAULT_CONFIG_PATH
 from pydjinni.exceptions import ApplicationException, ConfigurationException
-from pydjinni.parser.base_models import TypeReference, BaseType
+from pydjinni.parser.ast import Interface, Record, Function, Enum, ErrorDomain, Flags
+from pydjinni.parser.base_models import TypeReference, BaseType, SymbolicConstantType, BaseField
 from pydjinni.parser.parser import Parser
 from pydjinni_language_server.text_document_path import TextDocumentPath
 from pygls.server import LanguageServer
@@ -83,6 +84,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
     if log:
         logging.basicConfig(filename=log, level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s')
 
+    ast_cache: dict[str, list[BaseType]] = {}
     hover_cache: dict[str, dict[int, dict[int, TypeReference]]] = {}
     dependency_cache: dict[str, set[str]] = {}
 
@@ -113,6 +115,13 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
             cache_ref(ref)
         return cache
 
+    def type_range(definition: BaseField | BaseType) -> Range:
+        return Range(
+            start=Position(definition.position.start.line - 1, definition.position.start.col),
+            end=Position(definition.position.end.line - 1, definition.position.end.col)
+        )
+
+
     def validate(ls, uri):
         ls.show_message_log(f"Validating {unquote(uri)}")
         document: TextDocument = ls.workspace.get_text_document(uri)
@@ -126,7 +135,9 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                 api = API().configure(options={
                     "generate": {}
                 })
-            refs = api.parse(path).refs
+            generate_context = api.parse(path)
+            refs = generate_context.refs
+            ast_cache[uri] = [type_def for type_def in generate_context.ast if type_def.position.file.as_uri() == uri]
         except Parser.ParsingExceptionList as e:
             error_items = [to_diagnostic(error) for error in e.items
                            if isinstance(error.position.file, TextDocumentPath)
@@ -153,7 +164,6 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                 )
 
         ls.publish_diagnostics(document.uri, error_items)
-
         hover_cache[uri] = to_hover_cache(
             [ref for ref in refs
              if isinstance(ref.position.file, TextDocumentPath)
@@ -225,6 +235,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
         ls.show_message_log(f"Did Close: {path}")
         hover_cache.pop(params.text_document.uri, {})
         dependency_cache.pop(params.text_document.uri, {})
+        ast_cache.pop(params.text_document.uri, {})
         for cache in dependency_cache.values():
             if path in cache:
                 cache.remove(path)
@@ -250,10 +261,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                     kind=MarkupKind.Markdown,
                     value=cache_entry.type_def.comment
                 ),
-                range=Range(
-                    start=Position(cache_entry.position.start.line - 1, cache_entry.position.start.col),
-                    end=Position(cache_entry.position.end.line - 1, cache_entry.position.end.col)
-                )
+                range=type_range(cache_entry)
             )
 
     @server.feature(TEXT_DOCUMENT_DEFINITION)
@@ -267,17 +275,132 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                                                                BaseType) and cache_entry.type_def.position.file:
             return Location(
                 uri=cache_entry.type_def.position.file.as_uri(),
-                range=Range(
-                    start=Position(cache_entry.type_def.position.start.line - 1,
-                                   cache_entry.type_def.position.start.col),
-                    end=Position(cache_entry.type_def.position.end.line - 1, cache_entry.type_def.position.end.col)
-                )
+                range=type_range(cache_entry.type_def)
             )
 
     @server.feature(TEXT_DOCUMENT_CODE_ACTION)
     @error_logger
     def code_action(ls, params: CodeActionParams):
         pass
+
+
+    @server.feature(TEXT_DOCUMENT_DOCUMENT_SYMBOL)
+    @error_logger
+    def document_symbol(ls, params: DocumentSymbolParams):
+        ls.show_message_log(f"Document symbol request: {unquote(params.text_document.uri)}")
+        def map_kind(type_def):
+            if isinstance(type_def, Interface):
+                return SymbolKind.Interface
+            elif isinstance(type_def, Record) or isinstance(type_def, ErrorDomain):
+                return SymbolKind.Struct
+            elif isinstance(type_def, Function):
+                return SymbolKind.Function
+            elif isinstance(type_def, SymbolicConstantType):
+                return SymbolKind.Enum
+            else:
+                return SymbolKind.Null
+
+        def to_document_symbol(type_def):
+            if isinstance(type_def, Interface):
+                return DocumentSymbol(
+                    name=type_def.name,
+                    kind=SymbolKind.Interface,
+                    range=type_range(type_def),
+                    selection_range=type_range(type_def),
+                    deprecated=type_def.deprecated != False,
+                    children=[
+                        DocumentSymbol(
+                            name=method.name,
+                            kind=SymbolKind.Method,
+                            range=type_range(method),
+                            selection_range=type_range(method),
+                            deprecated=method.deprecated != False
+                        ) for method in type_def.methods
+                    ]
+                )
+            elif isinstance(type_def, Record):
+                return DocumentSymbol(
+                    name=type_def.name,
+                    kind=SymbolKind.Class,
+                    range=type_range(type_def),
+                    selection_range=type_range(type_def),
+                    deprecated=type_def.deprecated != False,
+                    children=[
+                        DocumentSymbol(
+                            name=field.name,
+                            kind=SymbolKind.Field,
+                            range=type_range(field),
+                            selection_range=type_range(field),
+                            detail=field.type_ref.name
+                        ) for field in type_def.fields
+                    ]
+                )
+            elif isinstance(type_def, Enum):
+                return DocumentSymbol(
+                    name=type_def.name,
+                    kind=SymbolKind.Enum,
+                    range=type_range(type_def),
+                    selection_range=type_range(type_def),
+                    deprecated=type_def.deprecated != False,
+                    children=[
+                        DocumentSymbol(
+                            name=item.name,
+                            kind=SymbolKind.EnumMember,
+                            range=type_range(item),
+                            selection_range=type_range(item)
+                        ) for item in type_def.items
+                    ]
+                )
+            elif isinstance(type_def, Flags):
+                return DocumentSymbol(
+                    name=type_def.name,
+                    kind=SymbolKind.Enum,
+                    range=type_range(type_def),
+                    selection_range=type_range(type_def),
+                    deprecated=type_def.deprecated != False,
+                    children=[
+                        DocumentSymbol(
+                            name=flag.name,
+                            kind=SymbolKind.EnumMember,
+                            range=type_range(flag),
+                            selection_range=type_range(flag),
+                            detail="all" if flag.all else "none" if flag.none else None
+                        ) for flag in type_def.flags
+                    ]
+                )
+            elif isinstance(type_def, ErrorDomain):
+                return DocumentSymbol(
+                    name=type_def.name,
+                    kind=SymbolKind.Event,
+                    range=type_range(type_def),
+                    selection_range=type_range(type_def),
+                    deprecated=type_def.deprecated != False,
+                    children=[
+                        DocumentSymbol(
+                            name=error_code.name,
+                            kind=SymbolKind.Field,
+                            range=type_range(error_code),
+                            selection_range=type_range(error_code)
+                        ) for error_code in type_def.error_codes
+                    ]
+                )
+            elif isinstance(type_def, Function):
+                return DocumentSymbol(
+                    name="<anonymous>" if type_def.anonymous else type_def.name,
+                    kind=SymbolKind.Function,
+                    range=type_range(type_def),
+                    selection_range=type_range(type_def),
+                    deprecated=type_def.deprecated != False,
+                )
+            else:
+                return DocumentSymbol(
+                    name=type_def.name,
+                    kind=map_kind(type_def),
+                    range=type_range(type_def),
+                    selection_range=type_range(type_def)
+                )
+        if params.text_document.uri in ast_cache:
+            return [to_document_symbol(type_def) for type_def in ast_cache[params.text_document.uri]]
 
     @server.feature(WORKSPACE_DID_CHANGE_WATCHED_FILES)
     @error_logger
