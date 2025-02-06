@@ -87,6 +87,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
     ast_cache: dict[str, list[BaseType]] = {}
     hover_cache: dict[str, dict[int, dict[int, TypeReference]]] = {}
     dependency_cache: dict[str, set[str]] = {}
+    hierarchical_document_symbol_support = False
 
     def to_diagnostic(error: ApplicationException):
         return Diagnostic(
@@ -178,7 +179,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
 
     @server.feature(INITIALIZED)
     @error_logger
-    def init(ls, _):
+    def init(ls):
         ls.show_message_log(f"Initialized PyDjinni language server {version('pydjinni')}")
         ls.show_message_log(f"Working directory: {Path(os.getcwd()).absolute().as_uri()}")
 
@@ -221,6 +222,12 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                     )
                 ]
             ))
+
+    @server.feature(INITIALIZE)
+    @error_logger
+    def initialize(ls, params: InitializeParams):
+        nonlocal hierarchical_document_symbol_support
+        hierarchical_document_symbol_support = params.capabilities.text_document.document_symbol.hierarchical_document_symbol_support
 
     @server.feature(TEXT_DOCUMENT_DID_CHANGE)
     @error_logger
@@ -400,7 +407,18 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                     selection_range=type_range(type_def)
                 )
         if params.text_document.uri in ast_cache:
-            return [to_document_symbol(type_def) for type_def in ast_cache[params.text_document.uri]]
+            if hierarchical_document_symbol_support:
+                return [to_document_symbol(type_def) for type_def in ast_cache[params.text_document.uri]]
+            else:
+                return [SymbolInformation(
+                    name=type_def.name,
+                    location=Location(
+                        uri=params.text_document.uri,
+                        range=type_range(type_def)
+                    ),
+                    kind=map_kind(type_def),
+                    deprecated=type_def.deprecated != False
+                ) for type_def in ast_cache[params.text_document.uri]]
 
     @server.feature(WORKSPACE_DID_CHANGE_WATCHED_FILES)
     @error_logger
