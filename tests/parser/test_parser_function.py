@@ -82,14 +82,14 @@ def test_parsing_inline_function(tmp_path: Path):
         """
     )
     # WHEN parsing the input
-    ast, _ = parser.parse()
+    defs, _, _ = parser.parse()
 
-    # THEN the anonymous type should be registered in the output AST
-    assert len(ast) == 2
-    assert isinstance(ast[0], Function)
-    assert isinstance(ast[1], Interface)
+    # THEN the anonymous type should be registered in the output type_defs
+    assert len(defs) == 2
+    assert isinstance(defs[0], Function)
+    assert isinstance(defs[1], Interface)
 
-    interface: Interface = ast[1]
+    interface: Interface = defs[1]
 
     def assert_function(index: int):
         # THEN the method should reference an anonymous (nameless) function
@@ -130,7 +130,7 @@ def test_parsing_function_throwing(tmp_path: Path):
     )
 
     # WHEN parsing the input
-    ast, _ = parser.parse()
+    ast, _, _ = parser.parse()
 
     # THEN the parsed function should be marked as throwing
     assert len(ast) == 1
@@ -149,7 +149,7 @@ def test_parsing_function_throwing_specific_error(tmp_path: Path):
     resolver_mock.resolve.return_value = BaseExternalType(name="bar", primitive=BaseExternalType.Primitive.error)
 
     # WHEN parsing the input
-    ast, _ = parser.parse()
+    ast, _, _ = parser.parse()
 
     # THEN the parsed function should be marked as throwing `bar`
     assert len(ast) == 1

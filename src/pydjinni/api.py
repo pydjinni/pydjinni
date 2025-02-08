@@ -25,6 +25,7 @@ from pydjinni.file.processed_files_model_builder import ProcessedFilesModelBuild
 from pydjinni.packaging.architecture import Architecture
 from pydjinni.packaging.packaging_config import PackageBaseConfig
 from pydjinni.packaging.target import PackageTarget
+from pydjinni.parser.ast import Namespace
 from pydjinni.parser.parser import Parser
 
 try:
@@ -313,13 +314,14 @@ class API:
             )
 
             # parsing the input IDL. The output is an AST that contains type definitions for each provided marshal
-            ast, refs = parser.parse()
+            type_defs, type_refs, ast = parser.parse()
 
             return API.ConfiguredContext.GenerateContext(
                 generate_targets=self._generate_targets,
                 file_writer=self._file_reader_writer,
+                defs=type_defs,
+                refs=type_refs,
                 ast=ast,
-                refs=refs,
                 config=generate_config
             )
 
@@ -409,12 +411,16 @@ class API:
 
         class GenerateContext:
             def __init__(self, generate_targets: dict[str, Target],
-                         file_writer: FileReaderWriter, ast: list[BaseType], refs: list[TypeReference],
+                         file_writer: FileReaderWriter,
+                         defs: list[BaseType],
+                         refs: list[TypeReference],
+                         ast: list[BaseType | Namespace],
                          config: GenerateBaseConfig):
                 self._generate_targets = generate_targets
                 self._file_reader_writer = file_writer
-                self.ast = ast
+                self.defs = defs
                 self.refs = refs
+                self.ast = ast
                 self._config = config
 
             def generate(self, target_name: str, clean: bool = False) -> API.ConfiguredContext.GenerateContext:
@@ -429,7 +435,7 @@ class API:
                     the same context. Generation commands can be chained.
                 """
                 target = self._generate_targets[target_name]
-                target.generate(self.ast, clean=clean, copy_support_lib_sources=self._config.support_lib_sources)
+                target.generate(self.defs, clean=clean, copy_support_lib_sources=self._config.support_lib_sources)
                 return self
 
             def write_processed_files(self) -> Path | None:

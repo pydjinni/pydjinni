@@ -25,7 +25,15 @@ from lsprotocol.types import *
 from pydjinni import API
 from pydjinni.defs import DEFAULT_CONFIG_PATH
 from pydjinni.exceptions import ApplicationException, ConfigurationException
-from pydjinni.parser.ast import Interface, Record, Function, Enum, ErrorDomain, Flags
+from pydjinni.parser.ast import (
+    Interface,
+    Record,
+    Function,
+    Enum,
+    ErrorDomain,
+    Flags,
+    Namespace
+)
 from pydjinni.parser.base_models import TypeReference, BaseType, SymbolicConstantType, BaseField
 from pydjinni.parser.parser import Parser
 from pydjinni_language_server.text_document_path import TextDocumentPath
@@ -308,20 +316,40 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                 return SymbolKind.Null
 
         def to_document_symbol(type_def):
-            if isinstance(type_def, Interface):
+            if isinstance(type_def, Namespace):
+                return DocumentSymbol(
+                    name=type_def.name,
+                    kind=SymbolKind.Namespace,
+                    range=type_range(type_def),
+                    selection_range=type_range(type_def),
+                    children=[to_document_symbol(child) for child in type_def.children]
+                )
+            elif isinstance(type_def, Interface):
                 return DocumentSymbol(
                     name=type_def.name,
                     kind=SymbolKind.Interface,
                     range=type_range(type_def),
                     selection_range=type_range(type_def),
                     deprecated=type_def.deprecated != False,
+                    detail="interface",
                     children=[
                         DocumentSymbol(
                             name=method.name,
                             kind=SymbolKind.Method,
                             range=type_range(method),
                             selection_range=type_range(method),
-                            deprecated=method.deprecated != False
+                            deprecated=method.deprecated != False,
+                            detail=method.return_type_ref.name,
+                            children=[
+                                DocumentSymbol(
+                                    name=parameter.name,
+                                    kind=SymbolKind.Variable,
+                                    range=type_range(parameter),
+                                    selection_range=type_range(parameter),
+                                    detail=parameter.type_ref.name
+                                )
+                                for parameter in method.parameters
+                            ]
                         ) for method in type_def.methods
                     ]
                 )
@@ -332,6 +360,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                     range=type_range(type_def),
                     selection_range=type_range(type_def),
                     deprecated=type_def.deprecated != False,
+                    detail="record",
                     children=[
                         DocumentSymbol(
                             name=field.name,
@@ -349,6 +378,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                     range=type_range(type_def),
                     selection_range=type_range(type_def),
                     deprecated=type_def.deprecated != False,
+                    detail="enum",
                     children=[
                         DocumentSymbol(
                             name=item.name,
@@ -365,6 +395,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                     range=type_range(type_def),
                     selection_range=type_range(type_def),
                     deprecated=type_def.deprecated != False,
+                    detail="flags",
                     children=[
                         DocumentSymbol(
                             name=flag.name,
@@ -378,16 +409,26 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
             elif isinstance(type_def, ErrorDomain):
                 return DocumentSymbol(
                     name=type_def.name,
-                    kind=SymbolKind.Event,
+                    kind=SymbolKind.Class,
                     range=type_range(type_def),
                     selection_range=type_range(type_def),
                     deprecated=type_def.deprecated != False,
+                    detail="error",
                     children=[
                         DocumentSymbol(
                             name=error_code.name,
                             kind=SymbolKind.Field,
                             range=type_range(error_code),
-                            selection_range=type_range(error_code)
+                            selection_range=type_range(error_code),
+                            children=[
+                                DocumentSymbol(
+                                    name=parameter.name,
+                                    kind=SymbolKind.Variable,
+                                    range=type_range(parameter),
+                                    selection_range=type_range(parameter),
+                                    detail=parameter.type_ref.name
+                                ) for parameter in error_code.parameters
+                            ]
                         ) for error_code in type_def.error_codes
                     ]
                 )
@@ -398,6 +439,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                     range=type_range(type_def),
                     selection_range=type_range(type_def),
                     deprecated=type_def.deprecated != False,
+                    detail="function"
                 )
             else:
                 return DocumentSymbol(

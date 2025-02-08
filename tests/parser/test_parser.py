@@ -82,7 +82,7 @@ def when(parser: Parser, type_type: type[TypeDef], type_name: str = None) -> Typ
         the one element in the AST that was returned by the parser
     """
     # WHEN parsing the input file
-    ast, _ = parser.parse()
+    ast, _, _ = parser.parse()
 
     # THEN the resulting AST should contain one element
     assert len(ast) == 1
@@ -248,7 +248,7 @@ def test_extern(tmp_path: Path):
     extern_file.touch()
 
     # WHEN parsing the file
-    ast, _ = parser.parse()
+    ast, _, _ = parser.parse()
 
     # THEN the Resolver should have been called in order to load the external type
     resolver_mock.load_external.assert_called_once()
@@ -294,18 +294,24 @@ def test_namespace(tmp_path: Path):
                 }
             }
         }
-            """
+        """
     )
 
     # WHEN parsing the idl file
-    ast, _ = parser.parse()
+    defs, _, ast = parser.parse()
 
-    # THEN the ast should contain two types each labelled with their respective namespace
-    assert len(ast) == 2
-    assert ast[0].name == "foo"
-    assert ast[0].namespace == ["foo", "bar"]
-    assert ast[1].name == "bar"
-    assert ast[1].namespace == ["foo", "bar", "baz"]
+    # THEN the type_defs should contain two types each labelled with their respective namespace
+    assert len(defs) == 2
+    assert defs[0].name == "foo"
+    assert defs[0].namespace == ["foo", "bar"]
+    assert defs[1].name == "bar"
+    assert defs[1].namespace == ["foo", "bar", "baz"]
+
+    # THEN the ast should contain two nested namespaces
+    assert len(ast) == 1
+    assert ast[0].name == "foo.bar"
+    assert len(ast[0].children) == 2
+    assert ast[0].children[1].name == "baz"
 
 
 def test_generic_parameters_not_allowed(tmp_path: Path):
