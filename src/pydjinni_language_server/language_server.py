@@ -190,7 +190,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
 
     @server.feature(INITIALIZED)
     @error_logger
-    def init(ls):
+    def init(ls, _: InitializedParams):
         ls.show_message_log(f"Initialized PyDjinni language server {version('pydjinni')}")
         ls.show_message_log(f"Working directory: {Path(os.getcwd()).absolute().as_uri()}")
 
@@ -204,6 +204,8 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
             ls.show_message_log(f"Log files are written to: {log.absolute().as_uri()}")
         else:
             ls.show_message_log(f"Log files are disabled")
+        if hierarchical_document_symbol_support:
+            ls.show_message_log(f"Client supports hierarchical document symbols")
         for workspace_folder in server.workspace.folders.values():
             ls.register_capability(RegistrationParams(
                 registrations=[
@@ -300,7 +302,6 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
     @error_logger
     def code_action(ls, params: CodeActionParams):
         pass
-
 
     @server.feature(TEXT_DOCUMENT_DOCUMENT_SYMBOL)
     @error_logger
@@ -464,7 +465,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                     kind=map_kind(type_def),
                     deprecated=type_def.deprecated != False,
                     container_name=".".join(type_def.namespace)
-                ) for type_def in ast_cache[params.text_document.uri]]
+                ) for type_def in ast_cache[params.text_document.uri] if not isinstance(type_def, Function) or not type_def.anonymous]
 
     @server.feature(WORKSPACE_DID_CHANGE_WATCHED_FILES)
     @error_logger
