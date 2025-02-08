@@ -92,7 +92,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
     if log:
         logging.basicConfig(filename=log, level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s')
 
-    ast_cache: dict[str, list[BaseType]] = {}
+    ast_cache: dict[str, list[BaseType | Namespace]] = {}
     hover_cache: dict[str, dict[int, dict[int, TypeReference]]] = {}
     dependency_cache: dict[str, set[str]] = {}
     hierarchical_document_symbol_support = False
@@ -146,7 +146,10 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                 })
             generate_context = api.parse(path)
             refs = generate_context.refs
-            ast_cache[uri] = [type_def for type_def in generate_context.ast if type_def.position.file.as_uri() == uri]
+
+            ast = generate_context.ast if hierarchical_document_symbol_support else generate_context.defs
+            ast_cache[uri] = [type_def for type_def in ast if
+                              type_def.position.file.as_uri() == uri]
         except Parser.ParsingExceptionList as e:
             error_items = [to_diagnostic(error) for error in e.items
                            if isinstance(error.position.file, TextDocumentPath)
@@ -339,7 +342,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                             range=type_range(method),
                             selection_range=type_range(method),
                             deprecated=method.deprecated != False,
-                            detail=method.return_type_ref.name,
+                            detail=method.return_type_ref.name if method.return_type_ref else None,
                             children=[
                                 DocumentSymbol(
                                     name=parameter.name,
@@ -459,7 +462,8 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                         range=type_range(type_def)
                     ),
                     kind=map_kind(type_def),
-                    deprecated=type_def.deprecated != False
+                    deprecated=type_def.deprecated != False,
+                    container_name=".".join(type_def.namespace)
                 ) for type_def in ast_cache[params.text_document.uri]]
 
     @server.feature(WORKSPACE_DID_CHANGE_WATCHED_FILES)
