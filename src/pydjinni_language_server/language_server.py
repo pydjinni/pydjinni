@@ -40,7 +40,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-def init_language_server(config: Path, generate_on_save: bool, log: Path):
+def init_language_server(config: Path, generate_on_save: bool, generate_base_path: Path, log: Path):
     server = LanguageServer("pydjinni-language-server", version('pydjinni'), converter_factory=tolerant_converter)
     if log:
         logging.basicConfig(filename=log, level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s')
@@ -229,22 +229,24 @@ def init_language_server(config: Path, generate_on_save: bool, log: Path):
                     if hasattr(type_def, target.key):
                         target_type = getattr(type_def, target.key)
                         if hasattr(target_type, "header"):
-                            file_output_path: Path = main_generator.header_path / target_type.header
+                            file_output_path: Path = generate_base_path / main_generator.header_path / target_type.header
                         else:
-                            file_output_path: Path = main_generator.source_path / target_type.source
+                            file_output_path: Path = generate_base_path / main_generator.source_path / target_type.source
                         line = (type_def.position.start.line + (
                             len(type_def.comment.split("\n")) if type_def.comment else 0)) - 1
-                        lenses.append(CodeLens(
-                            range=Range(
-                                start=Position(line, type_def.position.start.col),
-                                end=Position(line, type_def.position.start.col + 5)
-                            ),
-                            command=Command(
-                                title=target.display_key,
-                                command="open_generated_interface",
-                                arguments=[file_output_path.absolute().as_uri(), target.display_key, type_def.name]
-                            )
-                        ))
+                        generated_file_path = file_output_path.absolute()
+                        if generated_file_path.exists():
+                            lenses.append(CodeLens(
+                                range=Range(
+                                    start=Position(line, type_def.position.start.col),
+                                    end=Position(line, type_def.position.start.col + 5)
+                                ),
+                                command=Command(
+                                    title=target.display_key,
+                                    command="open_generated_interface",
+                                    arguments=[generated_file_path.as_uri(), target.display_key, type_def.name]
+                                )
+                            ))
         return lenses
 
     @server.command("open_generated_interface")
@@ -269,9 +271,16 @@ def init_language_server(config: Path, generate_on_save: bool, log: Path):
         ls.show_message_log(f"[{TEXT_DOCUMENT_DID_SAVE}] {params.text_document.uri}")
         if generate_on_save:
             ls.show_message_log(f"[{TEXT_DOCUMENT_DID_SAVE}] Generating interfaces for {params.text_document.uri}")
-            context = api.parse(TextDocumentPath(ls.workspace.get_text_document(params.text_document.uri)))
-            for target in api.configured_targets:
-                context.generate(target.key)
+            generate_base_path.mkdir(parents=True, exist_ok=True)
+            prev_cwd = Path.cwd()
+            if generate_base_path.absolute().is_relative_to(prev_cwd.absolute()):
+                os.chdir(generate_base_path)
+                try:
+                    context = api.parse(TextDocumentPath(ls.workspace.get_text_document(params.text_document.uri)))
+                    for target in api.configured_targets:
+                        context.generate(target.key, clean=True)
+                finally:
+                    os.chdir(prev_cwd)
 
     @server.feature(WORKSPACE_DID_CHANGE_WATCHED_FILES)
     @error_logger

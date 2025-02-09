@@ -60,12 +60,13 @@ def config_schema():
 @click.option('--port', '-p', type=int, default=8080, help="Port for the TCP server.")
 @click.option('--config', '-c', default=DEFAULT_CONFIG_PATH, type=Path, help="Path to the PyDjinni configuration file.")
 @click.option('--generate-on-save', '-g', is_flag=True, help="If enabled, the generator will run on file save.")
+@click.option('--generate-base-path', '-b', default=Path(), type=Path, help="Base path for the generated files.")
 @click.option('--log', '-l', default=None, type=Path, help="Log file for the Language Server.")
-def start(connection, host: str, port: int, config: Path, generate_on_save: bool, log: Path):
+def start(connection, host: str, port: int, config: Path, generate_on_save: bool, generate_base_path: Path, log: Path):
     """
     Start the Language Server
     """
-    server = init_language_server(config=config, generate_on_save=generate_on_save, log=log)
+    server = init_language_server(config=config, generate_on_save=generate_on_save, generate_base_path=generate_base_path, log=log)
     match connection:
         case ConnectionType.TCP:
             server.start_tcp(host, port)
