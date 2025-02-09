@@ -104,10 +104,17 @@ class Parser(IdlVisitor):
         return "\n".join([line.getText()[1:] for line in ctx.COMMENT()])
 
     def visitTypeDecl(self, ctx: IdlParser.TypeDeclContext):
-        type_decl = self.visit(ctx.enum() or ctx.flags() or ctx.record() or ctx.interface() or ctx.namedFunction() or ctx.errorDomain())
-        self.resolver.register(type_decl)
-        self.type_decls.append(type_decl)
-        return type_decl
+        type_decl_context = ctx.enum() or ctx.flags() or ctx.record() or ctx.interface() or ctx.namedFunction() or ctx.errorDomain()
+        if type_decl_context:
+            type_decl = self.visit(type_decl_context)
+            self.resolver.register(type_decl)
+            self.type_decls.append(type_decl)
+            return type_decl
+        else:
+            self.errors.append(Parser.ParsingException(
+                "unknown type. Expected enum | flags | record | interface | function | error",
+                position=self._position(ctx)
+            ))
 
     def visitIdentifier(self, ctx: IdlParser.IdentifierContext) -> Identifier:
         return Identifier(ctx.ID().getText())
@@ -416,7 +423,7 @@ class Parser(IdlVisitor):
             comment=self.visit(ctx.comment()) if ctx.comment() else None,
             name=name,
             position=self._position(ctx),
-            children=[self.visit(content) for content in ctx.namespaceContent()]
+            children=list(filter(None, [self.visit(content) for content in ctx.namespaceContent()])),
         )
         for _ in range(self.current_namespace_stack_size.pop()):
             self.current_namespace.pop()
