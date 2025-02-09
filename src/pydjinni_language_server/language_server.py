@@ -17,7 +17,7 @@ import os
 import uuid
 from importlib.metadata import version
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import unquote
 
 from lsprotocol.types import *
 from pygls.server import LanguageServer
@@ -244,7 +244,7 @@ def init_language_server(config: Path, generate_on_save: bool, generate_base_pat
                                 command=Command(
                                     title=target.display_key,
                                     command="open_generated_interface",
-                                    arguments=[generated_file_path.as_uri(), target.display_key, type_def.name]
+                                    arguments=[generated_file_path.as_uri()]
                                 )
                             ))
         return lenses
@@ -253,17 +253,10 @@ def init_language_server(config: Path, generate_on_save: bool, generate_base_pat
     @error_logger
     def execute_command(ls: LanguageServer, arguments):
         file_path = arguments[0]
-        target_language = arguments[1]
-        type_def_name = arguments[2]
-        if Path(unquote(urlparse(file_path).path)).exists():
-            ls.show_message_log(f"[command/open_generated_interface] {file_path}")
-            ls.show_document_async(ShowDocumentParams(
-                uri=file_path
-            ))
-        else:
-            ls.show_message_log(f"[command/open_generated_interface] failed. Cannot find {file_path}")
-            ls.show_message(f"PyDjinni: Cannot find generated {target_language} interface for {type_def_name}.",
-                            msg_type=MessageType.Error)
+        ls.show_message_log(f"[command/open_generated_interface] {file_path}")
+        ls.show_document_async(ShowDocumentParams(
+            uri=file_path
+        ))
 
     @server.feature(TEXT_DOCUMENT_DID_SAVE)
     @error_logger
