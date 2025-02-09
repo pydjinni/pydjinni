@@ -388,4 +388,4 @@ class CppErrorDomain(CppBaseType):
     class CppErrorCode(CppBaseType):
         @property
         def constructor_comment(self):
-            return '\n'.join([f"@param {parameter.cpp.name} {parameter.cpp.comment}" for parameter in self.decl.parameters])
+            return '\n'.join([f"@param {parameter.cpp.name} {parameter.cpp.comment}" for parameter in self.decl.parameters if parameter.comment is not None])
