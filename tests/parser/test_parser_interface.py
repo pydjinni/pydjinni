@@ -19,8 +19,7 @@ import pytest
 from pydjinni.parser.ast import Interface
 from pydjinni.parser.base_models import BaseExternalType, TypeReference
 from pydjinni.parser.parser import Parser
-from test_parser import given, when
-from tests.parser.test_parser import assert_exception
+from test_parser import given, when, assert_exception
 
 
 def assert_method(method: Interface.Method, name: str, params: list[tuple[str, str]] = None, return_type: str = None,
