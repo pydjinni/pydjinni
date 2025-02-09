@@ -18,13 +18,14 @@ import os
 import uuid
 from importlib.metadata import version
 from pathlib import Path
-from urllib.parse import unquote
+from urllib.parse import unquote, urlparse
 
 import click
 from lsprotocol.types import *
 from pydjinni import API
 from pydjinni.defs import DEFAULT_CONFIG_PATH
 from pydjinni.exceptions import ApplicationException, ConfigurationException
+from pydjinni.generator.target import Target
 from pydjinni.parser.ast import (
     Interface,
     Record,
@@ -83,8 +84,9 @@ def config_schema():
 @click.option('--host', '-h', type=str, default='127.0.0.1', help="Hostname for the TCP server.")
 @click.option('--port', '-p', type=int, default=8080, help="Port for the TCP server.")
 @click.option('--config', '-c', default=DEFAULT_CONFIG_PATH, type=Path, help="Path to the PyDjinni configuration file.")
+@click.option('--generate-on-save', '-g', is_flag=True, help="If enabled, the generator will run on file save.")
 @click.option('--log', '-l', default=None, type=Path, help="Log file for the Language Server.")
-def start(connection, host: str, port: int, config: Path, log: Path = None):
+def start(connection, host: str, port: int, config: Path, generate_on_save: bool, log: Path):
     """
     Start a Language Server
     """
@@ -93,9 +95,18 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
         logging.basicConfig(filename=log, level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(message)s')
 
     ast_cache: dict[str, list[BaseType | Namespace]] = {}
+    type_def_cache: dict[str, list[BaseType]] = {}
     hover_cache: dict[str, dict[int, dict[int, TypeReference]]] = {}
     dependency_cache: dict[str, set[str]] = {}
-    hierarchical_document_symbol_support = False
+    configured_targets_cache: list[Target] = []
+    if config.exists():
+        api = API().configure(path=config)
+        configured_targets_cache = api.configured_targets
+    else:
+        api = API().configure(options={
+            "generate": {}
+        })
+
 
     def to_diagnostic(error: ApplicationException):
         return Diagnostic(
@@ -137,18 +148,14 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
         error_items = []
         refs = []
         path = TextDocumentPath(document)
+        nonlocal configured_targets_cache
         try:
-            if config.exists():
-                api = API().configure(path=config)
-            else:
-                api = API().configure(options={
-                    "generate": {}
-                })
             generate_context = api.parse(path)
             refs = generate_context.refs
 
-            ast = generate_context.ast if hierarchical_document_symbol_support else generate_context.defs
-            ast_cache[uri] = [type_def for type_def in ast if
+            ast_cache[uri] = [type_def for type_def in generate_context.ast if
+                              type_def.position.file.as_uri() == uri]
+            type_def_cache[uri] = [type_def for type_def in generate_context.defs if
                               type_def.position.file.as_uri() == uri]
         except Parser.ParsingExceptionList as e:
             error_items = [to_diagnostic(error) for error in e.items
@@ -204,8 +211,6 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
             ls.show_message_log(f"Log files are written to: {log.absolute().as_uri()}")
         else:
             ls.show_message_log(f"Log files are disabled")
-        if hierarchical_document_symbol_support:
-            ls.show_message_log(f"Client supports hierarchical document symbols")
         for workspace_folder in server.workspace.folders.values():
             ls.register_capability(RegistrationParams(
                 registrations=[
@@ -216,17 +221,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                             FileSystemWatcher(
                                 glob_pattern=RelativePattern(workspace_folder, "**/*.pydjinni"),
                                 kind=WatchKind.Create | WatchKind.Change | WatchKind.Delete
-                            )
-                        ])
-                    )
-                ]
-            ))
-            ls.register_capability(RegistrationParams(
-                registrations=[
-                    Registration(
-                        id=str(uuid.uuid4()),
-                        method=WORKSPACE_DID_CHANGE_WATCHED_FILES,
-                        register_options=DidChangeWatchedFilesRegistrationOptions(watchers=[
+                            ),
                             FileSystemWatcher(
                                 glob_pattern=RelativePattern(workspace_folder, config.as_posix()),
                                 kind=WatchKind.Create | WatchKind.Change | WatchKind.Delete
@@ -235,12 +230,6 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                     )
                 ]
             ))
-
-    @server.feature(INITIALIZE)
-    @error_logger
-    def initialize(ls, params: InitializeParams):
-        nonlocal hierarchical_document_symbol_support
-        hierarchical_document_symbol_support = params.capabilities.text_document.document_symbol.hierarchical_document_symbol_support
 
     @server.feature(TEXT_DOCUMENT_DID_CHANGE)
     @error_logger
@@ -256,6 +245,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
         hover_cache.pop(params.text_document.uri, {})
         dependency_cache.pop(params.text_document.uri, {})
         ast_cache.pop(params.text_document.uri, {})
+        type_def_cache.pop(params.text_document.uri, {})
         for cache in dependency_cache.values():
             if path in cache:
                 cache.remove(path)
@@ -305,7 +295,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
 
     @server.feature(TEXT_DOCUMENT_DOCUMENT_SYMBOL)
     @error_logger
-    def document_symbol(ls, params: DocumentSymbolParams):
+    def document_symbol(ls: LanguageServer, params: DocumentSymbolParams):
         ls.show_message_log(f"Document symbol request: {unquote(params.text_document.uri)}")
         def map_kind(type_def):
             if isinstance(type_def, Interface):
@@ -443,7 +433,17 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                     range=type_range(type_def),
                     selection_range=type_range(type_def),
                     deprecated=type_def.deprecated != False,
-                    detail="function"
+                    detail="function",
+                    children=[
+                        DocumentSymbol(
+                            name=parameter.name,
+                            kind=SymbolKind.Variable,
+                            range=type_range(parameter),
+                            selection_range=type_range(parameter),
+                            detail=parameter.type_ref.name
+                        )
+                        for parameter in type_def.parameters
+                    ]
                 )
             else:
                 return DocumentSymbol(
@@ -453,7 +453,7 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                     selection_range=type_range(type_def)
                 )
         if params.text_document.uri in ast_cache:
-            if hierarchical_document_symbol_support:
+            if ls.client_capabilities.text_document.document_symbol.hierarchical_document_symbol_support:
                 return [to_document_symbol(type_def) for type_def in ast_cache[params.text_document.uri]]
             else:
                 return [SymbolInformation(
@@ -465,13 +465,75 @@ def start(connection, host: str, port: int, config: Path, log: Path = None):
                     kind=map_kind(type_def),
                     deprecated=type_def.deprecated != False,
                     container_name=".".join(type_def.namespace)
-                ) for type_def in ast_cache[params.text_document.uri] if not isinstance(type_def, Function) or not type_def.anonymous]
+                ) for type_def in type_def_cache[params.text_document.uri] if not isinstance(type_def, Function) or not type_def.anonymous]
+
+    @server.feature(TEXT_DOCUMENT_CODE_LENS)
+    @error_logger
+    def code_lense(ls, params: CodeLensParams):
+        ls.show_message_log(f"code lense request: {params.text_document.uri}")
+        lenses: list[CodeLens] = []
+        for target in configured_targets_cache:
+            main_generator = [generator for generator in target.generator_instances if generator.key == target.key][0]
+            for type_def in type_def_cache[params.text_document.uri]:
+                if not isinstance(type_def, Function) or not type_def.anonymous:
+                    if hasattr(type_def, target.key):
+                        target_type = getattr(type_def, target.key)
+                        if hasattr(target_type, "header"):
+                            file_output_path: Path = main_generator.header_path / target_type.header
+                        else:
+                            file_output_path: Path = main_generator.source_path / target_type.source
+                        line = (type_def.position.start.line + (len(type_def.comment.split("\n")) if type_def.comment else 0)) - 1
+                        lenses.append(CodeLens(
+                            range=Range(
+                                start=Position(line, 0),
+                                end=Position(line, 5)
+                            ),
+                            command=Command(
+                                title=target.display_key,
+                                command="open_generated_interface",
+                                arguments=[file_output_path.absolute().as_uri(), target.display_key, type_def.name]
+                            )
+                        ))
+        return lenses
+
+    @server.command("open_generated_interface")
+    @error_logger
+    def execute_command(ls: LanguageServer, arguments):
+        file_path = arguments[0]
+        target_language = arguments[1]
+        type_def_name = arguments[2]
+        if Path(unquote(urlparse(file_path).path)).exists():
+            ls.show_message_log(f"Command: Open generated interface {file_path}")
+            ls.show_document_async(ShowDocumentParams(
+                uri=file_path
+            ))
+        else:
+            ls.show_message_log(f"Command: Open generated interface failed. Cannot find {file_path}")
+            ls.show_message(f"Cannot find generated {target_language} interface for {type_def_name}.", msg_type=MessageType.Error)
+
+
+    @server.feature(TEXT_DOCUMENT_DID_SAVE)
+    @error_logger
+    def did_save(ls, params: DidSaveTextDocumentParams):
+        ls.show_message_log(f"File saved: {params.text_document.uri}")
+        if generate_on_save:
+            ls.show_message_log(f"Generating interfaces for {params.text_document.uri}")
+            context = api.parse(TextDocumentPath(ls.workspace.get_text_document(params.text_document.uri)))
+            for target in configured_targets_cache:
+                context.generate(target.key)
+
 
     @server.feature(WORKSPACE_DID_CHANGE_WATCHED_FILES)
     @error_logger
-    def did_change_watched_files(ls, params: DidChangeWatchedFilesParams):
+    def did_change_watched_files(ls: LanguageServer, params: DidChangeWatchedFilesParams):
         for change in params.changes:
             path = unquote(change.uri)
+            if change.uri == config.absolute().as_uri():
+                nonlocal api
+                nonlocal configured_targets_cache
+                api = API().configure(path=config)
+                configured_targets_cache = api.configured_targets
+                ls.lsp.send_request(WORKSPACE_CODE_LENS_REFRESH)
             ls.show_message_log(f"Did Change: {path}")
             ls.show_message_log(f"Searching for dependents that need updating...")
             for uri, dependencies in dependency_cache.items():

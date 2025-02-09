@@ -514,8 +514,13 @@ class Parser(IdlVisitor):
                 target.marshal(self.type_decls, self.field_decls)
             for decl in self.type_decls:
                 if isinstance(decl, Record):
-                    if Record.Deriving.ord in decl.deriving:
-                        for field in decl.fields:
+                    for field in decl.fields:
+                        if field.type_ref.type_def and field.type_ref.type_def.primitive == BaseExternalType.Primitive.error:
+                            self.errors.append(Parser.ParsingException(
+                                "Cannot assign an error as record field type",
+                                position=field.type_ref.position
+                            ))
+                        if Record.Deriving.ord in decl.deriving:
                             if field.type_ref.type_def and field.type_ref.type_def.primitive == BaseExternalType.Primitive.collection:
                                 self.errors.append(Parser.ParsingException(
                                     "Cannot compare collections in 'ord' deriving",
@@ -523,6 +528,11 @@ class Parser(IdlVisitor):
                                 ))
                 if isinstance(decl, Interface):
                     for method in decl.methods:
+                        if method.return_type_ref and method.return_type_ref.type_def and method.return_type_ref.type_def.primitive == BaseExternalType.Primitive.error:
+                            self.errors.append(Parser.ParsingException(
+                                "Cannot return an error from a method",
+                                position=method.return_type_ref.position
+                            ))
                         if method.throwing is not None:
                             for type_ref in method.throwing:
                                 if type_ref.type_def.primitive != BaseExternalType.Primitive.error:
@@ -530,7 +540,24 @@ class Parser(IdlVisitor):
                                         "Only errors can be thrown",
                                         position=type_ref.position
                                     ))
+                        for parameter in method.parameters:
+                            if parameter.type_ref.type_def and parameter.type_ref.type_def.primitive == BaseExternalType.Primitive.error:
+                                self.errors.append(Parser.ParsingException(
+                                    "Cannot pass an error type to a method",
+                                    position=parameter.type_ref.position
+                                ))
                 if isinstance(decl, Function):
+                    if decl.return_type_ref and decl.return_type_ref.type_def and decl.return_type_ref.type_def.primitive == BaseExternalType.Primitive.error:
+                        self.errors.append(Parser.ParsingException(
+                            "Cannot return an error type from a function",
+                            position=decl.return_type_ref.position
+                        ))
+                    for parameter in decl.parameters:
+                        if parameter.type_ref.type_def and parameter.type_ref.type_def.primitive == BaseExternalType.Primitive.error:
+                            self.errors.append(Parser.ParsingException(
+                                "Cannot pass an error type to a function",
+                                position=parameter.type_ref.position
+                            ))
                     if decl.throwing is not None:
                         for type_ref in decl.throwing:
                             if type_ref.type_def.primitive != BaseExternalType.Primitive.error:

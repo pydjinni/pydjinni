@@ -21,4 +21,5 @@ class YamlTarget(Target):
     Generate YAML type interfaces.
     """
     key = "yaml"
+    display_key = "YAML"
     generators = [YamlGenerator]

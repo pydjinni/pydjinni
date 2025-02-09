@@ -22,5 +22,6 @@ class CppTarget(Target):
     Generate C++ interfaces.
     """
     key = "cpp"
+    display_key = "C++"
     generators = [CppGenerator]
     supported_deriving = {Record.Deriving.eq, Record.Deriving.ord, Record.Deriving.str}

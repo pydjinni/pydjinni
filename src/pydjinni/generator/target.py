@@ -52,6 +52,11 @@ class Target(ABC):
 
     @property
     @abstractmethod
+    def display_key(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
     def generators(self) -> list[type[Generator]]:
         """
         A list of generators related to the target.

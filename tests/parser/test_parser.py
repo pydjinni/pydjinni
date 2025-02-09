@@ -93,6 +93,13 @@ def when(parser: Parser, type_type: type[TypeDef], type_name: str = None) -> Typ
     assert type_def.name == type_name
     return type_def
 
+def assert_exception(parser: Parser, description: str):
+    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
+        parser.parse()
+    assert len(excinfo.value.items) == 1
+    exception = excinfo.value.items[0]
+    assert isinstance(exception, Parser.ParsingException)
+    assert exception.description == description
 
 def assert_field(field: DataField, name: str, typename: str, optional: bool = False):
     assert field.name == name
