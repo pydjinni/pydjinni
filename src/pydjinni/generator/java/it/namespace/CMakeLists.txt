@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(record)
-add_subdirectory(interface)
-add_subdirectory(enum)
-add_subdirectory(flags)
-add_subdirectory(function)
-add_subdirectory(async)
-add_subdirectory(error)
-add_subdirectory(namespace)
+java_test_case(NamespaceTest
+    OPTIONS
+        generate.java.package=test.namespace_test
+        generate.jni.identifier.file.prefix=marshal_
+        generate.jni.identifier.file.style=snake_case
+        generate.jni.namespace=test::namespace_test::jni
+    SOURCES
+        tests/TestNamespace.java
+)

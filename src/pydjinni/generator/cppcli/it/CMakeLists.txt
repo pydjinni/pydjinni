@@ -1,4 +1,4 @@
-# Copyright 2024 jothepro
+# Copyright 2024 - 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -83,3 +83,4 @@ add_subdirectory(flags)
 add_subdirectory(function)
 add_subdirectory(async)
 add_subdirectory(error)
+add_subdirectory(namespace)
