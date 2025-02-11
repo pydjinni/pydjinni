@@ -87,3 +87,8 @@ cpp_test_case(ErrorTest
     INCLUDES
         include
 )
+
+cpp_test_case(NamespaceTest
+    SOURCES
+        tests/test_namespace.cpp
+)
