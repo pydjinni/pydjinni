@@ -1,0 +1,47 @@
+// Copyright 2025 jothepro
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using NUnit.Framework;
+
+namespace Testing.Unit.Namespace
+{
+    [TestFixture]
+    public class NamespaceTest
+    {
+
+        [Test]
+        public void TestGlobalInterface()
+        {
+            var result = Test.NamespaceTest.CppCli.GlobalInterface.GetNamespacedRecord();
+            Assert.That(result, Is.EqualTo(
+                new Test.NamespaceTest.CppCli.Something.Namespaced.NamespacedRecord(
+                    new Test.NamespaceTest.CppCli.GlobalRecord(
+                        new Test.NamespaceTest.CppCli.Something.Namespaced.OtherNamespacedRecord(5)
+                    )
+                )
+            ));
+        }
+
+        [Test]
+        public void TestNamespacedInterface()
+        {
+            var result = Test.NamespaceTest.CppCli.Something.Namespaced.NamespacedInterface.GetGlobalRecord();
+            Assert.That(result, Is.EqualTo(
+                new Test.NamespaceTest.CppCli.GlobalRecord(
+                    new Test.NamespaceTest.CppCli.Something.Namespaced.OtherNamespacedRecord(5)
+                )
+           ));
+        }
+    }
+}

@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(record)
-add_subdirectory(interface)
-add_subdirectory(enum)
-add_subdirectory(flags)
-add_subdirectory(function)
-add_subdirectory(async)
-add_subdirectory(error)
-add_subdirectory(namespace)
+cppcli_test_case(NamespaceTest
+    OPTIONS
+        generate.cppcli.namespace=Test::NamespaceTest::CppCli
+    SOURCES
+        tests/NamespaceTest.cs
+)
