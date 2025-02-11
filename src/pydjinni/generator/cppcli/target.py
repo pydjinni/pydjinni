@@ -22,5 +22,6 @@ class CppCliTarget(Target):
     Generate C++/CLI interfaces.
     """
     key = "cppcli"
+    display_key = "C++/CLI"
     generators = [CppCliGenerator]
     supported_deriving = {Record.Deriving.eq, Record.Deriving.ord, Record.Deriving.str}

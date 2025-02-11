@@ -17,9 +17,9 @@ from pathlib import Path
 import pytest
 
 from pydjinni.parser.ast import Interface
-from pydjinni.parser.base_models import BaseExternalType
+from pydjinni.parser.base_models import BaseExternalType, TypeReference
 from pydjinni.parser.parser import Parser
-from test_parser import given, when
+from test_parser import given, when, assert_exception
 
 
 def assert_method(method: Interface.Method, name: str, params: list[tuple[str, str]] = None, return_type: str = None,
@@ -72,7 +72,13 @@ def test_parsing_interface(tmp_path: Path):
             """
     )
 
-    resolver_mock.resolve.return_value = BaseExternalType(name='application_error', primitive=BaseExternalType.Primitive.error)
+    def mock_return_types(type_reference: TypeReference):
+        if type_reference.name == "application_error":
+            return BaseExternalType(name='application_error', primitive=BaseExternalType.Primitive.error)
+        else:
+            return BaseExternalType(name='<any>', primitive=BaseExternalType.Primitive.primitive)
+
+    resolver_mock.resolve.side_effect = mock_return_types
 
     interface = when(parser, Interface, "foo")
 
@@ -216,12 +222,39 @@ def test_parsing_interface_throwing_non_error_not_allowed(tmp_path: Path):
 
     resolver_mock.resolve.return_value = BaseExternalType(name="bar", primitive=BaseExternalType.Primitive.record)
     # THEN a ParsingException should be raised
-    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
-        parser.parse()
-    assert len(excinfo.value.items) == 1
-    exception = excinfo.value.items[0]
-    assert isinstance(exception, Parser.ParsingException)
-    assert exception.description == "Only errors can be thrown"
+    assert_exception(parser, "Only errors can be thrown")
+
+def test_parsing_interface_returning_error_not_allowed(tmp_path: Path):
+    # GIVEN an idl file that defines an interface with a method returning an error type
+    parser, resolver_mock = given(
+        tmp_path=tmp_path,
+        input_idl="""
+            foo = interface +cpp {
+                foo() -> some_error;
+            }
+            """
+    )
+    resolver_mock.resolve.return_value = BaseExternalType(name="some_error", primitive=BaseExternalType.Primitive.error)
+
+    # WHEN parsing the input
+    # THEN an exception should be raised because returning an error type is not allowed
+    assert_exception(parser, "Cannot return an error from a method")
+
+def test_parsing_interface_error_parameter_not_allowed(tmp_path: Path):
+    # GIVEN an idl file that defines an interface with a method that is passed an error type
+    parser, resolver_mock = given(
+        tmp_path=tmp_path,
+        input_idl="""
+                foo = interface +cpp {
+                    foo(foo: some_error);
+                }
+                """
+    )
+    resolver_mock.resolve.return_value = BaseExternalType(name="some_error", primitive=BaseExternalType.Primitive.error)
+
+    # WHEN parsing the input
+    # THEN an exception should be raised because passing an error type as parameter is not allowed
+    assert_exception(parser, "Cannot pass an error type to a method")
 
 def test_parsing_main_interface(tmp_path: Path):
     # GIVEN an idl file that defines a main interface (code entrypoint)
@@ -249,12 +282,7 @@ def test_parsing_main_interface_not_cpp(tmp_path, targets):
     )
     # WHEN parsing the input
     # THEN a ParsingException should be thrown because the 'main' interface is not implemented in C++
-    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
-        parser.parse()
-    assert len(excinfo.value.items) == 1
-    exception = excinfo.value.items[0]
-    assert isinstance(exception, Parser.ParsingException)
-    assert exception.description == "a 'main' interface can only be implemented in C++"
+    assert_exception(parser, "a 'main' interface can only be implemented in C++")
 
 
 def test_parsing_interface_comment(tmp_path: Path):

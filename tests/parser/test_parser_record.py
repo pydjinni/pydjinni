@@ -20,7 +20,7 @@ import pytest
 from pydjinni.parser.ast import Record
 from pydjinni.parser.base_models import BaseExternalType
 from pydjinni.parser.parser import Parser
-from test_parser import given, when, given_mocks, assert_field
+from test_parser import given, when, given_mocks, assert_field, assert_exception
 
 
 def test_parsing_record(tmp_path: Path):
@@ -79,12 +79,7 @@ def test_parsing_record_unknown_deriving(tmp_path: Path):
 
     # WHEN parsing the input
     # THEN an error should be raised
-    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
-        parser.parse()
-    assert len(excinfo.value.items) == 1
-    exception = excinfo.value.items[0]
-    assert isinstance(exception, Parser.ParsingException)
-    assert exception.description == "'loremipsum' is not a valid record extension"
+    assert_exception(parser, "'loremipsum' is not a valid record extension")
 
 
 @pytest.mark.parametrize("deriving,expected", [
@@ -118,6 +113,7 @@ def test_parsing_record_default_deriving(tmp_path: Path, deriving, expected: set
     record = when(parser, Record, "foo")
     assert record.deriving == expected
 
+
 def test_parsing_record_ord_deriving_collection(tmp_path: Path):
     # GIVEN an idl file that defines a record with a collection that is deriving 'ord'
     parser, resolver_mock = given(
@@ -128,15 +124,12 @@ def test_parsing_record_ord_deriving_collection(tmp_path: Path):
         } deriving(ord)
         """
     )
-    resolver_mock.resolve.return_value = BaseExternalType(name='list', params=['T'], primitive=BaseExternalType.Primitive.collection)
+    resolver_mock.resolve.return_value = BaseExternalType(name='list', params=['T'],
+                                                          primitive=BaseExternalType.Primitive.collection)
     # WHEN parsing the input
     # THEN an exception should be thrown, because 'ord' is not allowed with collections
-    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
-        parser.parse()
-    assert len(excinfo.value.items) == 1
-    exception = excinfo.value.items[0]
-    assert isinstance(exception, Parser.ParsingException)
-    assert exception.description == "Cannot compare collections in 'ord' deriving"
+    assert_exception(parser, "Cannot compare collections in 'ord' deriving")
+
 
 def test_parsing_base_record(tmp_path: Path):
     # GIVEN an idl file that defines a record will be extended in C++
@@ -177,3 +170,20 @@ def test_parsing_record_comment(tmp_path: Path):
     # THEN the field should contain the given comment
     assert record.fields[0].comment == " This is a record field"
 
+
+def test_parsing_record_error_field_not_allowed(tmp_path: Path):
+    # GIVEN an idl file that defines a record with a field of type `error`
+    parser, resolver_mock = given(
+        tmp_path=tmp_path,
+        input_idl="""
+            foo = record {
+                bar: some_error;
+            }
+            """
+    )
+
+    resolver_mock.resolve.return_value = BaseExternalType(name="some_error", primitive=BaseExternalType.Primitive.error)
+
+    # WHEN parsing the input
+    # THEN an exception should be raised, because errors are not allowed as field type
+    assert_exception(parser, "Cannot assign an error as record field type")

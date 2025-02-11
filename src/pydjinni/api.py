@@ -25,6 +25,7 @@ from pydjinni.file.processed_files_model_builder import ProcessedFilesModelBuild
 from pydjinni.packaging.architecture import Architecture
 from pydjinni.packaging.packaging_config import PackageBaseConfig
 from pydjinni.packaging.target import PackageTarget
+from pydjinni.parser.ast import Namespace
 from pydjinni.parser.parser import Parser
 
 try:
@@ -257,12 +258,20 @@ class API:
                      package_targets: dict[str, PackageTarget],
                      build_targets: dict[str, BuildTarget], file_reader_writer: FileReaderWriter):
             self._config = config
-            self._external_types_builder = ExternalTypesBuilder(external_types_model)
+            self._external_types_model = external_types_model
             self._generate_targets = generate_targets
             self._package_targets = package_targets
             self._build_targets = build_targets
-            self._resolver = Resolver(external_types_model)
             self._file_reader_writer = file_reader_writer
+
+            self._generate_config: GenerateBaseConfig = self._config.generate
+            generate_targets: list[str] = list(self._generate_config.model_fields_set) if self._generate_config else []
+            self._configured_targets: list[Target] = [target for key, target in self._generate_targets.items() if
+                                                      key in generate_targets]
+
+        @property
+        def configured_targets(self):
+            return self._configured_targets
 
         @property
         def config(self) -> BaseModel:
@@ -289,38 +298,38 @@ class API:
             """
             if isinstance(idl, str):
                 idl = Path(idl)
-            generate_config: GenerateBaseConfig = self._config.generate
-            generate_targets: list[str] = list(generate_config.model_fields_set) if generate_config else []
-            targets: list[Target] = [target for key, target in self._generate_targets.items() if
-                                     key in generate_targets]
 
-            for target in targets:
-                target.register_external_types(self._external_types_builder)
-                target.configure(generate_config)
+            external_types_builder = ExternalTypesBuilder(self._external_types_model)
 
-            self._resolver.registry = dict()
-            for external_type_def in self._external_types_builder.build():
-                self._resolver.register_external(external_type_def)
+            for target in self.configured_targets:
+                target.register_external_types(external_types_builder)
+                target.configure(self._generate_config)
+
+            resolver = Resolver(self._external_types_model)
+            resolver.registry = dict()
+            for external_type_def in external_types_builder.build():
+                resolver.register_external(external_type_def)
 
             parser = Parser(
-                resolver=self._resolver,
-                targets=targets,
+                resolver=resolver,
+                targets=self.configured_targets,
                 supported_target_keys=list(self._generate_targets.keys()),
                 file_reader=self._file_reader_writer,
-                include_dirs=generate_config.include_dirs,
-                default_deriving=set(generate_config.default_deriving),
+                include_dirs=self._generate_config.include_dirs,
+                default_deriving=set(self._generate_config.default_deriving),
                 idl=idl
             )
 
             # parsing the input IDL. The output is an AST that contains type definitions for each provided marshal
-            ast, refs = parser.parse()
+            type_defs, type_refs, ast = parser.parse()
 
             return API.ConfiguredContext.GenerateContext(
                 generate_targets=self._generate_targets,
                 file_writer=self._file_reader_writer,
+                defs=type_defs,
+                refs=type_refs,
                 ast=ast,
-                refs=refs,
-                config=generate_config
+                config=self._generate_config
             )
 
         def package(self, target: str, configuration: str = None) -> PackageContext:
@@ -409,12 +418,16 @@ class API:
 
         class GenerateContext:
             def __init__(self, generate_targets: dict[str, Target],
-                         file_writer: FileReaderWriter, ast: list[BaseType], refs: list[TypeReference],
+                         file_writer: FileReaderWriter,
+                         defs: list[BaseType],
+                         refs: list[TypeReference],
+                         ast: list[BaseType | Namespace],
                          config: GenerateBaseConfig):
                 self._generate_targets = generate_targets
                 self._file_reader_writer = file_writer
-                self.ast = ast
+                self.defs = defs
                 self.refs = refs
+                self.ast = ast
                 self._config = config
 
             def generate(self, target_name: str, clean: bool = False) -> API.ConfiguredContext.GenerateContext:
@@ -429,7 +442,7 @@ class API:
                     the same context. Generation commands can be chained.
                 """
                 target = self._generate_targets[target_name]
-                target.generate(self.ast, clean=clean, copy_support_lib_sources=self._config.support_lib_sources)
+                target.generate(self.defs, clean=clean, copy_support_lib_sources=self._config.support_lib_sources)
                 return self
 
             def write_processed_files(self) -> Path | None:

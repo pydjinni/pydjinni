@@ -18,8 +18,7 @@ import pytest
 
 from pydjinni.parser.ast import Function, Interface
 from pydjinni.parser.base_models import BaseExternalType
-from pydjinni.parser.parser import Parser
-from test_parser import given, when
+from test_parser import given, when, assert_exception
 
 
 def test_parsing_function(tmp_path):
@@ -82,14 +81,14 @@ def test_parsing_inline_function(tmp_path: Path):
         """
     )
     # WHEN parsing the input
-    ast, _ = parser.parse()
+    defs, _, _ = parser.parse()
 
-    # THEN the anonymous type should be registered in the output AST
-    assert len(ast) == 2
-    assert isinstance(ast[0], Function)
-    assert isinstance(ast[1], Interface)
+    # THEN the anonymous type should be registered in the output type_defs
+    assert len(defs) == 2
+    assert isinstance(defs[0], Function)
+    assert isinstance(defs[1], Interface)
 
-    interface: Interface = ast[1]
+    interface: Interface = defs[1]
 
     def assert_function(index: int):
         # THEN the method should reference an anonymous (nameless) function
@@ -113,12 +112,7 @@ def test_parsing_anonymous_function_not_allowed(tmp_path: Path):
 
     # WHEN parsing the input
     # THEN a ParsingException should be raised because functions are not allowed in records
-    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
-        parser.parse()
-    assert len(excinfo.value.items) == 1
-    exception = excinfo.value.items[0]
-    assert isinstance(exception, Parser.ParsingException)
-    assert exception.description == "functions are not allowed as record field type"
+    assert_exception(parser, "functions are not allowed as record field type")
 
 def test_parsing_function_throwing(tmp_path: Path):
     # GIVEN a function that throws
@@ -130,7 +124,7 @@ def test_parsing_function_throwing(tmp_path: Path):
     )
 
     # WHEN parsing the input
-    ast, _ = parser.parse()
+    ast, _, _ = parser.parse()
 
     # THEN the parsed function should be marked as throwing
     assert len(ast) == 1
@@ -149,7 +143,7 @@ def test_parsing_function_throwing_specific_error(tmp_path: Path):
     resolver_mock.resolve.return_value = BaseExternalType(name="bar", primitive=BaseExternalType.Primitive.error)
 
     # WHEN parsing the input
-    ast, _ = parser.parse()
+    ast, _, _ = parser.parse()
 
     # THEN the parsed function should be marked as throwing `bar`
     assert len(ast) == 1
@@ -169,12 +163,32 @@ def test_parsing_function_throwing_non_error_not_allowed(tmp_path: Path):
     resolver_mock.resolve.return_value = BaseExternalType(name="bar", primitive=BaseExternalType.Primitive.record)
 
     # THEN a ParsingException should be raised
-    with pytest.raises(Parser.ParsingExceptionList) as excinfo:
-        parser.parse()
-    assert len(excinfo.value.items) == 1
-    exception = excinfo.value.items[0]
-    assert isinstance(exception, Parser.ParsingException)
-    assert exception.description == "Only errors can be thrown"
+    assert_exception(parser, "Only errors can be thrown")
+
+def test_parsing_function_returning_error_not_allowed(tmp_path: Path):
+    parser, resolver_mock = given(
+        tmp_path=tmp_path,
+        input_idl="""
+            foo = function () -> some_error;
+            """
+    )
+    resolver_mock.resolve.return_value = BaseExternalType(name="some_error", primitive=BaseExternalType.Primitive.error)
+
+    # WHEN parsing the input
+    # THEN an exception should be raised, because returning an error from a function is not allowed
+    assert_exception(parser, "Cannot return an error type from a function")
+
+def test_parsing_function_error_parameter_not_allowed(tmp_path: Path):
+    parser, resolver_mock = given(
+        tmp_path=tmp_path,
+        input_idl="""
+            foo = function (param: some_error);
+            """
+    )
+    resolver_mock.resolve.return_value = BaseExternalType(name="some_error", primitive=BaseExternalType.Primitive.error)
+    # WHEN parsing the input
+    # THEN an exception should be raised, because passing an error to a function is not allowed
+    assert_exception(parser, "Cannot pass an error type to a function")
 
 def test_parsing_function_comment(tmp_path: Path):
     # GIVEN a named function with comment

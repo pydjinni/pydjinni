@@ -14,6 +14,11 @@ class IdlVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by IdlParser#load.
+    def visitLoad(self, ctx:IdlParser.LoadContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by IdlParser#comment.
     def visitComment(self, ctx:IdlParser.CommentContext):
         return self.visitChildren(ctx)
@@ -39,13 +44,8 @@ class IdlVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by IdlParser#namespaceBegin.
-    def visitNamespaceBegin(self, ctx:IdlParser.NamespaceBeginContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by IdlParser#namespaceEnd.
-    def visitNamespaceEnd(self, ctx:IdlParser.NamespaceEndContext):
+    # Visit a parse tree produced by IdlParser#namespaceContent.
+    def visitNamespaceContent(self, ctx:IdlParser.NamespaceContentContext):
         return self.visitChildren(ctx)
 
 

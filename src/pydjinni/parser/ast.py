@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from pydantic import BaseModel
 
 from pydjinni.parser.base_models import (
     BaseType,
@@ -24,6 +25,15 @@ from pydjinni.parser.base_models import (
     DataField
 
 )
+from pydjinni.parser.identifier import Identifier
+from pydjinni.position import Position
+
+
+class Namespace(BaseModel):
+    comment: str | None
+    name: Identifier
+    position: Position
+    children: list[BaseModel]
 
 
 class Enum(SymbolicConstantType):
