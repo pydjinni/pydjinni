@@ -32,5 +32,5 @@ if(BUILD_TESTING)
             Catch2::Catch2WithMain
     )
 
-    catch_discover_tests(cpp_support_lib_tests)
+    catch_discover_tests(cpp_support_lib_tests DISCOVERY_MODE PRE_TEST)
 endif()

@@ -24,6 +24,10 @@ FOUNDATION_EXPORT double bridgingheaderVersionNumber;
 FOUNDATION_EXPORT const unsigned char bridgingheaderVersionString[];
 
 //> for type_def in ast:
+//> if type_def.objc.base_type:
+#import {{ type_def.objc.derived_header | quote }}
+//> else:
 #import {{ type_def.objc.header | quote }}
+//> endif
 //> endfor
 
