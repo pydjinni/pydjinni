@@ -23,7 +23,7 @@ See the License for the specific language governing permissions and
 //> else
 #import {{ type_def.objc.header | quote }}
 //> endif
-//> if type_def.namespace:
+//> if type_def.namespace and config.swift.rename_interfaces:
 #ifndef __PYDJINNI_OBJC_NS_{{ type_def.objc.namespace }}
 struct {{ type_def.objc.namespace }} {};
 #define __PYDJINNI_OBJC_NS_{{ type_def.objc.namespace }}
