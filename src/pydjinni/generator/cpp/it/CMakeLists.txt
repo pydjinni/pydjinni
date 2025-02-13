@@ -45,7 +45,7 @@ function(cpp_test_case TEST_CASE_NAME)
             FOLDER "it/${TEST_CASE_NAME}"
     )
 
-catch_discover_tests(${TEST_CASE_NAME}Cpp)
+catch_discover_tests(${TEST_CASE_NAME}Cpp DISCOVERY_MODE PRE_TEST)
 
 endfunction()
 

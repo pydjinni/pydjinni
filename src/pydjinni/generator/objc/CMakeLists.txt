@@ -15,5 +15,6 @@
 add_subdirectory(objcpp/support_lib)
 
 if(BUILD_TESTING)
-    add_subdirectory(it)
+    add_subdirectory(it/objc)
+    add_subdirectory(it/swift)
 endif()
