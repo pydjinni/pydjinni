@@ -31,12 +31,14 @@ jobs:
     name: integration test
     strategy:
       matrix:
-        configuration: [
-          { os: ubuntu-24.04, generator: Ninja },
-          { os: windows-2022, generator: Visual Studio 17 2022 }
-          { os: macos-15, generator: Xcode }
-        ]
-    runs-on: ${{ matrix.configuration.os }}
+        include:
+          - os: ubuntu-24.04
+            generator: Ninja },
+          - os: windows-2022
+            generator: Visual Studio 17 2022
+          - os: macos-15
+            generator: Xcode
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -58,7 +60,7 @@ jobs:
           path: build/_deps
           key: ${{ runner.os }}-cmake-cache-${{ hashFiles('CMakeLists.txt') }}
       - name: Configure CMake
-        run: cmake -G "${{ matrix.configuration.generator }}" -B build
+        run: cmake -G "${{ matrix.generator }}" -B build
       - name: Build
         run: cmake --build build --parallel
       - name: Run Tests
