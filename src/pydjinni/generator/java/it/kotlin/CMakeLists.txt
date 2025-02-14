@@ -74,7 +74,7 @@ function(kotlin_test_case TEST_CASE_NAME)
         OUTPUT ${KOTLIN_JAR_FILE}
         COMMAND ${KOTLINC_EXECUTABLE}
             -include-runtime
-            -classpath "${JAVA_JAR_FILE}${junit-platform-console-standalone_JAR}${CLASSPATH_SEPARATOR}${annotations_JAR}"
+            -classpath "${JAVA_JAR_FILE}${CLASSPATH_SEPARATOR}${junit-platform-console-standalone_JAR}${CLASSPATH_SEPARATOR}${annotations_JAR}"
             -d ${KOTLIN_JAR_FILE}
             ${TEST_CASE_SOURCES}
         DEPENDS ${TEST_CASE_SOURCES}
