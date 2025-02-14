@@ -14,3 +14,4 @@ FOUNDATION_EXPORT const unsigned char bridgingheaderVersionString[];
 #import "TSTCalculator.h"
 #import "TSTDeprecationTest.h"
 #import "TSTDeprecatedMethodTest.h"
+#import "TSTOptionalInterface.h"

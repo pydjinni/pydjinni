@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #*/
 //> extends "base.jinja2"
-/*> from "macros.jinja2" import parameters */
 
 //> block content
 //? type_def.comment : type_def.java.comment | comment
@@ -28,6 +27,7 @@ limitations under the License.
     //> for method in type_def.methods:
     //? method.comment : method.java.comment | comment | indent
     //? method.deprecated : "@Deprecated"
+    //? method.java.nullable_annotation : method.java.nullable_annotation
     public {{ "static" if method.static else "abstract" }} {{ method.java.return_type }} {{ method.java.name }}({{ parameters(method) }})
     /*>- if method.throwing -*/
         {{ " throws " }}
