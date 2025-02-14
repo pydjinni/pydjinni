@@ -81,6 +81,14 @@ class JavaConfig(BaseModel):
         description="Java annotation to place on all generated Java classes",
         examples=["@Foo"]
     )
+    nullable_annotation: str = Field(
+        default="",
+        description="annotation that is added to all optional fields, parameters and return types. E.g. `@org.jetbrains.annotations.Nullable`",
+    )
+    nonnull_annotation: str = Field(
+        default="",
+        description="annotation that is added to all non-optional fields, parameters and return types. E.g. `@org.jetbrains.annotations.NotNull`",
+    )
     use_final_for_record: bool = Field(
         default=True,
         description="Whether generated Java classes for records should be marked `final`",

@@ -16,6 +16,7 @@
 #include "catch2/matchers/catch_matchers_exception.hpp"
 #include "calculator.hpp"
 #include "platform_interface.hpp"
+#include "optional_interface.hpp"
 
 TEST_CASE("Cpp.InterfaceTest") {
     GIVEN("a Calculator interface instance") {
@@ -79,6 +80,20 @@ TEST_CASE("Cpp.InterfaceTest") {
                 );
             }
 
+        }
+    }
+    GIVEN("OptionalInterface") {
+        WHEN("getting an instance of the interface") {
+            const auto interface = test::interface_test::OptionalInterface::get_instance();
+            THEN("the returned value should not be null") {
+                REQUIRE(interface != nullptr);
+            }
+        }
+        WHEN("getting a nullptr instance of the interface") {
+            const auto interface = test::interface_test::OptionalInterface::get_null_instance();
+            THEN("the returned value should be null") {
+                REQUIRE(interface == nullptr);
+            }
         }
     }
 }

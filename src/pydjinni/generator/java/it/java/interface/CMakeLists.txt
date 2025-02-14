@@ -1,4 +1,4 @@
-# Copyright 2023 - 2024 jothepro
+# Copyright 2023 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,18 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-project(PyDjinniIntegrationTestInterface CXX)
-
-define_test_case(InterfaceTest
-    INTERFACE interface.pydjinni
-    SOURCES
-        src/calculator.cpp
-        src/calculator_impl.cpp
-        src/calculator_impl.hpp
-        src/deprecation_test.cpp
-        src/optional_interface.cpp
-        src/optional_interface_impl.cpp
-        src/optional_interface_impl.hpp
+java_test_case(InterfaceTest
     OPTIONS
-        generate.cpp.namespace=test::interface_test
+        generate.java.package=test.interface_test
+        generate.jni.identifier.file.prefix=marshal_
+        generate.jni.identifier.file.style=snake_case
+        generate.jni.namespace=test::interface::jni
+    SOURCES
+        tests/TestInterface.java
+        tests/TestOptionalInterface.java
 )

@@ -12,18 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-project(PyDjinniIntegrationTestInterface CXX)
-
-define_test_case(InterfaceTest
-    INTERFACE interface.pydjinni
-    SOURCES
-        src/calculator.cpp
-        src/calculator_impl.cpp
-        src/calculator_impl.hpp
-        src/deprecation_test.cpp
-        src/optional_interface.cpp
-        src/optional_interface_impl.cpp
-        src/optional_interface_impl.hpp
+kotlin_test_case(RecordTest
     OPTIONS
-        generate.cpp.namespace=test::interface_test
+        generate.java.package=test.record
+        generate.jni.identifier.file.prefix=marshal_
+        generate.jni.identifier.file.style=snake_case
+        generate.jni.namespace=test::record::jni
+    SOURCES
+        tests/TestOptionalTypes.kt
+    JAVA_SOURCES
+        src/BaseRecord.java
 )
