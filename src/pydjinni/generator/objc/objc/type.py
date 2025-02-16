@@ -47,6 +47,8 @@ def type_decl(type_ref: TypeReference, parameter: bool = False, boxed: bool = Fa
             if parameter:
                 typename = f"id<{typename}>"
                 pointer = False
+        if type_def.primitive == BaseExternalType.Primitive.function:
+            typename = typename.replace("(^)", f"(^ {'_Nullable' if type_ref.optional else '_Nonnull'})")
 
         return f"{typename}{generic_types}{' *' if pointer or boxed or optional else ''}"
     else:
