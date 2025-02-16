@@ -15,7 +15,6 @@
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.*;
-import test.interface_test.Calculator;
 import test.interface_test.OptionalInterface;
 
 class TestOptionalInterface {

@@ -15,6 +15,12 @@
 project(PyDjinniKotlin_IntegrationTesting C CXX)
 
 find_program(KOTLINC_EXECUTABLE kotlinc REQUIRED)
+maven_add(annotations GROUP org.jetbrains VERSION 26.0.2)
+set(COROUTINE_VERSION 1.10.1)
+maven_add(kotlinx-coroutines-core GROUP org.jetbrains.kotlinx VERSION ${COROUTINE_VERSION})
+maven_add(kotlinx-coroutines-core-jvm GROUP org.jetbrains.kotlinx VERSION ${COROUTINE_VERSION})
+maven_add(kotlinx-coroutines-test GROUP org.jetbrains.kotlinx VERSION ${COROUTINE_VERSION})
+maven_add(kotlinx-coroutines-test-jvm GROUP org.jetbrains.kotlinx VERSION ${COROUTINE_VERSION})
 
 function(kotlin_test_case TEST_CASE_NAME)
     cmake_parse_arguments(TEST_CASE
@@ -63,9 +69,8 @@ function(kotlin_test_case TEST_CASE_NAME)
 
     set(KOTLIN_JAR_FILE ${CMAKE_CURRENT_BINARY_DIR}/${KOTLIN_TARGET_NAME}.jar)
 
-
     if(WIN32)
-        set(CLASSPATH_SEPARATOR "\;")
+        set(CLASSPATH_SEPARATOR "\\;")
     else()
         set(CLASSPATH_SEPARATOR ":")
     endif()
@@ -74,7 +79,7 @@ function(kotlin_test_case TEST_CASE_NAME)
         OUTPUT ${KOTLIN_JAR_FILE}
         COMMAND ${KOTLINC_EXECUTABLE}
             -include-runtime
-            -classpath "${JAVA_JAR_FILE}${CLASSPATH_SEPARATOR}${junit-platform-console-standalone_JAR}${CLASSPATH_SEPARATOR}${annotations_JAR}"
+            -classpath \"${JAVA_JAR_FILE}${CLASSPATH_SEPARATOR}${junit-platform-console-standalone_JAR}${CLASSPATH_SEPARATOR}${annotations_JAR}${CLASSPATH_SEPARATOR}${kotlinx-coroutines-core_JAR}${CLASSPATH_SEPARATOR}${kotlinx-coroutines-core-jvm_JAR}${CLASSPATH_SEPARATOR}${kotlinx-coroutines-test_JAR}${CLASSPATH_SEPARATOR}${kotlinx-coroutines-test-jvm_JAR}\"
             -d ${KOTLIN_JAR_FILE}
             ${TEST_CASE_SOURCES}
         DEPENDS ${TEST_CASE_SOURCES}
@@ -89,6 +94,10 @@ function(kotlin_test_case TEST_CASE_NAME)
             -jar ${junit-platform-console-standalone_JAR}
             --class-path=${JAVA_JAR_FILE}
             --class-path=${KOTLIN_JAR_FILE}
+            --class-path=${kotlinx-coroutines-core_JAR}
+            --class-path=${kotlinx-coroutines-core-jvm_JAR}
+            --class-path=${kotlinx-coroutines-test_JAR}
+            --class-path=${kotlinx-coroutines-test-jvm_JAR}
             --scan-classpath
             --disable-banner
             --exclude-engine=junit-vintage
@@ -96,11 +105,11 @@ function(kotlin_test_case TEST_CASE_NAME)
     )
 endfunction()
 
-add_subdirectory(record)
-add_subdirectory(interface)
+add_subdirectory(async)
 add_subdirectory(enum)
+add_subdirectory(error)
 add_subdirectory(flags)
 add_subdirectory(function)
-add_subdirectory(async)
-add_subdirectory(error)
+add_subdirectory(interface)
 add_subdirectory(namespace)
+add_subdirectory(record)
