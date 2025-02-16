@@ -9,21 +9,21 @@
 #import "TSTThrowingFunction.h"
 NS_SWIFT_NAME(Helper)
 @interface TSTHelper : NSObject
-+ (void)namedFunction:(BOOL (^)(NSString * _Nonnull))callback
++ (void)namedFunction:(BOOL (^ _Nonnull)(NSString * _Nonnull))callback
   NS_SWIFT_NAME(namedFunction(callback:));
-+ (void)anonymousFunction:(BOOL (^)(NSString * _Nonnull))callback
++ (void)anonymousFunction:(BOOL (^ _Nonnull)(NSString * _Nonnull))callback
   NS_SWIFT_NAME(anonymousFunction(callback:));
-+ (BOOL (^)(NSString * _Nonnull))cppNamedFunction
++ (BOOL (^ _Nonnull)(NSString * _Nonnull))cppNamedFunction
   NS_SWIFT_NAME(cppNamedFunction());
-+ (BOOL (^)(NSString * _Nonnull))cppAnonymousFunction
++ (BOOL (^ _Nonnull)(NSString * _Nonnull))cppAnonymousFunction
   NS_SWIFT_NAME(cppAnonymousFunction());
-+ (void (^)(NSError* _Nullable * _Nonnull))cppFunctionThrowingException
++ (void (^ _Nonnull)(NSError* _Nullable * _Nonnull))cppFunctionThrowingException
   NS_SWIFT_NAME(cppFunctionThrowingException());
-+ (void (^)(NSError* _Nullable * _Nonnull))cppFunctionThrowingBarError
++ (void (^ _Nonnull)(NSError* _Nullable * _Nonnull))cppFunctionThrowingBarError
   NS_SWIFT_NAME(cppFunctionThrowingBarError());
-+ (void)anonymousFunctionPassingRecord:(BOOL (^)(TSTFoo * _Nonnull))callback
++ (void)anonymousFunctionPassingRecord:(BOOL (^ _Nonnull)(TSTFoo * _Nonnull))callback
   NS_SWIFT_NAME(anonymousFunctionPassingRecord(callback:));
-+ (void)functionParameterThrowing:(void (^)(NSError* _Nullable * _Nonnull))callback error:(NSError* _Nullable * _Nonnull)error
++ (void)functionParameterThrowing:(void (^ _Nonnull)(NSError* _Nullable * _Nonnull))callback error:(NSError* _Nullable * _Nonnull)error
   __attribute__((swift_error(nonnull_error)))
   NS_SWIFT_NAME(functionParameterThrowing(callback:));
 @end
