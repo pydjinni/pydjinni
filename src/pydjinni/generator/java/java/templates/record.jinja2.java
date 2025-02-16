@@ -19,9 +19,9 @@ limitations under the License.
 //? type_def.comment : type_def.java.comment | comment
 //? type_def.deprecated : "@Deprecated"
 {{ type_def.java.class_modifier }}class {{ type_def.java.name }} {
-/*> for field in type_def.fields */
+//> for field in type_def.fields
     {{ field.java.field_modifier ~ field.java.data_type }} {{ field.java.name }};
-/*> endfor */
+//> endfor
     public {{ type_def.java.name }}(
     //> for field in type_def.fields:
         //? field.java.nullable_annotation : field.java.nullable_annotation

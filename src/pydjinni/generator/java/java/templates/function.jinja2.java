@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #*/
 //> extends "base.jinja2"
-/*> from "macros.jinja2" import parameters */
 
 //> block content
 //? type_def.comment : type_def.java.comment | comment
 //? type_def.deprecated : "@Deprecated"
 @FunctionalInterface
 {{ type_def.java.class_modifier }}interface {{ type_def.java.name }} {
+    //? type_def.java.nullable_annotation : type_def.java.nullable_annotation
     {{ type_def.java.return_type }} invoke({{ parameters(type_def) }});
 }
 

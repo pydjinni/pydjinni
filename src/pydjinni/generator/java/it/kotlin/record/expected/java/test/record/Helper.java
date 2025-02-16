@@ -6,25 +6,32 @@ public abstract class Helper {
     static {
         test.record.pydjinni.NativeRecordTestKotlinJniLoader.loadLibrary();
     }
-    public static test.record.PrimitiveTypes getPrimitiveTypes(test.record.PrimitiveTypes recordType){
+    @org.jetbrains.annotations.NotNull
+    public static test.record.PrimitiveTypes getPrimitiveTypes(@org.jetbrains.annotations.NotNull test.record.PrimitiveTypes recordType){
         return CppProxy.getPrimitiveTypes(recordType);
     };
-    public static test.record.CollectionTypes getCollectionTypes(test.record.CollectionTypes recordType){
+    @org.jetbrains.annotations.NotNull
+    public static test.record.CollectionTypes getCollectionTypes(@org.jetbrains.annotations.NotNull test.record.CollectionTypes recordType){
         return CppProxy.getCollectionTypes(recordType);
     };
-    public static test.record.OptionalTypes getOptionalTypes(test.record.OptionalTypes recordType){
+    @org.jetbrains.annotations.NotNull
+    public static test.record.OptionalTypes getOptionalTypes(@org.jetbrains.annotations.NotNull test.record.OptionalTypes recordType){
         return CppProxy.getOptionalTypes(recordType);
     };
-    public static test.record.BinaryTypes getBinaryTypes(test.record.BinaryTypes recordType){
+    @org.jetbrains.annotations.NotNull
+    public static test.record.BinaryTypes getBinaryTypes(@org.jetbrains.annotations.NotNull test.record.BinaryTypes recordType){
         return CppProxy.getBinaryTypes(recordType);
     };
+    @org.jetbrains.annotations.NotNull
     public static test.record.BaseRecord getCppBaseRecord(){
         return CppProxy.getCppBaseRecord();
     };
-    public static test.record.BaseRecord getHostBaseRecord(test.record.BaseRecord recordType){
+    @org.jetbrains.annotations.NotNull
+    public static test.record.BaseRecord getHostBaseRecord(@org.jetbrains.annotations.NotNull test.record.BaseRecord recordType){
         return CppProxy.getHostBaseRecord(recordType);
     };
-    public static test.record.ParentType getNestedType(test.record.ParentType parent){
+    @org.jetbrains.annotations.NotNull
+    public static test.record.ParentType getNestedType(@org.jetbrains.annotations.NotNull test.record.ParentType parent){
         return CppProxy.getNestedType(parent);
     };
     private static final class CppProxy extends Helper {
@@ -50,12 +57,12 @@ public abstract class Helper {
             test.record.pydjinni.NativeCleaner.register(this, new CleanupTask(nativeRef));
         }
 
-        public static native test.record.PrimitiveTypes getPrimitiveTypes(test.record.PrimitiveTypes recordType);
-        public static native test.record.CollectionTypes getCollectionTypes(test.record.CollectionTypes recordType);
-        public static native test.record.OptionalTypes getOptionalTypes(test.record.OptionalTypes recordType);
-        public static native test.record.BinaryTypes getBinaryTypes(test.record.BinaryTypes recordType);
+        public static native test.record.PrimitiveTypes getPrimitiveTypes(@org.jetbrains.annotations.NotNull test.record.PrimitiveTypes recordType);
+        public static native test.record.CollectionTypes getCollectionTypes(@org.jetbrains.annotations.NotNull test.record.CollectionTypes recordType);
+        public static native test.record.OptionalTypes getOptionalTypes(@org.jetbrains.annotations.NotNull test.record.OptionalTypes recordType);
+        public static native test.record.BinaryTypes getBinaryTypes(@org.jetbrains.annotations.NotNull test.record.BinaryTypes recordType);
         public static native test.record.BaseRecord getCppBaseRecord();
-        public static native test.record.BaseRecord getHostBaseRecord(test.record.BaseRecord recordType);
-        public static native test.record.ParentType getNestedType(test.record.ParentType parent);
+        public static native test.record.BaseRecord getHostBaseRecord(@org.jetbrains.annotations.NotNull test.record.BaseRecord recordType);
+        public static native test.record.ParentType getNestedType(@org.jetbrains.annotations.NotNull test.record.ParentType parent);
     }
 }
