@@ -15,19 +15,19 @@ final class FunctionTests: XCTestCase {
     }
     
     func testCppNamedFunction() {
-        let block = Helper.cppNamedFunction()! // TODO return as non optional!
+        let block = Helper.cppNamedFunction()
         let result = block("foo")
         XCTAssertTrue(result)
     }
     
     func testCppAnonymousFunction() {
-        let block = Helper.cppAnonymousFunction()!
+        let block = Helper.cppAnonymousFunction()
         let result = block("foo")
         XCTAssertTrue(result)
     }
     
     func testCppFunctionThrowingException() {
-        let block = Helper.cppFunctionThrowingException()!
+        let block = Helper.cppFunctionThrowingException()
         var error: NSError?
         block(&error)
         XCTAssertNotNil(error)
@@ -35,7 +35,7 @@ final class FunctionTests: XCTestCase {
     }
     
     func testCppFunctionThrowingBarError() {
-        let block = Helper.cppFunctionThrowingBarError()!
+        let block = Helper.cppFunctionThrowingBarError()
         var error: NSError?
         block(&error)
         XCTAssertNotNil(error)

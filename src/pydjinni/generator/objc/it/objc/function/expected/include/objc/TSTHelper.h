@@ -8,12 +8,12 @@
 #import "TSTNamedFunction.h"
 #import "TSTThrowingFunction.h"
 @interface TSTHelper : NSObject
-+ (void)namedFunction:(BOOL (^)(NSString * _Nonnull))callback;
-+ (void)anonymousFunction:(BOOL (^)(NSString * _Nonnull))callback;
-+ (BOOL (^)(NSString * _Nonnull))cppNamedFunction;
-+ (BOOL (^)(NSString * _Nonnull))cppAnonymousFunction;
-+ (void (^)(NSError* _Nullable * _Nonnull))cppFunctionThrowingException;
-+ (void (^)(NSError* _Nullable * _Nonnull))cppFunctionThrowingBarError;
-+ (void)anonymousFunctionPassingRecord:(BOOL (^)(TSTFoo * _Nonnull))callback;
-+ (void)functionParameterThrowing:(void (^)(NSError* _Nullable * _Nonnull))callback error:(NSError* _Nullable * _Nonnull)error;
++ (void)namedFunction:(BOOL (^ _Nonnull)(NSString * _Nonnull))callback;
++ (void)anonymousFunction:(BOOL (^ _Nonnull)(NSString * _Nonnull))callback;
++ (BOOL (^ _Nonnull)(NSString * _Nonnull))cppNamedFunction;
++ (BOOL (^ _Nonnull)(NSString * _Nonnull))cppAnonymousFunction;
++ (void (^ _Nonnull)(NSError* _Nullable * _Nonnull))cppFunctionThrowingException;
++ (void (^ _Nonnull)(NSError* _Nullable * _Nonnull))cppFunctionThrowingBarError;
++ (void)anonymousFunctionPassingRecord:(BOOL (^ _Nonnull)(TSTFoo * _Nonnull))callback;
++ (void)functionParameterThrowing:(void (^ _Nonnull)(NSError* _Nullable * _Nonnull))callback error:(NSError* _Nullable * _Nonnull)error;
 @end
