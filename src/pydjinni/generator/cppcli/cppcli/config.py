@@ -45,4 +45,8 @@ class CppCliConfig(BaseModel):
         default=None,
         description="The prefix for `#includes` of header files from C++ files"
     )
+    nullability_attributes: bool = Field(
+        default=True,
+        description="Whether diagnostics nullability attributes should be added to methods, functions and fields (Not available in .NET Framework)"
+    )
     identifier: CppCliIdentifierStyle = CppCliIdentifierStyle()

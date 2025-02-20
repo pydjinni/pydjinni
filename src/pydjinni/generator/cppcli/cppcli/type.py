@@ -160,6 +160,13 @@ class CppCliBaseField(CppCliBaseCommentModel):
     def translator(self) -> str:
         return translator(self.decl.type_ref)
 
+    @cached_property
+    def nullability_attribute(self) -> str:
+        if self.config.nullability_attributes and self.decl.type_ref:
+            return f"[{'System::Diagnostics::CodeAnalysis::AllowNull' if self.decl.type_ref.optional else 'System::Diagnostics::CodeAnalysis::DisallowNull'}]"
+        else:
+            return ""
+
 
 class CppCliInterface(CppCliBaseType):
 
@@ -201,8 +208,15 @@ class CppCliInterface(CppCliBaseType):
             return translator(self.decl.return_type_ref)
 
         @cached_property
-        def async_proxy_name(self) -> str: return Identifier(self.decl.name + "_proxy").convert(self.config.identifier.method)
+        def async_proxy_name(self) -> str:
+            return Identifier(self.decl.name + "_proxy").convert(self.config.identifier.method)
 
+        @cached_property
+        def nullability_attribute(self) -> str:
+            if self.config.nullability_attributes and self.decl.return_type_ref:
+                return f"[returnvalue: {'System::Diagnostics::CodeAnalysis::MaybeNull' if self.decl.return_type_ref.optional else 'System::Diagnostics::CodeAnalysis::NotNull'}]"
+            else:
+                return ""
 
 class CppCliRecord(CppCliBaseType):
     decl: Record = Field(exclude=True, repr=False)
