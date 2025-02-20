@@ -39,8 +39,7 @@ function(cppcli_test_case TEST_CASE_NAME)
             ${TEST_CASE_OPTIONS}
             generate.cppcli.out.header=${CMAKE_CURRENT_LIST_DIR}/generated/include/cppcli
             generate.cppcli.out.source=${CMAKE_CURRENT_LIST_DIR}/generated/src/cppcli
-            generate.cppcli.identifier.file.style=PascalCase
-            generate.cppcli.identifier.file.prefix=CppCli
+            generate.cppcli.nullability_attributes=false
     )
     compare_files(SOURCE ${CMAKE_CURRENT_LIST_DIR}/expected TARGET ${CMAKE_CURRENT_LIST_DIR}/generated)
     add_library(${CPPCLI_TARGET_NAME} SHARED

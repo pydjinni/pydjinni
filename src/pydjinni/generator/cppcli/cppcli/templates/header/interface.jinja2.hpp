@@ -23,9 +23,10 @@ public:
     //> for method in type_def.methods:
     //? method.cppcli.comment : method.cppcli.comment | comment | indent
     //? method.deprecated : method.cppcli.deprecated
+    //? method.cppcli.nullability_attribute : method.cppcli.nullability_attribute
     {{ "static " if method.static else "virtual " }}{{ method.cppcli.typename }} {{ method.cppcli.name }}(
     /*>- for param in method.parameters -*/
-        {{ param.cppcli.typename }} {{ param.cppcli.name ~ (", " if not loop.last) }}
+        {{ param.cppcli.nullability_attribute ~ param.cppcli.typename }} {{ param.cppcli.name ~ (", " if not loop.last) }}
     /*>- endfor -*/
     ){{ " abstract" if not method.static }};
     //> endfor
