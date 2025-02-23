@@ -163,7 +163,7 @@ class CppCliBaseField(CppCliBaseCommentModel):
     @cached_property
     def nullability_attribute(self) -> str:
         if self.config.nullability_attributes and self.decl.type_ref:
-            return f"[{'System::Diagnostics::CodeAnalysis::AllowNull' if self.decl.type_ref.optional else 'System::Diagnostics::CodeAnalysis::DisallowNull'}]"
+            return f"[{'System::Diagnostics::CodeAnalysis::AllowNull' if self.decl.type_ref.optional else 'System::Diagnostics::CodeAnalysis::DisallowNull'}] "
         else:
             return ""
 
@@ -290,6 +290,21 @@ class CppCliDataField(CppCliBaseField):
             return f"System::String::Compare({self.property}, other->{self.property}, System::StringComparison::Ordinal);"
         else:
             return f"{self.property}.CompareTo(other->{self.property})"
+
+
+    @cached_property
+    def property_nullability_attribute(self) -> str:
+        if self.config.nullability_attributes and self.decl.type_ref:
+            return f"[{'System::Diagnostics::CodeAnalysis::MaybeNull' if self.decl.type_ref.optional else 'System::Diagnostics::CodeAnalysis::NotNull'}]"
+        else:
+            return ""
+
+    @cached_property
+    def constructor_nullability_attribute(self) -> str:
+        if self.config.nullability_attributes and self.decl.type_ref:
+            return f"[{'System::Diagnostics::CodeAnalysis::AllowNull' if self.decl.type_ref.optional else 'System::Diagnostics::CodeAnalysis::DisallowNull'}] "
+        else:
+            return ""
 
 
 class CppCliSymbolicConstant(CppCliBaseType):

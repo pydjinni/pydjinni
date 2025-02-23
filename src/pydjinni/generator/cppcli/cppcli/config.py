@@ -28,7 +28,7 @@ class CppCliIdentifierStyle(BaseModel):
     local: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.camel
     enum: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.pascal
     const: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.snake
-    file: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.pascal
+    file: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle(style=IdentifierStyle.Case.pascal, prefix="CppCli")
     namespace: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.pascal
 
 

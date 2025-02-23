@@ -22,7 +22,7 @@ limitations under the License.
 //? type_def.cppcli.nullability_attribute : type_def.cppcli.nullability_attribute
 public delegate {{ type_def.cppcli.return_typename }} {{ type_def.cppcli.name }}(
     /*>- for param in type_def.parameters -*/
-        {{ ((param.cppcli.nullability_attribute ~ " ") if param.cppcli.nullability_attribute) ~ param.cppcli.typename }} {{ param.cppcli.name ~ (", " if not loop.last)}}
+        {{ param.cppcli.nullability_attribute ~ param.cppcli.typename }} {{ param.cppcli.name ~ (", " if not loop.last)}}
     /*>- endfor -*/
 );
 //> endif
