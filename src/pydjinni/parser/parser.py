@@ -522,11 +522,17 @@ class Parser(IdlVisitor):
             for decl in self.type_decls:
                 if isinstance(decl, Record):
                     for field in decl.fields:
-                        if field.type_ref.type_def and field.type_ref.type_def.primitive == BaseExternalType.Primitive.error:
-                            self.errors.append(Parser.ParsingException(
-                                "Cannot assign an error as record field type",
-                                position=field.type_ref.position
-                            ))
+                        if field.type_ref.type_def:
+                            if field.type_ref.type_def.primitive == BaseExternalType.Primitive.error:
+                                self.errors.append(Parser.ParsingException(
+                                    "Cannot assign an error as record field type",
+                                    position=field.type_ref.position
+                                ))
+                            elif field.type_ref.type_def.primitive == BaseExternalType.Primitive.interface:
+                                self.errors.append(Parser.ParsingException(
+                                    "Cannot assign an interface as record field type",
+                                    position=field.type_ref.position
+                                ))
                         if Record.Deriving.ord in decl.deriving:
                             if field.type_ref.type_def and field.type_ref.type_def.primitive == BaseExternalType.Primitive.collection:
                                 self.errors.append(Parser.ParsingException(
