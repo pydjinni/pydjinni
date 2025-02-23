@@ -187,3 +187,20 @@ def test_parsing_record_error_field_not_allowed(tmp_path: Path):
     # WHEN parsing the input
     # THEN an exception should be raised, because errors are not allowed as field type
     assert_exception(parser, "Cannot assign an error as record field type")
+
+def test_parsing_record_interface_field_not_allowed(tmp_path: Path):
+    # GIVEN an idl file that defines a record with a field of type `interface`
+    parser, resolver_mock = given(
+        tmp_path=tmp_path,
+        input_idl="""
+            foo = record {
+                bar: some_interface;
+            }
+            """
+    )
+
+    resolver_mock.resolve.return_value = BaseExternalType(name="some_interface", primitive=BaseExternalType.Primitive.interface)
+
+    # WHEN parsing the input
+    # THEN an exception should be raised, because interfaces are not allowed as field type
+    assert_exception(parser, "Cannot assign an interface as record field type")
