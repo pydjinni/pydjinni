@@ -4,6 +4,9 @@ generate:
       header: generated/cpp/include
       source: generated/cpp/src
     namespace: pydjinni::example
+    not_null:
+      header: <gsl/pointers>
+      type: ::gsl::not_null
   #> if "android" in platforms:
   java:
     out: generated/java
