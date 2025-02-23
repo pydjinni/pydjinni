@@ -28,7 +28,7 @@ class CppCliIdentifierStyle(BaseModel):
     local: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.camel
     enum: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.pascal
     const: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.snake
-    file: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.pascal
+    file: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle(style=IdentifierStyle.Case.pascal, prefix="CppCli")
     namespace: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.pascal
 
 
@@ -44,5 +44,9 @@ class CppCliConfig(BaseModel):
     include_cpp_prefix: Path = Field(
         default=None,
         description="The prefix for `#includes` of header files from C++ files"
+    )
+    nullability_attributes: bool = Field(
+        default=True,
+        description="Whether diagnostics nullability attributes should be added to methods, functions and fields (Not available in .NET Framework)"
     )
     identifier: CppCliIdentifierStyle = CppCliIdentifierStyle()

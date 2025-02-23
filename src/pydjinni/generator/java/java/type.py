@@ -21,8 +21,8 @@ from pydjinni.generator.java.java.comment_renderer import JavaDocCommentRenderer
 from pydjinni.generator.java.java.config import JavaConfig
 from pydjinni.generator.java.java.keywords import keywords
 from pydjinni.generator.validator import validate
-from pydjinni.parser.ast import Record, Function
-from pydjinni.parser.base_models import BaseType, BaseField, BaseExternalType, TypeReference
+from pydjinni.parser.ast import Record, Function, Interface, Parameter
+from pydjinni.parser.base_models import BaseType, BaseField, BaseExternalType, TypeReference, DataField
 from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
@@ -40,9 +40,9 @@ def data_type(type_ref: TypeReference, boxed: bool = False) -> str:
         output += f"<{', '.join([data_type(parameter, boxed=True) for parameter in type_ref.parameters])}>"
     return output
 
-
 def filename(package, name):
     return Path(*package.split('.')) / f"{name}.java"
+
 
 class JavaExternalType(BaseModel):
     """Java type information"""
@@ -154,6 +154,10 @@ class JavaDataField(JavaBaseField):
             output += "final "
         return output
 
+    @property
+    def nullable_annotation(self) -> str:
+        return self.config.nullable_annotation if self.decl.type_ref.optional else self.config.nonnull_annotation
+
     @cached_property
     def hash_code(self) -> str:
         if self.decl.type_ref.optional:
@@ -192,6 +196,7 @@ class JavaDataField(JavaBaseField):
         else:
             return f"this.{self.decl.java.name} == other.{self.decl.java.name}"
 
+
 class JavaFlags(JavaBaseType):
     @computed_field
     @cached_property
@@ -212,6 +217,11 @@ class JavaFunction(JavaBaseType):
     @cached_property
     def return_type(self) -> str:
         return return_type(self.decl.return_type_ref)
+
+    @property
+    def nullable_annotation(self) -> str:
+        return self.config.nullable_annotation if self.decl.return_type_ref.optional else self.config.nonnull_annotation
+
 
 
 class JavaSymbolicConstantField(JavaBaseField):
@@ -235,9 +245,16 @@ class JavaInterface(JavaBaseType):
                 output = f"java.util.concurrent.CompletableFuture<{output}>"
             return output
 
+        @property
+        def nullable_annotation(self) -> str:
+            return self.config.nullable_annotation if self.decl.return_type_ref.optional else self.config.nonnull_annotation
+
+
         @cached_property
         def callback_type(self) -> str:
             return return_type(self.decl.return_type_ref, self.decl.asynchronous)
+
+
 
 
 class JavaErrorDomain(JavaBaseType):
@@ -245,6 +262,7 @@ class JavaErrorDomain(JavaBaseType):
 
     class JavaErrorCode(JavaBaseType):
         pass
+
 
 @dataclass
 class NativeLibLoader:
@@ -264,6 +282,7 @@ class NativeLibLoader:
 
     @property
     def source(self) -> Path: return filename(self.package, self.name)
+
 
 @dataclass
 class NativeCleaner:

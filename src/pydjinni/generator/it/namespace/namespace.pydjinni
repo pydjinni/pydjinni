@@ -1,0 +1,21 @@
+global_record = record {
+    a: something.namespaced.other_namespaced_record;
+}
+
+global_interface = main interface +cpp {
+    static get_namespaced_record() -> something.namespaced.namespaced_record;
+}
+
+namespace something.namespaced {
+    namespaced_record = record {
+        a: global_record;
+    }
+
+    other_namespaced_record = record {
+        a: i32;
+    }
+
+    namespaced_interface = main interface +cpp {
+        static get_global_record() -> global_record;
+    }
+}

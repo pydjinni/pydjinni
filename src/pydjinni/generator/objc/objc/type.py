@@ -47,6 +47,8 @@ def type_decl(type_ref: TypeReference, parameter: bool = False, boxed: bool = Fa
             if parameter:
                 typename = f"id<{typename}>"
                 pointer = False
+        if type_def.primitive == BaseExternalType.Primitive.function:
+            typename = typename.replace("(^)", f"(^ {'_Nullable' if type_ref.optional else '_Nonnull'})")
 
         return f"{typename}{generic_types}{' *' if pointer or boxed or optional else ''}"
     else:
@@ -54,10 +56,7 @@ def type_decl(type_ref: TypeReference, parameter: bool = False, boxed: bool = Fa
 
 
 def annotation(type_ref: TypeReference, macro_style: bool = False):
-    if type_ref and ((isinstance(type_ref.type_def, Interface) or
-                      (isinstance(type_ref.type_def, BaseExternalType) and
-                       type_ref.type_def.primitive == BaseExternalType.Primitive.interface)) or
-                     type_ref.optional):
+    if type_ref and type_ref.optional:
         return "_Nullable" if macro_style else "nullable"
     elif type_ref and type_ref.type_def.objc.pointer:
         return "_Nonnull" if macro_style else "nonnull"
@@ -333,7 +332,9 @@ class ObjcInterface(ObjcBaseClassType):
         @property
         def _swift_name(self) -> str:
             name = Identifier(self.decl.name).convert(self.config.identifier.method)
-            parameters = [f"{parameter.name}:" for parameter in self.parameters]
+            parameters = [f"{parameter.objc.name}:" for parameter in self.decl.parameters]
+            if self.decl.asynchronous:
+                parameters.append("completion:")
             return f"{name}({''.join(parameters)})"
 
         @cached_property

@@ -19,9 +19,10 @@ limitations under the License.
 //> if not type_def.anonymous:
 //? type_def.cppcli.comment : type_def.cppcli.comment | comment
 //? type_def.deprecated : type_def.cppcli.deprecated
+//? type_def.cppcli.nullability_attribute : type_def.cppcli.nullability_attribute
 public delegate {{ type_def.cppcli.return_typename }} {{ type_def.cppcli.name }}(
     /*>- for param in type_def.parameters -*/
-        {{ param.cppcli.typename }} {{ param.cppcli.name ~ (", " if not loop.last)}}
+        {{ param.cppcli.nullability_attribute ~ param.cppcli.typename }} {{ param.cppcli.name ~ (", " if not loop.last)}}
     /*>- endfor -*/
 );
 //> endif

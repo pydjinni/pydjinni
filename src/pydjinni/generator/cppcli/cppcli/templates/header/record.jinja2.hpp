@@ -30,13 +30,14 @@ public ref class {{ type_def.cppcli.name ~ (" sealed " if not type_def.cppcli.ba
 public:
     {{ type_def.cppcli.name }}(
     /*>- for field in type_def.fields -*/
-        {{ field.cppcli.typename }} {{ field.cppcli.name ~ (", " if not loop.last) }}
+        {{ field.cppcli.constructor_nullability_attribute ~ field.cppcli.typename }} {{ field.cppcli.name ~ (", " if not loop.last) }}
     /*>- endfor -*/
     );
 
     //> for field in type_def.fields:
     //? field.cppcli.comment : field.cppcli.comment | comment | indent
     //? field.deprecated : field.cppcli.deprecated
+    //? field.cppcli.property_nullability_attribute : field.cppcli.property_nullability_attribute
     property {{ field.cppcli.typename }} {{ field.cppcli.property }}
     {
         {{ field.cppcli.typename }} get();

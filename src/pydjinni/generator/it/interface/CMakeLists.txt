@@ -21,6 +21,9 @@ define_test_case(InterfaceTest
         src/calculator_impl.cpp
         src/calculator_impl.hpp
         src/deprecation_test.cpp
+        src/optional_interface.cpp
+        src/optional_interface_impl.cpp
+        src/optional_interface_impl.hpp
     OPTIONS
         generate.cpp.namespace=test::interface_test
 )

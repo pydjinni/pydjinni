@@ -34,3 +34,10 @@ deprecated_method_test = interface {
     # @deprecated this method is deprecated but the type is not
     deprecated_test_method() -> bool;
 }
+
+optional_interface = main interface +cpp {
+    static get_instance() -> optional_interface?;
+    static get_null_instance() -> optional_interface?;
+    optional_parameter(param: string?) -> string?;
+    optional_null_parameter(param: string?) -> string?;
+}

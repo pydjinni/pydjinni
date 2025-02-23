@@ -1,4 +1,4 @@
-# Copyright 2024 jothepro
+# Copyright 2024 - 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -39,8 +39,7 @@ function(cppcli_test_case TEST_CASE_NAME)
             ${TEST_CASE_OPTIONS}
             generate.cppcli.out.header=${CMAKE_CURRENT_LIST_DIR}/generated/include/cppcli
             generate.cppcli.out.source=${CMAKE_CURRENT_LIST_DIR}/generated/src/cppcli
-            generate.cppcli.identifier.file.style=PascalCase
-            generate.cppcli.identifier.file.prefix=CppCli
+            generate.cppcli.nullability_attributes=false
     )
     compare_files(SOURCE ${CMAKE_CURRENT_LIST_DIR}/expected TARGET ${CMAKE_CURRENT_LIST_DIR}/generated)
     add_library(${CPPCLI_TARGET_NAME} SHARED
@@ -83,3 +82,4 @@ add_subdirectory(flags)
 add_subdirectory(function)
 add_subdirectory(async)
 add_subdirectory(error)
+add_subdirectory(namespace)
