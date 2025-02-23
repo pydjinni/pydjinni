@@ -1,0 +1,7 @@
+
+not_null_interface = main interface +cpp {
+    static get_instance() -> not_null_interface;
+    not_null_parameter(param: not_null_interface);
+}
+
+

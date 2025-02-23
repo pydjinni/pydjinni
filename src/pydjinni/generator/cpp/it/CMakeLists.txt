@@ -92,3 +92,9 @@ cpp_test_case(NamespaceTest
     SOURCES
         tests/test_namespace.cpp
 )
+
+cpp_test_case(NotNullTest
+    SOURCES
+        tests/test_not_null.cpp
+)
+

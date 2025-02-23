@@ -28,6 +28,20 @@ class CppIdentifier(BaseModel):
     method: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.snake
     namespace: IdentifierStyle | IdentifierStyle.Case = IdentifierStyle.Case.snake
 
+class CppNotNull(BaseModel):
+    """
+    Configuration for adding `not_null` type information to `std::shared_ptr`.
+    """
+    header: str = Field(
+        default="",
+        description="The header file to include for not_null (e.g. `<gsl/pointers>`)"
+    )
+    type: str = Field(
+        default="",
+        description="The type to use for not_null (e.g. `::gsl::not_null`)"
+    )
+
+
 CppNamespace = Annotated[
     str,
     AfterValidator(lambda x: x.split('::')),
@@ -58,6 +72,7 @@ class CppConfig(BaseModel):
         default="cpp",
         description="The filename extension for C++ files"
     )
+    not_null: CppNotNull = CppNotNull()
     identifier: CppIdentifier = CppIdentifier()
     string_serialization_for_enums: bool = Field(
         default=False,

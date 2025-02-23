@@ -13,6 +13,8 @@ endif()
 
 project({{ target }} LANGUAGES ${PROJECT_LANGUAGES})
 
+find_package(Microsoft.GSL REQUIRED)
+
 pydjinni_generate(interface.pydjinni
     CONFIG ${CMAKE_SOURCE_DIR}/pydjinni.yaml
     LANGUAGES cpp java objc cppcli
@@ -27,6 +29,7 @@ add_library(Cpp{{ target }} STATIC
 add_library({{ target }}::Cpp ALIAS Cpp{{ target }})
 target_include_directories(Cpp{{ target }} PUBLIC ${cpp_INCLUDE_DIR})
 target_compile_features(Cpp{{ target }} PUBLIC cxx_std_23)
+target_link_libraries(Cpp{{ target }} PUBLIC Microsoft.GSL::GSL)
 set_target_properties(Cpp{{ target }} PROPERTIES
         CXX_STANDARD 23
         CXX_STANDARD_REQUIRED true

@@ -7,6 +7,9 @@ class {{ target }}Recipe(ConanFile):
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = {"shared": False, "fPIC": True}
 
+    requires = "ms-gsl/4.1.0"
+    build_requires = "cmake/3.31.5"
+
     def config_options(self):
         if self.settings.os == "Windows":
             self.options.rm_safe("fPIC")
