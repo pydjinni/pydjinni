@@ -27,7 +27,7 @@ See the License for the specific language governing permissions and
 //? method.objc.comment : method.objc.comment | comment
 {{ method.objc.specifier }} ({{ (((method.objc.annotation ~ " ") if method.objc.annotation) ~ method.objc.type_decl) if not method.asynchronous else "void" }}){{ method.objc.name }}
 //>- for parameter in method.objc.parameters:
-{{ ":" if loop.first else ( " " ~ parameter.name ~ ":") }}({{ (parameter.annotation ~ " ") if parameter.annotation }}{{ parameter.type_decl }}){{ parameter.name }}
+{{ ":" if loop.first else ( " " ~ parameter.name ~ ":") }}({{ ((parameter.annotation ~ " ") if parameter.annotation) ~ parameter.type_decl }}){{ parameter.name }}
 //>- endfor
 {{ method.objc.attributes | concat(prefix='\n') | indent(2) }};
 //> endfor

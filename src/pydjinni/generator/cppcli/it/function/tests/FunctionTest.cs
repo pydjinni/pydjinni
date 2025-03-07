@@ -82,5 +82,20 @@ namespace Testing.Unit.Function
             Assert.That(exception.Message, Is.EqualTo("unexpected error from host"));
         }
 
+        [Test]
+        public void TestFunctionParameterPassingNull()
+        { 
+            var result = Helper.OptionalFunctionPassingNull(null);
+            Assert.That(result, Is.Null);
+        }
+
+        [Test]
+        public void TestFunctionParameterPassingFunction()
+        {
+            var result = Helper.OptionalFunctionPassingFunction(input => input == "foo");
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result("foo"), Is.True);
+        }
+
     }
 }

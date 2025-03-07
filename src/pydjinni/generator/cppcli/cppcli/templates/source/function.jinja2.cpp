@@ -45,28 +45,34 @@ limitations under the License.
 
 {{ type_def.cppcli.delegate_name }}::CppType {{ type_def.cppcli.delegate_name }}::ToCpp(gcroot<{{ type_def.cppcli.delegate_name }}::CsType> delegate)
 {
-    ASSERT(static_cast<{{ type_def.cppcli.delegate_name }}::CsType>(delegate) != nullptr);
-    return [delegate](
-    /*>- for param in type_def.parameters -*/
-        {{ param.cpp.type_spec }} {{ param.cpp.name ~ (", " if not loop.last) }}
-    /*>- endfor -*/
-    ){
-        //> call cppcli_error_handling(type_def)
-        {{ "auto cs_result = " if type_def.return_type_ref }}delegate->Invoke(
-            //> for param in type_def.parameters:
-            {{ param.cppcli.translator }}::FromCpp({{ param.cpp.name }}){{ "," if not loop.last }}
-            //> endfor
-        );
-        //> if type_def.return_type_ref:
-        return {{ type_def.return_type_ref.type_def.cppcli.translator }}::ToCpp(cs_result);
-        //> endif
-        //> endcall
-    };
+    if(static_cast<{{ type_def.cppcli.delegate_name }}::CsType>(delegate) != nullptr) {
+        return [delegate](
+        /*>- for param in type_def.parameters -*/
+            {{ param.cpp.type_spec }} {{ param.cpp.name ~ (", " if not loop.last) }}
+        /*>- endfor -*/
+        ){
+            //> call cppcli_error_handling(type_def)
+            {{ "auto cs_result = " if type_def.return_type_ref }}delegate->Invoke(
+                //> for param in type_def.parameters:
+                {{ param.cppcli.translator }}::FromCpp({{ param.cpp.name }}){{ "," if not loop.last }}
+                //> endfor
+            );
+            //> if type_def.return_type_ref:
+            return {{ type_def.return_type_ref.type_def.cppcli.translator }}::ToCpp(cs_result);
+            //> endif
+            //> endcall
+        };
+    } else return nullptr;
+
 }
 
-{{ type_def.cppcli.delegate_name }}::CsType {{ type_def.cppcli.delegate_name }}::FromCpp(const {{ type_def.cppcli.delegate_name }}::CppType& function) {
-    auto wrapper = gcnew {{ type_def.cppcli.delegate_name }}CppProxy(function);
-    return gcnew {{ type_def.cppcli.typename }}(wrapper, &{{ type_def.cppcli.delegate_name }}CppProxy::Invoke);
+{{ type_def.cppcli.delegate_name }}::CsType {{ type_def.cppcli.delegate_name }}::FromCppOpt(const {{ type_def.cppcli.delegate_name }}::CppOptType& function) {
+    if(function) {
+        auto wrapper = gcnew {{ type_def.cppcli.delegate_name }}CppProxy(function);
+        return gcnew {{ type_def.cppcli.typename }}(wrapper, &{{ type_def.cppcli.delegate_name }}CppProxy::Invoke);
+    } else return nullptr;
 }
+
+{{ type_def.cppcli.delegate_name }}::CsType {{ type_def.cppcli.delegate_name }}::FromCpp(const {{ type_def.cppcli.delegate_name }}::CppType& function) { return FromCppOpt(function); }
 
 //> endblock

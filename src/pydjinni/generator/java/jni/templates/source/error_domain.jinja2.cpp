@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #*/
 //> extends "base.jinja2"
-//> from "macros.jinja2" import translator
 
 //> block content
 namespace {{ type_def.jni.name }} {
@@ -31,7 +30,7 @@ auto {{ error_code.jni.name }}::fromCpp(JNIEnv* jniEnv, const CppType& c) -> ::p
     auto r = ::pydjinni::LocalRef<JniType>{jniEnv->NewObject(
         data.clazz.get(), data.jconstructor
         //> for parameter in error_code.parameters:
-        , ::pydjinni::get({{ translator(parameter.type_ref) }}::fromCpp(jniEnv, c.{{ parameter.cpp.name }}))
+        , ::pydjinni::get({{ parameter.jni.translator }}::fromCpp(jniEnv, c.{{ parameter.cpp.name }}))
         //> endfor
         , ::pydjinni::get(::pydjinni::jni::translator::String::fromCpp(jniEnv, c.what()))
     )};
@@ -45,7 +44,7 @@ auto {{ error_code.jni.name }}::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
     const auto& data = ::pydjinni::JniClass<{{ error_code.jni.name }}>::get();
     return {{ error_code.jni.name }}::CppType {
     //> for parameter in error_code.parameters:
-        {{ translator(parameter.type_ref) }}::toCpp(jniEnv, ({{ parameter.jni.typename }})jniEnv->{{ parameter.jni.field_accessor }}(j, data.field_{{ parameter.jni.name }})),
+        {{ parameter.jni.translator }}::toCpp(jniEnv, ({{ parameter.jni.typename }})jniEnv->{{ parameter.jni.field_accessor }}(j, data.field_{{ parameter.jni.name }})),
     //> endfor
         ::pydjinni::jni::translator::String::toCpp(jniEnv, (jstring)jniEnv->CallObjectMethod(j, data.method_message))
     };

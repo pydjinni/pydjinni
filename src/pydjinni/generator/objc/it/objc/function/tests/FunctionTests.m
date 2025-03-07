@@ -86,4 +86,17 @@
     XCTAssertEqualObjects(error.userInfo[NSFilePathErrorKey], @"some.file");
 }
 
+- (void)testFunctionParameterPassingNil {
+    BOOL (^block) (NSString *) = [TSTHelper optionalFunctionPassingNull: nil];
+    XCTAssertNil(block);
+}
+
+- (void)testFunctionParameterPassingFunction {
+    BOOL (^block) (NSString *) = [TSTHelper optionalFunctionPassingFunction: ^ BOOL (NSString * input) {
+        return [input isEqualToString: @"foo"];
+    }];
+    XCTAssertNotNil(block);
+    XCTAssertTrue(block(@"foo"));
+}
+
 @end

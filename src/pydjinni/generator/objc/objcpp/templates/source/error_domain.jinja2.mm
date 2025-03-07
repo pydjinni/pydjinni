@@ -23,7 +23,7 @@ auto {{ type_def.objcpp.name }}::toCpp(::NSError* obj) -> std::exception_ptr {
         case {{ type_def.objc.name ~ error_code.objc.name }}:
             return std::make_exception_ptr({{ type_def.cpp.typename }}::{{ error_code.cpp.name }}(
                 /*> for parameter in error_code.parameters */
-                {{ parameter.type_ref.type_def.objcpp.translator }}::Boxed::toCpp([obj.userInfo valueForKey:{{ type_def.objc.user_info_keys[loop.index - 1].objc }}]),
+                {{ parameter.objcpp.translator }}::Boxed::toCpp([obj.userInfo valueForKey:{{ type_def.objc.user_info_keys[loop.index - 1].objc }}]),
                 /*> endfor */
                 ::pydjinni::translators::objc::String::toCpp(obj.localizedDescription)
             ));
@@ -37,7 +37,7 @@ auto {{ type_def.objcpp.name }}::fromCpp(const {{ type_def.cpp.typename }}::{{ e
     NSString *desc = NSLocalizedString(::pydjinni::translators::objc::String::fromCpp(cpp.what()), @"");
     NSDictionary *userInfo = @{ NSLocalizedDescriptionKey : desc
     /*>- for parameter in error_code.parameters -*/
-        , {{ type_def.objc.user_info_keys[loop.index - 1].objc }}: {{ parameter.type_ref.type_def.objcpp.translator }}::Boxed::fromCpp(cpp.{{ parameter.cpp.name }})
+        , {{ type_def.objc.user_info_keys[loop.index - 1].objc }}: {{ parameter.objcpp.translator }}::Boxed::fromCpp(cpp.{{ parameter.cpp.name }})
     /*>- endfor -*/
     };
     return [NSError errorWithDomain:{{ type_def.objc.domain_name }}

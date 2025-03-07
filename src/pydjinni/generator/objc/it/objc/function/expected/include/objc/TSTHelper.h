@@ -16,4 +16,6 @@
 + (void (^ _Nonnull)(NSError* _Nullable * _Nonnull))cppFunctionThrowingBarError;
 + (void)anonymousFunctionPassingRecord:(BOOL (^ _Nonnull)(TSTFoo * _Nonnull))callback;
 + (void)functionParameterThrowing:(void (^ _Nonnull)(NSError* _Nullable * _Nonnull))callback error:(NSError* _Nullable * _Nonnull)error;
++ (BOOL (^ _Nullable)(NSString * _Nonnull))optionalFunctionPassingNull:(BOOL (^ _Nullable)(NSString * _Nonnull))param;
++ (BOOL (^ _Nullable)(NSString * _Nonnull))optionalFunctionPassingFunction:(BOOL (^ _Nullable)(NSString * _Nonnull))param;
 @end

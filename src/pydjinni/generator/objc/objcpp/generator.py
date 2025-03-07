@@ -18,7 +18,6 @@ from pydjinni.parser.ast import Interface, Record, Flags, Enum, Function, ErrorD
 from pydjinni.parser.base_models import BaseType, BaseField, SymbolicConstantField
 from .config import ObjcppConfig
 from .external_types import external_types
-from .filters import translator
 from .type import (
     ObjcppExternalType,
     ObjcppBaseType,
@@ -41,6 +40,7 @@ class ObjcppGenerator(Generator):
         BaseField: ObjcppBaseField,
         Function: ObjcppFunction,
         Interface: ObjcppInterface,
+        Interface.Method: ObjcppInterface.ObjcppMethod,
         SymbolicConstantField: ObjcppSymbolicConstantField,
         Record: ObjcppRecord,
         ErrorDomain: ObjcppErrorDomain
@@ -48,7 +48,7 @@ class ObjcppGenerator(Generator):
     writes_header = True
     writes_source = True
     support_lib_commons = True
-    filters = [quote, headers, translator]
+    filters = [quote, headers]
 
     def generate_enum(self, type_def: Enum):
         self.write_header("header/enum.jinja2.h", type_def=type_def)

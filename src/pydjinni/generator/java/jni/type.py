@@ -27,7 +27,7 @@ from pydantic import BaseModel, Field, computed_field
 
 from pydjinni.generator.java.jni.config import JniConfig
 from pydjinni.parser.ast import Interface, Parameter, Function
-from pydjinni.parser.base_models import BaseType, BaseField, TypeReference
+from pydjinni.parser.base_models import BaseExternalType, BaseType, BaseField, TypeReference
 
 
 class NativeType(StrEnum):
@@ -92,12 +92,12 @@ def routine_name(type_ref: TypeReference, asynchronous: bool = False) -> str:
         native_type = " void"
     return f"Call{native_type[1:].capitalize()}Method"
 
-def translator(type_ref: TypeReference, asynchronous: bool = False):
+def translator(type_ref: TypeReference):
     output = type_ref.type_def.jni.translator
     if type_ref.parameters:
         output = f"{output}<{','.join([translator(parameter) for parameter in type_ref.parameters])}>"
     if type_ref.optional:
-        output = f"::pydjinni::jni::translator::Optional<std::optional,{output}>"
+        output = f"::pydjinni::jni::translator::Optional<{output}>"
     return output
 
 def type_signature(parameters: list[Parameter], return_type_ref: TypeReference, asynchronous: bool = False):
@@ -220,6 +220,9 @@ class JniBaseField(BaseModel):
     @cached_property
     def name(self) -> str: return self.decl.name.convert(self.config.identifier.field)
 
+    @property
+    def translator(self) -> str: return translator(self.decl.type_ref)
+
 
 class JniSymbolicConstantField(JniBaseField):
     @computed_field
@@ -274,7 +277,7 @@ class JniInterface(JniBaseType):
                 return self.decl.return_type_ref.type_def.jni.typename if self.decl.return_type_ref else "void"
 
         @cached_property
-        def return_type_translator(self) -> str: return translator(self.decl.return_type_ref, self.decl.asynchronous)
+        def return_type_translator(self) -> str: return translator(self.decl.return_type_ref)
 
 
 class JniParameter(JniBaseField):

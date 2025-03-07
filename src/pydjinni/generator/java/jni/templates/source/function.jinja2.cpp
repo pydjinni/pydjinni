@@ -14,27 +14,32 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #*/
 //> extends "base.jinja2"
-//> from "macros.jinja2" import translator
 
 //> block content
 {{ type_def.cpp.typename}} {{ type_def.jni.name }}::toCpp(JNIEnv* jniEnv, JniType j){
-    auto functional_class = ::pydjinni::JniClass<{{ type_def.jni.translator }}>::get()._fromJava(jniEnv, j);
-    return [functional_class](
-        /*>- for parameter in type_def.parameters -*/
-            {{ parameter.cpp.type_spec }} {{ parameter.cpp.name ~ (", " if not loop.last) }}
-        /*>- endfor -*/
-    ){{ " noexcept" if type_def.cpp.noexcept }} -> {{ type_def.cpp.type_spec }} {
-        {{ "return " if type_def.return_type_ref }}functional_class->invoke(
-        /*>- for parameter in type_def.parameters -*/
-            {{ parameter.cpp.name ~ (", " if not loop.last )}}
-        /*>- endfor -*/
-        );
-    };
+    if(j) {
+        auto functional_class = ::pydjinni::JniClass<{{ type_def.jni.translator }}>::get()._fromJava(jniEnv, j);
+        return [functional_class](
+            /*>- for parameter in type_def.parameters -*/
+                {{ parameter.cpp.type_spec }} {{ parameter.cpp.name ~ (", " if not loop.last) }}
+            /*>- endfor -*/
+        ){{ " noexcept" if type_def.cpp.noexcept }} -> {{ type_def.cpp.type_spec }} {
+            {{ "return " if type_def.return_type_ref }}functional_class->invoke(
+            /*>- for parameter in type_def.parameters -*/
+                {{ parameter.cpp.name ~ (", " if not loop.last )}}
+            /*>- endfor -*/
+            );
+        };
+    } else return {}; // nullptr
+
 }
 
 ::pydjinni::LocalRef<{{ type_def.jni.name }}::JniType> {{ type_def.jni.name }}::fromCppOpt(JNIEnv* jniEnv, const {{ type_def.cpp.typename }}& c) {
-    auto proxy = std::make_shared<{{ type_def.jni.name }}::CppProxy>(c);
-    return {jniEnv, ::pydjinni::JniClass<{{ type_def.jni.translator }}>::get()._toJava(jniEnv, proxy)};
+    if(c) {
+        auto proxy = std::make_shared<{{ type_def.jni.name }}::CppProxy>(c);
+        return {jniEnv, ::pydjinni::JniClass<{{ type_def.jni.translator }}>::get()._toJava(jniEnv, proxy)};
+    } else return ::pydjinni::LocalRef<{{ type_def.jni.name }}::JniType>{}; // nullptr
+
 }
 
 ::pydjinni::LocalRef<{{ type_def.jni.name }}::JniType> {{ type_def.jni.name }}::fromCpp(JNIEnv* jniEnv, const {{ type_def.cpp.typename }}& c) { return fromCppOpt(jniEnv, c); }
@@ -57,7 +62,7 @@ limitations under the License.
     const auto& data = ::pydjinni::JniClass<{{ type_def.jni.translator }}>::get();
     {{ "auto jret = " if type_def.return_type_ref }}jni.env->{{ type_def.jni.routine_name }}(Handle::get().get(), data.method_invoke
     /*>- for parameter in type_def.parameters -*/
-        , ::pydjinni::get({{ translator(parameter.type_ref) }}::fromCpp(jni.env, {{ parameter.cpp.name }}))
+        , ::pydjinni::get({{ parameter.jni.translator }}::fromCpp(jni.env, {{ parameter.cpp.name }}))
     /*>- endfor -*/
     );
     {{ jni_error_handling(type_def) | indent }}
@@ -85,11 +90,11 @@ extern "C" {
     const auto& ref = ::pydjinni::objectFromHandleAddress<{{ type_def.jni.wrapper }}>(nativeRef);
     {{ "auto r = " if type_def.return_type_ref }}ref->invoke(
         /*>- for parameter in type_def.parameters -*/
-            {{ translator(parameter.type_ref) }}::toCpp(jniEnv, {{ parameter.jni.name }}){{ ", " if not loop.last }}
+            {{ parameter.jni.translator }}::toCpp(jniEnv, {{ parameter.jni.name }}){{ ", " if not loop.last }}
         /*>- endfor -*/
     );
     //> if type_def.return_type_ref:
-    return ::pydjinni::release({{ translator(type_def.return_type_ref) }}::fromCpp(jniEnv, r));
+    return ::pydjinni::release({{ type_def.jni.return_type_translator }}::fromCpp(jniEnv, r));
     //> endif
     //> endcall
 }

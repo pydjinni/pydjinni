@@ -293,14 +293,14 @@ namespace pydjinni::jni::translator
         const jmethodID method_get_milli { ::pydjinni::jniGetMethodID(clazz.get(), "toEpochMilli", "()J") };
     };
 
-    template <template <class> class OptionalType, class T>
+    template <class T>
     struct Optional
     {
         // SFINAE helper: if C::CppOptType exists, opt_type<T>(nullptr) will return
-        // that type. If not, it returns OptionalType<C::CppType>. This is necessary
+        // that type. If not, it returns optional<C::CppType>. This is necessary
         // because we special-case optional interfaces to be represented as a nullable
-        // std::shared_ptr<T>, not optional<shared_ptr<T>> or optional<nn<shared_ptr<T>>>.
-        template <typename C> static OptionalType<typename C::CppType> opt_type(...);
+        // std::shared_ptr<T>, not optional<shared_ptr<T>> or optional<not_null<shared_ptr<T>>>.
+        template <typename C> static std::optional<typename C::CppType> opt_type(...);
         template <typename C> static typename C::CppOptType opt_type(typename C::CppOptType *);
         using CppType = decltype(opt_type<T>(nullptr));
 
@@ -317,7 +317,7 @@ namespace pydjinni::jni::translator
             }
         }
 
-        static ::pydjinni::LocalRef<JniType> fromCpp(JNIEnv* jniEnv, const OptionalType<typename T::CppType> &c)
+        static ::pydjinni::LocalRef<JniType> fromCpp(JNIEnv* jniEnv, const std::optional<typename T::CppType> &c)
         {
             return c ? T::Boxed::fromCpp(jniEnv, *c) : LocalRef<JniType>{};
         }

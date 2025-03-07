@@ -50,18 +50,19 @@ def type_decl(type_ref: TypeReference, parameter: bool = False, boxed: bool = Fa
         if type_def.primitive == BaseExternalType.Primitive.function:
             typename = typename.replace("(^)", f"(^ {'_Nullable' if type_ref.optional else '_Nonnull'})")
 
-        return f"{typename}{generic_types}{' *' if pointer or boxed or optional else ''}"
+        return f"{typename}{generic_types}{' *' if pointer or boxed or (optional and not type_ref.type_def.primitive == BaseExternalType.Primitive.function) else ''}"
     else:
         return "void"
 
 
 def annotation(type_ref: TypeReference, macro_style: bool = False):
-    if type_ref and type_ref.optional:
+    if type_ref and type_ref.optional and not type_ref.type_def.primitive == BaseExternalType.Primitive.function:
         return "_Nullable" if macro_style else "nullable"
     elif type_ref and type_ref.type_def.objc.pointer:
         return "_Nonnull" if macro_style else "nonnull"
     else:
         return ""
+
 
 class ObjcBaseCommentModel(BaseModel):
     decl: BaseCommentModel = Field(exclude=True, repr=False)
@@ -90,6 +91,7 @@ class ObjcBaseCommentModel(BaseModel):
             output.append(self.deprecated)
         return output
 
+
 class ObjcBaseType(ObjcBaseCommentModel):
     decl: BaseType = Field(exclude=True, repr=False)
     config: ObjcConfig = Field(exclude=True, repr=False)
@@ -106,18 +108,22 @@ class ObjcBaseType(ObjcBaseCommentModel):
 
     @computed_field
     @cached_property
-    def boxed(self) -> str: return self.typename
+    def boxed(self) -> str:
+        return self.typename
 
     @computed_field
     @cached_property
-    def header(self) -> Path: return Path(f"{self.name}.{self.config.header_extension}")
+    def header(self) -> Path:
+        return Path(f"{self.name}.{self.config.header_extension}")
 
     @cached_property
-    def source(self) -> Path: return Path(f"{self.name}.{self.config.source_extension}")
+    def source(self) -> Path:
+        return Path(f"{self.name}.{self.config.source_extension}")
 
     @computed_field
     @cached_property
-    def pointer(self) -> bool: return False
+    def pointer(self) -> bool:
+        return False
 
     @cached_property
     @validate(swift_keywords)
@@ -130,10 +136,12 @@ class ObjcBaseType(ObjcBaseCommentModel):
     @cached_property
     @validate(keywords)
     @validate(swift_keywords)
-    def namespace(self): return Identifier('_'.join(self.decl.namespace)).convert(self.config.identifier.type)
+    def namespace(self):
+        return Identifier('_'.join(self.decl.namespace)).convert(self.config.identifier.type)
 
     @cached_property
-    def imports(self) -> set[str]: return headers(self.decl.dependencies, "objc")
+    def imports(self) -> set[str]:
+        return headers(self.decl.dependencies, "objc")
 
     @property
     def attributes(self):
@@ -150,11 +158,16 @@ class ObjcFunction(ObjcBaseType):
     @cached_property
     def typename(self) -> str:
         return_type_decl = type_decl(self.decl.return_type_ref) if self.decl.return_type_ref else "void"
-        parameter_type_decls = [f"{type_decl(parameter.type_ref, parameter=True) } {annotation(parameter.type_ref, macro_style=True)}" for parameter in self.decl.parameters]
+        parameter_type_decls = [
+            f"{type_decl(parameter.type_ref, parameter=True)} {annotation(parameter.type_ref, macro_style=True)}" for
+            parameter in self.decl.parameters]
         if not self.decl.cpp.noexcept:
             parameter_type_decls.append("NSError* _Nullable * _Nonnull")
         return f"{return_type_decl} (^)({', '.join(parameter_type_decls)})"
 
+    @property
+    def nullable_typename(self) -> str:
+        return self.typename.replace("(^)", "(^ _Nullable)")
 
 
 class ObjcBaseClassType(ObjcBaseType):
@@ -222,6 +235,7 @@ class ObjcRecord(ObjcBaseClassType):
             output.add(quote(Path("pydjinni/deprecated.hpp")))
         return output
 
+
 class ObjcDataField(ObjcBaseField):
     @cached_property
     def type_decl(self) -> str:
@@ -281,6 +295,7 @@ class ObjcParameter(ObjcBaseField):
     @cached_property
     def annotation(self) -> str: return annotation(self.decl.type_ref)
 
+
 class CustomObjcParameter(BaseModel):
     name: str
     annotation: str
@@ -313,7 +328,7 @@ class ObjcInterface(ObjcBaseClassType):
             return Identifier(name).convert(self.config.identifier.method)
 
         @property
-        def parameters(self) -> list[ObjcParameter|CustomObjcParameter]:
+        def parameters(self) -> list[ObjcParameter | CustomObjcParameter]:
             output = [parameter.objc for parameter in self.decl.parameters]
             if self.decl.asynchronous:
                 output.append(CustomObjcParameter(
@@ -338,7 +353,8 @@ class ObjcInterface(ObjcBaseClassType):
             return f"{name}({''.join(parameters)})"
 
         @cached_property
-        def type_decl(self) -> str: return type_decl(self.decl.return_type_ref)
+        def type_decl(self) -> str:
+            return type_decl(self.decl.return_type_ref)
 
         @cached_property
         def completion_handler(self):
@@ -380,6 +396,7 @@ class ObjcErrorDomain(ObjcBaseClassType):
     class UserInfoKey:
         objc: str
         swift: str
+
     @property
     def domain_name(self) -> str:
         return f"{super().name}Domain"
@@ -391,5 +408,3 @@ class ObjcErrorDomain(ObjcBaseClassType):
                 self.typename + error_code.objc.name + parameter.name.convert(self.config.identifier.type),
                 self.swift_typename + error_code.objc.name + parameter.name.convert(self.config.identifier.type)
             ) for error_code in self.decl.error_codes for parameter in error_code.parameters]
-
-

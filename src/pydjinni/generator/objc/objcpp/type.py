@@ -22,7 +22,16 @@ from pydjinni.generator.filters import headers, quote
 from pydjinni.generator.objc.objcpp import external_types
 from pydjinni.generator.objc.objcpp.config import ObjcppConfig
 from pydjinni.parser.ast import Function, Interface, Record
-from pydjinni.parser.base_models import BaseType, BaseField, BaseCommentModel
+from pydjinni.parser.base_models import BaseType, BaseField, BaseCommentModel, TypeReference
+
+
+def translator(type_ref: TypeReference) -> str:
+    output = type_ref.type_def.objcpp.translator
+    if type_ref.parameters:
+        output = f"{output}<{','.join([translator(parameter_ref) for parameter_ref in type_ref.parameters])}>"
+    if type_ref.optional:
+        output = f"::pydjinni::translators::objc::Optional<{output}>"
+    return output
 
 
 class ObjcppExternalType(BaseModel):
@@ -93,9 +102,30 @@ class ObjcppBaseType(ObjcBaseModel):
 class ObjcppFunction(ObjcppBaseType):
     decl: Function = Field(exclude=True, repr=False)
 
+    @property
+    def source_includes(self) -> set[str]:
+        dependency_headers = super().source_includes
+        if any([parameter.type_ref.optional for parameter in self.decl.parameters]) or (self.decl.return_type_ref and self.decl.return_type_ref.optional):
+            dependency_headers.add(quote(Path("pydjinni/marshal.h")))
+        return dependency_headers
+
     @cached_property
     def name(self): return self.decl.name.title() if self.decl.anonymous else super().name
 
+    @property
+    def return_type_translator(self): return translator(self.decl.return_type_ref)
+
+
+class ObjcppBaseField(ObjcBaseModel):
+    decl: BaseField = Field(exclude=True, repr=False)
+    config: ObjcppConfig = Field(exclude=True, repr=False)
+
+    @computed_field
+    @cached_property
+    def name(self) -> str: return self.decl.name.convert(IdentifierStyle.Case.camel)
+
+    @property
+    def translator(self): return translator(self.decl.type_ref)
 
 class ObjcppInterface(ObjcppBaseType):
     decl: Interface = Field(exclude=True, repr=False)
@@ -117,7 +147,15 @@ class ObjcppInterface(ObjcppBaseType):
                 dependency_headers.add(quote(Path("pydjinni/coroutine/callback_awaitable.hpp")))
         if any(method.deprecated for method in self.decl.methods):
             dependency_headers.add(quote(Path("pydjinni/deprecated.hpp")))
+        if any([parameter.type_ref.optional for method in self.decl.methods for parameter in
+                method.parameters]) or any(method.return_type_ref.optional for method in self.decl.methods if method.return_type_ref):
+            dependency_headers.add(quote(Path("pydjinni/marshal.h")))
         return dependency_headers
+
+    class ObjcppMethod(ObjcppBaseField):
+        decl: Interface.Method = Field(exclude=True, repr=False)
+        @property
+        def return_type_translator(self): return translator(self.decl.return_type_ref)
 
 
 class ObjcppRecord(ObjcppBaseType):
@@ -133,13 +171,7 @@ class ObjcppRecord(ObjcppBaseType):
         quote(self.decl.objc.derived_header) if self.decl.objc.base_type else quote(self.decl.objc.header)
     }
 
-class ObjcppBaseField(ObjcBaseModel):
-    decl: BaseField = Field(exclude=True, repr=False)
-    config: ObjcppConfig = Field(exclude=True, repr=False)
 
-    @computed_field
-    @cached_property
-    def name(self) -> str: return self.decl.name.convert(IdentifierStyle.Case.camel)
 
 
 class ObjcppSymbolicConstantField(ObjcppBaseField):

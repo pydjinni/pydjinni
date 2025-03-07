@@ -46,9 +46,11 @@ private:
 class {{ type_def.cppcli.delegate_name }} {
 public:
     using CppType = {{ type_def.cpp.typename }};
+    using CppOptType = {{ type_def.cpp.typename }};
     using CsType = {{ type_def.cppcli.typename }}^;
 
     static CppType ToCpp(gcroot<CsType> delegate);
-    static CsType FromCpp(const CppType& function);
+    static CsType FromCppOpt(const CppOptType& cpp);
+    static CsType FromCpp(const CppType& cpp);
 };
 //> endblock

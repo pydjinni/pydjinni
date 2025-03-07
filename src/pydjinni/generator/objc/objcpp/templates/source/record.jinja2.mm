@@ -21,7 +21,7 @@ auto {{ type_def.objcpp.name }}::toCpp(ObjcType obj) -> CppType {
     return {
     //> for field in type_def.fields:
         //? field.deprecated : "PYDJINNI_DISABLE_DEPRECATED_WARNINGS"
-        {{ field.type_ref | translator }}::toCpp(obj.{{ field.objc.name }}){{ "," if not loop.last }}
+        {{ field.objcpp.translator }}::toCpp(obj.{{ field.objc.name }}){{ "," if not loop.last }}
         //? field.deprecated : "PYDJINNI_ENABLE_WARNINGS"
     //> endfor
     };
@@ -30,7 +30,7 @@ auto {{ type_def.objcpp.name }}::toCpp(ObjcType obj) -> CppType {
 auto {{ type_def.objcpp.name }}::fromCpp(const CppType& cpp) -> ObjcType {
     return [[::{{ type_def.objc.typename }} alloc] {{ type_def.objc.init }}
     /*>- for field in type_def.fields -*/
-        {{ " " ~ field.objc.name if not loop.first }}:({{ ("PYDJINNI_DISABLE_DEPRECATED_WARNINGS" if field.deprecated ) ~ field.type_ref | translator }}::fromCpp(cpp.{{ field.cpp.name }}){{ "PYDJINNI_ENABLE_WARNINGS" if field.deprecated}})
+        {{ " " ~ field.objc.name if not loop.first }}:({{ ("PYDJINNI_DISABLE_DEPRECATED_WARNINGS" if field.deprecated ) ~ field.objcpp.translator }}::fromCpp(cpp.{{ field.cpp.name }}){{ "PYDJINNI_ENABLE_WARNINGS" if field.deprecated}})
     /*>- endfor -*/
     ];
 }

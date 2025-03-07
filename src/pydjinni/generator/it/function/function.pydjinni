@@ -18,4 +18,6 @@ helper = main interface +cpp {
     static cpp_function_throwing_bar_error() -> () throws bar;
     static anonymous_function_passing_record(callback: (param: foo) -> bool);
     static function_parameter_throwing(callback: throwing_function) throws;
+    static optional_function_passing_null(param: named_function?) -> named_function?;
+    static optional_function_passing_function(param: named_function?) -> named_function?;
 }
