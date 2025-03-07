@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #*/
 //> extends "base.jinja2"
-//> from "macros.jinja2" import translator
 
 //> block content
 {{ type_def.jni.name }}::{{ type_def.jni.name }}() = default;
@@ -28,7 +27,7 @@ auto {{ type_def.jni.name }}::fromCpp(JNIEnv* jniEnv, const CppType& c) -> ::pyd
     auto r = ::pydjinni::LocalRef<JniType>(jniEnv->NewObject(
         data.clazz.get(), data.jconstructor
         /*> for field in type_def.fields */
-        , ::pydjinni::get({{ translator(field.type_ref) }}::fromCpp(jniEnv, c.{{ field.cpp.name }}))
+        , ::pydjinni::get({{ field.jni.translator }}::fromCpp(jniEnv, c.{{ field.cpp.name }}))
         /*> endfor */
     ));
     //> if type_def.fields | map(attribute="deprecated") | any:
@@ -44,7 +43,7 @@ auto {{ type_def.jni.name }}::toCpp(JNIEnv* jniEnv, JniType j) -> CppType {
     const auto& data = ::pydjinni::JniClass<{{ type_def.jni.name }}>::get();
     return {
     /*> for field in type_def.fields */
-        {{ translator(field.type_ref) }}::toCpp(jniEnv, ({{ field.jni.typename }})jniEnv->{{ field.jni.field_accessor }}(j, data.field_{{ field.jni.name }})){{ "," if not loop.last }}
+        {{ field.jni.translator }}::toCpp(jniEnv, ({{ field.jni.typename }})jniEnv->{{ field.jni.field_accessor }}(j, data.field_{{ field.jni.name }})){{ "," if not loop.last }}
     /*> endfor */
     };
 }

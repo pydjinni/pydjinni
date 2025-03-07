@@ -26,4 +26,8 @@ NS_SWIFT_NAME(Helper)
 + (void)functionParameterThrowing:(void (^ _Nonnull)(NSError* _Nullable * _Nonnull))callback error:(NSError* _Nullable * _Nonnull)error
   __attribute__((swift_error(nonnull_error)))
   NS_SWIFT_NAME(functionParameterThrowing(callback:));
++ (BOOL (^ _Nullable)(NSString * _Nonnull))optionalFunctionPassingNull:(BOOL (^ _Nullable)(NSString * _Nonnull))param
+  NS_SWIFT_NAME(optionalFunctionPassingNull(param:));
++ (BOOL (^ _Nullable)(NSString * _Nonnull))optionalFunctionPassingFunction:(BOOL (^ _Nullable)(NSString * _Nonnull))param
+  NS_SWIFT_NAME(optionalFunctionPassingFunction(param:));
 @end

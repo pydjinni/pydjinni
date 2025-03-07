@@ -82,4 +82,21 @@ TEST_CASE("Cpp.FunctionTest") {
             }), std::runtime_error, Catch::Matchers::Message("unexpected error from host"));
         }
     }
+    WHEN("passing a nullptr instead of a lambda to an optional lambda parameter") {
+        const auto result = test::function::Helper::optional_function_passing_null(nullptr);
+        THEN("the result should be a nullptr") {
+            REQUIRE(result == nullptr);
+        }
+    }
+    WHEN("passing a lambda to an optional lambda parameter") {
+        const auto result = test::function::Helper::optional_function_passing_function([](std::string input){
+            return input == "foo";
+        });
+        THEN("the resulting function should not be a nullptr") {
+            REQUIRE(result != nullptr);
+        }
+        THEN("the function should be callable") {
+            REQUIRE(result("foo") == true);
+        }
+    }
 }

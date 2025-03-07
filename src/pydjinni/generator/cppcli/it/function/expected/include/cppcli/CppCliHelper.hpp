@@ -19,6 +19,8 @@ public:
     static System::Action^ CppFunctionThrowingBarError();
     static void AnonymousFunctionPassingRecord(System::Func<::Test::Function::CppCli::Foo^, bool>^ callback);
     static void FunctionParameterThrowing(::Test::Function::CppCli::ThrowingFunction^ callback);
+    static ::Test::Function::CppCli::NamedFunction^ OptionalFunctionPassingNull(::Test::Function::CppCli::NamedFunction^ param);
+    static ::Test::Function::CppCli::NamedFunction^ OptionalFunctionPassingFunction(::Test::Function::CppCli::NamedFunction^ param);
 internal:
     using CppType = std::shared_ptr<::test::function::Helper>;
     using CppOptType = std::shared_ptr<::test::function::Helper>;

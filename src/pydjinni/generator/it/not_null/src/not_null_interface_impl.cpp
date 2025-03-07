@@ -19,3 +19,7 @@ void NotNullInterfaceImpl::not_null_parameter(
         const ::gsl::not_null<std::shared_ptr<::test::not_null_test::NotNullInterface>> &param) noexcept {
     // do nothing
 }
+
+void NotNullInterfaceImpl::not_null_function_parameter(const ::gsl::not_null<std::function<void()>> &param) noexcept {
+    // do nothing
+}

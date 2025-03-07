@@ -54,7 +54,7 @@ limitations under the License.
     /*>- endif -*/
     {{ method.cpp.name }}(
     /*>- for parameter in method.parameters -*/
-        {{ parameter.type_ref | translator }}::toCpp({{ parameter.objc.name }}){{ ", " if not loop.last }}
+        {{ parameter.objcpp.translator }}::toCpp({{ parameter.objc.name }}){{ ", " if not loop.last }}
     /*>- endfor -*/
     )
     /*>- if method.asynchronous -*/
@@ -62,7 +62,7 @@ limitations under the License.
         [completion]({{ method.cpp.callback_type_spec ~ " objcpp_result_" if method.return_type_ref }}) -> void {
             completion(
             /*>- if method.return_type_ref -*/
-                {{ method.return_type_ref | translator }}::fromCpp(objcpp_result_)
+                {{ method.objcpp.return_type_translator }}::fromCpp(objcpp_result_)
             /*>- endif -*/
             /*>- if not method.cpp.noexcept -*/
                 {{ ", " if method.return_type_ref }}nil
@@ -93,7 +93,7 @@ limitations under the License.
     ;
     //? method.deprecated : "PYDJINNI_ENABLE_WARNINGS"
     /*> if method.return_type_ref and not method.asynchronous */
-    return {{ method.return_type_ref | translator }}::fromCpp(objcpp_result_);
+    return {{ method.objcpp.return_type_translator }}::fromCpp(objcpp_result_);
     /*> endif */
     //> endcall
 }
@@ -143,7 +143,7 @@ public:
             //> endif
             {{ "auto objcpp_result_ = " if method.return_type_ref.type_def and not method.asynchronous }}[djinni_private_get_proxied_objc_object() {{ method.objc.name }}
             /*>- for parameter in method.parameters -*/
-                {{ " " ~ parameter.objc.name if not loop.first }}:({{ parameter.type_ref | translator }}::fromCpp({{ parameter.cpp.name }}))
+                {{ " " ~ parameter.objc.name if not loop.first }}:({{ parameter.objcpp.translator }}::fromCpp({{ parameter.cpp.name }}))
             /*>- endfor -*/
             /*>- if method.asynchronous -*/
             {{ " completion" if method.parameters }}:(^ ({{ ( method.objc.type_decl ~ " value") if method.return_type_ref }} {{ "NSError* error" if not method.cpp.noexcept }}){
@@ -167,14 +167,14 @@ public:
                     //> endif
                 }
                 //> endif
-                handle.resume({{ (method.return_type_ref | translator ~ "::toCpp(value)") if method.return_type_ref }});
+                handle.resume({{ (method.objcpp.return_type_translator ~ "::toCpp(value)") if method.return_type_ref }});
             })
             /*>- endif -*/
             {{- ":&error" if not method.cpp.noexcept and not method.asynchronous -}}
             ];
             {{ objc_error_handling(method) | indent(12) }}
             //> if method.return_type_ref.type_def and not method.asynchronous
-            return {{ method.return_type_ref | translator }}::toCpp(objcpp_result_);
+            return {{ method.objcpp.return_type_translator }}::toCpp(objcpp_result_);
             //> endif
         }
         //> if method.asynchronous:

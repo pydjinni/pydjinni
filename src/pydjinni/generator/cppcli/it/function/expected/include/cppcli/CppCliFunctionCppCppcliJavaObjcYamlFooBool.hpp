@@ -22,9 +22,11 @@ private:
 class _FunctionCppCppcliJavaObjcYamlFooBoolDelegate {
 public:
     using CppType = std::function<bool(::test::function::Foo)>;
+    using CppOptType = std::function<bool(::test::function::Foo)>;
     using CsType = System::Func<::Test::Function::CppCli::Foo^, bool>^;
 
     static CppType ToCpp(gcroot<CsType> delegate);
-    static CsType FromCpp(const CppType& function);
+    static CsType FromCppOpt(const CppOptType& cpp);
+    static CsType FromCpp(const CppType& cpp);
 };
 } // namespace Test::Function::CppCli

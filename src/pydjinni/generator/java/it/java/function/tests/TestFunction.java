@@ -77,4 +77,19 @@ class TestFunction {
         }));
         assertEquals("unexpected error from host", exception.getMessage());
     }
+
+    @Test
+    void testOptionalFunctionPassingNull() {
+        var result = Helper.optionalFunctionPassingNull(null);
+        assertNull(result);
+    }
+
+    @Test
+    void testOptionalFunctionPassingFunction() {
+        var result = Helper.optionalFunctionPassingFunction(input -> {
+            return input.equals("foo");
+        });
+        assertNotNull(result);
+        assertTrue(result.invoke("foo"));
+    }
 }

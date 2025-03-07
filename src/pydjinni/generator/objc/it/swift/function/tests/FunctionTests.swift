@@ -63,4 +63,17 @@ final class FunctionTests: XCTestCase {
             ]))
         }
     }
+    
+    func testFunctionParameterPassingNil() {
+        let block = Helper.optionalFunctionPassingNull(param: nil)
+        XCTAssertNil(block)
+    }
+    
+    func testFunctionParameterPassingFunction() {
+        let block = Helper.optionalFunctionPassingFunction(param: { input in
+            return input == "foo"
+        })
+        XCTAssertNotNil(block)
+        XCTAssertTrue(block!("foo"))
+    }
 }

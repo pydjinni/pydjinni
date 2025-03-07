@@ -54,4 +54,19 @@ class TestFunction {
         }
         assertEquals("unexpected error from host", exception.message)
     }
+
+    @Test
+    fun testFunctionPassingNull() {
+        val result = Helper.optionalFunctionPassingNull(null)
+        assertNull(result)
+    }
+
+    @Test
+    fun testOptionalFunctionPassingFunction() {
+        val result = Helper.optionalFunctionPassingFunction { input ->
+            input == "foo"
+        }
+        assertNotNull(result)
+        assertTrue(result!!("foo"))
+    }
 }

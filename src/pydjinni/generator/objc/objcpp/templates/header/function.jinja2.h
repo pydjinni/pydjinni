@@ -18,9 +18,12 @@ limitations under the License.
 //> block content
 struct {{ type_def.objcpp.name }} {
     using CppType = {{ type_def.cpp.typename }};
-    using ObjcType = {{ type_def.objc.typename }};
+    using CppOptType = {{ type_def.cpp.typename }};
+    using ObjcType = {{ type_def.objc.nullable_typename }};
+    using Boxed = {{ type_def.objcpp.translator }};
 
     static CppType toCpp(ObjcType objc);
     static ObjcType fromCpp(CppType cpp);
+    static ObjcType fromCppOpt(CppOptType cpp);
 };
 //> endblock

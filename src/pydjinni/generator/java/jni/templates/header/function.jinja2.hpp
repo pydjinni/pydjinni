@@ -28,10 +28,10 @@ public:
 
 class {{ type_def.jni.name }} final : ::pydjinni::JniInterface<{{ type_def.jni.wrapper }}, {{ type_def.jni.name }}> {
 public:
-    using CppType = {{ type_def.jni.wrapper }};
-    using CppOptType = {{ type_def.jni.wrapper }};
-    using JniType = {{ type_def.jni.typename.value }};
-    using Boxed = {{ type_def.jni.wrapper }};
+    using CppType = {{ type_def.cpp.typename }};
+    using CppOptType = {{ type_def.cpp.typename }};
+    using JniType = {{ type_def.jni.typename }};
+    using Boxed = {{ type_def.jni.translator }};
 
     ~{{ type_def.jni.name }}();
 

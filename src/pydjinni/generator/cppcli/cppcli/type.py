@@ -25,7 +25,7 @@ from pydjinni.parser.ast import Function
 from .comment_renderer import XmlCommentRenderer
 from .config import CppCliConfig
 from .keywords import keywords
-from pydjinni.parser.base_models import BaseType, BaseField, TypeReference, DataField, BaseCommentModel
+from pydjinni.parser.base_models import BaseExternalType, BaseType, BaseField, TypeReference, DataField, BaseCommentModel
 from pydjinni.generator.validator import validate
 
 from pydjinni.generator.filters import headers, quote
@@ -58,7 +58,7 @@ def translator(type_ref: TypeReference) -> str:
     if type_ref.parameters:
         output += f"<{', '.join([translator(type_ref) for type_ref in type_ref.parameters])}>"
     if type_ref.optional:
-        output = f"::pydjinni::cppcli::translator::Optional<std::optional, {output}>"
+        output = f"::pydjinni::cppcli::translator::Optional<{output}>"
     return output
 
 class CppCliBaseCommentModel(BaseModel):

@@ -193,13 +193,13 @@ struct Binary {
     }
 };
 
-template<template<class> class OptionalType, class T>
+template<class T>
 class Optional {
     // SFINAE helper: if C::CppOptType exists, opt_type<T>(nullptr) will return
-    // that type. If not, it returns OptionalType<C::CppType>. This is necessary
+    // that type. If not, it returns optional<C::CppType>. This is necessary
     // because we special-case optional interfaces to be represented as a nullable
-    // std::shared_ptr<T>, not optional<shared_ptr<T>> or optional<nn<shared_ptr<T>>>.
-    template <typename C> static OptionalType<typename C::CppType> opt_type(...);
+    // std::shared_ptr<T>, not optional<shared_ptr<T>> or optional<not_null<shared_ptr<T>>>.
+    template <typename C> static std::optional<typename C::CppType> opt_type(...);
     template <typename C> static typename C::CppOptType opt_type(typename C::CppOptType *);
 
 public:
@@ -217,7 +217,7 @@ public:
     }
 
     // fromCpp used for normal optionals
-    static ObjcType fromCpp(const OptionalType<typename T::CppType>& opt) {
+    static ObjcType fromCpp(const std::optional<typename T::CppType>& opt) {
         return opt ? T::Boxed::fromCpp(*opt) : nil;
     }
 

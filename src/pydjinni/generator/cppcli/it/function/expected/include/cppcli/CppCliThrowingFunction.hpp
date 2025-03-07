@@ -21,9 +21,11 @@ private:
 class _ThrowingFunctionDelegate {
 public:
     using CppType = std::function<void()>;
+    using CppOptType = std::function<void()>;
     using CsType = ::Test::Function::CppCli::ThrowingFunction^;
 
     static CppType ToCpp(gcroot<CsType> delegate);
-    static CsType FromCpp(const CppType& function);
+    static CsType FromCppOpt(const CppOptType& cpp);
+    static CsType FromCpp(const CppType& cpp);
 };
 } // namespace Test::Function::CppCli

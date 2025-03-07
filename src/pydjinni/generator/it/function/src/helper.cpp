@@ -63,3 +63,14 @@ void Helper::function_parameter_throwing(const std::function<void()>& callback) 
     }
     assert(false); // this should never be reached because of the exception
 }
+
+std::function<bool(std::string)> Helper::optional_function_passing_null(const std::function<bool(std::string)> & param) noexcept {
+    assert(param == nullptr);
+    return param;
+}
+
+std::function<bool(std::string)> Helper::optional_function_passing_function(const std::function<bool(std::string)> & param) noexcept {
+    assert(param != nullptr);
+    assert(param("foo"));
+    return param;
+}

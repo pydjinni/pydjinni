@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 #*/
 //> extends "base.jinja2"
-//> from "macros.jinja2" import translator
 //> macro coroutine(method)
 //> if method.asynchronous:
     co_return co_await pydjinni::coroutine::CallbackAwaitable<{{ method.cpp.callback_type_spec }}>([&](pydjinni::coroutine::CallbackHandle<{{ method.cpp.callback_type_spec }}>& handle) -> void {
@@ -47,12 +46,12 @@ limitations under the License.
     const auto& data = ::pydjinni::JniClass<{{ type_def.jni.translator }}>::get();
     {{ "auto jret = " if method.return_type_ref or method.asynchronous }}jni.env->{{ method.jni.routine_name }}(Handle::get().get(), data.method_{{ method.java.name }}
     /*>- for parameter in method.parameters -*/
-        , ::pydjinni::get({{ translator(parameter.type_ref) }}::fromCpp(jni.env, {{ parameter.cpp.name }}))
+        , ::pydjinni::get({{ parameter.jni.translator }}::fromCpp(jni.env, {{ parameter.cpp.name }}))
     /*>- endfor -*/
     );
     {{ jni_error_handling(method) | indent }}
     //> if method.return_type_ref and not method.asynchronous:
-    return {{ translator(method.return_type_ref) }}::toCpp(jni.env, jret);
+    return {{ method.jni.return_type_translator }}::toCpp(jni.env, jret);
     //> endif
     //> if method.asynchronous:
     jni.Get<::pydjinni::jni::Jni::CompletableFuture>(jret).WhenComplete({
@@ -120,7 +119,7 @@ extern "C" {
     {{ "auto r = " if (method.return_type_ref and not method.asynchronous) }}ref->{{ method.cpp.name }}(
     /*>- endif -*/
     /*>- for parameter in method.parameters -*/
-    {{ translator(parameter.type_ref) }}::toCpp(jniEnv, {{ parameter.jni.name }}){{ ", " if not loop.last }}
+    {{ parameter.jni.translator }}::toCpp(jniEnv, {{ parameter.jni.name }}){{ ", " if not loop.last }}
     /*>- endfor -*/
     )
     /*>- if method.asynchronous -*/
