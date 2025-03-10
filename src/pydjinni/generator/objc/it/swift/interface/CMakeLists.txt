@@ -18,4 +18,5 @@ swift_test_case(InterfaceTest
         generate.objcpp.namespace=test::interface_test::objcpp
     SOURCES
         tests/InterfaceTests.swift
+        tests/OptionalInterfaceTests.swift
 )
