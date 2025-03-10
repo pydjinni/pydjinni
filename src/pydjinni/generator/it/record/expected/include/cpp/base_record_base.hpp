@@ -3,6 +3,7 @@
 #pragma once
 #include <algorithm>
 #include <cstdint>
+#include <format>
 
 namespace test::record {
 struct BaseRecord;

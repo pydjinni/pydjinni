@@ -52,38 +52,15 @@ bool operator>=(const {{ type_def.cpp.name }}& lhs, const {{ type_def.cpp.name }
     return !(lhs < rhs);
 }
 //> endif
-//> if 'str' in type_def.deriving:
+//> if config.string_serialization and not type_def.cpp.base_type:
 //> call disable_deprecation_warnings(type_def.deprecated or (type_def.fields | map(attribute='deprecated') | any))
 std::string to_string(const {{ type_def.cpp.typename }}& value) {
-    //> for field in type_def.fields if field.type_ref.optional:
-    //> if field.type_ref.type_def.primitive == 'collection':
-    #ifndef __cpp_lib_format_ranges // gcc doesn't support ranges formatting yet as of Jan 2025
-    auto {{ field.cpp.name }}_val = "{?}";
-    #else
-    //> endif
-    auto {{ field.cpp.name }}_val = value.{{ field.cpp.name }}.has_value() ? std::format("{}", value.{{ field.cpp.name }}.value()) : "null";
-    //> if field.type_ref.type_def.primitive == 'collection':
-    #endif
-    //> endif
-    //> endfor
     return std::format("{{ type_def.cpp.typename }}(
         /*>- for field in type_def.fields -*/
         {{ field.cpp.name }}={}{{ ", " if not loop.last }}
         /*>- endfor */)",
         //> for field in type_def.fields
-        //> if field.type_ref.optional
-        {{ field.cpp.name }}_val{{ ", " if not loop.last }}
-        //> else
-        //> if field.type_ref.type_def.primitive == 'collection':
-        #ifndef __cpp_lib_format_ranges // gcc doesn't support ranges formatting yet as of Jan 2025
-        "{?}"{{ ", " if not loop.last }}
-        #else
-        //> endif
-        value.{{ field.cpp.name }}{{ ", " if not loop.last }}
-        //> if field.type_ref.type_def.primitive == 'collection':
-        #endif
-        //> endif
-        //> endif
+        ::pydjinni::format(value.{{ field.cpp.name }}){{ ", " if not loop.last }}
         //> endfor
     );
 }

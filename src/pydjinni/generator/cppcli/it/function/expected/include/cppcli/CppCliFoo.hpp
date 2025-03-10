@@ -12,6 +12,7 @@ public:
     {
         int get();
     }
+    System::String^ ToString() override;
 internal:
     using CppType = ::test::function::Foo;
     using CsType = Foo^;

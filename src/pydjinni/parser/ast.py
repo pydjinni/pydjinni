@@ -96,9 +96,6 @@ class Record(ClassType):
         Ordering comparison.
         Is not supported for collection types, optionals, and booleans.
         """
-        str = 'str', """
-        String representation of a record instance (for debugging or logging).
-        """
 
     primitive: BaseExternalType.Primitive = BaseExternalType.Primitive.record
     fields: list[DataField] = []

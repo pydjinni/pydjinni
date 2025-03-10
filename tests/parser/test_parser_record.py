@@ -48,7 +48,6 @@ def test_parsing_record(tmp_path: Path):
 @pytest.mark.parametrize("deriving,expected", [
     ('eq', {Record.Deriving.eq}),
     ('eq, ord', {Record.Deriving.eq, Record.Deriving.ord}),
-    ('eq, ord, str', {Record.Deriving.eq, Record.Deriving.ord, Record.Deriving.str}),
     ('eq, eq', {Record.Deriving.eq})
 ])
 def test_parsing_record_deriving(tmp_path: Path, deriving, expected: set[Record.Deriving]):
@@ -86,7 +85,7 @@ def test_parsing_record_unknown_deriving(tmp_path: Path):
     ('', {Record.Deriving.eq, Record.Deriving.ord}),
     ('deriving()', {Record.Deriving.eq, Record.Deriving.ord}),
     ('deriving(ord)', {Record.Deriving.eq, Record.Deriving.ord}),
-    ('deriving(eq, ord, str)', {Record.Deriving.eq, Record.Deriving.ord, Record.Deriving.str}),
+    ('deriving(eq, ord)', {Record.Deriving.eq, Record.Deriving.ord}),
 ])
 def test_parsing_record_default_deriving(tmp_path: Path, deriving, expected: set[Record.Deriving]):
     reader, resolver_mock = given_mocks()

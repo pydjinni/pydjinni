@@ -48,14 +48,14 @@ struct {{ type_def.cpp.deprecated ~ type_def.cpp.name }}{{ " final" if not type_
     friend bool operator>=(const {{ type_def.cpp.name }}& lhs, const {{ type_def.cpp.name }}& rhs);
 //> endif
 };
-//> if 'str' in type_def.deriving:
+//> if config.string_serialization and not type_def.cpp.base_type:
 //> call disable_deprecation_warnings(type_def.deprecated)
 std::string to_string(const {{ type_def.cpp.typename }}& value);
 //> endcall
 //> endif
 //> endblock
 //> block global
-//> if 'str' in type_def.deriving:
+//> if config.string_serialization and not type_def.cpp.base_type:
 //> call disable_deprecation_warnings(type_def.deprecated)
 template<>
 struct std::formatter<{{ type_def.cpp.typename }}> : std::formatter<std::string> {

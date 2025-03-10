@@ -15,4 +15,11 @@ public final class BinaryTypes {
 
     public byte[] getBinaryT() { return binaryT; }
     public byte[] getBinaryOptional() { return binaryOptional; }
+    @Override
+    public String toString() {
+        return "test.record.BinaryTypes{" +
+            "binaryT=" + binaryT +
+            ",binaryOptional=" + binaryOptional +
+        "}";
+    }
 }

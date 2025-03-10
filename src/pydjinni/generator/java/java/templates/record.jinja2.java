@@ -87,7 +87,7 @@ limitations under the License.
         return 0;
     }
 //> endif
-//> if 'str' in type_def.deriving
+//> if config.string_serialization
 
     @Override
     public String toString() {
