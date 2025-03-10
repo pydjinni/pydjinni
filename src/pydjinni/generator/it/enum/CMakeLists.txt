@@ -20,5 +20,5 @@ define_test_case(EnumTest
         src/helper.cpp
     OPTIONS
         generate.cpp.namespace=test::enum_test
-        generate.cpp.string_serialization_for_enums=True
+        generate.cpp.string_serialization=True
 )

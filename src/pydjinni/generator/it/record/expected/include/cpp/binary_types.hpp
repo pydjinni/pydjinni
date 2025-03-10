@@ -3,6 +3,7 @@
 #pragma once
 #include "pydjinni/type/binary.hpp"
 #include <algorithm>
+#include <format>
 #include <optional>
 
 namespace test::record {
@@ -14,4 +15,12 @@ struct BinaryTypes final {
     , binary_optional(std::move(binary_optional))
     {}
 };
+std::string to_string(const ::test::record::BinaryTypes& value);
 } // namespace test::record
+template<>
+struct std::formatter<::test::record::BinaryTypes> : std::formatter<std::string> {
+    template<typename FormatContext>
+    auto format(const ::test::record::BinaryTypes& value, FormatContext &ctx) const {
+        return std::format_to(ctx.out(), "{}", test::record::to_string(value));
+    }
+};

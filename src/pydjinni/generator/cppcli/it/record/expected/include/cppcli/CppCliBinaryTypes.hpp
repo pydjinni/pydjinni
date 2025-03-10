@@ -16,6 +16,7 @@ public:
     {
         array<System::Byte>^ get();
     }
+    System::String^ ToString() override;
 internal:
     using CppType = ::test::record::BinaryTypes;
     using CsType = BinaryTypes^;

@@ -27,4 +27,4 @@ class ObjcTarget(Target):
     key = "objc"
     display_key = "Objective-C"
     generators = [ObjcGenerator, ObjcppGenerator]
-    supported_deriving = {Record.Deriving.eq, Record.Deriving.ord, Record.Deriving.str}
+    supported_deriving = {Record.Deriving.eq, Record.Deriving.ord}
