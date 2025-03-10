@@ -13,4 +13,10 @@ public class BaseRecordBase {
 
     @org.jetbrains.annotations.NotNull
     public int getValue() { return value; }
+    @Override
+    public String toString() {
+        return "test.record.BaseRecord{" +
+            "value=" + value +
+        "}";
+    }
 }

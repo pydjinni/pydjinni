@@ -50,7 +50,7 @@ struct {{ type_def.cpp.deprecated ~ type_def.cpp.name }}{{ " final" if not type_
 };
 //> if config.string_serialization:
 //> call disable_deprecation_warnings(type_def.deprecated)
-std::string to_string(const {{ type_def.cpp.derived_name }}& value);
+std::string to_string(const {{ type_def.cpp.typename }}& value);
 //> endcall
 //> endif
 //> endblock

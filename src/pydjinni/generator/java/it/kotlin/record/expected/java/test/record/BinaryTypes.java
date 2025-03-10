@@ -19,4 +19,11 @@ public final class BinaryTypes {
     public byte[] getBinaryT() { return binaryT; }
     @org.jetbrains.annotations.Nullable
     public byte[] getBinaryOptional() { return binaryOptional; }
+    @Override
+    public String toString() {
+        return "test.record.BinaryTypes{" +
+            "binaryT=" + binaryT +
+            ",binaryOptional=" + binaryOptional +
+        "}";
+    }
 }
