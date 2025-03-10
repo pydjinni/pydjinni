@@ -49,4 +49,8 @@ class CppCliConfig(BaseModel):
         default=True,
         description="Whether diagnostics nullability attributes should be added to methods, functions and fields (Not available in .NET Framework)"
     )
+    string_serialization: bool = Field(
+        default=True,
+        description="Whether to generate `ToString` overloads for records"
+    )
     identifier: CppCliIdentifierStyle = CppCliIdentifierStyle()

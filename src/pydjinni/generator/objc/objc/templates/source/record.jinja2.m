@@ -87,7 +87,7 @@ limitations under the License.
 }
 //> endif
 
-//> if 'str' in type_def.deriving:
+//> if config.string_serialization:
 - (NSString *)description {
     return [NSString stringWithFormat:@"<%@
     /*>- for field in type_def.fields -*/

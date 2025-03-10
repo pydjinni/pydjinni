@@ -27,4 +27,4 @@ class JavaTarget(Target):
     key = "java"
     display_key = "Java"
     generators = [JavaGenerator, JniGenerator]
-    supported_deriving = {Record.Deriving.eq, Record.Deriving.ord, Record.Deriving.str}
+    supported_deriving = {Record.Deriving.eq, Record.Deriving.ord}

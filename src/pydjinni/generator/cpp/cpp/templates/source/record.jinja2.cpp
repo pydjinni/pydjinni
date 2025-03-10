@@ -52,7 +52,7 @@ bool operator>=(const {{ type_def.cpp.name }}& lhs, const {{ type_def.cpp.name }
     return !(lhs < rhs);
 }
 //> endif
-//> if 'str' in type_def.deriving:
+//> if config.string_serialization and not type_def.cpp.base_type:
 //> call disable_deprecation_warnings(type_def.deprecated or (type_def.fields | map(attribute='deprecated') | any))
 std::string to_string(const {{ type_def.cpp.typename }}& value) {
     //> for field in type_def.fields if field.type_ref.optional:

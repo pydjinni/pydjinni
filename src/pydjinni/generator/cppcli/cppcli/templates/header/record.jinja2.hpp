@@ -43,7 +43,7 @@ public:
         {{ field.cppcli.typename }} get();
     }
     //> endfor
-    //> if 'str' in type_def.deriving:
+    //> if config.string_serialization:
 
     System::String^ ToString() override;
     //> endif

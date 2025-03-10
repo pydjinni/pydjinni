@@ -103,4 +103,8 @@ class JavaConfig(BaseModel):
         default="Functional",
         description="Prefix for generated functional interfaces."
     )
+    string_serialization: bool = Field(
+        default=True,
+        description="Whether to generate `toString` overloads for records"
+    )
     identifier: JavaIdentifierStyle = JavaIdentifierStyle()
