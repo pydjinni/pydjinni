@@ -17,4 +17,5 @@ cppcli_test_case(InterfaceTest
         generate.cppcli.namespace=Test::Interface::CppCli
     SOURCES
         tests/InterfaceTest.cs
+        tests/OptionalInterfaceTest.cs
 )

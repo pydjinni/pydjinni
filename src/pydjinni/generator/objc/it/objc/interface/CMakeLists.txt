@@ -18,4 +18,5 @@ objc_test_case(InterfaceTest
         generate.objc.strict_protocols=True
     SOURCES
         tests/InterfaceTests.m
+        tests/OptionalInterfaceTests.m
 )

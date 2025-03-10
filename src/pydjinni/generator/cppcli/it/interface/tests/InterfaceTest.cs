@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System.Collections.Generic;
 using Test.Interface.CppCli;
 using NUnit.Framework;
 using System;
@@ -20,7 +19,7 @@ using System;
 namespace Testing.Unit.Interface
 {
     [TestFixture]
-    public class BaseRecordTest
+    public class InterfaceTest
     {
 
         Calculator calculator;
