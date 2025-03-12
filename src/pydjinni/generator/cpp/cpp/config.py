@@ -74,7 +74,7 @@ class CppConfig(BaseModel):
     )
     not_null: CppNotNull = CppNotNull()
     identifier: CppIdentifier = CppIdentifier()
-    string_serialization_for_enums: bool = Field(
-        default=False,
-        description="Whether to generate ostream << overloads for stringifying enums and flags"
+    string_serialization: bool = Field(
+        default=True,
+        description="Whether to generate `to_string` and `std::formatter` overloads for stringifying records, enums and flags"
     )

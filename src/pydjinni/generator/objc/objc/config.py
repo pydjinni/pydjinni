@@ -64,5 +64,9 @@ class ObjcConfig(BaseModel):
         default=False,
         description="All generated `@protocol` will implement `<NSObject>`"
     )
+    string_serialization: bool = Field(
+        default=True,
+        description="Whether to generate `description` overloads for records"
+    )
     swift: SwiftConfig = SwiftConfig()
     identifier: ObjcIdentifierStyle = ObjcIdentifierStyle()

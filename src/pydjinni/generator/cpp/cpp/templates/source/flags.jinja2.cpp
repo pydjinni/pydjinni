@@ -16,7 +16,7 @@ limitations under the License.
 //> extends "base.jinja2"
 
 //> block content
-//> if config.string_serialization_for_enums:
+//> if config.string_serialization:
 //> call disable_deprecation_warnings(type_def.deprecated)
 std::string to_string({{ type_def.cpp.typename }} value) noexcept {
     std::string output;

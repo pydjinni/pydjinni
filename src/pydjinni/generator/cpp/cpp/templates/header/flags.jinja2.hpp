@@ -58,14 +58,14 @@ inline {{ type_def.cpp.name }}& operator^=({{ type_def.cpp.name }}& lhs, {{ type
 constexpr {{ type_def.cpp.name }} operator~({{ type_def.cpp.name }} x) noexcept {
     return static_cast<{{ type_def.cpp.name }}>(~static_cast<unsigned>(x));
 }
-//> if config.string_serialization_for_enums:
+//> if config.string_serialization:
 //> call disable_deprecation_warnings(type_def.deprecated)
 std::string to_string({{ type_def.cpp.typename }} value) noexcept;
 //> endcall
 //> endif
 //> endblock
 //> block global
-//> if config.string_serialization_for_enums:
+//> if config.string_serialization:
 //> call disable_deprecation_warnings(type_def.deprecated)
 template<>
 struct std::formatter<{{ type_def.cpp.typename }}> : std::formatter<std::string> {

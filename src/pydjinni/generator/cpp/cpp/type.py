@@ -240,7 +240,7 @@ class CppSymbolicConstantType(CppBaseType):
     @property
     def header_includes(self) -> set[str]:
         output = super().header_includes
-        if self.config.string_serialization_for_enums:
+        if self.config.string_serialization:
             output.add("<format>")
         if self.decl.deprecated:
             output.add(quote(Path("pydjinni/deprecated.hpp")))
@@ -332,7 +332,7 @@ class CppRecord(CppBaseType):
     @property
     def header_includes(self) -> set[str]:
         includes = super().header_includes | {"<algorithm>"}
-        if Record.Deriving.str in self.decl.deriving:
+        if self.config.string_serialization:
             includes.add("<format>")
         if self.decl.deprecated or any(field.deprecated for field in self.decl.fields):
             includes.add(quote(Path("pydjinni/deprecated.hpp")))
@@ -341,8 +341,9 @@ class CppRecord(CppBaseType):
     @property
     def source_includes(self) -> set[str]:
         includes = super().source_includes
-        if Record.Deriving.str in self.decl.deriving:
+        if self.config.string_serialization:
             includes.add("<string>")
+            includes.add(quote(Path("pydjinni/format.hpp")))
         return includes
 
     @property

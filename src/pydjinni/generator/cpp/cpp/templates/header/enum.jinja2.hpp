@@ -23,14 +23,14 @@ enum class {{ type_def.cpp.deprecated ~ type_def.cpp.name }} : int {
     {{ item.cpp.name ~ item.cpp.deprecated ~ ("," if not loop.last) }}
 //> endfor
 };
-//> if config.string_serialization_for_enums:
+//> if config.string_serialization:
 //> call disable_deprecation_warnings(type_def.deprecated)
 std::string to_string({{ type_def.cpp.typename }} value) noexcept;
 //> endcall
 //> endif
 //> endblock
 //> block global
-//> if config.string_serialization_for_enums:
+//> if config.string_serialization:
 //> call disable_deprecation_warnings(type_def.deprecated)
 template<>
 struct std::formatter<{{ type_def.cpp.typename }}> : std::formatter<std::string> {

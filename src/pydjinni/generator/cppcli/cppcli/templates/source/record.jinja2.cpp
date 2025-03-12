@@ -92,7 +92,7 @@ int {{ type_def.cppcli.name }}::CompareTo({{ type_def.cppcli.name }}^ other)
     return 0;
 }
 //> endif
-//> if 'str' in type_def.deriving:
+//> if config.string_serialization:
 
 System::String^ {{ type_def.cppcli.name }}::ToString()
 {

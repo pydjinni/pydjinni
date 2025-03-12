@@ -8,7 +8,7 @@ primitive_types = record {
     double_t: f64;
     string_t: string;
     date_t: date;
-} deriving (str, eq)
+} deriving (eq)
 
 collection_types = record {
     int_list: list<i32>;
@@ -19,12 +19,12 @@ collection_types = record {
 
     int_int_map: map<i32, i32>;
     string_string_map: map<string, string>;
-} deriving (str)
+}
 
 optional_types = record {
     int_optional: i32?;
     string_optional: string?;
-} deriving (str)
+}
 
 binary_types = record {
     binary_t: binary;
@@ -38,11 +38,11 @@ base_record = record +any {
 nested_type = record {
     a: i32;
     b: list<list<i32>>;
-} deriving (str)
+}
 
 parent_type = record {
     nested: nested_type;
-} deriving (str)
+}
 
 helper = main interface +cpp {
     static get_primitive_types(record_type: primitive_types) -> primitive_types;
@@ -59,7 +59,7 @@ helper = main interface +cpp {
 old_record = record {
     # more comment
     a: bool;
-} deriving (str)
+}
 
 deprecated_field_record = record {
     # @deprecated the field is old
@@ -67,4 +67,4 @@ deprecated_field_record = record {
     # foo
     # @deprecated this is optional and old
     older: i32?;
-} deriving (str)
+}

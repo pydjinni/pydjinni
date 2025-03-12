@@ -3,6 +3,7 @@
 #pragma once
 #include <algorithm>
 #include <cstdint>
+#include <format>
 
 namespace test::record {
 struct BaseRecord;
@@ -12,4 +13,12 @@ struct BaseRecordBase {
     : value(std::move(value))
     {}
 };
+std::string to_string(const ::test::record::BaseRecord& value);
 } // namespace test::record
+template<>
+struct std::formatter<::test::record::BaseRecord> : std::formatter<std::string> {
+    template<typename FormatContext>
+    auto format(const ::test::record::BaseRecord& value, FormatContext &ctx) const {
+        return std::format_to(ctx.out(), "{}", test::record::to_string(value));
+    }
+};
