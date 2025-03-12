@@ -343,6 +343,7 @@ class CppRecord(CppBaseType):
         includes = super().source_includes
         if self.config.string_serialization:
             includes.add("<string>")
+            includes.add(quote(Path("pydjinni/format.hpp")))
         return includes
 
     @property
