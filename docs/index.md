@@ -126,10 +126,9 @@ Here is what is planned for the near future:
 - [x] Add project setup wizard
 - [x] Add seamless async (coroutine) interaction
 - [x] Add advanced exception translation
+- [ ] Increase test coverage
 - [ ] Add properties support
 - [ ] Add code documentation generator
-- [ ] Code generation engine refactoring
-- [ ] Increase test coverage
 - [ ] Release stable version 1.0
 
 </div>
