@@ -15,9 +15,8 @@ hide:
     <span class=rich_editor>
         <code id="rich_idl_input" class="rich_text"></code>
         <textarea disabled id="idl_input" name="idl_input" placeholder="Define your PyDjinni interface here..." spellcheck="false">
-    foo = enum {
-        bar;
-        baz;
+    hello_world = main interface +cpp {
+        static say_hello() -> string;
     }
     </textarea>
     </span>
