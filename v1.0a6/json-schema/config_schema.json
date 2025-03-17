@@ -1,0 +1,1546 @@
+{
+    "$defs": {
+        "AndroidArchivePublishConfig": {
+            "description": "Maven publishing information",
+            "properties": {
+                "maven_registry": {
+                    "anyOf": [
+                        {
+                            "format": "uri",
+                            "maxLength": 2083,
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Url of the maven registry that the package should be published to.",
+                    "title": "Maven Registry"
+                },
+                "group_id": {
+                    "description": "Maven package groupId",
+                    "title": "Group Id",
+                    "type": "string"
+                },
+                "artifact_id": {
+                    "description": "Maven package artifactId",
+                    "title": "Artifact Id",
+                    "type": "string"
+                },
+                "username": {
+                    "default": null,
+                    "description": "Username for the maven registry",
+                    "title": "Username",
+                    "type": "string"
+                },
+                "password": {
+                    "default": null,
+                    "description": "Password (token) to access the maven registry.It is recommended to set this via the environment variable `PACKAGE__AAR__PUBLISH__PASSWORD`",
+                    "title": "Password",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "group_id",
+                "artifact_id"
+            ],
+            "title": "AndroidArchivePublishConfig",
+            "type": "object"
+        },
+        "Architecture": {
+            "enum": [
+                "x86",
+                "x86_64",
+                "armv7",
+                "armv8"
+            ],
+            "title": "Architecture",
+            "type": "string"
+        },
+        "Build": {
+            "properties": {
+                "conan": {
+                    "$ref": "#/$defs/ConanConfigModel",
+                    "default": null
+                }
+            },
+            "title": "Build",
+            "type": "object"
+        },
+        "Case": {
+            "enum": [
+                "none",
+                "camelCase",
+                "PascalCase",
+                "snake_case",
+                "kebab-case",
+                "TRAIN_CASE"
+            ],
+            "title": "Case",
+            "type": "string"
+        },
+        "ClassAccessModifier": {
+            "enum": [
+                "public",
+                "package"
+            ],
+            "title": "ClassAccessModifier",
+            "type": "string"
+        },
+        "ConanConfigModel": {
+            "description": "Settings specific to the Conan build strategy",
+            "properties": {
+                "profiles": {
+                    "default": "profiles",
+                    "description": "The base directory where the target profiles are located",
+                    "format": "path",
+                    "title": "Profiles",
+                    "type": "string"
+                }
+            },
+            "title": "ConanConfigModel",
+            "type": "object"
+        },
+        "Configuration": {
+            "enum": [
+                "Release",
+                "Debug",
+                "MinSizeRel",
+                "RelWithDebInfo"
+            ],
+            "title": "Configuration",
+            "type": "string"
+        },
+        "CppCliConfig": {
+            "properties": {
+                "out": {
+                    "anyOf": [
+                        {
+                            "format": "path",
+                            "type": "string"
+                        },
+                        {
+                            "$ref": "#/$defs/OutPaths"
+                        }
+                    ],
+                    "description": "The output folder for the generated files. Separate folders for `source` and `header` files can be specified.",
+                    "title": "Out"
+                },
+                "namespace": {
+                    "anyOf": [
+                        {
+                            "pattern": "^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))+[a-zA-Z][a-zA-Z0-9_]*$",
+                            "type": "string"
+                        },
+                        {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    ],
+                    "default": [],
+                    "description": "The namespace name to use for generated C++/CLI classes",
+                    "title": "Namespace"
+                },
+                "include_cpp_prefix": {
+                    "default": null,
+                    "description": "The prefix for `#includes` of header files from C++ files",
+                    "format": "path",
+                    "title": "Include Cpp Prefix",
+                    "type": "string"
+                },
+                "nullability_attributes": {
+                    "default": true,
+                    "description": "Whether diagnostics nullability attributes should be added to methods, functions and fields (Not available in .NET Framework)",
+                    "title": "Nullability Attributes",
+                    "type": "boolean"
+                },
+                "string_serialization": {
+                    "default": true,
+                    "description": "Whether to generate `ToString` overloads for records",
+                    "title": "String Serialization",
+                    "type": "boolean"
+                },
+                "identifier": {
+                    "$ref": "#/$defs/CppCliIdentifierStyle",
+                    "default": {
+                        "type": "PascalCase",
+                        "type_param": "PascalCase",
+                        "property": "PascalCase",
+                        "method": "PascalCase",
+                        "local": "camelCase",
+                        "enum": "PascalCase",
+                        "const": "snake_case",
+                        "file": {
+                            "prefix": "CppCli",
+                            "style": "PascalCase"
+                        },
+                        "namespace": "PascalCase"
+                    }
+                }
+            },
+            "required": [
+                "out"
+            ],
+            "title": "CppCliConfig",
+            "type": "object"
+        },
+        "CppCliIdentifierStyle": {
+            "properties": {
+                "type": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "PascalCase",
+                    "title": "Type"
+                },
+                "type_param": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "PascalCase",
+                    "title": "Type Param"
+                },
+                "property": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "PascalCase",
+                    "title": "Property"
+                },
+                "method": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "PascalCase",
+                    "title": "Method"
+                },
+                "local": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "camelCase",
+                    "title": "Local"
+                },
+                "enum": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "PascalCase",
+                    "title": "Enum"
+                },
+                "const": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "snake_case",
+                    "title": "Const"
+                },
+                "file": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": {
+                        "style": "PascalCase",
+                        "prefix": "CppCli"
+                    },
+                    "title": "File"
+                },
+                "namespace": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "PascalCase",
+                    "title": "Namespace"
+                }
+            },
+            "title": "CppCliIdentifierStyle",
+            "type": "object"
+        },
+        "CppConfig": {
+            "properties": {
+                "out": {
+                    "anyOf": [
+                        {
+                            "format": "path",
+                            "type": "string"
+                        },
+                        {
+                            "$ref": "#/$defs/OutPaths"
+                        }
+                    ],
+                    "description": "The output folder for the generated files. Separate folders for `source` and `header` files can be specified.",
+                    "title": "Out"
+                },
+                "namespace": {
+                    "anyOf": [
+                        {
+                            "pattern": "^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))+[a-zA-Z][a-zA-Z0-9_]*$",
+                            "type": "string"
+                        },
+                        {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    ],
+                    "default": [],
+                    "description": "The namespace name to use for generated C++ classes",
+                    "title": "Namespace"
+                },
+                "include_prefix": {
+                    "default": null,
+                    "description": "The prefix for `#includes` of header files from C++ files",
+                    "format": "path",
+                    "title": "Include Prefix",
+                    "type": "string"
+                },
+                "header_extension": {
+                    "default": "hpp",
+                    "description": "The filename extension for C++ header files",
+                    "title": "Header Extension",
+                    "type": "string"
+                },
+                "source_extension": {
+                    "default": "cpp",
+                    "description": "The filename extension for C++ files",
+                    "title": "Source Extension",
+                    "type": "string"
+                },
+                "not_null": {
+                    "$ref": "#/$defs/CppNotNull",
+                    "default": {
+                        "header": null,
+                        "type": null
+                    }
+                },
+                "identifier": {
+                    "$ref": "#/$defs/CppIdentifier",
+                    "default": {
+                        "type": "PascalCase",
+                        "enum": "TRAIN_CASE",
+                        "file": "snake_case",
+                        "field": "snake_case",
+                        "method": "snake_case",
+                        "namespace": "snake_case"
+                    }
+                },
+                "string_serialization": {
+                    "default": true,
+                    "description": "Whether to generate `to_string` and `std::formatter` overloads for stringifying records, enums and flags",
+                    "title": "String Serialization",
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "out"
+            ],
+            "title": "CppConfig",
+            "type": "object"
+        },
+        "CppIdentifier": {
+            "properties": {
+                "type": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "PascalCase",
+                    "title": "Type"
+                },
+                "enum": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "TRAIN_CASE",
+                    "title": "Enum"
+                },
+                "file": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "snake_case",
+                    "title": "File"
+                },
+                "field": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "snake_case",
+                    "title": "Field"
+                },
+                "method": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "snake_case",
+                    "title": "Method"
+                },
+                "namespace": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "snake_case",
+                    "title": "Namespace"
+                }
+            },
+            "title": "CppIdentifier",
+            "type": "object"
+        },
+        "CppNotNull": {
+            "description": "Configuration for wrapping `std::shared_ptr` and `function`s with a `not_null` type.",
+            "properties": {
+                "header": {
+                    "default": null,
+                    "description": "The header file to include for not_null (e.g. `<gsl/pointers>`)",
+                    "title": "Header",
+                    "type": "string"
+                },
+                "type": {
+                    "default": null,
+                    "description": "The type to use for not_null (e.g. `::gsl::not_null`)",
+                    "title": "Type",
+                    "type": "string"
+                }
+            },
+            "title": "CppNotNull",
+            "type": "object"
+        },
+        "Deriving": {
+            "enum": [
+                "eq",
+                "ord"
+            ],
+            "title": "Deriving",
+            "type": "string"
+        },
+        "Generate": {
+            "properties": {
+                "list_processed_files": {
+                    "default": null,
+                    "description": "File that reports all the parsed and generated files. File format is determined by the file extension. Supported extensions: `.yaml`, `.yml`, `.json`, `.toml`",
+                    "format": "path",
+                    "title": "List Processed Files",
+                    "type": "string"
+                },
+                "include_dirs": {
+                    "default": [],
+                    "description": "Include directories that are searched for `@import` and `@extern` directives.",
+                    "items": {
+                        "format": "path",
+                        "type": "string"
+                    },
+                    "title": "Include Dirs",
+                    "type": "array"
+                },
+                "default_deriving": {
+                    "default": [],
+                    "description": "Deriving functionality that should be added to every record by default.",
+                    "items": {
+                        "$ref": "#/$defs/Deriving"
+                    },
+                    "title": "Default Deriving",
+                    "type": "array",
+                    "uniqueItems": true
+                },
+                "support_lib_sources": {
+                    "default": true,
+                    "description": "Whether the required support lib sources should be copied to the generated output.",
+                    "title": "Support Lib Sources",
+                    "type": "boolean"
+                },
+                "cpp": {
+                    "$ref": "#/$defs/CppConfig",
+                    "default": null
+                },
+                "cppcli": {
+                    "$ref": "#/$defs/CppCliConfig",
+                    "default": null
+                },
+                "java": {
+                    "$ref": "#/$defs/JavaConfig",
+                    "default": null
+                },
+                "jni": {
+                    "$ref": "#/$defs/JniConfig",
+                    "default": null
+                },
+                "objc": {
+                    "$ref": "#/$defs/ObjcConfig",
+                    "default": null
+                },
+                "objcpp": {
+                    "$ref": "#/$defs/ObjcppConfig",
+                    "default": null
+                },
+                "yaml": {
+                    "$ref": "#/$defs/YamlConfig",
+                    "default": null
+                }
+            },
+            "title": "Generate",
+            "type": "object"
+        },
+        "IdentifierStyle": {
+            "properties": {
+                "style": {
+                    "$ref": "#/$defs/Case"
+                },
+                "prefix": {
+                    "default": null,
+                    "description": "Prefix that is added to the beginning of the identifier",
+                    "title": "Prefix",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "style"
+            ],
+            "title": "IdentifierStyle",
+            "type": "object"
+        },
+        "JavaConfig": {
+            "description": "Java configuration options",
+            "properties": {
+                "out": {
+                    "description": "The output folder for the generated files.",
+                    "format": "path",
+                    "title": "Out",
+                    "type": "string"
+                },
+                "package": {
+                    "anyOf": [
+                        {
+                            "pattern": "^[a-z][a-z0-9_]*([.][a-z0-9_]+)+[0-9a-z_]$",
+                            "type": "string"
+                        },
+                        {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    ],
+                    "description": "The package name to use for generated Java classes",
+                    "examples": [
+                        "my.package.name",
+                        "other.package.name"
+                    ],
+                    "title": "Package"
+                },
+                "support_types_package": {
+                    "anyOf": [
+                        {
+                            "pattern": "^[a-z][a-z0-9_]*([.][a-z0-9_]+)+[0-9a-z_]$",
+                            "type": "string"
+                        },
+                        {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    ],
+                    "default": [
+                        "pydjinni"
+                    ],
+                    "description": "The subpackage name where required support types are generated to",
+                    "title": "Support Types Package"
+                },
+                "interfaces": {
+                    "default": false,
+                    "description": "Whether Java interfaces should be used instead of abstract classes where possible",
+                    "title": "Interfaces",
+                    "type": "boolean"
+                },
+                "class_access_modifier": {
+                    "$ref": "#/$defs/ClassAccessModifier",
+                    "default": "public",
+                    "description": "The access modifier to use for generated Java classes"
+                },
+                "cpp_exception": {
+                    "default": "java.lang.RuntimeException",
+                    "description": "The type for translated C++ exceptions in Java",
+                    "pattern": "^([a-z][a-z0-9_]*([.][a-z0-9_]+)+[0-9a-z_][.])?[a-zA-Z][a-zA-Z0-9_]*$",
+                    "title": "Cpp Exception",
+                    "type": "string"
+                },
+                "annotation": {
+                    "default": null,
+                    "description": "Java annotation to place on all generated Java classes",
+                    "examples": [
+                        "@Foo"
+                    ],
+                    "pattern": "^@([a-z][a-z0-9_]*(([.][a-z0-9_]+)+[0-9a-z_])?[.])?[a-zA-Z][a-zA-Z0-9_]*$",
+                    "title": "Annotation",
+                    "type": "string"
+                },
+                "nullable_annotation": {
+                    "default": null,
+                    "description": "annotation that is added to all optional fields, parameters and return types. E.g. `@org.jetbrains.annotations.Nullable`",
+                    "title": "Nullable Annotation",
+                    "type": "string"
+                },
+                "nonnull_annotation": {
+                    "default": null,
+                    "description": "annotation that is added to all non-optional fields, parameters and return types. E.g. `@org.jetbrains.annotations.NotNull`",
+                    "title": "Nonnull Annotation",
+                    "type": "string"
+                },
+                "use_final_for_record": {
+                    "default": true,
+                    "description": "Whether generated Java classes for records should be marked `final`",
+                    "title": "Use Final For Record",
+                    "type": "boolean"
+                },
+                "native_lib": {
+                    "default": null,
+                    "description": "Name of the native library containing the JNI interface. If this option is set and an interface is marked as `main`, a static block will be added to the interface, that loads the native library.",
+                    "title": "Native Lib",
+                    "type": "string"
+                },
+                "function_prefix": {
+                    "default": "Functional",
+                    "description": "Prefix for generated functional interfaces.",
+                    "title": "Function Prefix",
+                    "type": "string"
+                },
+                "string_serialization": {
+                    "default": true,
+                    "description": "Whether to generate `toString` overloads for records",
+                    "title": "String Serialization",
+                    "type": "boolean"
+                },
+                "identifier": {
+                    "$ref": "#/$defs/JavaIdentifierStyle",
+                    "default": {
+                        "enum": "TRAIN_CASE",
+                        "field": "camelCase",
+                        "type": "PascalCase",
+                        "method": "camelCase",
+                        "package": "snake_case"
+                    }
+                }
+            },
+            "required": [
+                "out",
+                "package"
+            ],
+            "title": "JavaConfig",
+            "type": "object"
+        },
+        "JavaIdentifierStyle": {
+            "properties": {
+                "enum": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "TRAIN_CASE",
+                    "title": "Enum"
+                },
+                "field": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "camelCase",
+                    "title": "Field"
+                },
+                "type": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "PascalCase",
+                    "title": "Type"
+                },
+                "method": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "camelCase",
+                    "title": "Method"
+                },
+                "package": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "snake_case",
+                    "title": "Package"
+                }
+            },
+            "title": "JavaIdentifierStyle",
+            "type": "object"
+        },
+        "JniConfig": {
+            "properties": {
+                "out": {
+                    "anyOf": [
+                        {
+                            "format": "path",
+                            "type": "string"
+                        },
+                        {
+                            "$ref": "#/$defs/OutPaths"
+                        }
+                    ],
+                    "description": "The output folder for the generated files. Separate folders for `source` and `header` files can be specified.",
+                    "title": "Out"
+                },
+                "namespace": {
+                    "anyOf": [
+                        {
+                            "pattern": "^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))+[a-zA-Z][a-zA-Z0-9_]*$",
+                            "type": "string"
+                        },
+                        {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    ],
+                    "description": "The namespace name to use for generated JNI C++ classes",
+                    "title": "Namespace"
+                },
+                "include_prefix": {
+                    "default": null,
+                    "description": "The prefix for `#includes` of JNI header files from JNI C++ files.",
+                    "format": "path",
+                    "title": "Include Prefix",
+                    "type": "string"
+                },
+                "include_cpp_prefix": {
+                    "default": null,
+                    "description": "The prefix for `#includes` of the main header files from JNI C++ files.",
+                    "format": "path",
+                    "title": "Include Cpp Prefix",
+                    "type": "string"
+                },
+                "header_extension": {
+                    "default": "hpp",
+                    "description": "The filename extension for JNI C++ header files",
+                    "title": "Header Extension",
+                    "type": "string"
+                },
+                "source_extension": {
+                    "default": "cpp",
+                    "description": "The filename extension for JNI C++ files",
+                    "title": "Source Extension",
+                    "type": "string"
+                },
+                "loader": {
+                    "default": true,
+                    "description": "If enabled, a minimal `JNI_OnLoad`/`JNI_OnUnload` implementation is generated.",
+                    "title": "Loader",
+                    "type": "boolean"
+                },
+                "identifier": {
+                    "$ref": "#/$defs/JniIdentifierStyle",
+                    "default": {
+                        "file": "snake_case",
+                        "class_name": "PascalCase",
+                        "enum": "TRAIN_CASE",
+                        "field": "camelCase",
+                        "method": "camelCase",
+                        "namespace": "PascalCase"
+                    }
+                }
+            },
+            "required": [
+                "out",
+                "namespace"
+            ],
+            "title": "JniConfig",
+            "type": "object"
+        },
+        "JniIdentifierStyle": {
+            "properties": {
+                "file": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "snake_case",
+                    "title": "File"
+                },
+                "class_name": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "PascalCase",
+                    "title": "Class Name"
+                },
+                "enum": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "TRAIN_CASE",
+                    "title": "Enum"
+                },
+                "field": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "camelCase",
+                    "title": "Field"
+                },
+                "method": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "camelCase",
+                    "title": "Method"
+                },
+                "namespace": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "PascalCase",
+                    "title": "Namespace"
+                }
+            },
+            "title": "JniIdentifierStyle",
+            "type": "object"
+        },
+        "NuGetPublishConfig": {
+            "description": "NuGet packaging and publishing configuration",
+            "properties": {
+                "source": {
+                    "anyOf": [
+                        {
+                            "format": "uri",
+                            "maxLength": 2083,
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        {
+                            "format": "path",
+                            "type": "string"
+                        }
+                    ],
+                    "default": "https://api.nuget.org/v3/index.json",
+                    "description": "NuGet server URL or local folder where the package should be published.",
+                    "examples": [
+                        "https://nuget.pkg.github.com/NAMESPACE/index.json",
+                        "C:\\Users\\Foo\\Path\\To\\Local\\Install"
+                    ],
+                    "title": "Source"
+                },
+                "repository": {
+                    "default": null,
+                    "description": "URL to the source Git repository.",
+                    "format": "uri",
+                    "maxLength": 2083,
+                    "minLength": 1,
+                    "title": "Repository",
+                    "type": "string"
+                },
+                "description": {
+                    "default": "",
+                    "description": "(short) description of the package.",
+                    "title": "Description",
+                    "type": "string"
+                },
+                "readme": {
+                    "default": null,
+                    "description": "Path to a Markdown Readme file that should be included in the NuGet package.",
+                    "format": "path",
+                    "title": "Readme",
+                    "type": "string"
+                },
+                "net_version": {
+                    "default": "net8.0",
+                    "description": ".NET version used to compile the binaries. The packaged binaries have to be compiled for the configured .NET version!",
+                    "title": "Net Version",
+                    "type": "string"
+                },
+                "authors": {
+                    "default": [],
+                    "description": "A comma-separated list of packages authors (matching the related profile names on `nuget.org` if published to the public registry)",
+                    "items": {
+                        "type": "string"
+                    },
+                    "title": "Authors",
+                    "type": "array"
+                },
+                "username": {
+                    "default": null,
+                    "description": "Username for the NuGet Server",
+                    "title": "Username",
+                    "type": "string"
+                },
+                "password": {
+                    "default": null,
+                    "description": "Password (token) to access the server.It is recommended to set this via the environment variable `PACKAGE__NUGET__PUBLISH__PASSWORD`",
+                    "title": "Password",
+                    "type": "string"
+                }
+            },
+            "title": "NuGetPublishConfig",
+            "type": "object"
+        },
+        "ObjcConfig": {
+            "properties": {
+                "out": {
+                    "anyOf": [
+                        {
+                            "format": "path",
+                            "type": "string"
+                        },
+                        {
+                            "$ref": "#/$defs/OutPaths"
+                        }
+                    ],
+                    "description": "The output folder for the generated files. Separate folders for `source` and `header` files can be specified.",
+                    "title": "Out"
+                },
+                "type_prefix": {
+                    "default": "",
+                    "description": "The prefix for Objective-C data types (usually two or three letters).",
+                    "title": "Type Prefix",
+                    "type": "string"
+                },
+                "header_extension": {
+                    "default": "h",
+                    "description": "The filename extension for Objective-C header files.",
+                    "title": "Header Extension",
+                    "type": "string"
+                },
+                "source_extension": {
+                    "default": "m",
+                    "description": "The filename extension for Objective-C source files.",
+                    "title": "Source Extension",
+                    "type": "string"
+                },
+                "swift_bridging_header": {
+                    "default": null,
+                    "description": "The name of the Objective-C Bridging Header required for using the interface from Swift.",
+                    "format": "path",
+                    "title": "Swift Bridging Header",
+                    "type": "string"
+                },
+                "strict_protocols": {
+                    "default": false,
+                    "description": "All generated `@protocol` will implement `<NSObject>`",
+                    "title": "Strict Protocols",
+                    "type": "boolean"
+                },
+                "string_serialization": {
+                    "default": true,
+                    "description": "Whether to generate `description` overloads for records",
+                    "title": "String Serialization",
+                    "type": "boolean"
+                },
+                "swift": {
+                    "$ref": "#/$defs/SwiftConfig",
+                    "default": {
+                        "rename_interfaces": true,
+                        "bridging_header": null
+                    }
+                },
+                "identifier": {
+                    "$ref": "#/$defs/ObjcIdentifierStyle",
+                    "default": {
+                        "enum": "PascalCase",
+                        "field": "camelCase",
+                        "method": "camelCase",
+                        "type": "PascalCase",
+                        "param": "PascalCase",
+                        "local": "camelCase"
+                    }
+                }
+            },
+            "required": [
+                "out"
+            ],
+            "title": "ObjcConfig",
+            "type": "object"
+        },
+        "ObjcIdentifierStyle": {
+            "properties": {
+                "enum": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "PascalCase",
+                    "title": "Enum"
+                },
+                "field": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "camelCase",
+                    "title": "Field"
+                },
+                "method": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "camelCase",
+                    "title": "Method"
+                },
+                "type": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "PascalCase",
+                    "title": "Type"
+                },
+                "param": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "PascalCase",
+                    "title": "Param"
+                },
+                "local": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/IdentifierStyle"
+                        },
+                        {
+                            "$ref": "#/$defs/Case"
+                        }
+                    ],
+                    "default": "camelCase",
+                    "title": "Local"
+                }
+            },
+            "title": "ObjcIdentifierStyle",
+            "type": "object"
+        },
+        "ObjcppConfig": {
+            "properties": {
+                "out": {
+                    "anyOf": [
+                        {
+                            "format": "path",
+                            "type": "string"
+                        },
+                        {
+                            "$ref": "#/$defs/OutPaths"
+                        }
+                    ],
+                    "description": "The output folder for the generated files. Separate folders for `source` and `header` files can be specified.",
+                    "title": "Out"
+                },
+                "namespace": {
+                    "anyOf": [
+                        {
+                            "pattern": "^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))+[a-zA-Z][a-zA-Z0-9_]*$",
+                            "type": "string"
+                        },
+                        {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    ],
+                    "default": [],
+                    "description": "The namespace name to use for generated Objective-C++ classes",
+                    "title": "Namespace"
+                },
+                "header_extension": {
+                    "default": "h",
+                    "description": "The filename extension for Objective-C++ header files",
+                    "title": "Header Extension",
+                    "type": "string"
+                },
+                "source_extension": {
+                    "default": "mm",
+                    "description": "The filename extension for Objective-C++ source files",
+                    "title": "Source Extension",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "out"
+            ],
+            "title": "ObjcppConfig",
+            "type": "object"
+        },
+        "OutPaths": {
+            "properties": {
+                "source": {
+                    "description": "The output directory for source files",
+                    "format": "path",
+                    "title": "Source",
+                    "type": "string"
+                },
+                "header": {
+                    "description": "The output directory for header files",
+                    "format": "path",
+                    "title": "Header",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "source",
+                "header"
+            ],
+            "title": "OutPaths",
+            "type": "object"
+        },
+        "Package": {
+            "properties": {
+                "out": {
+                    "default": "dist",
+                    "description": "output base directory for the final distributable packages",
+                    "format": "path",
+                    "title": "Out",
+                    "type": "string"
+                },
+                "target": {
+                    "description": "Name of the target that is going to produce the output",
+                    "title": "Target",
+                    "type": "string"
+                },
+                "build_strategy": {
+                    "default": "conan",
+                    "description": "Build system that should be used for compiling",
+                    "title": "Build Strategy",
+                    "type": "string"
+                },
+                "version": {
+                    "default": "0.0.0",
+                    "description": "Version of the produced package",
+                    "title": "Version",
+                    "type": "string"
+                },
+                "configuration": {
+                    "$ref": "#/$defs/Configuration",
+                    "default": "Release"
+                },
+                "aar": {
+                    "$ref": "#/$defs/aar_config",
+                    "default": null
+                },
+                "nuget": {
+                    "$ref": "#/$defs/nuget_config",
+                    "default": null
+                },
+                "swiftpackage": {
+                    "$ref": "#/$defs/swiftpackage_config",
+                    "default": null
+                }
+            },
+            "required": [
+                "target"
+            ],
+            "title": "Package",
+            "type": "object"
+        },
+        "SwiftConfig": {
+            "description": "Configuration options related to using the Objective-C interface from Swift",
+            "properties": {
+                "rename_interfaces": {
+                    "default": true,
+                    "description": "Whether the Objective-C interface should be annotated with improved Swift method and class names.",
+                    "title": "Rename Interfaces",
+                    "type": "boolean"
+                },
+                "bridging_header": {
+                    "default": null,
+                    "description": "The name of the Objective-C Bridging Header required for using the interface from Swift.",
+                    "format": "path",
+                    "title": "Bridging Header",
+                    "type": "string"
+                }
+            },
+            "title": "SwiftConfig",
+            "type": "object"
+        },
+        "SwiftpackagePublishConfig": {
+            "properties": {
+                "repository": {
+                    "anyOf": [
+                        {
+                            "format": "uri",
+                            "maxLength": 2083,
+                            "minLength": 1,
+                            "type": "string"
+                        },
+                        {
+                            "format": "path",
+                            "type": "string"
+                        }
+                    ],
+                    "description": "Remote Git repository or path to a local directory where the package should be published",
+                    "examples": [
+                        "https://github.com/foo/bar.git",
+                        "/path/where/swiftpackage/should/be/copied/to",
+                        "git@github.com:foo/bar.git"
+                    ],
+                    "title": "Repository"
+                },
+                "branch": {
+                    "default": "main",
+                    "description": "Git repository branch that the package should be pushed to.",
+                    "title": "Branch",
+                    "type": "string"
+                },
+                "username": {
+                    "default": null,
+                    "description": "Username of git repository",
+                    "title": "Username",
+                    "type": "string"
+                },
+                "password": {
+                    "default": null,
+                    "description": "Password (token) to access the git repository.It is recommended to set this via the environment variable `PACKAGE__SWIFTPACKAGE__PUBLISH__PASSWORD`",
+                    "title": "Password",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "repository"
+            ],
+            "title": "SwiftpackagePublishConfig",
+            "type": "object"
+        },
+        "YamlConfig": {
+            "description": "When generating the interface for your project and wish to make it available to other users\nyou can tell Djinni to generate a special YAML file as part of the code generation process.\nThis file then contains all the information Djinni requires to include your types in a different project.",
+            "properties": {
+                "out": {
+                    "description": "The output folder for YAML files (One for each type by default).",
+                    "format": "path",
+                    "title": "Out",
+                    "type": "string"
+                },
+                "out_file": {
+                    "default": null,
+                    "description": "If specified, all types are merged into a single YAML file instead of generating one file per type (relative to `yaml.out`).",
+                    "format": "path",
+                    "title": "Out File",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "out"
+            ],
+            "title": "YamlConfig",
+            "type": "object"
+        },
+        "aar_config": {
+            "description": "Android Archive",
+            "properties": {
+                "publish": {
+                    "$ref": "#/$defs/AndroidArchivePublishConfig",
+                    "default": null
+                },
+                "platforms": {
+                    "$ref": "#/$defs/aar_platform_config",
+                    "description": "Configuration of target platforms that should be included in the package."
+                }
+            },
+            "required": [
+                "platforms"
+            ],
+            "title": "aar_config",
+            "type": "object"
+        },
+        "aar_platform_config": {
+            "properties": {
+                "android": {
+                    "description": "List of targeted architectures. Supported: `x86`, `x86_64`, `armv7`, `armv8`",
+                    "items": {
+                        "$ref": "#/$defs/Architecture"
+                    },
+                    "title": "Android",
+                    "type": "array"
+                }
+            },
+            "required": [
+                "android"
+            ],
+            "title": "aar_platform_config",
+            "type": "object"
+        },
+        "nuget_config": {
+            "description": "NuGet Package",
+            "properties": {
+                "publish": {
+                    "$ref": "#/$defs/NuGetPublishConfig",
+                    "default": null
+                },
+                "platforms": {
+                    "$ref": "#/$defs/nuget_platform_config",
+                    "description": "Configuration of target platforms that should be included in the package."
+                }
+            },
+            "required": [
+                "platforms"
+            ],
+            "title": "nuget_config",
+            "type": "object"
+        },
+        "nuget_platform_config": {
+            "properties": {
+                "windows": {
+                    "description": "List of targeted architectures. Supported: `x86`, `x86_64`, `armv7`, `armv8`",
+                    "items": {
+                        "$ref": "#/$defs/Architecture"
+                    },
+                    "title": "Windows",
+                    "type": "array"
+                }
+            },
+            "required": [
+                "windows"
+            ],
+            "title": "nuget_platform_config",
+            "type": "object"
+        },
+        "swiftpackage_config": {
+            "description": "Swift package",
+            "properties": {
+                "publish": {
+                    "$ref": "#/$defs/SwiftpackagePublishConfig",
+                    "default": null
+                },
+                "platforms": {
+                    "$ref": "#/$defs/swiftpackage_platform_config",
+                    "description": "Configuration of target platforms that should be included in the package."
+                }
+            },
+            "required": [
+                "platforms"
+            ],
+            "title": "swiftpackage_config",
+            "type": "object"
+        },
+        "swiftpackage_platform_config": {
+            "properties": {
+                "macos": {
+                    "description": "List of targeted architectures. Supported: `x86_64`, `armv8`",
+                    "items": {
+                        "$ref": "#/$defs/Architecture"
+                    },
+                    "title": "Macos",
+                    "type": "array"
+                },
+                "ios": {
+                    "description": "List of targeted architectures. Supported: `armv8`",
+                    "items": {
+                        "$ref": "#/$defs/Architecture"
+                    },
+                    "title": "Ios",
+                    "type": "array"
+                },
+                "ios_simulator": {
+                    "description": "List of targeted architectures. Supported: `x86_64`, `armv8`",
+                    "items": {
+                        "$ref": "#/$defs/Architecture"
+                    },
+                    "title": "Ios Simulator",
+                    "type": "array"
+                }
+            },
+            "required": [
+                "macos",
+                "ios",
+                "ios_simulator"
+            ],
+            "title": "swiftpackage_platform_config",
+            "type": "object"
+        }
+    },
+    "additionalProperties": false,
+    "properties": {
+        "generate": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/Generate"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "default": null,
+            "description": "Configuration options related to language gluecode generation"
+        },
+        "build": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/Build"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "default": null,
+            "description": "Build strategy configuration"
+        },
+        "package": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/Package"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "default": null,
+            "description": "Packaging configuration"
+        }
+    },
+    "title": "Config",
+    "type": "object"
+}
