@@ -149,6 +149,26 @@ foo = interface {
 
 Any exception raised in C++ is now translated to the target language and vice versa.
 
+### Async { .new-badge }
+
+The `async` modifier can be used to specify that a method is asynchronous.
+
+```pydjinni
+foo = main interface +cpp {
+    static async get_instance(): foo
+    async method(input: i32);
+}
+```
+
+Asynchronous methods are implemented as C++ coroutines and are mapped to similar asynchronous execution models in each target language:
+
+- Java: [`CompletableFuture`](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html)
+- .NET: [`Task`](https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types)
+- Objective-C: [`completion` handlers](https://developer.apple.com/documentation/swift/calling-objective-c-apis-asynchronously)
+
+When calling an asynchronous method in C++, the coroutine will automatically continue execution in a separate thread managed by the host language's default thread pool.
+This provides a convenient programming model for non-blocking execution of long-running tasks, such as network requests or file I/O operations across language boundaries.
+
 ## Errors { .new-badge }
 
 Errors are specialized exception types that can optionally transport additional error data.
@@ -202,21 +222,6 @@ callback = function -cpp (input: i32) -> bool;
 The short form doesn't allow for code optimization, but in return is a lot more brief:
 ```pydjinni
 callback = (input: i32) -> bool;
-```
-
-## Async { .new-badge }
-
-The `async` modifier can be used to specify that a method or function is asynchronous.
-
-```pydjinni
-callback = async function (input: i32) -> bool;
-```
-
-```pydjinni
-foo = main interface +cpp {
-    static async get_instance(): foo
-    async method(input: i32);
-}
 ```
 
 ## Namespaces { .new-badge }
