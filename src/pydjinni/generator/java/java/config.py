@@ -82,11 +82,11 @@ class JavaConfig(BaseModel):
         examples=["@Foo"]
     )
     nullable_annotation: str = Field(
-        default="",
+        default=None,
         description="annotation that is added to all optional fields, parameters and return types. E.g. `@org.jetbrains.annotations.Nullable`",
     )
     nonnull_annotation: str = Field(
-        default="",
+        default=None,
         description="annotation that is added to all non-optional fields, parameters and return types. E.g. `@org.jetbrains.annotations.NotNull`",
     )
     use_final_for_record: bool = Field(
