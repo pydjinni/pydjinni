@@ -20,7 +20,8 @@ namespace test::not_null_test {
 class NotNullInterfaceImpl : public NotNullInterface {
 public:
     void not_null_parameter(const ::gsl::not_null<std::shared_ptr<::test::not_null_test::NotNullInterface>> & param) noexcept override;
-    void not_null_function_parameter(const ::gsl::not_null<std::function<void()>> & param) noexcept override;
+    void not_null_function_parameter(const std::function<void()> & param) noexcept override;
+    void not_null_string_parameter(const std::string& param) noexcept override;
 };
 
 }

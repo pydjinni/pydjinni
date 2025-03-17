@@ -5,6 +5,7 @@
 #include "not_null_interface.hpp"
 #include <gsl/pointers>
 #include <memory>
+#include <string>
 
 namespace test::not_null_test {
 class NotNullInterface {
@@ -12,6 +13,7 @@ public:
     virtual ~NotNullInterface() = default;
     static ::gsl::not_null<std::shared_ptr<::test::not_null_test::NotNullInterface>> get_instance() noexcept;
     virtual void not_null_parameter(const ::gsl::not_null<std::shared_ptr<::test::not_null_test::NotNullInterface>> & param) noexcept = 0;
-    virtual void not_null_function_parameter(const ::gsl::not_null<std::function<void()>> & param) noexcept = 0;
+    virtual void not_null_function_parameter(const std::function<void()> & param) noexcept = 0;
+    virtual void not_null_string_parameter(const std::string & param) noexcept = 0;
 };
 } // namespace test::not_null_test

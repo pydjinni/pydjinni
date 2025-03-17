@@ -20,6 +20,10 @@ void NotNullInterfaceImpl::not_null_parameter(
     // do nothing
 }
 
-void NotNullInterfaceImpl::not_null_function_parameter(const ::gsl::not_null<std::function<void()>> &param) noexcept {
+void NotNullInterfaceImpl::not_null_function_parameter(const std::function<void()> &param) noexcept {
+    // do nothing
+}
+
+void NotNullInterfaceImpl::not_null_string_parameter(const std::string &param) noexcept {
     // do nothing
 }

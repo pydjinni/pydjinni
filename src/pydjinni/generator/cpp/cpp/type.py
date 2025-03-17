@@ -75,10 +75,7 @@ class CppBaseCommentModel(BaseModel):
                 output = f"std::shared_ptr<{output}>"
                 if use_notnull and self.config.not_null.type and not type_ref.optional:
                     output = f"{self.config.not_null.type}<{output}>"
-            elif type_ref.type_def.primitive == BaseExternalType.Primitive.function:
-                if use_notnull and self.config.not_null.type and not type_ref.optional:
-                    output = f"{self.config.not_null.type}<{output}>"
-            elif type_ref.optional:
+            elif type_ref.optional and not type_ref.type_def.primitive == BaseExternalType.Primitive.function:
                 output = f"std::optional<{output}>"
         return f"const {output} &" if is_parameter and not type_ref.type_def.cpp.by_value else output
 
