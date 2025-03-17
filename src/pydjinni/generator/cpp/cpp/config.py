@@ -33,11 +33,11 @@ class CppNotNull(BaseModel):
     Configuration for wrapping `std::shared_ptr` and `function`s with a `not_null` type.
     """
     header: str = Field(
-        default="",
+        default=None,
         description="The header file to include for not_null (e.g. `<gsl/pointers>`)"
     )
     type: str = Field(
-        default="",
+        default=None,
         description="The type to use for not_null (e.g. `::gsl::not_null`)"
     )
 
