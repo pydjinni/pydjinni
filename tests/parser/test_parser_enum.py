@@ -56,7 +56,7 @@ def test_parsing_enum_comment(tmp_path: Path):
     enum = when(parser, Enum, "foo")
 
     # THEN the enum should contain the given comment
-    assert enum.comment == " this is an enum"
+    assert enum.comment == "this is an enum"
 
     # THEN the enum item should contain the given comment
-    assert enum.items[0].comment == " with comments"
+    assert enum.items[0].comment == "with comments"

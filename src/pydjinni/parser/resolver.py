@@ -17,10 +17,12 @@ from pathlib import Path
 
 import pydantic
 import yaml
+import re
 
 from pydjinni.exceptions import InputParsingException, FileNotFoundException, ApplicationException
 from pydjinni.parser.ast import TypeReference, BaseType
 from pydjinni.parser.base_models import BaseExternalType
+from pydjinni.position import Position, Cursor
 
 
 class Resolver:
@@ -33,11 +35,21 @@ class Resolver:
 
     def load_external(self, path: Path):
         try:
-            types_dict = yaml.safe_load_all(path.read_text())
+            content = path.read_text()
+            types_dict = yaml.safe_load_all(content)
             for type_dict in types_dict:
                 if type_dict is not None:
                     types_type = self._external_types_model.model_validate(type_dict)
-                    self.register_external(types_type)
+                    pattern = re.compile(r'^name: *(' + types_type.name + ')$', re.MULTILINE)
+                    match = pattern.search(content)
+                    if match:
+                        line = content[:match.start()].count('\n') + 1
+                        start = match.start(1) - content.rfind('\n', 0, match.start()) - 1
+                        end = match.end(1) - content.rfind('\n', 0, match.end()) - 1
+                        types_type.position = Position(file=path, start=Cursor(line=line, col=start), end=Cursor(line=line, col=end))
+                    else:
+                        types_type.position = Position(file=path)
+                    self.register(types_type)
         except pydantic.ValidationError as e:
             raise InputParsingException.from_pydantic_error(e, file=path)
         except yaml.MarkedYAMLError as e:
@@ -51,10 +63,6 @@ class Resolver:
             raise Resolver.TypeResolvingException(f"Type '{datatype.name}' already exists", datatype.position)
         else:
             self.registry[registry_name] = datatype
-
-    def register_external(self, type_definition: BaseExternalType):
-        registry_name = f"{type_definition.namespace}.{type_definition.name}" if type_definition.namespace else type_definition.name
-        self.registry[registry_name] = type_definition
 
     def resolve(self, type_reference: TypeReference) -> BaseType:
         type_def: BaseType | None = None

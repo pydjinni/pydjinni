@@ -16,8 +16,10 @@ from pathlib import Path
 
 from antlr4 import InputStream, CommonTokenStream
 from antlr4.error.ErrorListener import ErrorListener
+from antlr4.tree.Tree import ErrorNode
 
-from pydjinni.exceptions import ApplicationException, FileNotFoundException, ApplicationExceptionList
+from pydjinni.exceptions import ApplicationException, FileNotFoundException, ApplicationExceptionList, \
+    InputParsingException
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.generator.cpp.cpp.generator import CppGenerator
 from pydjinni.generator.target import Target
@@ -32,7 +34,7 @@ from .ast import (
     ErrorDomain,
     Namespace
 )
-from .base_models import BaseType, TypeReference, BaseField, BaseExternalType, DataField
+from .base_models import BaseType, TypeReference, BaseField, BaseExternalType, DataField, FileReference
 from .comment_processor import ParserCommentProcessor
 from .grammar.IdlLexer import IdlLexer
 from .grammar.IdlParser import IdlParser
@@ -68,6 +70,7 @@ class Parser(IdlVisitor):
         self.type_decls: list[BaseType] = []
         self.field_decls: list[BaseField] = []
         self.type_refs: list[TypeReference] = []
+        self.file_imports: list[FileReference] = []
         self.current_namespace: list[Identifier] = []
         self.current_namespace_stack_size: list[int] = []
         self.errors: list[ApplicationException] = []
@@ -76,10 +79,12 @@ class Parser(IdlVisitor):
         """IDL Parsing error"""
 
     class ParsingExceptionList(ApplicationExceptionList):
-        def __init__(self, errors: list[ApplicationException], ast: list[BaseType], type_refs: list[TypeReference]):
+        def __init__(self, errors: list[ApplicationException], type_decls: list[BaseType], type_refs: list[TypeReference], file_imports: list[FileReference], ast: list[BaseType | Namespace]):
             super().__init__(errors)
-            self.ast = ast
+            self.type_decls = type_decls
             self.type_refs = type_refs
+            self.file_imports = file_imports
+            self.ast = ast
 
     class ParsingErrorListener(ErrorListener):
         def __init__(self, idl: Path, errors: list[Exception]):
@@ -101,7 +106,7 @@ class Parser(IdlVisitor):
         return [self.visit(content) for content in ctx.namespaceContent()]
 
     def visitComment(self, ctx: IdlParser.CommentContext):
-        return "\n".join([line.getText()[1:] for line in ctx.COMMENT()])
+        return "\n".join([line.getText()[1:].strip() for line in ctx.COMMENT()])
 
     def visitTypeDecl(self, ctx: IdlParser.TypeDeclContext):
         type_decl_context = ctx.enum() or ctx.flags() or ctx.record() or ctx.interface() or ctx.namedFunction() or ctx.errorDomain()
@@ -430,41 +435,54 @@ class Parser(IdlVisitor):
         return output
 
 
-    def visitFilepath(self, ctx: IdlParser.FilepathContext) -> Path | None:
-        path = Path(ctx.FILEPATH().getText()[1:-1])
-        search_paths = [path, self.idl.parent / path] + [include_dir / path for include_dir in self.include_dirs]
-        for search_path in search_paths:
-            if search_path.exists() and not search_path.is_dir():
-                if search_path == self.idl:
-                    self.errors.append(Parser.ParsingException(
-                        f"Circular import detected: file {self.idl} directly references itself!",
+    def visitFilepath(self, ctx: IdlParser.FilepathContext) -> FileReference | None:
+        node = ctx.FILEPATH()
+        if not isinstance(node, ErrorNode):
+            path = Path(node.getText()[1:-1])
+            search_paths = [path, self.idl.parent / path] + [include_dir / path for include_dir in self.include_dirs]
+            for search_path in search_paths:
+                if search_path.exists() and not search_path.is_dir():
+                    if search_path == self.idl:
+                        self.errors.append(Parser.ParsingException(
+                            f"Circular import detected: file {self.idl} directly references itself!",
+                            position=self._position(ctx)
+                        ))
+                        return None
+                    path = FileReference(
+                        path=search_path.absolute(),
                         position=self._position(ctx)
-                    ))
-                    return None
-                return search_path.absolute()
-        self.errors.append(FileNotFoundException(path, self._position(ctx)))
+                    )
+                    self.file_imports.append(path)
+                    return path
+            self.errors.append(FileNotFoundException(path, self._position(ctx)))
 
     def visitExtern(self, ctx: IdlParser.ExternContext):
-        self.resolver.load_external(self.visit(ctx.filepath()))
+        extern_path = self.visit(ctx.filepath())
+        if extern_path:
+            try:
+                self.resolver.load_external(extern_path.path)
+            except InputParsingException as e:
+                self.errors.append(e)
+
 
     def visitImportDef(self, ctx: IdlParser.ImportDefContext):
         import_path = self.visit(ctx.filepath())
         if import_path:
             try:
-                imported_type_decls, type_refs, _ = Parser(
+                imported_type_decls, type_refs, _, _ = Parser(
                     resolver=self.resolver,
                     targets=self.targets,
                     supported_target_keys=self.target_keys,
                     include_dirs=self.include_dirs,
                     default_deriving=self.default_deriving,
                     file_reader=self.file_reader,
-                    idl=self.visit(ctx.filepath()),
+                    idl=import_path.path,
                     position=self._position(ctx)
                 ).parse()
                 self.type_decls += imported_type_decls
                 self.type_refs += type_refs
             except Parser.ParsingExceptionList as e:
-                self.type_decls += e.ast
+                self.type_decls += e.type_decls
                 self.type_refs += e.type_refs
                 self.errors += e.items
 
@@ -482,7 +500,7 @@ class Parser(IdlVisitor):
             output += self._dependencies(type_ref.parameters)
         return output
 
-    def parse(self) -> tuple[list[BaseType], list[TypeReference], list[BaseType | Namespace]]:
+    def parse(self) -> tuple[list[BaseType], list[TypeReference], list[FileReference], list[BaseType | Namespace]]:
         ast: list[BaseType | Namespace] = []
         try:
             input_stream = InputStream(self.file_reader.read_idl(self.idl))
@@ -586,5 +604,5 @@ class Parser(IdlVisitor):
                 self.position
             ))
         if self.errors:
-            raise Parser.ParsingExceptionList(self.errors, self.type_decls, self.type_refs)
-        return self.type_decls, self.type_refs, ast
+            raise Parser.ParsingExceptionList(self.errors, self.type_decls, self.type_refs, self.file_imports, ast)
+        return self.type_decls, self.type_refs, self.file_imports, ast

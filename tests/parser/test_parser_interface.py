@@ -306,13 +306,13 @@ def test_parsing_interface_comment(tmp_path: Path):
     interface = when(parser, Interface, "foo")
 
     # THEN the interface should contain the given comment
-    assert interface.comment == " this interface is awesome\n it supports multiline comments"
+    assert interface.comment == "this interface is awesome\nit supports multiline comments"
 
     # THEN the method should contain the given comment
-    assert interface.methods[0].comment == " this is the static initializer"
+    assert interface.methods[0].comment == "this is the static initializer"
 
     # THEN the property should contain the given comment
-    assert interface.properties[0].comment == " this is a property"
+    assert interface.properties[0].comment == "this is a property"
 
 
 def test_parsing_comment_commands(tmp_path: Path):

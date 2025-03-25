@@ -1,0 +1,118 @@
+comment: some nice enum type
+cpp:
+  by_value: true
+  header: foo/enum_type.hpp
+  typename: ::test::exported_types::foo::EnumType
+deprecated: false
+java:
+  boxed: test.exported_types.foo.EnumType
+  generic: false
+  reference: true
+  typename: test.exported_types.foo.EnumType
+jni:
+  boxed_type_signature: Ltest/exported_types/foo/EnumType;
+  header: marshal_enum_type.hpp
+  translator: ::test::exported_types::jni::Foo::EnumType
+  type_signature: Ltest/exported_types/foo/EnumType;
+  typename: jobject
+name: enum_type
+namespace:
+- foo
+objc:
+  boxed: EXTFooEnumType
+  header: EXTFooEnumType.h
+  pointer: false
+  typename: EXTFooEnumType
+objcpp:
+  header: EnumType+Private.h
+  translator: ::test::exported_types::objcpp::Foo::EnumType
+params: []
+primitive: enum
+---
+cpp:
+  by_value: true
+  header: flags_type.hpp
+  typename: ::test::exported_types::FlagsType
+deprecated: false
+java:
+  boxed: java.util.EnumSet<test.exported_types.FlagsType>
+  generic: false
+  reference: true
+  typename: java.util.EnumSet<test.exported_types.FlagsType>
+jni:
+  boxed_type_signature: Ltest/exported_types/FlagsType;
+  header: marshal_flags_type.hpp
+  translator: ::test::exported_types::jni::FlagsType
+  type_signature: Ltest/exported_types/FlagsType;
+  typename: jobject
+name: flags_type
+namespace: []
+objc:
+  boxed: EXTFlagsType
+  header: EXTFlagsType.h
+  pointer: false
+  typename: EXTFlagsType
+objcpp:
+  header: FlagsType+Private.h
+  translator: ::test::exported_types::objcpp::FlagsType
+params: []
+primitive: flags
+---
+cpp:
+  by_value: false
+  header: record_type.hpp
+  source: record_type.cpp
+  typename: ::test::exported_types::RecordType
+deprecated: false
+java:
+  boxed: test.exported_types.RecordType
+  generic: false
+  reference: true
+  typename: test.exported_types.RecordType
+jni:
+  boxed_type_signature: Ltest/exported_types/RecordType;
+  header: marshal_record_type.hpp
+  translator: ::test::exported_types::jni::RecordType
+  type_signature: Ltest/exported_types/RecordType;
+  typename: jobject
+name: record_type
+namespace: []
+objc:
+  boxed: EXTRecordType
+  header: EXTRecordType.h
+  pointer: true
+  typename: EXTRecordType
+objcpp:
+  header: RecordType+Private.h
+  translator: ::test::exported_types::objcpp::RecordType
+params: []
+primitive: record
+---
+cpp:
+  by_value: false
+  header: function_type.hpp
+  typename: std::function<bool()>
+deprecated: false
+java:
+  boxed: test.exported_types.FunctionType
+  generic: false
+  reference: true
+  typename: test.exported_types.FunctionType
+jni:
+  boxed_type_signature: ()Z
+  header: marshal_function_type.hpp
+  translator: ::test::exported_types::jni::FunctionType
+  type_signature: ()Z
+  typename: jobject
+name: function_type
+namespace: []
+objc:
+  boxed: BOOL (^)()
+  header: EXTFunctionType.h
+  pointer: false
+  typename: BOOL (^)()
+objcpp:
+  header: FunctionType+Private.h
+  translator: ::test::exported_types::objcpp::FunctionType
+params: []
+primitive: function

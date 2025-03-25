@@ -164,10 +164,10 @@ def test_parsing_record_comment(tmp_path: Path):
     record = when(parser, Record, "foo")
 
     # THEN the record should contain the given comment
-    assert record.comment == " This is a record\n with a comment"
+    assert record.comment == "This is a record\nwith a comment"
 
     # THEN the field should contain the given comment
-    assert record.fields[0].comment == " This is a record field"
+    assert record.fields[0].comment == "This is a record field"
 
 
 def test_parsing_record_error_field_not_allowed(tmp_path: Path):

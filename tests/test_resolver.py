@@ -41,7 +41,7 @@ def external_given() -> tuple[Resolver, BaseExternalType, TypeReference]:
     resolver = Resolver(BaseExternalType)
 
     # AND GIVEN a type that should be registered
-    new_type = BaseExternalType(name="foo", primitive='record', namespace=[])
+    new_type = BaseExternalType(name="foo", primitive=BaseExternalType.Primitive.record, namespace=[])
 
     # AND GIVEN a type reference to the same type
     type_ref = TypeReference(name="foo", parameters=[], namespace=[])
@@ -87,7 +87,7 @@ def test_register_external_type():
     resolver, new_external_type, type_ref = external_given()
 
     # WHEN registering the new external type
-    resolver.register_external(new_external_type)
+    resolver.register(new_external_type)
 
     # AND WHEN resolving the registered type from a provided type reference
     type_def = resolver.resolve(type_ref)
@@ -147,10 +147,10 @@ def test_load_invalid_external_type(tmp_path: Path):
 
 
 @pytest.mark.parametrize("type_ref,type_def,wrong_type_def", [
-    (TypeReference(name="foo.bar"), BaseType(name="bar", namespace="foo"), None),
-    (TypeReference(name="foo.bar", namespace="foo"), BaseType(name="bar", namespace="foo"), None),
+    (TypeReference(name="foo.bar"), BaseType(name="bar", namespace=["foo"]), None),
+    (TypeReference(name="foo.bar", namespace="foo"), BaseType(name="bar", namespace=["foo"]), None),
     (TypeReference(name="bar", namespace="foo"), BaseType(name="bar"), None),
-    (TypeReference(name=".bar", namespace="foo"), BaseType(name="bar"), BaseType(name="bar", namespace="foo"))
+    (TypeReference(name=".bar", namespace="foo"), BaseType(name="bar"), BaseType(name="bar", namespace=["foo"]))
 ])
 def test_register_namespaced_type(tmp_path: Path, type_ref: TypeReference, type_def: BaseType, wrong_type_def: BaseType):
     # GIVEN a resolver instance
