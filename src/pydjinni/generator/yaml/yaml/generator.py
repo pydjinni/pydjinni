@@ -32,27 +32,20 @@ class YamlGenerator(Generator):
     def generate(self, ast: list[BaseType], copy_support_lib_sources: bool = True):
         filtered_type_defs = [type_def for type_def in ast if
                               not (type_def.primitive == BaseExternalType.Primitive.function and type_def.anonymous)]
-        class CustomSafeDumper(yaml.dumper.SafeDumper):
-            pass
 
-        yaml.add_representer(
-            Path,
-            lambda dumper, data: data.as_posix(),
-            CustomSafeDumper,
-        )
         if self.config:
             if self.config.out_file:
                 self._file_writer.write_source(
                     key=self.key,
                     filename=self.source_path / self.config.out_file,
-                    content=yaml.dump_all([self.generate_type_dict(type_def) for type_def in filtered_type_defs], Dumper=CustomSafeDumper)
+                    content=yaml.dump_all([self.generate_type_dict(type_def) for type_def in filtered_type_defs])
                 )
             else:
                 for type_def in filtered_type_defs:
                     self._file_writer.write_source(
                         key=self.key,
                         filename=self.source_path / f"{type_def.name}.yaml",
-                        content=yaml.dump(self.generate_type_dict(type_def), Dumper=CustomSafeDumper)
+                        content=yaml.dump(self.generate_type_dict(type_def))
                     )
         else:
             raise ConfigurationException(f"Missing configuration for 'generator.{self.key}'!")

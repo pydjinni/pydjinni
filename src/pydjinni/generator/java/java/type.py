@@ -13,7 +13,7 @@
 # limitations under the License.
 from dataclasses import dataclass
 from functools import cached_property
-from pathlib import Path
+from pathlib import PurePosixPath
 
 from pydantic import BaseModel, Field, computed_field
 
@@ -41,7 +41,7 @@ def data_type(type_ref: TypeReference, boxed: bool = False) -> str:
     return output
 
 def filename(package, name):
-    return Path(*package.split('.')) / f"{name}.java"
+    return PurePosixPath(*package.split('.')) / f"{name}.java"
 
 
 class JavaExternalType(BaseModel):
@@ -83,7 +83,7 @@ class JavaBaseType(BaseModel):
                                                self.decl.namespace])
 
     @cached_property
-    def source(self): return Path(*self.package.split('.')) / f"{self.name}.java"
+    def source(self): return PurePosixPath(*self.package.split('.')) / f"{self.name}.java"
 
     @cached_property
     def comment(self):
@@ -281,7 +281,7 @@ class NativeLibLoader:
         return self.config.native_lib
 
     @property
-    def source(self) -> Path: return filename(self.package, self.name)
+    def source(self) -> PurePosixPath: return filename(self.package, self.name)
 
 
 @dataclass
@@ -297,4 +297,4 @@ class NativeCleaner:
         return '.'.join(self.config.package + self.config.support_types_package)
 
     @property
-    def source(self) -> Path: return filename(self.package, self.name)
+    def source(self) -> PurePosixPath: return filename(self.package, self.name)

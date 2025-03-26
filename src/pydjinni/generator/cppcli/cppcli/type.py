@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from functools import cached_property
-from pathlib import Path
+from pathlib import PurePosixPath
 
 from pydantic import BaseModel, Field, computed_field
 
@@ -36,7 +36,7 @@ class CppCliExternalType(BaseModel):
     translator: str = Field(
         pattern=r"^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))*[a-zA-Z][a-zA-Z0-9_]*$"
     )
-    header: Path = None
+    header: PurePosixPath = None
     reference: bool = True
 
 
@@ -112,13 +112,13 @@ class CppCliBaseType(CppCliBaseCommentModel):
 
     @computed_field
     @cached_property
-    def header(self) -> Path:
-        return Path(
+    def header(self) -> PurePosixPath:
+        return PurePosixPath(
             *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.hpp"
 
     @cached_property
-    def source(self):
-        return Path(
+    def source(self) -> PurePosixPath:
+        return PurePosixPath(
             *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.cpp"
 
 
@@ -135,8 +135,8 @@ class CppCliBaseType(CppCliBaseCommentModel):
     @property
     def source_includes(self) -> set[str]: return {
         quote(self.header),
-        quote(Path("pydjinni/cppcli/Assert.hpp")),
-        quote(Path("pydjinni/cppcli/Marshal.hpp"))
+        quote(PurePosixPath("pydjinni/cppcli/Assert.hpp")),
+        quote(PurePosixPath("pydjinni/cppcli/Marshal.hpp"))
     }
 
 
@@ -175,17 +175,17 @@ class CppCliInterface(CppCliBaseType):
         dependency_headers = super().header_includes
         if any(method.asynchronous for method in self.decl.methods):
             dependency_headers.update([
-                quote(Path("pydjinni/coroutine/task.hpp")),
-                quote(Path("pydjinni/coroutine/schedule.hpp"))
+                quote(PurePosixPath("pydjinni/coroutine/task.hpp")),
+                quote(PurePosixPath("pydjinni/coroutine/schedule.hpp"))
             ])
             if "cppcli" in self.decl.targets:
-                dependency_headers.add(quote(Path("pydjinni/coroutine/callback_awaitable.hpp")))
+                dependency_headers.add(quote(PurePosixPath("pydjinni/coroutine/callback_awaitable.hpp")))
         return dependency_headers
 
     @property
     def source_includes(self) -> set[str]: return super().source_includes | {
-        quote(Path("pydjinni/cppcli/Error.hpp")),
-        quote(Path("pydjinni/cppcli/WrapperCache.hpp"))
+        quote(PurePosixPath("pydjinni/cppcli/Error.hpp")),
+        quote(PurePosixPath("pydjinni/cppcli/WrapperCache.hpp"))
     }
 
     class CppCliMethod(CppCliBaseField):
@@ -247,19 +247,19 @@ class CppCliRecord(CppCliBaseType):
 
     @computed_field
     @cached_property
-    def header(self) -> Path:
-        return Path(
+    def header(self) -> PurePosixPath:
+        return PurePosixPath(
             *self.decl.namespace) / f"{self.base_name().convert(self.config.identifier.file)}.hpp"
 
     @computed_field
     @cached_property
-    def derived_header(self) -> Path:
-        return Path(
+    def derived_header(self) -> PurePosixPath:
+        return PurePosixPath(
             *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.hpp"
 
     @cached_property
-    def source(self):
-        return Path(
+    def source(self) -> PurePosixPath:
+        return PurePosixPath(
             *self.decl.namespace) / f"{self.base_name().convert(self.config.identifier.file)}.cpp"
 
     @property
@@ -269,8 +269,8 @@ class CppCliRecord(CppCliBaseType):
 
     @property
     def source_includes(self) -> set[str]: return {
-        quote(Path("pydjinni/cppcli/Assert.hpp")),
-        quote(Path("pydjinni/cppcli/Marshal.hpp")),
+        quote(PurePosixPath("pydjinni/cppcli/Assert.hpp")),
+        quote(PurePosixPath("pydjinni/cppcli/Marshal.hpp")),
         quote(self.derived_header) if self.base_type else quote(self.header)
     }
 
@@ -365,7 +365,7 @@ class CppCliFunction(CppCliBaseType):
 
     @property
     def source_includes(self) -> set[str]: return super().source_includes | {
-        quote(Path("pydjinni/cppcli/Error.hpp"))
+        quote(PurePosixPath("pydjinni/cppcli/Error.hpp"))
     }
 
 
