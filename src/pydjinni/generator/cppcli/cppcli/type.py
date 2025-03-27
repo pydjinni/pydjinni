@@ -33,9 +33,7 @@ from pydjinni.generator.filters import headers, quote
 
 class CppCliExternalType(BaseModel):
     typename: str
-    translator: str = Field(
-        pattern=r"^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))*[a-zA-Z][a-zA-Z0-9_]*$"
-    )
+    translator: str
     header: PurePosixPath = None
     reference: bool = True
 
@@ -316,7 +314,7 @@ class CppCliSymbolicConstant(CppCliBaseType):
 
     @cached_property
     def translator(self) -> str:
-        return f"::pydjinni::cppcli::translator::Enum<{self.decl.cpp.typename}, {self.typename}>"
+        return f"::pydjinni::cppcli::translator::Enum<{self.decl.cpp.typename},{self.typename}>"
 
     class Field(CppCliBaseField):
         @computed_field

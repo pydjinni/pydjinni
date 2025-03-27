@@ -3,6 +3,11 @@ cpp:
   by_value: true
   header: foo/enum_type.hpp
   typename: ::test::exported_types::foo::EnumType
+cppcli:
+  header: foo/CppCliEnumType.hpp
+  reference: false
+  translator: ::pydjinni::cppcli::translator::Enum<::test::exported_types::foo::EnumType,::Test::ExportedTypes::CppCli::Foo::EnumType>
+  typename: ::Test::ExportedTypes::CppCli::Foo::EnumType
 deprecated: false
 java:
   boxed: test.exported_types.foo.EnumType
@@ -33,6 +38,11 @@ cpp:
   by_value: true
   header: flags_type.hpp
   typename: ::test::exported_types::FlagsType
+cppcli:
+  header: CppCliFlagsType.hpp
+  reference: false
+  translator: ::pydjinni::cppcli::translator::Enum<::test::exported_types::FlagsType,::Test::ExportedTypes::CppCli::FlagsType>
+  typename: ::Test::ExportedTypes::CppCli::FlagsType
 deprecated: false
 java:
   boxed: java.util.EnumSet<test.exported_types.FlagsType>
@@ -63,6 +73,12 @@ cpp:
   header: record_type.hpp
   source: record_type.cpp
   typename: ::test::exported_types::RecordType
+cppcli:
+  derived_header: CppCliRecordType.hpp
+  header: CppCliRecordType.hpp
+  reference: true
+  translator: ::Test::ExportedTypes::CppCli::RecordType
+  typename: ::Test::ExportedTypes::CppCli::RecordType
 deprecated: false
 java:
   boxed: test.exported_types.RecordType
@@ -92,6 +108,11 @@ cpp:
   by_value: false
   header: function_type.hpp
   typename: std::function<bool()>
+cppcli:
+  header: CppCliFunctionType.hpp
+  reference: true
+  translator: Test::ExportedTypes::CppCli::_FunctionTypeDelegate
+  typename: ::Test::ExportedTypes::CppCli::FunctionType
 deprecated: false
 java:
   boxed: test.exported_types.FunctionType

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-file(GLOB_RECURSE EXTERNAL_TYPES_JNI_SOURCES "generated/export/src/**/*.cpp")
+file(GLOB_RECURSE EXTERNAL_TYPES_JNI_SOURCES "generated/export/src/jni/*.cpp")
 file(GLOB_RECURSE EXTERNAL_TYPES_JAVA_SOURCES "generated/export/java/**/*.java")
 
 java_test_case(ExternalTypesTest

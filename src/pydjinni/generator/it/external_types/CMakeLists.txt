@@ -15,7 +15,7 @@
 project(PyDjinniIntegrationTestExternalTypes CXX)
 
 pydjinni_generate(exported_types.pydjinni CLEAN
-    LANGUAGES cpp java objc yaml
+    LANGUAGES cpp java objc cppcli yaml
     CONFIG None
     OPTIONS
         generate.support_lib_sources=False
@@ -39,6 +39,10 @@ pydjinni_generate(exported_types.pydjinni CLEAN
         generate.objcpp.namespace=test::exported_types::objcpp
         generate.objcpp.out.header=../../objc/it/objc/external_types/generated/export/include/objcpp
         generate.objcpp.out.source=../../objc/it/objc/external_types/generated/export/src/objcpp
+        generate.cppcli.out.header=../../cppcli/it/external_types/generated/export/include/cppcli
+        generate.cppcli.out.source=../../cppcli/it/external_types/generated/export/src/cppcli
+        generate.cppcli.namespace=Test::ExportedTypes::CppCli
+        generate.cppcli.nullability_attributes=false
         generate.yaml.out=generated/export/yaml
         generate.yaml.out_file=exported_types.yaml
 )
