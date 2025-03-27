@@ -1,0 +1,19 @@
+namespace foo {
+    # some nice enum type
+    enum_type = enum {
+        a; b; c;
+    }
+}
+
+
+flags_type = flags {
+    a; b; c; all=all; none=none;
+}
+
+record_type = record {
+    a: i32;
+    b: f64;
+    c: string;
+}
+
+function_type = function () -> bool;

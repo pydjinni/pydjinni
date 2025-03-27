@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from functools import cached_property
-from pathlib import Path
+from pathlib import PurePosixPath
 
 from pydantic import BaseModel, Field, computed_field
 
@@ -36,7 +36,7 @@ def translator(type_ref: TypeReference) -> str:
 
 class ObjcppExternalType(BaseModel):
     translator: str
-    header: Path
+    header: PurePosixPath
 
 
 class ObjcBaseModel(BaseModel):
@@ -68,10 +68,10 @@ class ObjcppBaseType(ObjcBaseModel):
 
     @computed_field
     @cached_property
-    def header(self) -> Path: return Path(f"{self.name}+Private.{self.config.header_extension}")
+    def header(self) -> PurePosixPath: return PurePosixPath(f"{self.name}+Private.{self.config.header_extension}")
 
     @cached_property
-    def source(self) -> Path: return Path(f"{self.name}+Private.{self.config.source_extension}")
+    def source(self) -> PurePosixPath: return PurePosixPath(f"{self.name}+Private.{self.config.source_extension}")
 
     @cached_property
     def namespace(self): return '::'.join(self.config.namespace + [identifier.convert(IdentifierStyle.Case.pascal)
@@ -90,7 +90,7 @@ class ObjcppBaseType(ObjcBaseModel):
     @property
     def source_includes(self) -> set[str]:
         return headers(self.decl.dependencies, "objcpp") | {
-            "<cassert>", quote(Path("pydjinni/objc/error.h"))
+            "<cassert>", quote(PurePosixPath("pydjinni/objc/error.h"))
         }
 
     @property
@@ -106,7 +106,7 @@ class ObjcppFunction(ObjcppBaseType):
     def source_includes(self) -> set[str]:
         dependency_headers = super().source_includes
         if any([parameter.type_ref.optional for parameter in self.decl.parameters]) or (self.decl.return_type_ref and self.decl.return_type_ref.optional):
-            dependency_headers.add(quote(Path("pydjinni/marshal.h")))
+            dependency_headers.add(quote(PurePosixPath("pydjinni/marshal.h")))
         return dependency_headers
 
     @cached_property
@@ -135,21 +135,21 @@ class ObjcppInterface(ObjcppBaseType):
         dependency_headers = super().source_includes
         dependency_headers.update([
             "<memory>",
-            quote(Path("pydjinni/cpp_wrapper_cache.h")),
-            quote(Path("pydjinni/objc_wrapper_cache.h"))
+            quote(PurePosixPath("pydjinni/cpp_wrapper_cache.h")),
+            quote(PurePosixPath("pydjinni/objc_wrapper_cache.h"))
         ])
         if any(method.asynchronous for method in self.decl.methods):
             dependency_headers.update([
-                quote(Path("pydjinni/coroutine/task.hpp")),
-                quote(Path("pydjinni/coroutine/schedule.h"))
+                quote(PurePosixPath("pydjinni/coroutine/task.hpp")),
+                quote(PurePosixPath("pydjinni/coroutine/schedule.h"))
             ])
             if "objc" in self.decl.targets:
-                dependency_headers.add(quote(Path("pydjinni/coroutine/callback_awaitable.hpp")))
+                dependency_headers.add(quote(PurePosixPath("pydjinni/coroutine/callback_awaitable.hpp")))
         if any(method.deprecated for method in self.decl.methods):
-            dependency_headers.add(quote(Path("pydjinni/deprecated.hpp")))
+            dependency_headers.add(quote(PurePosixPath("pydjinni/deprecated.hpp")))
         if any([parameter.type_ref.optional for method in self.decl.methods for parameter in
                 method.parameters]) or any(method.return_type_ref.optional for method in self.decl.methods if method.return_type_ref):
-            dependency_headers.add(quote(Path("pydjinni/marshal.h")))
+            dependency_headers.add(quote(PurePosixPath("pydjinni/marshal.h")))
         return dependency_headers
 
     class ObjcppMethod(ObjcppBaseField):
@@ -182,5 +182,5 @@ class ObjcppSymbolicConstantField(ObjcppBaseField):
 class ObjcppErrorDomain(ObjcppBaseType):
     @property
     def source_includes(self) -> set[str]: return super().source_includes | {
-        quote(Path(external_types.external_types["string"].header))
+        quote(PurePosixPath(external_types.external_types["string"].header))
     }

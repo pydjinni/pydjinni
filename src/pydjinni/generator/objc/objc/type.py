@@ -13,7 +13,7 @@
 # limitations under the License.
 from dataclasses import dataclass
 from functools import cached_property
-from pathlib import Path
+from pathlib import PurePosixPath
 
 from pydantic import BaseModel, Field, computed_field
 
@@ -30,7 +30,7 @@ from pydjinni.parser.identifier import IdentifierType as Identifier
 class ObjcExternalType(BaseModel):
     typename: str = None
     boxed: str
-    header: Path = None
+    header: PurePosixPath = None
     pointer: bool = True
 
 
@@ -113,12 +113,12 @@ class ObjcBaseType(ObjcBaseCommentModel):
 
     @computed_field
     @cached_property
-    def header(self) -> Path:
-        return Path(f"{self.name}.{self.config.header_extension}")
+    def header(self) -> PurePosixPath:
+        return PurePosixPath(f"{self.name}.{self.config.header_extension}")
 
     @cached_property
-    def source(self) -> Path:
-        return Path(f"{self.name}.{self.config.source_extension}")
+    def source(self) -> PurePosixPath:
+        return PurePosixPath(f"{self.name}.{self.config.source_extension}")
 
     @computed_field
     @cached_property
@@ -210,8 +210,8 @@ class ObjcRecord(ObjcBaseClassType):
         return f"{self.config.type_prefix}{self.namespace}{self.decl.name.convert(self.config.identifier.type)}"
 
     @cached_property
-    def derived_header(self) -> Path:
-        return Path(f"{self.derived_name}.{self.config.header_extension}")
+    def derived_header(self) -> PurePosixPath:
+        return PurePosixPath(f"{self.derived_name}.{self.config.header_extension}")
 
     @cached_property
     def base_type(self) -> bool:
@@ -232,7 +232,7 @@ class ObjcRecord(ObjcBaseClassType):
     def imports(self) -> set[str]:
         output = super().imports
         if any([field.deprecated for field in self.decl.fields]):
-            output.add(quote(Path("pydjinni/deprecated.hpp")))
+            output.add(quote(PurePosixPath("pydjinni/deprecated.hpp")))
         return output
 
 

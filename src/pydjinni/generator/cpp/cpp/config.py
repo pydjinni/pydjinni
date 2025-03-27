@@ -30,7 +30,7 @@ class CppIdentifier(BaseModel):
 
 class CppNotNull(BaseModel):
     """
-    Configuration for wrapping `std::shared_ptr` and `function`s with a `not_null` type.
+    Configuration for wrapping `std::shared_ptr` with a `not_null` type.
     """
     header: str = Field(
         default=None,

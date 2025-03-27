@@ -5,7 +5,7 @@ from lsprotocol.types import DocumentSymbol, SymbolKind, DiagnosticSeverity, Dia
 from pydjinni import API
 from pydjinni.exceptions import ApplicationException
 from pydjinni.parser.ast import Namespace, Interface, Record, Enum, Flags, ErrorDomain, Function
-from pydjinni.parser.base_models import BaseType, BaseField, TypeReference, SymbolicConstantType
+from pydjinni.parser.base_models import BaseType, BaseField, TypeReference, SymbolicConstantType, FileReference
 
 
 def to_diagnostic(definition: ApplicationException | BaseType | BaseField, severity: DiagnosticSeverity, description: str) -> Diagnostic:
@@ -17,16 +17,17 @@ def to_diagnostic(definition: ApplicationException | BaseType | BaseField, sever
     )
 
 
-def to_hover_cache(type_refs: list[TypeReference]) -> dict[int, dict[int, TypeReference]]:
+def to_hover_cache(type_refs: list[TypeReference], file_imports: list[FileReference]) -> dict[int, dict[int, TypeReference | FileReference]]:
     cache: dict[int, dict[int, TypeReference]] = {}
 
-    def cache_ref(ref: TypeReference):
+    def cache_ref(ref: TypeReference | FileReference):
         for i in range(ref.position.start.col, ref.position.end.col):
             cache[ref.position.start.line][i] = ref
-        for parameter_ref in ref.parameters:
-            cache_ref(parameter_ref)
+        if isinstance(ref, TypeReference):
+            for parameter_ref in ref.parameters:
+                cache_ref(parameter_ref)
 
-    for ref in type_refs:
+    for ref in type_refs + file_imports:
         if not cache.get(ref.position.start.line):
             cache[ref.position.start.line] = {}
 
@@ -35,10 +36,13 @@ def to_hover_cache(type_refs: list[TypeReference]) -> dict[int, dict[int, TypeRe
 
 
 def type_range(definition: BaseField | BaseType | ApplicationException) -> Range:
-    return Range(
-        start=Position(definition.position.start.line - 1, definition.position.start.col),
-        end=Position(definition.position.end.line - 1, definition.position.end.col)
-    )
+    if definition.position.start and definition.position.end:
+        return Range(
+            start=Position(definition.position.start.line - 1, definition.position.start.col),
+            end=Position(definition.position.end.line - 1, definition.position.end.col)
+        )
+    else:
+        return Range(start=Position(0, 0), end=Position(0, 0))
 
 def configure_api(config: Path) -> API.ConfiguredContext:
     if config.exists():

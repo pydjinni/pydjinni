@@ -12,22 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pathlib import Path
+from pathlib import PurePosixPath
 
 from .type import ObjcppExternalType
 
 external_types: dict[str, ObjcppExternalType] = {
-    "bool": ObjcppExternalType(translator="::pydjinni::translators::objc::Bool", header=Path("pydjinni/marshal.h")),
-    "i8": ObjcppExternalType(translator="::pydjinni::translators::objc::I8", header=Path("pydjinni/marshal.h")),
-    "i16": ObjcppExternalType(translator="::pydjinni::translators::objc::I16", header=Path("pydjinni/marshal.h")),
-    "i32": ObjcppExternalType(translator="::pydjinni::translators::objc::I32", header=Path("pydjinni/marshal.h")),
-    "i64": ObjcppExternalType(translator="::pydjinni::translators::objc::I64", header=Path("pydjinni/marshal.h")),
-    "f32": ObjcppExternalType(translator="::pydjinni::translators::objc::F32", header=Path("pydjinni/marshal.h")),
-    "f64": ObjcppExternalType(translator="::pydjinni::translators::objc::F64", header=Path("pydjinni/marshal.h")),
-    "string": ObjcppExternalType(translator="::pydjinni::translators::objc::String", header=Path("pydjinni/marshal.h")),
-    "binary": ObjcppExternalType(translator="::pydjinni::translators::objc::Binary", header=Path("pydjinni/marshal.h")),
-    "date": ObjcppExternalType(translator="::pydjinni::translators::objc::Date", header=Path("pydjinni/marshal.h")),
-    "list": ObjcppExternalType(translator="::pydjinni::translators::objc::List", header=Path("pydjinni/marshal.h")),
-    "set": ObjcppExternalType(translator="::pydjinni::translators::objc::Set", header=Path("pydjinni/marshal.h")),
-    "map": ObjcppExternalType(translator="::pydjinni::translators::objc::Map", header=Path("pydjinni/marshal.h"))
+    "bool": ObjcppExternalType(translator="::pydjinni::translators::objc::Bool", header=PurePosixPath("pydjinni/marshal.h")),
+    "i8": ObjcppExternalType(translator="::pydjinni::translators::objc::I8", header=PurePosixPath("pydjinni/marshal.h")),
+    "i16": ObjcppExternalType(translator="::pydjinni::translators::objc::I16", header=PurePosixPath("pydjinni/marshal.h")),
+    "i32": ObjcppExternalType(translator="::pydjinni::translators::objc::I32", header=PurePosixPath("pydjinni/marshal.h")),
+    "i64": ObjcppExternalType(translator="::pydjinni::translators::objc::I64", header=PurePosixPath("pydjinni/marshal.h")),
+    "f32": ObjcppExternalType(translator="::pydjinni::translators::objc::F32", header=PurePosixPath("pydjinni/marshal.h")),
+    "f64": ObjcppExternalType(translator="::pydjinni::translators::objc::F64", header=PurePosixPath("pydjinni/marshal.h")),
+    "string": ObjcppExternalType(translator="::pydjinni::translators::objc::String", header=PurePosixPath("pydjinni/marshal.h")),
+    "binary": ObjcppExternalType(translator="::pydjinni::translators::objc::Binary", header=PurePosixPath("pydjinni/marshal.h")),
+    "date": ObjcppExternalType(translator="::pydjinni::translators::objc::Date", header=PurePosixPath("pydjinni/marshal.h")),
+    "list": ObjcppExternalType(translator="::pydjinni::translators::objc::List", header=PurePosixPath("pydjinni/marshal.h")),
+    "set": ObjcppExternalType(translator="::pydjinni::translators::objc::Set", header=PurePosixPath("pydjinni/marshal.h")),
+    "map": ObjcppExternalType(translator="::pydjinni::translators::objc::Map", header=PurePosixPath("pydjinni/marshal.h"))
 }

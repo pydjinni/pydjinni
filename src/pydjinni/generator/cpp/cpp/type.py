@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from functools import cached_property
-from pathlib import Path
+from pathlib import PurePosixPath
 
 from pydantic import BaseModel, Field, computed_field
 
@@ -46,7 +46,7 @@ class CppExternalType(BaseModel):
             "int8_t", "::some::Type"
         ]
     )
-    header: Path = None
+    header: PurePosixPath = None
     by_value: bool = False
 
 
@@ -113,13 +113,13 @@ class CppBaseType(CppBaseCommentModel):
 
     @computed_field
     @cached_property
-    def header(self) -> Path:
-        return Path(
+    def header(self) -> PurePosixPath:
+        return PurePosixPath(
             *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}"
 
     @cached_property
-    def source(self):
-        return Path(
+    def source(self) -> PurePosixPath:
+        return PurePosixPath(
             *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.source_extension}"
 
     @computed_field
@@ -178,7 +178,7 @@ class CppInterface(CppBaseType):
     def header_includes(self) -> set[str]:
         dependency_headers = super().header_includes | {"<memory>"}
         if any(method.asynchronous for method in self.decl.methods):
-            dependency_headers.add(quote(Path("pydjinni/coroutine/task.hpp")))
+            dependency_headers.add(quote(PurePosixPath("pydjinni/coroutine/task.hpp")))
         return dependency_headers
 
     class CppMethod(CppBaseField):
@@ -240,7 +240,7 @@ class CppSymbolicConstantType(CppBaseType):
         if self.config.string_serialization:
             output.add("<format>")
         if self.decl.deprecated:
-            output.add(quote(Path("pydjinni/deprecated.hpp")))
+            output.add(quote(PurePosixPath("pydjinni/deprecated.hpp")))
         return output
 
     class CppSymbolicConstantField(CppBaseField):
@@ -257,7 +257,7 @@ class CppEnum(CppSymbolicConstantType):
     def source_includes(self) -> set[str]:
         output = super().source_includes
         if any(item.deprecated for item in self.decl.items):
-            output.add(quote(Path("pydjinni/deprecated.hpp")))
+            output.add(quote(PurePosixPath("pydjinni/deprecated.hpp")))
         return output
 
 
@@ -268,7 +268,7 @@ class CppFlags(CppSymbolicConstantType):
     def source_includes(self) -> set[str]:
         output = super().source_includes
         if any(flag.deprecated for flag in self.decl.flags):
-            output.add(quote(Path("pydjinni/deprecated.hpp")))
+            output.add(quote(PurePosixPath("pydjinni/deprecated.hpp")))
         return output
 
 
@@ -305,25 +305,25 @@ class CppRecord(CppBaseType):
 
     @computed_field
     @cached_property
-    def header(self) -> Path:
+    def header(self) -> PurePosixPath:
         if self.base_type:
             filename = Identifier(self.decl.name + "_base").convert(self.config.identifier.file)
-            return Path(*self.decl.namespace) / f"{filename}.{self.config.header_extension}"
+            return PurePosixPath(*self.decl.namespace) / f"{filename}.{self.config.header_extension}"
         else:
             return super().header
 
     @computed_field
     @cached_property
-    def source(self) -> Path:
+    def source(self) -> PurePosixPath:
         if self.base_type:
             filename = Identifier(self.decl.name + "_base").convert(self.config.identifier.file)
-            return Path(*self.decl.namespace) / f"{filename}.{self.config.source_extension}"
+            return PurePosixPath(*self.decl.namespace) / f"{filename}.{self.config.source_extension}"
         else:
             return super().source
 
     @cached_property
-    def derived_header(self) -> Path:
-        return Path(
+    def derived_header(self) -> PurePosixPath:
+        return PurePosixPath(
             *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}"
 
     @property
@@ -332,7 +332,7 @@ class CppRecord(CppBaseType):
         if self.config.string_serialization:
             includes.add("<format>")
         if self.decl.deprecated or any(field.deprecated for field in self.decl.fields):
-            includes.add(quote(Path("pydjinni/deprecated.hpp")))
+            includes.add(quote(PurePosixPath("pydjinni/deprecated.hpp")))
         return includes
 
     @property
@@ -340,7 +340,7 @@ class CppRecord(CppBaseType):
         includes = super().source_includes
         if self.config.string_serialization:
             includes.add("<string>")
-            includes.add(quote(Path("pydjinni/format.hpp")))
+            includes.add(quote(PurePosixPath("pydjinni/format.hpp")))
         return includes
 
     @property
@@ -401,7 +401,7 @@ class CppErrorDomain(CppBaseType):
     def header_includes(self) -> set[str]:
         includes = super().header_includes | {"<exception>", "<string>", "<utility>"}
         if any(error_code.deprecated for error_code in self.decl.error_codes):
-            includes.add(quote(Path("pydjinni/deprecated.hpp")))
+            includes.add(quote(PurePosixPath("pydjinni/deprecated.hpp")))
         return includes
 
     class CppErrorCode(CppBaseType):

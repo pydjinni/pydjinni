@@ -95,7 +95,7 @@ def render_config_schema_table(element, indent: int, render_defaults=True):
 
 
 def define_env(env):
-    "Hook function"
+    """Hook function"""
 
     logger = logging.getLogger(__name__)
     api = API()

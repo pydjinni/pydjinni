@@ -44,7 +44,7 @@ from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.generator.generate_config import GenerateBaseConfig
 from pydjinni.generator.target import Target
 from pydjinni.builder.target import BuildTarget
-from pydjinni.parser.base_models import BaseType, BaseExternalType, TypeReference
+from pydjinni.parser.base_models import BaseType, BaseExternalType, TypeReference, FileReference
 from pydjinni.position import Position
 from pydjinni.parser.resolver import Resolver
 from pydjinni.parser.type_model_builder import TypeModelBuilder
@@ -308,7 +308,7 @@ class API:
             resolver = Resolver(self._external_types_model)
             resolver.registry = dict()
             for external_type_def in external_types_builder.build():
-                resolver.register_external(external_type_def)
+                resolver.register(external_type_def)
 
             parser = Parser(
                 resolver=resolver,
@@ -321,13 +321,14 @@ class API:
             )
 
             # parsing the input IDL. The output is an AST that contains type definitions for each provided marshal
-            type_defs, type_refs, ast = parser.parse()
+            type_defs, type_refs, file_imports, ast = parser.parse()
 
             return API.ConfiguredContext.GenerateContext(
                 generate_targets=self._generate_targets,
                 file_writer=self._file_reader_writer,
                 defs=type_defs,
                 refs=type_refs,
+                file_imports=file_imports,
                 ast=ast,
                 config=self._generate_config
             )
@@ -421,12 +422,14 @@ class API:
                          file_writer: FileReaderWriter,
                          defs: list[BaseType],
                          refs: list[TypeReference],
+                         file_imports: list[FileReference],
                          ast: list[BaseType | Namespace],
                          config: GenerateBaseConfig):
                 self._generate_targets = generate_targets
                 self._file_reader_writer = file_writer
                 self.defs = defs
                 self.refs = refs
+                self.file_imports = file_imports
                 self.ast = ast
                 self._config = config
 

@@ -67,7 +67,7 @@ def test_parsing_flags_comment(tmp_path: Path):
     flags = when(parser, Flags, "foo")
 
     # THEN the flags type should contain the given comment
-    assert flags.comment == " this is a flag"
+    assert flags.comment == "this is a flag"
 
     # THEN the flag should contain the given comment
-    assert flags.flags[0].comment == " with comments"
+    assert flags.flags[0].comment == "with comments"

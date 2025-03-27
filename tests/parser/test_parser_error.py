@@ -64,10 +64,10 @@ def test_parsing_error_comment(tmp_path: Path):
     error_domain = when(parser, ErrorDomain, "foo")
 
     # THEN the record should contain the given comment
-    assert error_domain.comment == " This is an error domain with a comment"
+    assert error_domain.comment == "This is an error domain with a comment"
 
     # THEN the field should contain the given comment
-    assert error_domain.error_codes[0].comment == " This is an error code"
+    assert error_domain.error_codes[0].comment == "This is an error code"
 
 def test_parsing_error_no_codes(tmp_path: Path):
     parser, _ = given(

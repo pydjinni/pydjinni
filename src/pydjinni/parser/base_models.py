@@ -13,9 +13,11 @@
 # limitations under the License.
 
 from __future__ import annotations
+from pathlib import Path
 
 from functools import cached_property
 from mistune import Markdown, BlockState
+from pydantic.json_schema import SkipJsonSchema
 from pydjinni.parser.identifier import Identifier
 from pydjinni.parser.markdown_plugins import commands_plugin
 from pydjinni.parser.namespace import Namespace
@@ -69,7 +71,7 @@ class BaseExternalType(BaseCommentModel):
     name: Identifier = Field(
         description="Name of the type in the IDL"
     )
-    namespace: Namespace | list[Identifier] = Field(
+    namespace: list[Identifier] = Field(
         default=[],
         description="Namespace that the type lives in"
     )
@@ -78,6 +80,7 @@ class BaseExternalType(BaseCommentModel):
         description="The underlying primitive type"
     )
     params: list[str] = []
+    position: SkipJsonSchema[Position | None] = Field(exclude=True, default=None)
 
 
 class TypeReference(BaseModel):
@@ -91,15 +94,17 @@ class TypeReference(BaseModel):
         repr=False
     )
 
+class FileReference(BaseModel):
+    path: Path
+    position: Position
 
 class BaseType(BaseExternalType, extra='allow'):
-    position: Position = Position()
     dependencies: list[TypeReference] = []
 
 
 class BaseField(BaseCommentModel, extra='allow'):
     name: Identifier
-    position: Position = Position()
+    position: Position = None
 
 
 class ClassType(BaseType):

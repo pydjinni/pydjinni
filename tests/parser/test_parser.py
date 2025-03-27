@@ -82,7 +82,7 @@ def when(parser: Parser, type_type: type[TypeDef], type_name: str = None) -> Typ
         the one element in the AST that was returned by the parser
     """
     # WHEN parsing the input file
-    ast, _, _ = parser.parse()
+    ast, _, _, _ = parser.parse()
 
     # THEN the resulting AST should contain one element
     assert len(ast) == 1
@@ -255,7 +255,7 @@ def test_extern(tmp_path: Path):
     extern_file.touch()
 
     # WHEN parsing the file
-    ast, _, _ = parser.parse()
+    ast, _, _, _ = parser.parse()
 
     # THEN the Resolver should have been called in order to load the external type
     resolver_mock.load_external.assert_called_once()
@@ -305,7 +305,7 @@ def test_namespace(tmp_path: Path):
     )
 
     # WHEN parsing the idl file
-    defs, _, ast = parser.parse()
+    defs, _, _, ast = parser.parse()
 
     # THEN the type_defs should contain two types each labelled with their respective namespace
     assert len(defs) == 2
@@ -395,12 +395,12 @@ def test_multiple_errors(tmp_path: Path):
     assert second_exception.description.startswith("mismatched input")
 
     # THEN despite the errors, a syntax tree should be included in the exception list
-    assert len(excinfo.value.ast) == 2
-    foo_type = excinfo.value.ast[0]
+    assert len(excinfo.value.type_decls) == 2
+    foo_type = excinfo.value.type_decls[0]
     assert foo_type.name == "foo"
     assert len(foo_type.fields) == 1
     assert foo_type.fields[0].name == "a"
 
-    bar_type = excinfo.value.ast[1]
+    bar_type = excinfo.value.type_decls[1]
     assert bar_type.name == "bar"
     assert bar_type.deprecated
