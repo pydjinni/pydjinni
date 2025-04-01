@@ -46,7 +46,7 @@ dev = [
     "pytest==8.3.3",
     "pytest-asyncio==0.25.3",
     "pytest-lsp==0.4.3",
-    "coverage==7.6.12",
+    "coverage==7.8.0",
     "antlr4-tools==0.2.1"
 ]
 publish = [
