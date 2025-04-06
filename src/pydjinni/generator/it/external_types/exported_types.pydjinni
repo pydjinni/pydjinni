@@ -17,3 +17,7 @@ record_type = record {
 }
 
 function_type = function () -> bool;
+
+interface_type = main interface +cpp {
+    static some_method() -> bool;
+}

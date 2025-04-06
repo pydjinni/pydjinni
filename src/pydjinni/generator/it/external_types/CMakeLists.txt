@@ -53,6 +53,7 @@ define_test_case(ExternalTypesTest
         generate.cpp.namespace=test::external_types
     SOURCES
         src/main_interface.cpp
+        src/export/interface_type.cpp
     INCLUDE_DIRS
         generated/export/include/cpp
 )

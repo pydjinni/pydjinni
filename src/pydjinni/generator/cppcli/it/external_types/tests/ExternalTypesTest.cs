@@ -32,5 +32,12 @@ namespace Testing.Unit.ExternalTypes
             );
             Assert.That(result, Is.True);
         }
+
+        [Test]
+        public void TestExternalInterface()
+        {
+            var result = InterfaceType.someMethod();
+            Assert.That(result, Is.True);
+        }
     }
 }

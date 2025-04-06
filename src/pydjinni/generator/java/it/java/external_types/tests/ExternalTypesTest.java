@@ -32,4 +32,10 @@ class TestExternalTypes {
         );
         assertTrue(result);
     }
+
+    @Test
+    void testUsingExternalInterface() {
+        var result = InterfaceType.someMethod();
+        assertTrue(result);
+    }
 }

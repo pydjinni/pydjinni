@@ -18,6 +18,7 @@
 #import "EXTFlagsType.h"
 #import "EXTRecordType.h"
 #import "EXTFunctionType.h"
+#import "EXTInterfaceType.h"
 
 @interface ExternalTypesTests : XCTestCase
 @end
@@ -30,6 +31,11 @@
                          flagsParam: EXTFlagsTypeA
                         recordParam: [EXTRecordType recordTypeWithA: 4 b: 2 c: @"foo"]
                       functionParam: ^{ return YES; }];
+    XCTAssertTrue(result);
+}
+
+- (void)testExternalInterface {
+    BOOL result = [EXTInterfaceType someMethod];
     XCTAssertTrue(result);
 }
 
