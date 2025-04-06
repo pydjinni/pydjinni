@@ -70,7 +70,7 @@ WS               : [ \t\r\n]+ -> skip;
 
 
 ID               : Letter LetterOrDigit*;
-NS_ID            : (ID '.')* ID;
+NS_ID            : ('.'? ID )+;
 
 fragment LetterOrDigit : Letter | [0-9_];
 fragment Letter        : [a-zA-Z];

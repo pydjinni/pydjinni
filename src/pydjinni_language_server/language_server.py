@@ -25,7 +25,7 @@ from pygls.workspace import TextDocument
 
 from pydjinni.exceptions import ConfigurationException
 from pydjinni.parser.ast import Function, Namespace
-from pydjinni.parser.base_models import TypeReference, BaseType
+from pydjinni.parser.base_models import TypeReference, BaseType, FileReference, BaseExternalType
 from pydjinni.parser.parser import Parser
 from pydjinni_language_server.text_document_path import TextDocumentPath
 from .error_logger import error_logger
@@ -47,34 +47,42 @@ def init_language_server(config: Path, generate_on_save: bool, generate_base_pat
 
     ast_cache: dict[str, list[BaseType | Namespace]] = {}
     type_def_cache: dict[str, list[BaseType]] = {}
-    hover_cache: dict[str, dict[int, dict[int, TypeReference]]] = {}
+    hover_cache: dict[str, dict[int, dict[int, TypeReference | FileReference]]] = {}
     dependency_cache: dict[str, set[str]] = {}
     api = configure_api(config)
 
     def validate(ls, uri):
         ls.show_message_log(f"Validating {unquote(uri)}")
         document: TextDocument = ls.workspace.get_text_document(uri)
+        ast = []
         error_items = []
         refs = []
+        defs = []
+        file_imports: list[FileReference] = []
         path = TextDocumentPath(document)
         try:
             generate_context = api.parse(path)
             refs = generate_context.refs
-
-            ast_cache[uri] = [type_def for type_def in generate_context.ast if
-                              type_def.position.file.as_uri() == uri]
-            type_def_cache[uri] = [type_def for type_def in generate_context.defs if
-                                   type_def.position.file.as_uri() == uri]
+            ast = generate_context.ast
+            file_imports = generate_context.file_imports
+            defs = generate_context.defs
         except Parser.ParsingExceptionList as e:
             error_items = [to_diagnostic(error, DiagnosticSeverity.Error, f"{error.__doc__}: {error.description}") for
                            error in e.items
                            if isinstance(error.position.file, TextDocumentPath)
                            and error.position.file.document.uri == uri]
             refs = e.type_refs
+            file_imports = e.file_imports
+            defs = e.type_decls
+            ast = e.ast
         except ConfigurationException as e:
             ls.show_message_log(str(e), MessageType.Error)
             ls.show_message(f"PyDjinni: {e}", MessageType.Error)
 
+        ast_cache[uri] = [type_def for type_def in ast if
+                          type_def.position.file.as_uri() == uri]
+        type_def_cache[uri] = [type_def for type_def in defs if
+                               type_def.position.file.as_uri() == uri]
         for ref in refs:
             if (isinstance(ref.position.file, TextDocumentPath)
                     and ref.position.file.document.uri == uri
@@ -89,7 +97,10 @@ def init_language_server(config: Path, generate_on_save: bool, generate_base_pat
         hover_cache[uri] = to_hover_cache(
             [ref for ref in refs
              if isinstance(ref.position.file, TextDocumentPath)
-             and ref.position.file.document.uri == uri]
+             and ref.position.file.document.uri == uri],
+            [file_ref for file_ref in file_imports
+             if isinstance(file_ref.position.file, TextDocumentPath)
+             and file_ref.position.file.document.uri == uri]
         )
 
         dependency_cache[uri] = set([ref.type_def.position.file.as_uri() for ref in refs if
@@ -129,6 +140,7 @@ def init_language_server(config: Path, generate_on_save: bool, generate_base_pat
                                 glob_pattern=RelativePattern(workspace_folder, config.as_posix()),
                                 kind=WatchKind.Create | WatchKind.Change | WatchKind.Delete
                             )
+                            # TODO also watch @extern and @import files so the dependent pydjinni files are updated on change
                         ])
                     )
                 ]
@@ -168,11 +180,19 @@ def init_language_server(config: Path, generate_on_save: bool, generate_base_pat
         ls.show_message_log(f"[{TEXT_DOCUMENT_HOVER}] {unquote(uri)}: {row}, {col}")
 
         cache_entry: TypeReference | None = hover_cache[uri].get(row, {}).get(col, None)
-        if cache_entry and cache_entry.type_def and cache_entry.type_def.comment:
+        if cache_entry and isinstance(cache_entry, TypeReference) and cache_entry.type_def and cache_entry.type_def.comment:
             return Hover(
                 contents=MarkupContent(
                     kind=MarkupKind.Markdown,
                     value=cache_entry.type_def.comment
+                ),
+                range=type_range(cache_entry)
+            )
+        elif cache_entry and isinstance(cache_entry, FileReference):
+            return Hover(
+                contents=MarkupContent(
+                    kind=MarkupKind.Markdown,
+                    value=f"```txt\n{cache_entry.path}\n```"
                 ),
                 range=type_range(cache_entry)
             )
@@ -184,13 +204,22 @@ def init_language_server(config: Path, generate_on_save: bool, generate_base_pat
         col = params.position.character
         ls.show_message_log(f"[{TEXT_DOCUMENT_DEFINITION}] {row}, {col}")
         cache_entry: TypeReference | None = hover_cache[params.text_document.uri].get(row, {}).get(col, None)
-        if cache_entry and cache_entry.type_def and isinstance(cache_entry.type_def,
-                                                               BaseType) and cache_entry.type_def.position.file:
+        if (cache_entry
+                and isinstance(cache_entry, TypeReference)
+                and cache_entry.type_def
+                and cache_entry.type_def.position
+                and cache_entry.type_def.position.file
+                and isinstance(cache_entry.type_def, BaseExternalType)
+        ):
             return Location(
                 uri=cache_entry.type_def.position.file.as_uri(),
                 range=type_range(cache_entry.type_def)
             )
-
+        elif cache_entry and isinstance(cache_entry, FileReference):
+            return Location(
+                uri=cache_entry.path.as_uri(),
+                range=Range(Position(0, 0), Position(0, 0))
+            )
     @server.feature(TEXT_DOCUMENT_CODE_ACTION)
     @error_logger
     def code_action(ls, params: CodeActionParams):

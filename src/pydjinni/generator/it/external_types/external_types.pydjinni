@@ -1,0 +1,5 @@
+@extern "generated/export/yaml/exported_types.yaml"
+
+main_interface = main interface +cpp {
+    static use_external_types(enum_param: foo.enum_type, flags_param: flags_type, record_param: record_type, function_param: function_type) -> bool;
+}

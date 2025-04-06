@@ -31,6 +31,10 @@ if sys.version_info >= (3, 12):
         def as_uri(self):
             return self.document.uri
 
+        @property
+        def parent(self):
+            return Path(self.document.path).parent
+
 else:
     class TextDocumentPath(WindowsPath if os.name == 'nt' else PosixPath):
         def __new__(cls, document: TextDocument):

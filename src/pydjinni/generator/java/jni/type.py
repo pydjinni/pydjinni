@@ -21,7 +21,7 @@ try:
 except ImportError:
     from strenum import StrEnum  # Fallback for python < 3.11
 from functools import cached_property
-from pathlib import Path
+from pathlib import PurePosixPath
 
 from pydantic import BaseModel, Field, computed_field
 
@@ -48,7 +48,7 @@ class JniExternalType(BaseModel):
     translator: str = Field(
         pattern=r"^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))*[a-zA-Z][a-zA-Z0-9_]*$"
     )
-    header: Path
+    header: PurePosixPath
     typename: NativeType = Field(
         default=NativeType.object,
         description="The Java native [`jvalue` union type](https://docs.oracle.com/en/java/javase/17/docs/specs/jni/types.html#the-value-type) as represented in JNI."
@@ -132,12 +132,12 @@ class JniBaseType(BaseModel):
 
     @computed_field
     @cached_property
-    def header(self) -> Path:
-        return Path(f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}")
+    def header(self) -> PurePosixPath:
+        return PurePosixPath(f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}")
 
     @cached_property
-    def source(self) -> Path:
-        return Path(f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.source_extension}")
+    def source(self) -> PurePosixPath:
+        return PurePosixPath(f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.source_extension}")
 
     @computed_field
     @cached_property
@@ -157,17 +157,17 @@ class JniBaseType(BaseModel):
     @property
     def header_includes(self) -> set[str]:
         output = {
-            quote(Path("pydjinni/jni/support.hpp")),
-            quote(Path("pydjinni/jni/jni.hpp")),
+            quote(PurePosixPath("pydjinni/jni/support.hpp")),
+            quote(PurePosixPath("pydjinni/jni/jni.hpp")),
             quote(self.decl.cpp.header)
         }
         if self.decl.deprecated:
-            output.add(quote(Path("pydjinni/deprecated.hpp")))
+            output.add(quote(PurePosixPath("pydjinni/deprecated.hpp")))
         return output
 
     @property
     def source_includes(self) -> set[str]:
-        output = { quote(self.header), quote(Path("pydjinni/jni/marshal.hpp")) }
+        output = { quote(self.header), quote(PurePosixPath("pydjinni/jni/marshal.hpp")) }
         return output | headers(self.decl.dependencies, "jni")
 
     @cached_property
@@ -237,14 +237,14 @@ class JniInterface(JniBaseType):
         dependency_headers = super().header_includes
         if any(method.asynchronous for method in self.decl.methods):
             dependency_headers.update([
-                quote(Path("pydjinni/coroutine/task.hpp")),
-                quote(Path("pydjinni/coroutine/schedule.hpp"))
+                quote(PurePosixPath("pydjinni/coroutine/task.hpp")),
+                quote(PurePosixPath("pydjinni/coroutine/schedule.hpp"))
             ])
             if "java" in self.decl.targets:
                 dependency_headers.update([
-                    quote(Path("pydjinni/coroutine/callback_awaitable.hpp")),
-                    quote(Path("pydjinni/coroutine/completion.hpp")),
-                    quote(Path("pydjinni/jni/support.hpp"))
+                    quote(PurePosixPath("pydjinni/coroutine/callback_awaitable.hpp")),
+                    quote(PurePosixPath("pydjinni/coroutine/completion.hpp")),
+                    quote(PurePosixPath("pydjinni/jni/support.hpp"))
                 ])
         return dependency_headers
 
@@ -252,7 +252,7 @@ class JniInterface(JniBaseType):
     def source_includes(self) -> set[str]:
         output = super().source_includes
         if any(method.deprecated for method in self.decl.methods):
-            output.add(quote(Path("pydjinni/deprecated.hpp")))
+            output.add(quote(PurePosixPath("pydjinni/deprecated.hpp")))
         return output
 
     class JniMethod(JniBaseField):
@@ -293,7 +293,7 @@ class JniParameter(JniBaseField):
 class JniRecord(JniBaseType):
     @property
     def header_includes(self) -> set[str]: return {
-        quote(Path("pydjinni/jni/support.hpp")),
+        quote(PurePosixPath("pydjinni/jni/support.hpp")),
         quote(self.decl.cpp.derived_header) if self.decl.cpp.base_type else quote(self.decl.cpp.header)
     }
 
@@ -301,7 +301,7 @@ class JniRecord(JniBaseType):
     def source_includes(self) -> set[str]:
         output = super().source_includes
         if any(field.deprecated for field in self.decl.fields):
-            output.add(quote(Path("pydjinni/deprecated.hpp")))
+            output.add(quote(PurePosixPath("pydjinni/deprecated.hpp")))
         return output
 
 class JniDataField(JniBaseField):

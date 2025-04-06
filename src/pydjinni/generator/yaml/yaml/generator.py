@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from pathlib import Path
 import yaml
 
 from pydjinni.exceptions import ConfigurationException
@@ -32,6 +32,7 @@ class YamlGenerator(Generator):
     def generate(self, ast: list[BaseType], copy_support_lib_sources: bool = True):
         filtered_type_defs = [type_def for type_def in ast if
                               not (type_def.primitive == BaseExternalType.Primitive.function and type_def.anonymous)]
+
         if self.config:
             if self.config.out_file:
                 self._file_writer.write_source(
