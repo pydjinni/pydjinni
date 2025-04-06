@@ -36,7 +36,7 @@ namespace Testing.Unit.ExternalTypes
         [Test]
         public void TestExternalInterface()
         {
-            var result = InterfaceType.someMethod();
+            var result = InterfaceType.SomeMethod();
             Assert.That(result, Is.True);
         }
     }
