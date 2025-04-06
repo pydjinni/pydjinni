@@ -137,3 +137,37 @@ objcpp:
   translator: ::test::exported_types::objcpp::FunctionType
 params: []
 primitive: function
+---
+cpp:
+  by_value: false
+  header: interface_type.hpp
+  typename: ::test::exported_types::InterfaceType
+cppcli:
+  header: CppCliInterfaceType.hpp
+  reference: true
+  translator: ::Test::ExportedTypes::CppCli::InterfaceType
+  typename: ::Test::ExportedTypes::CppCli::InterfaceType
+deprecated: false
+java:
+  boxed: test.exported_types.InterfaceType
+  generic: false
+  reference: true
+  typename: test.exported_types.InterfaceType
+jni:
+  boxed_type_signature: Ltest/exported_types/InterfaceType;
+  header: marshal_interface_type.hpp
+  translator: ::test::exported_types::jni::InterfaceType
+  type_signature: Ltest/exported_types/InterfaceType;
+  typename: jobject
+name: interface_type
+namespace: []
+objc:
+  boxed: EXTInterfaceType
+  header: EXTInterfaceType.h
+  pointer: true
+  typename: EXTInterfaceType
+objcpp:
+  header: InterfaceType+Private.h
+  translator: ::test::exported_types::objcpp::InterfaceType
+params: []
+primitive: interface
