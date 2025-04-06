@@ -7,31 +7,31 @@ public abstract class Helper {
         test.record.pydjinni.NativeRecordTestKotlinJniLoader.loadLibrary();
     }
     @org.jetbrains.annotations.NotNull
-    public static test.record.PrimitiveTypes getPrimitiveTypes(@org.jetbrains.annotations.NotNull test.record.PrimitiveTypes recordType){
+    public static test.record.PrimitiveTypes getPrimitiveTypes(@org.jetbrains.annotations.NotNull test.record.PrimitiveTypes recordType) {
         return CppProxy.getPrimitiveTypes(recordType);
     };
     @org.jetbrains.annotations.NotNull
-    public static test.record.CollectionTypes getCollectionTypes(@org.jetbrains.annotations.NotNull test.record.CollectionTypes recordType){
+    public static test.record.CollectionTypes getCollectionTypes(@org.jetbrains.annotations.NotNull test.record.CollectionTypes recordType) {
         return CppProxy.getCollectionTypes(recordType);
     };
     @org.jetbrains.annotations.NotNull
-    public static test.record.OptionalTypes getOptionalTypes(@org.jetbrains.annotations.NotNull test.record.OptionalTypes recordType){
+    public static test.record.OptionalTypes getOptionalTypes(@org.jetbrains.annotations.NotNull test.record.OptionalTypes recordType) {
         return CppProxy.getOptionalTypes(recordType);
     };
     @org.jetbrains.annotations.NotNull
-    public static test.record.BinaryTypes getBinaryTypes(@org.jetbrains.annotations.NotNull test.record.BinaryTypes recordType){
+    public static test.record.BinaryTypes getBinaryTypes(@org.jetbrains.annotations.NotNull test.record.BinaryTypes recordType) {
         return CppProxy.getBinaryTypes(recordType);
     };
     @org.jetbrains.annotations.NotNull
-    public static test.record.BaseRecord getCppBaseRecord(){
+    public static test.record.BaseRecord getCppBaseRecord() {
         return CppProxy.getCppBaseRecord();
     };
     @org.jetbrains.annotations.NotNull
-    public static test.record.BaseRecord getHostBaseRecord(@org.jetbrains.annotations.NotNull test.record.BaseRecord recordType){
+    public static test.record.BaseRecord getHostBaseRecord(@org.jetbrains.annotations.NotNull test.record.BaseRecord recordType) {
         return CppProxy.getHostBaseRecord(recordType);
     };
     @org.jetbrains.annotations.NotNull
-    public static test.record.ParentType getNestedType(@org.jetbrains.annotations.NotNull test.record.ParentType parent){
+    public static test.record.ParentType getNestedType(@org.jetbrains.annotations.NotNull test.record.ParentType parent) {
         return CppProxy.getNestedType(parent);
     };
     private static final class CppProxy extends Helper {

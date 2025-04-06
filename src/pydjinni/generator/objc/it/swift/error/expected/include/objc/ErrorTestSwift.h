@@ -9,7 +9,7 @@ FOUNDATION_EXPORT double bridgingheaderVersionNumber;
 FOUNDATION_EXPORT const unsigned char bridgingheaderVersionString[];
 
 #import "TSTFooError.h"
+#import "TSTBarError.h"
 #import "TSTHelper.h"
 #import "TSTThrowingCallback.h"
 #import "TSTAsyncThrowingCallback.h"
-#import "TSTBarError.h"

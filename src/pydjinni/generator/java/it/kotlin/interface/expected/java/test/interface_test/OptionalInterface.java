@@ -7,11 +7,11 @@ public abstract class OptionalInterface {
         test.interface_test.pydjinni.NativeInterfaceTestKotlinJniLoader.loadLibrary();
     }
     @org.jetbrains.annotations.Nullable
-    public static test.interface_test.OptionalInterface getInstance(){
+    public static test.interface_test.OptionalInterface getInstance() {
         return CppProxy.getInstance();
     };
     @org.jetbrains.annotations.Nullable
-    public static test.interface_test.OptionalInterface getNullInstance(){
+    public static test.interface_test.OptionalInterface getNullInstance() {
         return CppProxy.getNullInstance();
     };
     @org.jetbrains.annotations.Nullable

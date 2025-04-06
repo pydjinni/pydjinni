@@ -7,7 +7,7 @@ public abstract class Calculator {
         test.interface_test.pydjinni.NativeInterfaceTestKotlinJniLoader.loadLibrary();
     }
     @org.jetbrains.annotations.NotNull
-    public static test.interface_test.Calculator getInstance(){
+    public static test.interface_test.Calculator getInstance() {
         return CppProxy.getInstance();
     };
     /**

@@ -45,5 +45,10 @@ void Helper::throwing_callback_error(const std::shared_ptr<::test::error::Throwi
     }
     assert(exceptionPtr != nullptr);
     std::rethrow_exception(exceptionPtr);
-    co_return;
 }
+
+void Helper::nonstatic_throwing_error()
+{
+    throw FooError::SomethingWrong("some error");
+}
+

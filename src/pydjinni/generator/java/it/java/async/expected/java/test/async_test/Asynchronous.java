@@ -6,7 +6,7 @@ public abstract class Asynchronous {
     static {
         test.async_test.pydjinni.NativeAsyncTestJniLoader.loadLibrary();
     }
-    public static java.util.concurrent.CompletableFuture<test.async_test.Asynchronous> getInstance(){
+    public static java.util.concurrent.CompletableFuture<test.async_test.Asynchronous> getInstance() {
         return CppProxy.getInstance();
     };
     public abstract java.util.concurrent.CompletableFuture<Integer> add(int a, int b);

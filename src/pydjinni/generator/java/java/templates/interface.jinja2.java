@@ -29,14 +29,13 @@ limitations under the License.
     //? method.deprecated : "@Deprecated"
     //? method.java.nullable_annotation : method.java.nullable_annotation
     public {{ "static" if method.static else "abstract" }} {{ method.java.return_type }} {{ method.java.name }}({{ parameters(method) }})
-    /*>- if method.throwing -*/
+    /*>- if method.throwing and not method.asynchronous -*/
         {{ " throws " }}
         /*>- for error in method.throwing -*/
-            {{ error.type_def.java.name }}
+            {{ error.type_def.java.name ~ (", " if not loop.last) }}
         /*>- endfor -*/
     /*>- endif -*/
-    /*>- if method.static -*/
-    {
+    /*>- if method.static */ {
         {{ "return " if method.return_type_ref or method.asynchronous }}CppProxy.{{ method.java.name }}(
         /*>- for parameter in method.parameters -*/
         {{ parameter.java.name ~ (", " if not loop.last) }}
