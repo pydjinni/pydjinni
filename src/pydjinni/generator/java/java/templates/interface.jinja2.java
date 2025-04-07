@@ -27,7 +27,6 @@ limitations under the License.
     //> for method in type_def.methods:
     //? method.comment : method.java.comment | comment | indent
     //? method.deprecated : "@Deprecated"
-    //? method.java.nullable_annotation : method.java.nullable_annotation
     public {{ "static" if method.static else "abstract" }} {{ method.java.return_type }} {{ method.java.name }}({{ parameters(method) }})
     /*>- if method.throwing and not method.asynchronous -*/
         {{ " throws " }}

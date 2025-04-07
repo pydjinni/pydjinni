@@ -9,10 +9,9 @@ package test.record;
  */
 @Deprecated
 public final class OldRecord {
-    final boolean a;
+    final @org.jetbrains.annotations.NotNull boolean a;
     public OldRecord(
-        @org.jetbrains.annotations.NotNull
-        boolean a
+        @org.jetbrains.annotations.NotNull boolean a
     ) {
         this.a = a;
     }
@@ -20,8 +19,7 @@ public final class OldRecord {
     /**
      * more comment
      */
-    @org.jetbrains.annotations.NotNull
-    public boolean getA() { return a; }
+    public @org.jetbrains.annotations.NotNull boolean getA() { return a; }
     @Override
     public String toString() {
         return "test.record.OldRecord{" +

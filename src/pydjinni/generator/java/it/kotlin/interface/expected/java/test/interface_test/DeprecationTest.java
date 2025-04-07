@@ -11,8 +11,7 @@ public abstract class DeprecationTest {
      * @deprecated testing method deprecation annotation
      */
     @Deprecated
-    @org.jetbrains.annotations.NotNull
-    public abstract int deprecationTestMethod();
+    public abstract @org.jetbrains.annotations.NotNull int deprecationTestMethod();
     private static final class CppProxy extends DeprecationTest {
         private final long nativeRef;
 
@@ -37,9 +36,9 @@ public abstract class DeprecationTest {
         }
 
         @Override
-        public int deprecationTestMethod() {
+        public @org.jetbrains.annotations.NotNull int deprecationTestMethod() {
             return native_deprecationTestMethod(this.nativeRef );
         }
-        private native int native_deprecationTestMethod(long _nativeRef);
+        private native @org.jetbrains.annotations.NotNull int native_deprecationTestMethod(long _nativeRef);
     }
 }

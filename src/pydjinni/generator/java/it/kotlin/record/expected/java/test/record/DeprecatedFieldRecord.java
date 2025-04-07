@@ -3,13 +3,11 @@
 package test.record;
 
 public final class DeprecatedFieldRecord {
-    final int old;
-    final Integer older;
+    final @org.jetbrains.annotations.NotNull int old;
+    final @org.jetbrains.annotations.Nullable Integer older;
     public DeprecatedFieldRecord(
-        @org.jetbrains.annotations.NotNull
-        int old,
-        @org.jetbrains.annotations.Nullable
-        Integer older
+        @org.jetbrains.annotations.NotNull int old,
+        @org.jetbrains.annotations.Nullable Integer older
     ) {
         this.old = old;
         this.older = older;
@@ -19,16 +17,14 @@ public final class DeprecatedFieldRecord {
      * @deprecated the field is old
      */
     @Deprecated
-    @org.jetbrains.annotations.NotNull
-    public int getOld() { return old; }
+    public @org.jetbrains.annotations.NotNull int getOld() { return old; }
     /**
      * foo
      * 
      * @deprecated this is optional and old
      */
     @Deprecated
-    @org.jetbrains.annotations.Nullable
-    public Integer getOlder() { return older; }
+    public @org.jetbrains.annotations.Nullable Integer getOlder() { return older; }
     @Override
     public String toString() {
         return "test.record.DeprecatedFieldRecord{" +

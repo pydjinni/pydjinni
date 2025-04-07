@@ -6,32 +6,25 @@ public abstract class Helper {
     static {
         test.record.pydjinni.NativeRecordTestKotlinJniLoader.loadLibrary();
     }
-    @org.jetbrains.annotations.NotNull
-    public static test.record.PrimitiveTypes getPrimitiveTypes(@org.jetbrains.annotations.NotNull test.record.PrimitiveTypes recordType) {
+    public static test.record.@org.jetbrains.annotations.NotNull PrimitiveTypes getPrimitiveTypes(test.record.@org.jetbrains.annotations.NotNull PrimitiveTypes recordType) {
         return CppProxy.getPrimitiveTypes(recordType);
     };
-    @org.jetbrains.annotations.NotNull
-    public static test.record.CollectionTypes getCollectionTypes(@org.jetbrains.annotations.NotNull test.record.CollectionTypes recordType) {
+    public static test.record.@org.jetbrains.annotations.NotNull CollectionTypes getCollectionTypes(test.record.@org.jetbrains.annotations.NotNull CollectionTypes recordType) {
         return CppProxy.getCollectionTypes(recordType);
     };
-    @org.jetbrains.annotations.NotNull
-    public static test.record.OptionalTypes getOptionalTypes(@org.jetbrains.annotations.NotNull test.record.OptionalTypes recordType) {
+    public static test.record.@org.jetbrains.annotations.NotNull OptionalTypes getOptionalTypes(test.record.@org.jetbrains.annotations.NotNull OptionalTypes recordType) {
         return CppProxy.getOptionalTypes(recordType);
     };
-    @org.jetbrains.annotations.NotNull
-    public static test.record.BinaryTypes getBinaryTypes(@org.jetbrains.annotations.NotNull test.record.BinaryTypes recordType) {
+    public static test.record.@org.jetbrains.annotations.NotNull BinaryTypes getBinaryTypes(test.record.@org.jetbrains.annotations.NotNull BinaryTypes recordType) {
         return CppProxy.getBinaryTypes(recordType);
     };
-    @org.jetbrains.annotations.NotNull
-    public static test.record.BaseRecord getCppBaseRecord() {
+    public static test.record.@org.jetbrains.annotations.NotNull BaseRecord getCppBaseRecord() {
         return CppProxy.getCppBaseRecord();
     };
-    @org.jetbrains.annotations.NotNull
-    public static test.record.BaseRecord getHostBaseRecord(@org.jetbrains.annotations.NotNull test.record.BaseRecord recordType) {
+    public static test.record.@org.jetbrains.annotations.NotNull BaseRecord getHostBaseRecord(test.record.@org.jetbrains.annotations.NotNull BaseRecord recordType) {
         return CppProxy.getHostBaseRecord(recordType);
     };
-    @org.jetbrains.annotations.NotNull
-    public static test.record.ParentType getNestedType(@org.jetbrains.annotations.NotNull test.record.ParentType parent) {
+    public static test.record.@org.jetbrains.annotations.NotNull ParentType getNestedType(test.record.@org.jetbrains.annotations.NotNull ParentType parent) {
         return CppProxy.getNestedType(parent);
     };
     private static final class CppProxy extends Helper {
@@ -57,12 +50,12 @@ public abstract class Helper {
             test.record.pydjinni.NativeCleaner.register(this, new CleanupTask(nativeRef));
         }
 
-        public static native test.record.PrimitiveTypes getPrimitiveTypes(@org.jetbrains.annotations.NotNull test.record.PrimitiveTypes recordType);
-        public static native test.record.CollectionTypes getCollectionTypes(@org.jetbrains.annotations.NotNull test.record.CollectionTypes recordType);
-        public static native test.record.OptionalTypes getOptionalTypes(@org.jetbrains.annotations.NotNull test.record.OptionalTypes recordType);
-        public static native test.record.BinaryTypes getBinaryTypes(@org.jetbrains.annotations.NotNull test.record.BinaryTypes recordType);
-        public static native test.record.BaseRecord getCppBaseRecord();
-        public static native test.record.BaseRecord getHostBaseRecord(@org.jetbrains.annotations.NotNull test.record.BaseRecord recordType);
-        public static native test.record.ParentType getNestedType(@org.jetbrains.annotations.NotNull test.record.ParentType parent);
+        public static native test.record.@org.jetbrains.annotations.NotNull PrimitiveTypes getPrimitiveTypes(test.record.@org.jetbrains.annotations.NotNull PrimitiveTypes recordType);
+        public static native test.record.@org.jetbrains.annotations.NotNull CollectionTypes getCollectionTypes(test.record.@org.jetbrains.annotations.NotNull CollectionTypes recordType);
+        public static native test.record.@org.jetbrains.annotations.NotNull OptionalTypes getOptionalTypes(test.record.@org.jetbrains.annotations.NotNull OptionalTypes recordType);
+        public static native test.record.@org.jetbrains.annotations.NotNull BinaryTypes getBinaryTypes(test.record.@org.jetbrains.annotations.NotNull BinaryTypes recordType);
+        public static native test.record.@org.jetbrains.annotations.NotNull BaseRecord getCppBaseRecord();
+        public static native test.record.@org.jetbrains.annotations.NotNull BaseRecord getHostBaseRecord(test.record.@org.jetbrains.annotations.NotNull BaseRecord recordType);
+        public static native test.record.@org.jetbrains.annotations.NotNull ParentType getNestedType(test.record.@org.jetbrains.annotations.NotNull ParentType parent);
     }
 }

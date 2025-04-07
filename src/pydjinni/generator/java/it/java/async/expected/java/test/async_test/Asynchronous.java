@@ -15,6 +15,7 @@ public abstract class Asynchronous {
     public abstract java.util.concurrent.CompletableFuture<Integer> multiplyCallback(test.async_test.MultiplyCallback callback);
     public abstract java.util.concurrent.CompletableFuture<Void> noParametersNoReturnCallback(test.async_test.NoParametersNoReturnCallback callback);
     public abstract java.util.concurrent.CompletableFuture<Void> throwingCallback(test.async_test.ThrowingCallback callback);
+    public abstract java.util.concurrent.CompletableFuture<Integer> returningOptional();
     private static final class CppProxy extends Asynchronous {
         private final long nativeRef;
 
@@ -69,5 +70,10 @@ public abstract class Asynchronous {
             return native_throwingCallback(this.nativeRef , callback);
         }
         private native java.util.concurrent.CompletableFuture<Void> native_throwingCallback(long _nativeRef, test.async_test.ThrowingCallback callback);
+        @Override
+        public java.util.concurrent.CompletableFuture<Integer> returningOptional() {
+            return native_returningOptional(this.nativeRef );
+        }
+        private native java.util.concurrent.CompletableFuture<Integer> native_returningOptional(long _nativeRef);
     }
 }

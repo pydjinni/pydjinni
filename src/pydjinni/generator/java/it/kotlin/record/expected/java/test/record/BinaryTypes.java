@@ -3,22 +3,18 @@
 package test.record;
 
 public final class BinaryTypes {
-    final byte[] binaryT;
-    final byte[] binaryOptional;
+    final @org.jetbrains.annotations.NotNull byte[] binaryT;
+    final @org.jetbrains.annotations.Nullable byte[] binaryOptional;
     public BinaryTypes(
-        @org.jetbrains.annotations.NotNull
-        byte[] binaryT,
-        @org.jetbrains.annotations.Nullable
-        byte[] binaryOptional
+        @org.jetbrains.annotations.NotNull byte[] binaryT,
+        @org.jetbrains.annotations.Nullable byte[] binaryOptional
     ) {
         this.binaryT = binaryT;
         this.binaryOptional = binaryOptional;
     }
 
-    @org.jetbrains.annotations.NotNull
-    public byte[] getBinaryT() { return binaryT; }
-    @org.jetbrains.annotations.Nullable
-    public byte[] getBinaryOptional() { return binaryOptional; }
+    public @org.jetbrains.annotations.NotNull byte[] getBinaryT() { return binaryT; }
+    public @org.jetbrains.annotations.Nullable byte[] getBinaryOptional() { return binaryOptional; }
     @Override
     public String toString() {
         return "test.record.BinaryTypes{" +

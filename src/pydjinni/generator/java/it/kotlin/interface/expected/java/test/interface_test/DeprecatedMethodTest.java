@@ -7,8 +7,7 @@ public abstract class DeprecatedMethodTest {
      * @deprecated this method is deprecated but the type is not
      */
     @Deprecated
-    @org.jetbrains.annotations.NotNull
-    public abstract boolean deprecatedTestMethod();
+    public abstract @org.jetbrains.annotations.NotNull boolean deprecatedTestMethod();
     private static final class CppProxy extends DeprecatedMethodTest {
         private final long nativeRef;
 
@@ -33,9 +32,9 @@ public abstract class DeprecatedMethodTest {
         }
 
         @Override
-        public boolean deprecatedTestMethod() {
+        public @org.jetbrains.annotations.NotNull boolean deprecatedTestMethod() {
             return native_deprecatedTestMethod(this.nativeRef );
         }
-        private native boolean native_deprecatedTestMethod(long _nativeRef);
+        private native @org.jetbrains.annotations.NotNull boolean native_deprecatedTestMethod(long _nativeRef);
     }
 }

@@ -3,22 +3,18 @@
 package test.record;
 
 public final class OptionalTypes {
-    final Integer intOptional;
-    final String stringOptional;
+    final @org.jetbrains.annotations.Nullable Integer intOptional;
+    final @org.jetbrains.annotations.Nullable String stringOptional;
     public OptionalTypes(
-        @org.jetbrains.annotations.Nullable
-        Integer intOptional,
-        @org.jetbrains.annotations.Nullable
-        String stringOptional
+        @org.jetbrains.annotations.Nullable Integer intOptional,
+        @org.jetbrains.annotations.Nullable String stringOptional
     ) {
         this.intOptional = intOptional;
         this.stringOptional = stringOptional;
     }
 
-    @org.jetbrains.annotations.Nullable
-    public Integer getIntOptional() { return intOptional; }
-    @org.jetbrains.annotations.Nullable
-    public String getStringOptional() { return stringOptional; }
+    public @org.jetbrains.annotations.Nullable Integer getIntOptional() { return intOptional; }
+    public @org.jetbrains.annotations.Nullable String getStringOptional() { return stringOptional; }
     @Override
     public String toString() {
         return "test.record.OptionalTypes{" +

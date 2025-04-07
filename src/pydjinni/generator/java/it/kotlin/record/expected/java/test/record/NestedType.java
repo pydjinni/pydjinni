@@ -3,22 +3,18 @@
 package test.record;
 
 public final class NestedType {
-    final int a;
-    final java.util.ArrayList<java.util.ArrayList<Integer>> b;
+    final @org.jetbrains.annotations.NotNull int a;
+    final java.util.@org.jetbrains.annotations.NotNull ArrayList<java.util.@org.jetbrains.annotations.NotNull ArrayList<@org.jetbrains.annotations.NotNull Integer>> b;
     public NestedType(
-        @org.jetbrains.annotations.NotNull
-        int a,
-        @org.jetbrains.annotations.NotNull
-        java.util.ArrayList<java.util.ArrayList<Integer>> b
+        @org.jetbrains.annotations.NotNull int a,
+        java.util.@org.jetbrains.annotations.NotNull ArrayList<java.util.@org.jetbrains.annotations.NotNull ArrayList<@org.jetbrains.annotations.NotNull Integer>> b
     ) {
         this.a = a;
         this.b = b;
     }
 
-    @org.jetbrains.annotations.NotNull
-    public int getA() { return a; }
-    @org.jetbrains.annotations.NotNull
-    public java.util.ArrayList<java.util.ArrayList<Integer>> getB() { return b; }
+    public @org.jetbrains.annotations.NotNull int getA() { return a; }
+    public java.util.@org.jetbrains.annotations.NotNull ArrayList<java.util.@org.jetbrains.annotations.NotNull ArrayList<@org.jetbrains.annotations.NotNull Integer>> getB() { return b; }
     @Override
     public String toString() {
         return "test.record.NestedType{" +

@@ -99,4 +99,10 @@ class TestAsync {
         assertEquals("asynchronous callback runtime error", exception.getCause().getMessage());
     }
 
+    @Test
+    void testAsyncReturningOptional() throws Exception {
+        var result = instance.thenCompose((instance) -> instance.returningOptional()).get();
+        assertNull(result);
+    }
+
 }

@@ -83,4 +83,10 @@ class TestAsync {
         }
         assertTrue(result.isFailure)
     }
+
+    @Test
+    fun testAsyncReturningOptional() = runTest {
+        val result = instance.returningOptional().await()
+        assertNull(result)
+    }
 }

@@ -3,25 +3,19 @@
 package test.record;
 
 public final class CollectionTypes {
-    final java.util.ArrayList<Integer> intList;
-    final java.util.ArrayList<String> stringList;
-    final java.util.HashSet<Integer> intSet;
-    final java.util.HashSet<String> stringSet;
-    final java.util.HashMap<Integer, Integer> intIntMap;
-    final java.util.HashMap<String, String> stringStringMap;
+    final java.util.@org.jetbrains.annotations.NotNull ArrayList<@org.jetbrains.annotations.NotNull Integer> intList;
+    final java.util.@org.jetbrains.annotations.NotNull ArrayList<@org.jetbrains.annotations.NotNull String> stringList;
+    final java.util.@org.jetbrains.annotations.NotNull HashSet<@org.jetbrains.annotations.NotNull Integer> intSet;
+    final java.util.@org.jetbrains.annotations.NotNull HashSet<@org.jetbrains.annotations.NotNull String> stringSet;
+    final java.util.@org.jetbrains.annotations.NotNull HashMap<@org.jetbrains.annotations.NotNull Integer, @org.jetbrains.annotations.NotNull Integer> intIntMap;
+    final java.util.@org.jetbrains.annotations.NotNull HashMap<@org.jetbrains.annotations.NotNull String, @org.jetbrains.annotations.NotNull String> stringStringMap;
     public CollectionTypes(
-        @org.jetbrains.annotations.NotNull
-        java.util.ArrayList<Integer> intList,
-        @org.jetbrains.annotations.NotNull
-        java.util.ArrayList<String> stringList,
-        @org.jetbrains.annotations.NotNull
-        java.util.HashSet<Integer> intSet,
-        @org.jetbrains.annotations.NotNull
-        java.util.HashSet<String> stringSet,
-        @org.jetbrains.annotations.NotNull
-        java.util.HashMap<Integer, Integer> intIntMap,
-        @org.jetbrains.annotations.NotNull
-        java.util.HashMap<String, String> stringStringMap
+        java.util.@org.jetbrains.annotations.NotNull ArrayList<@org.jetbrains.annotations.NotNull Integer> intList,
+        java.util.@org.jetbrains.annotations.NotNull ArrayList<@org.jetbrains.annotations.NotNull String> stringList,
+        java.util.@org.jetbrains.annotations.NotNull HashSet<@org.jetbrains.annotations.NotNull Integer> intSet,
+        java.util.@org.jetbrains.annotations.NotNull HashSet<@org.jetbrains.annotations.NotNull String> stringSet,
+        java.util.@org.jetbrains.annotations.NotNull HashMap<@org.jetbrains.annotations.NotNull Integer, @org.jetbrains.annotations.NotNull Integer> intIntMap,
+        java.util.@org.jetbrains.annotations.NotNull HashMap<@org.jetbrains.annotations.NotNull String, @org.jetbrains.annotations.NotNull String> stringStringMap
     ) {
         this.intList = intList;
         this.stringList = stringList;
@@ -31,18 +25,12 @@ public final class CollectionTypes {
         this.stringStringMap = stringStringMap;
     }
 
-    @org.jetbrains.annotations.NotNull
-    public java.util.ArrayList<Integer> getIntList() { return intList; }
-    @org.jetbrains.annotations.NotNull
-    public java.util.ArrayList<String> getStringList() { return stringList; }
-    @org.jetbrains.annotations.NotNull
-    public java.util.HashSet<Integer> getIntSet() { return intSet; }
-    @org.jetbrains.annotations.NotNull
-    public java.util.HashSet<String> getStringSet() { return stringSet; }
-    @org.jetbrains.annotations.NotNull
-    public java.util.HashMap<Integer, Integer> getIntIntMap() { return intIntMap; }
-    @org.jetbrains.annotations.NotNull
-    public java.util.HashMap<String, String> getStringStringMap() { return stringStringMap; }
+    public java.util.@org.jetbrains.annotations.NotNull ArrayList<@org.jetbrains.annotations.NotNull Integer> getIntList() { return intList; }
+    public java.util.@org.jetbrains.annotations.NotNull ArrayList<@org.jetbrains.annotations.NotNull String> getStringList() { return stringList; }
+    public java.util.@org.jetbrains.annotations.NotNull HashSet<@org.jetbrains.annotations.NotNull Integer> getIntSet() { return intSet; }
+    public java.util.@org.jetbrains.annotations.NotNull HashSet<@org.jetbrains.annotations.NotNull String> getStringSet() { return stringSet; }
+    public java.util.@org.jetbrains.annotations.NotNull HashMap<@org.jetbrains.annotations.NotNull Integer, @org.jetbrains.annotations.NotNull Integer> getIntIntMap() { return intIntMap; }
+    public java.util.@org.jetbrains.annotations.NotNull HashMap<@org.jetbrains.annotations.NotNull String, @org.jetbrains.annotations.NotNull String> getStringStringMap() { return stringStringMap; }
     @Override
     public String toString() {
         return "test.record.CollectionTypes{" +

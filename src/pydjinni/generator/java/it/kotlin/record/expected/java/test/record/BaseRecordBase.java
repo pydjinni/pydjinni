@@ -3,16 +3,14 @@
 package test.record;
 
 public class BaseRecordBase {
-    final int value;
+    final @org.jetbrains.annotations.NotNull int value;
     public BaseRecordBase(
-        @org.jetbrains.annotations.NotNull
-        int value
+        @org.jetbrains.annotations.NotNull int value
     ) {
         this.value = value;
     }
 
-    @org.jetbrains.annotations.NotNull
-    public int getValue() { return value; }
+    public @org.jetbrains.annotations.NotNull int getValue() { return value; }
     @Override
     public String toString() {
         return "test.record.BaseRecord{" +
