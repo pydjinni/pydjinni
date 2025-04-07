@@ -46,5 +46,3 @@ pydjinni::coroutine::task<> AsynchronousImpl::throwing_callback(const std::share
 pydjinni::coroutine::task<std::optional<int32_t>> AsynchronousImpl::returning_optional() noexcept {
     co_return std::nullopt;
 }
-
-
