@@ -26,19 +26,6 @@ from pydjinni.parser.base_models import BaseType, BaseField, BaseExternalType, T
 from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
-def return_type(type_ref: TypeReference | None, asynchronous: bool = False) -> str:
-    if type_ref:
-        output = data_type(type_ref, boxed=asynchronous)
-    else:
-        output = "Void" if asynchronous else "void"
-    return output
-
-
-def data_type(type_ref: TypeReference, boxed: bool = False) -> str:
-    output = type_ref.type_def.java.boxed if boxed or type_ref.optional else type_ref.type_def.java.typename
-    if type_ref.parameters:
-        output += f"<{', '.join([data_type(parameter, boxed=True) for parameter in type_ref.parameters])}>"
-    return output
 
 def filename(package, name):
     return PurePosixPath(*package.split('.')) / f"{name}.java"
@@ -52,9 +39,42 @@ class JavaExternalType(BaseModel):
     generic: bool = False
 
 
-class JavaBaseType(BaseModel):
-    decl: BaseType = Field(exclude=True, repr=False)
+def apply_type_annotation(type_input: str, annotation: str) -> str:
+    if annotation:
+        split_output = type_input.rsplit('.', maxsplit=1)
+        if len(split_output) == 2:
+            package, typename = split_output
+            return f"{package}.{annotation} {typename}"
+        else:
+            return f"{annotation} {type_input}"
+    else:
+        return type_input
+
+
+class JavaBase(BaseModel):
     config: JavaConfig = Field(exclude=True, repr=False)
+
+    def compute_return_type(self, type_ref: TypeReference | None, asynchronous: bool = False) -> str:
+        if type_ref:
+            output = self.compute_data_type(type_ref, boxed=asynchronous)
+        else:
+            output = "Void" if asynchronous else "void"
+        if asynchronous:
+            output = apply_type_annotation(f"java.util.concurrent.CompletableFuture", self.config.nonnull_annotation) + f"<{output}>"
+        return output
+
+    def compute_data_type(self, type_ref: TypeReference, boxed: bool = False) -> str:
+        output = type_ref.type_def.java.boxed if boxed or type_ref.optional else type_ref.type_def.java.typename
+        if type_ref.optional:
+            output = apply_type_annotation(output, self.config.nullable_annotation)
+        else:
+            output = apply_type_annotation(output, self.config.nonnull_annotation)
+        if type_ref.parameters:
+            output += f"<{', '.join([self.compute_data_type(parameter, boxed=True) for parameter in type_ref.parameters])}>"
+        return output
+
+class JavaBaseType(JavaBase):
+    decl: BaseType = Field(exclude=True, repr=False)
 
     @cached_property
     @validate(keywords)
@@ -98,9 +118,8 @@ class JavaBaseType(BaseModel):
         return output
 
 
-class JavaBaseField(BaseModel):
+class JavaBaseField(JavaBase):
     decl: BaseField = Field(exclude=True, repr=False)
-    config: JavaConfig = Field(exclude=True, repr=False)
 
     @computed_field
     @cached_property
@@ -112,7 +131,7 @@ class JavaBaseField(BaseModel):
             if self.decl.comment else ''
 
     @cached_property
-    def data_type(self) -> str: return data_type(self.decl.type_ref)
+    def data_type(self) -> str: return self.compute_data_type(self.decl.type_ref)
 
 
 class JavaRecord(JavaBaseType):
@@ -153,10 +172,6 @@ class JavaDataField(JavaBaseField):
         if self.config.use_final_for_record:
             output += "final "
         return output
-
-    @property
-    def nullable_annotation(self) -> str:
-        return self.config.nullable_annotation if self.decl.type_ref.optional else self.config.nonnull_annotation
 
     @cached_property
     def hash_code(self) -> str:
@@ -216,12 +231,7 @@ class JavaFunction(JavaBaseType):
 
     @cached_property
     def return_type(self) -> str:
-        return return_type(self.decl.return_type_ref)
-
-    @property
-    def nullable_annotation(self) -> str:
-        return self.config.nullable_annotation if self.decl.return_type_ref.optional else self.config.nonnull_annotation
-
+        return self.compute_return_type(self.decl.return_type_ref)
 
 
 class JavaSymbolicConstantField(JavaBaseField):
@@ -240,19 +250,12 @@ class JavaInterface(JavaBaseType):
 
         @cached_property
         def return_type(self) -> str:
-            output = return_type(self.decl.return_type_ref, self.decl.asynchronous)
-            if self.decl.asynchronous:
-                output = f"java.util.concurrent.CompletableFuture<{output}>"
-            return output
-
-        @property
-        def nullable_annotation(self) -> str:
-            return self.config.nullable_annotation if self.decl.return_type_ref.optional else self.config.nonnull_annotation
+            return self.compute_return_type(self.decl.return_type_ref, self.decl.asynchronous)
 
 
         @cached_property
         def callback_type(self) -> str:
-            return return_type(self.decl.return_type_ref, self.decl.asynchronous)
+            return self.compute_return_type(self.decl.return_type_ref, self.decl.asynchronous)
 
 
 

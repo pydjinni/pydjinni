@@ -9,13 +9,20 @@ foo_error = error {
     something_with_parameters(parameter: i8);
 }
 
+# @deprecated error domain is old
+bar_error = error {
+    # @deprecated error code is old
+    old_error_code;
+}
+
 helper = main interface +cpp {
-    static throwing_error() throws foo_error;
+    static throwing_error() throws foo_error, bar_error;
     static throwing_with_parameters() throws foo_error;
     static async throwing_async() throws foo_error;
     static async throwing_async_with_return_value() throws foo_error -> bool;
     static throwing_callback_error(callback: throwing_callback) throws foo_error;
     static async throwing_async_callback_error(callback: async_throwing_callback) throws foo_error;
+    nonstatic_throwing_error() throws foo_error;
 }
 
 throwing_callback = interface -cpp {
@@ -24,10 +31,4 @@ throwing_callback = interface -cpp {
 
 async_throwing_callback = interface -cpp {
     async throwing_error() throws foo_error;
-}
-
-# @deprecated error domain is old
-bar_error = error {
-    # @deprecated error code is old
-    old_error_code;
 }

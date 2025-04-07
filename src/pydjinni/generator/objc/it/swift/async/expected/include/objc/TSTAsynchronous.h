@@ -23,4 +23,6 @@ NS_SWIFT_NAME(Asynchronous)
 - (void)throwingCallback:(nonnull id<TSTThrowingCallback>)callback completion:(nonnull void (^)(NSError* _Nullable))completion
   __attribute__((swift_async_error(nonnull_error)))
   NS_SWIFT_NAME(throwingCallback(callback:completion:));
+- (void)returningOptional:(nonnull void (^)(NSNumber * _Nullable))completion
+  NS_SWIFT_NAME(returningOptional(completion:));
 @end

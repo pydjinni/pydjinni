@@ -23,5 +23,6 @@ namespace test::async_test {
         pydjinni::coroutine::task<int32_t> multiply_callback(const std::shared_ptr<::test::async_test::MultiplyCallback> & callback) noexcept override;
         pydjinni::coroutine::task<> no_parameters_no_return_callback(const std::shared_ptr<::test::async_test::NoParametersNoReturnCallback>& callback) noexcept override;
         pydjinni::coroutine::task<> throwing_callback(const std::shared_ptr<::test::async_test::ThrowingCallback>& callback) override;
+        pydjinni::coroutine::task<std::optional<int32_t>> returning_optional() noexcept override;
     };
 }

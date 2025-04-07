@@ -6,8 +6,7 @@ public abstract class Calculator {
     static {
         test.interface_test.pydjinni.NativeInterfaceTestKotlinJniLoader.loadLibrary();
     }
-    @org.jetbrains.annotations.NotNull
-    public static test.interface_test.Calculator getInstance(){
+    public static test.interface_test.@org.jetbrains.annotations.NotNull Calculator getInstance() {
         return CppProxy.getInstance();
     };
     /**
@@ -17,14 +16,12 @@ public abstract class Calculator {
      * @param b the second value
      * @return the sum of both values
      */
-    @org.jetbrains.annotations.NotNull
-    public abstract byte add(@org.jetbrains.annotations.NotNull byte a, @org.jetbrains.annotations.NotNull byte b);
-    @org.jetbrains.annotations.NotNull
-    public abstract byte getPlatformValue(@org.jetbrains.annotations.NotNull test.interface_test.PlatformInterface platform);
+    public abstract @org.jetbrains.annotations.NotNull byte add(@org.jetbrains.annotations.NotNull byte a, @org.jetbrains.annotations.NotNull byte b);
+    public abstract @org.jetbrains.annotations.NotNull byte getPlatformValue(test.interface_test.@org.jetbrains.annotations.NotNull PlatformInterface platform);
     public abstract void noParametersNoReturn();
     public abstract void throwingException();
-    public abstract void noParametersNoReturnCallback(@org.jetbrains.annotations.NotNull test.interface_test.NoParametersNoReturnCallback callback);
-    public abstract void throwingCallback(@org.jetbrains.annotations.NotNull test.interface_test.ThrowingCallback callback);
+    public abstract void noParametersNoReturnCallback(test.interface_test.@org.jetbrains.annotations.NotNull NoParametersNoReturnCallback callback);
+    public abstract void throwingCallback(test.interface_test.@org.jetbrains.annotations.NotNull ThrowingCallback callback);
     private static final class CppProxy extends Calculator {
         private final long nativeRef;
 
@@ -48,17 +45,17 @@ public abstract class Calculator {
             test.interface_test.pydjinni.NativeCleaner.register(this, new CleanupTask(nativeRef));
         }
 
-        public static native test.interface_test.Calculator getInstance();
+        public static native test.interface_test.@org.jetbrains.annotations.NotNull Calculator getInstance();
         @Override
-        public byte add(@org.jetbrains.annotations.NotNull byte a, @org.jetbrains.annotations.NotNull byte b) {
+        public @org.jetbrains.annotations.NotNull byte add(@org.jetbrains.annotations.NotNull byte a, @org.jetbrains.annotations.NotNull byte b) {
             return native_add(this.nativeRef , a, b);
         }
-        private native byte native_add(long _nativeRef, @org.jetbrains.annotations.NotNull byte a, @org.jetbrains.annotations.NotNull byte b);
+        private native @org.jetbrains.annotations.NotNull byte native_add(long _nativeRef, @org.jetbrains.annotations.NotNull byte a, @org.jetbrains.annotations.NotNull byte b);
         @Override
-        public byte getPlatformValue(@org.jetbrains.annotations.NotNull test.interface_test.PlatformInterface platform) {
+        public @org.jetbrains.annotations.NotNull byte getPlatformValue(test.interface_test.@org.jetbrains.annotations.NotNull PlatformInterface platform) {
             return native_getPlatformValue(this.nativeRef , platform);
         }
-        private native byte native_getPlatformValue(long _nativeRef, @org.jetbrains.annotations.NotNull test.interface_test.PlatformInterface platform);
+        private native @org.jetbrains.annotations.NotNull byte native_getPlatformValue(long _nativeRef, test.interface_test.@org.jetbrains.annotations.NotNull PlatformInterface platform);
         @Override
         public void noParametersNoReturn() {
             native_noParametersNoReturn(this.nativeRef );
@@ -70,14 +67,14 @@ public abstract class Calculator {
         }
         private native void native_throwingException(long _nativeRef);
         @Override
-        public void noParametersNoReturnCallback(@org.jetbrains.annotations.NotNull test.interface_test.NoParametersNoReturnCallback callback) {
+        public void noParametersNoReturnCallback(test.interface_test.@org.jetbrains.annotations.NotNull NoParametersNoReturnCallback callback) {
             native_noParametersNoReturnCallback(this.nativeRef , callback);
         }
-        private native void native_noParametersNoReturnCallback(long _nativeRef, @org.jetbrains.annotations.NotNull test.interface_test.NoParametersNoReturnCallback callback);
+        private native void native_noParametersNoReturnCallback(long _nativeRef, test.interface_test.@org.jetbrains.annotations.NotNull NoParametersNoReturnCallback callback);
         @Override
-        public void throwingCallback(@org.jetbrains.annotations.NotNull test.interface_test.ThrowingCallback callback) {
+        public void throwingCallback(test.interface_test.@org.jetbrains.annotations.NotNull ThrowingCallback callback) {
             native_throwingCallback(this.nativeRef , callback);
         }
-        private native void native_throwingCallback(long _nativeRef, @org.jetbrains.annotations.NotNull test.interface_test.ThrowingCallback callback);
+        private native void native_throwingCallback(long _nativeRef, test.interface_test.@org.jetbrains.annotations.NotNull ThrowingCallback callback);
     }
 }

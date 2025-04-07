@@ -6,18 +6,14 @@ public abstract class OptionalInterface {
     static {
         test.interface_test.pydjinni.NativeInterfaceTestKotlinJniLoader.loadLibrary();
     }
-    @org.jetbrains.annotations.Nullable
-    public static test.interface_test.OptionalInterface getInstance(){
+    public static test.interface_test.@org.jetbrains.annotations.Nullable OptionalInterface getInstance() {
         return CppProxy.getInstance();
     };
-    @org.jetbrains.annotations.Nullable
-    public static test.interface_test.OptionalInterface getNullInstance(){
+    public static test.interface_test.@org.jetbrains.annotations.Nullable OptionalInterface getNullInstance() {
         return CppProxy.getNullInstance();
     };
-    @org.jetbrains.annotations.Nullable
-    public abstract String optionalParameter(@org.jetbrains.annotations.Nullable String param);
-    @org.jetbrains.annotations.Nullable
-    public abstract String optionalNullParameter(@org.jetbrains.annotations.Nullable String param);
+    public abstract @org.jetbrains.annotations.Nullable String optionalParameter(@org.jetbrains.annotations.Nullable String param);
+    public abstract @org.jetbrains.annotations.Nullable String optionalNullParameter(@org.jetbrains.annotations.Nullable String param);
     private static final class CppProxy extends OptionalInterface {
         private final long nativeRef;
 
@@ -41,17 +37,17 @@ public abstract class OptionalInterface {
             test.interface_test.pydjinni.NativeCleaner.register(this, new CleanupTask(nativeRef));
         }
 
-        public static native test.interface_test.OptionalInterface getInstance();
-        public static native test.interface_test.OptionalInterface getNullInstance();
+        public static native test.interface_test.@org.jetbrains.annotations.Nullable OptionalInterface getInstance();
+        public static native test.interface_test.@org.jetbrains.annotations.Nullable OptionalInterface getNullInstance();
         @Override
-        public String optionalParameter(@org.jetbrains.annotations.Nullable String param) {
+        public @org.jetbrains.annotations.Nullable String optionalParameter(@org.jetbrains.annotations.Nullable String param) {
             return native_optionalParameter(this.nativeRef , param);
         }
-        private native String native_optionalParameter(long _nativeRef, @org.jetbrains.annotations.Nullable String param);
+        private native @org.jetbrains.annotations.Nullable String native_optionalParameter(long _nativeRef, @org.jetbrains.annotations.Nullable String param);
         @Override
-        public String optionalNullParameter(@org.jetbrains.annotations.Nullable String param) {
+        public @org.jetbrains.annotations.Nullable String optionalNullParameter(@org.jetbrains.annotations.Nullable String param) {
             return native_optionalNullParameter(this.nativeRef , param);
         }
-        private native String native_optionalNullParameter(long _nativeRef, @org.jetbrains.annotations.Nullable String param);
+        private native @org.jetbrains.annotations.Nullable String native_optionalNullParameter(long _nativeRef, @org.jetbrains.annotations.Nullable String param);
     }
 }

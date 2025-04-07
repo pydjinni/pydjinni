@@ -6,7 +6,7 @@ public abstract class Calculator {
     static {
         test.interface_test.pydjinni.NativeInterfaceTestJniLoader.loadLibrary();
     }
-    public static test.interface_test.Calculator getInstance(){
+    public static test.interface_test.Calculator getInstance() {
         return CppProxy.getInstance();
     };
     /**

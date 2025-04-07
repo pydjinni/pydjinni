@@ -13,4 +13,5 @@
 - (void)multiplyCallback:(nonnull id<TSTMultiplyCallback>)callback completion:(nonnull void (^)(int32_t ))completion;
 - (void)noParametersNoReturnCallback:(nonnull id<TSTNoParametersNoReturnCallback>)callback completion:(nonnull void (^)(void ))completion;
 - (void)throwingCallback:(nonnull id<TSTThrowingCallback>)callback completion:(nonnull void (^)(NSError* _Nullable))completion;
+- (void)returningOptional:(nonnull void (^)(NSNumber * _Nullable))completion;
 @end

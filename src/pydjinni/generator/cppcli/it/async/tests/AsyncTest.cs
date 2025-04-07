@@ -96,5 +96,12 @@ namespace Testing.Unit.Async
                 throw new Exception("asynchronous runtime error from callback");
             }
         }
+
+        [Test]
+        public async Task TestAsyncReturningOptional()
+        {
+            var result = await asynchronous.ReturningOptional();
+            Assert.That(result, Is.Null);
+        }
     }
 }

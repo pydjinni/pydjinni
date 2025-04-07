@@ -6,6 +6,7 @@ asynchronous = main interface +cpp {
     async multiply_callback(callback: multiply_callback) -> i32;
     async no_parameters_no_return_callback(callback: no_parameters_no_return_callback);
     async throwing_callback(callback: throwing_callback) throws;
+    async returning_optional() -> i32?;
 }
 
 multiply_callback = interface -cpp {

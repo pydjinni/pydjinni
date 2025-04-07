@@ -24,7 +24,6 @@ limitations under the License.
 //> endfor
     public {{ type_def.java.name }}(
     //> for field in type_def.fields:
-        //? field.java.nullable_annotation : field.java.nullable_annotation
         {{ field.java.data_type }} {{ field.java.name ~ ("," if not loop.last) }}
     //> endfor
     ) {
@@ -36,7 +35,6 @@ limitations under the License.
 //> for field in type_def.fields:
     //? field.comment : field.java.comment | comment | indent
     //? field.deprecated : "@Deprecated"
-    //? field.java.nullable_annotation : field.java.nullable_annotation
     public {{ field.java.data_type }} {{ field.java.getter }}() { return {{ field.java.name }}; }
 //> endfor
 //> if 'eq' in type_def.deriving and type_def.fields:

@@ -3,16 +3,14 @@
 package test.record;
 
 public final class ParentType {
-    final test.record.NestedType nested;
+    final test.record.@org.jetbrains.annotations.NotNull NestedType nested;
     public ParentType(
-        @org.jetbrains.annotations.NotNull
-        test.record.NestedType nested
+        test.record.@org.jetbrains.annotations.NotNull NestedType nested
     ) {
         this.nested = nested;
     }
 
-    @org.jetbrains.annotations.NotNull
-    public test.record.NestedType getNested() { return nested; }
+    public test.record.@org.jetbrains.annotations.NotNull NestedType getNested() { return nested; }
     @Override
     public String toString() {
         return "test.record.ParentType{" +

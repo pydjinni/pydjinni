@@ -3,6 +3,5 @@
 package test.interface_test;
 
 public abstract class PlatformInterface {
-    @org.jetbrains.annotations.NotNull
-    public abstract byte getValue();
+    public abstract @org.jetbrains.annotations.NotNull byte getValue();
 }

@@ -20,7 +20,6 @@ limitations under the License.
 //? type_def.deprecated : "@Deprecated"
 @FunctionalInterface
 {{ type_def.java.class_modifier }}interface {{ type_def.java.name }} {
-    //? type_def.java.nullable_annotation : type_def.java.nullable_annotation
     {{ type_def.java.return_type }} invoke({{ parameters(type_def) }});
 }
 

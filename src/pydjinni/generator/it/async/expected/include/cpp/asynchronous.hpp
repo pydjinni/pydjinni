@@ -8,6 +8,7 @@
 #include "throwing_callback.hpp"
 #include <cstdint>
 #include <memory>
+#include <optional>
 
 namespace test::async_test {
 class Asynchronous {
@@ -20,5 +21,6 @@ public:
     virtual pydjinni::coroutine::task<int32_t> multiply_callback(const std::shared_ptr<::test::async_test::MultiplyCallback> & callback) noexcept = 0;
     virtual pydjinni::coroutine::task<void> no_parameters_no_return_callback(const std::shared_ptr<::test::async_test::NoParametersNoReturnCallback> & callback) noexcept = 0;
     virtual pydjinni::coroutine::task<void> throwing_callback(const std::shared_ptr<::test::async_test::ThrowingCallback> & callback) = 0;
+    virtual pydjinni::coroutine::task<std::optional<int32_t>> returning_optional() noexcept = 0;
 };
 } // namespace test::async_test

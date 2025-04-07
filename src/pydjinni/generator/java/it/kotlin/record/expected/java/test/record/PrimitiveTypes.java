@@ -3,34 +3,25 @@
 package test.record;
 
 public final class PrimitiveTypes {
-    final boolean booleanT;
-    final byte byteT;
-    final short shortT;
-    final int intT;
-    final long longT;
-    final float floatT;
-    final double doubleT;
-    final String stringT;
-    final java.time.Instant dateT;
+    final @org.jetbrains.annotations.NotNull boolean booleanT;
+    final @org.jetbrains.annotations.NotNull byte byteT;
+    final @org.jetbrains.annotations.NotNull short shortT;
+    final @org.jetbrains.annotations.NotNull int intT;
+    final @org.jetbrains.annotations.NotNull long longT;
+    final @org.jetbrains.annotations.NotNull float floatT;
+    final @org.jetbrains.annotations.NotNull double doubleT;
+    final @org.jetbrains.annotations.NotNull String stringT;
+    final java.time.@org.jetbrains.annotations.NotNull Instant dateT;
     public PrimitiveTypes(
-        @org.jetbrains.annotations.NotNull
-        boolean booleanT,
-        @org.jetbrains.annotations.NotNull
-        byte byteT,
-        @org.jetbrains.annotations.NotNull
-        short shortT,
-        @org.jetbrains.annotations.NotNull
-        int intT,
-        @org.jetbrains.annotations.NotNull
-        long longT,
-        @org.jetbrains.annotations.NotNull
-        float floatT,
-        @org.jetbrains.annotations.NotNull
-        double doubleT,
-        @org.jetbrains.annotations.NotNull
-        String stringT,
-        @org.jetbrains.annotations.NotNull
-        java.time.Instant dateT
+        @org.jetbrains.annotations.NotNull boolean booleanT,
+        @org.jetbrains.annotations.NotNull byte byteT,
+        @org.jetbrains.annotations.NotNull short shortT,
+        @org.jetbrains.annotations.NotNull int intT,
+        @org.jetbrains.annotations.NotNull long longT,
+        @org.jetbrains.annotations.NotNull float floatT,
+        @org.jetbrains.annotations.NotNull double doubleT,
+        @org.jetbrains.annotations.NotNull String stringT,
+        java.time.@org.jetbrains.annotations.NotNull Instant dateT
     ) {
         this.booleanT = booleanT;
         this.byteT = byteT;
@@ -43,24 +34,15 @@ public final class PrimitiveTypes {
         this.dateT = dateT;
     }
 
-    @org.jetbrains.annotations.NotNull
-    public boolean getBooleanT() { return booleanT; }
-    @org.jetbrains.annotations.NotNull
-    public byte getByteT() { return byteT; }
-    @org.jetbrains.annotations.NotNull
-    public short getShortT() { return shortT; }
-    @org.jetbrains.annotations.NotNull
-    public int getIntT() { return intT; }
-    @org.jetbrains.annotations.NotNull
-    public long getLongT() { return longT; }
-    @org.jetbrains.annotations.NotNull
-    public float getFloatT() { return floatT; }
-    @org.jetbrains.annotations.NotNull
-    public double getDoubleT() { return doubleT; }
-    @org.jetbrains.annotations.NotNull
-    public String getStringT() { return stringT; }
-    @org.jetbrains.annotations.NotNull
-    public java.time.Instant getDateT() { return dateT; }
+    public @org.jetbrains.annotations.NotNull boolean getBooleanT() { return booleanT; }
+    public @org.jetbrains.annotations.NotNull byte getByteT() { return byteT; }
+    public @org.jetbrains.annotations.NotNull short getShortT() { return shortT; }
+    public @org.jetbrains.annotations.NotNull int getIntT() { return intT; }
+    public @org.jetbrains.annotations.NotNull long getLongT() { return longT; }
+    public @org.jetbrains.annotations.NotNull float getFloatT() { return floatT; }
+    public @org.jetbrains.annotations.NotNull double getDoubleT() { return doubleT; }
+    public @org.jetbrains.annotations.NotNull String getStringT() { return stringT; }
+    public java.time.@org.jetbrains.annotations.NotNull Instant getDateT() { return dateT; }
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof PrimitiveTypes)) {

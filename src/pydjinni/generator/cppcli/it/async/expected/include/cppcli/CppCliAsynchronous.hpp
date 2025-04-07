@@ -19,6 +19,7 @@ public:
     virtual System::Threading::Tasks::Task<int>^ MultiplyCallback(::Test::Async::CppCli::MultiplyCallback^ callback) abstract;
     virtual System::Threading::Tasks::Task^ NoParametersNoReturnCallback(::Test::Async::CppCli::NoParametersNoReturnCallback^ callback) abstract;
     virtual System::Threading::Tasks::Task^ ThrowingCallback(::Test::Async::CppCli::ThrowingCallback^ callback) abstract;
+    virtual System::Threading::Tasks::Task<System::Nullable<int>>^ ReturningOptional() abstract;
 internal:
     using CppType = std::shared_ptr<::test::async_test::Asynchronous>;
     using CppOptType = std::shared_ptr<::test::async_test::Asynchronous>;
@@ -68,6 +69,13 @@ internal:
         void HandleCallback(System::Threading::Tasks::Task^ task);
     private:
         ::pydjinni::coroutine::CallbackHandle<>* _handle;
+    };
+    ref class ReturningOptionalCallbackHandleProxy {
+    public:
+        ReturningOptionalCallbackHandleProxy(::pydjinni::coroutine::CallbackHandle<std::optional<int32_t>>& handle);
+        void HandleCallback(System::Threading::Tasks::Task<System::Nullable<int>>^ task);
+    private:
+        ::pydjinni::coroutine::CallbackHandle<std::optional<int32_t>>* _handle;
     };
 };
 } // namespace Test::Async::CppCli
