@@ -212,7 +212,7 @@ class CppCliInterface(CppCliBaseType):
         @cached_property
         def nullability_attribute(self) -> str:
             if self.config.nullability_attributes and self.decl.return_type_ref:
-                return f"[returnvalue: {'System::Diagnostics::CodeAnalysis::MaybeNull' if self.decl.return_type_ref.optional else 'System::Diagnostics::CodeAnalysis::NotNull'}]"
+                return f"[returnvalue: {'System::Diagnostics::CodeAnalysis::MaybeNull' if self.decl.return_type_ref.optional and not self.decl.return_type_ref.asynchronous else 'System::Diagnostics::CodeAnalysis::NotNull'}]"
             else:
                 return ""
 
