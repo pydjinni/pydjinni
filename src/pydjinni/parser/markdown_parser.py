@@ -89,7 +89,7 @@ class TypeReferenceMarkdownCommand(ParameterMarkdownCommand):
             return match.end() + 1
         return parse_type_parameter_block_command
 
-class MarkdownParser():
+class MarkdownParser:
     def __init__(self, type_references: list[TypeReference] = []):
         self.type_references = type_references
 

@@ -1,6 +1,6 @@
 from typing import Any
 
-from mistune import BlockState
+from mistune import BlockState, Markdown
 from mistune.renderers.markdown import MarkdownRenderer
 
 from pydjinni.parser.ast import Interface, ErrorDomain
@@ -30,5 +30,5 @@ class ParserCommentProcessor(MarkdownRenderer):
             param = next((param for param in self.decl.parameters if param.name == name), None)
             if param:
                 param.comment = description
-                param._parsed_comment = (token['children'], state)
+                param._parsed_comment = Markdown().parse(description)
         return ""
