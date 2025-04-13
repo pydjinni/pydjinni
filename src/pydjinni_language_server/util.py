@@ -38,8 +38,8 @@ def to_hover_cache(type_refs: list[TypeReference], file_imports: list[FileRefere
 def type_range(definition: BaseField | BaseType | ApplicationException) -> Range:
     if definition.position.start and definition.position.end:
         return Range(
-            start=Position(definition.position.start.line - 1, definition.position.start.col),
-            end=Position(definition.position.end.line - 1, definition.position.end.col)
+            start=Position(definition.position.start.line, definition.position.start.col),
+            end=Position(definition.position.end.line, definition.position.end.col)
         )
     else:
         return Range(start=Position(0, 0), end=Position(0, 0))

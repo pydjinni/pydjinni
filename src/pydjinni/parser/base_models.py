@@ -15,11 +15,9 @@
 from __future__ import annotations
 from pathlib import Path
 
-from functools import cached_property
-from mistune import Markdown, BlockState
+from mistune import BlockState
 from pydantic.json_schema import SkipJsonSchema
 from pydjinni.parser.identifier import Identifier
-from pydjinni.parser.markdown_plugins import commands_plugin
 from pydjinni.parser.namespace import Namespace
 from pydjinni.position import Position
 
@@ -27,7 +25,7 @@ try:
     from enum import StrEnum
 except ImportError:
     from strenum import StrEnum  # Fallback for python < 3.11
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel, Field, PrivateAttr, SkipValidation, computed_field
 
 
 class DocStrEnum(StrEnum):
@@ -47,15 +45,7 @@ class BaseCommentModel(BaseModel):
         default=False,
         description="Marks a type as deprecated"
     )
-
-    @cached_property
-    def parsed_comment(self) -> tuple[list, BlockState] | None:
-        if self.comment:
-            parser = Markdown(plugins=[commands_plugin])
-            return parser.parse(self.comment)
-        else:
-            return None
-
+    _parsed_comment: tuple[list, BlockState] = PrivateAttr(default=None)
 
 class BaseExternalType(BaseCommentModel):
     class Primitive(StrEnum):
@@ -93,6 +83,9 @@ class TypeReference(BaseModel):
         default=None,
         repr=False
     )
+
+class CommentTypeReference(TypeReference):
+    pass
 
 class FileReference(BaseModel):
     path: Path

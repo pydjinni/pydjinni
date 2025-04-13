@@ -174,7 +174,7 @@ def init_language_server(config: Path, generate_on_save: bool, generate_base_pat
     @server.feature(TEXT_DOCUMENT_HOVER)
     @error_logger
     def hover(ls: LanguageServer, params: HoverParams):
-        row = params.position.line + 1
+        row = params.position.line
         col = params.position.character
         uri = params.text_document.uri
         ls.show_message_log(f"[{TEXT_DOCUMENT_HOVER}] {unquote(uri)}: {row}, {col}")
@@ -200,7 +200,7 @@ def init_language_server(config: Path, generate_on_save: bool, generate_base_pat
     @server.feature(TEXT_DOCUMENT_DEFINITION)
     @error_logger
     def definition(ls: LanguageServer, params: DefinitionParams):
-        row = params.position.line + 1
+        row = params.position.line
         col = params.position.character
         ls.show_message_log(f"[{TEXT_DOCUMENT_DEFINITION}] {row}, {col}")
         cache_entry: TypeReference | None = hover_cache[params.text_document.uri].get(row, {}).get(col, None)
@@ -262,7 +262,7 @@ def init_language_server(config: Path, generate_on_save: bool, generate_base_pat
                         else:
                             file_output_path: Path = generate_base_path / main_generator.source_path / target_type.source
                         line = (type_def.position.start.line + (
-                            len(type_def.comment.split("\n")) if type_def.comment else 0)) - 1
+                            len(type_def.comment.split("\n")) if type_def.comment else 0))
                         generated_file_path = file_output_path.absolute()
                         if generated_file_path.exists():
                             lenses.append(CodeLens(

@@ -19,6 +19,8 @@ from mistune.util import escape as escape_text
 from pydjinni.generator.java.java.config import JavaIdentifierStyle
 from pydjinni.parser.identifier import IdentifierType as Identifier
 
+from pydjinni.parser.base_models import TypeReference
+
 
 class JavaDocCommentRenderer(HTMLRenderer):
 
@@ -41,8 +43,9 @@ class JavaDocCommentRenderer(HTMLRenderer):
     def param(self, text: str, name: str) -> str:
         return f"@param {Identifier(name).convert(self.identifier_style.field)} {text}\n"
 
-    def throws(self, text: str, name: str) -> str:
-        return f"@throws {Identifier(name).convert(self.identifier_style.type)} {text}\n"
+    def throws(self, text: str, type_ref: TypeReference) -> str:
+        type_name = type_ref.type_def.java.typename if type_ref.type_def else type_ref.name
+        return f"@throws {type_name} {text}\n"
 
     def deprecated(self, text: str) -> str:
         return f"@deprecated {text}\n"

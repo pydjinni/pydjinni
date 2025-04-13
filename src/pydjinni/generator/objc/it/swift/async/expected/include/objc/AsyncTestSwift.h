@@ -8,7 +8,7 @@ FOUNDATION_EXPORT double bridgingheaderVersionNumber;
 //! Project version string for bridgingheader.
 FOUNDATION_EXPORT const unsigned char bridgingheaderVersionString[];
 
-#import "TSTAsynchronous.h"
-#import "TSTMultiplyCallback.h"
-#import "TSTNoParametersNoReturnCallback.h"
-#import "TSTThrowingCallback.h"
+#import "SFTAsynchronous.h"
+#import "SFTMultiplyCallback.h"
+#import "SFTNoParametersNoReturnCallback.h"
+#import "SFTThrowingCallback.h"

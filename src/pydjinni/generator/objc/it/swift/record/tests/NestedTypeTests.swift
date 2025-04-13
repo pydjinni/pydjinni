@@ -13,7 +13,7 @@ final class NestedTypeTests: XCTestCase {
         XCTAssertEqual(
             record.description,
             """
-            <TSTParentType nested:<TSTNestedType a:42 b:(
+            <SFTParentType nested:<SFTNestedType a:42 b:(
                     (
                     1,
                     2

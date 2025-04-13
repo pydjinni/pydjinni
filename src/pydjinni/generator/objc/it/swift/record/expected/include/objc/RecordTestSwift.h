@@ -8,13 +8,13 @@ FOUNDATION_EXPORT double bridgingheaderVersionNumber;
 //! Project version string for bridgingheader.
 FOUNDATION_EXPORT const unsigned char bridgingheaderVersionString[];
 
-#import "TSTPrimitiveTypes.h"
-#import "TSTCollectionTypes.h"
-#import "TSTOptionalTypes.h"
-#import "TSTBinaryTypes.h"
-#import "TSTBaseRecord.h"
-#import "TSTNestedType.h"
-#import "TSTParentType.h"
-#import "TSTHelper.h"
-#import "TSTOldRecord.h"
-#import "TSTDeprecatedFieldRecord.h"
+#import "SFTPrimitiveTypes.h"
+#import "SFTCollectionTypes.h"
+#import "SFTOptionalTypes.h"
+#import "SFTBinaryTypes.h"
+#import "SFTBaseRecord.h"
+#import "SFTNestedType.h"
+#import "SFTParentType.h"
+#import "SFTHelper.h"
+#import "SFTOldRecord.h"
+#import "SFTDeprecatedFieldRecord.h"

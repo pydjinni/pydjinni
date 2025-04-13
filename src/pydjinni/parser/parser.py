@@ -17,7 +17,7 @@ from pathlib import Path
 from antlr4 import InputStream, CommonTokenStream
 from antlr4.error.ErrorListener import ErrorListener
 from antlr4.tree.Tree import ErrorNode
-
+from mistune import BlockState
 from pydjinni.exceptions import ApplicationException, FileNotFoundException, ApplicationExceptionList, \
     InputParsingException
 from pydjinni.file.file_reader_writer import FileReaderWriter
@@ -40,6 +40,7 @@ from .grammar.IdlLexer import IdlLexer
 from .grammar.IdlParser import IdlParser
 from .grammar.IdlVisitor import IdlVisitor
 from .identifier import IdentifierType as Identifier
+from .markdown_parser import MarkdownParser
 from .resolver import Resolver
 
 
@@ -74,6 +75,7 @@ class Parser(IdlVisitor):
         self.current_namespace: list[Identifier] = []
         self.current_namespace_stack_size: list[int] = []
         self.errors: list[ApplicationException] = []
+        self.markdown_parser = MarkdownParser(self.type_refs)
 
     class ParsingException(ApplicationException, code=150):
         """IDL Parsing error"""
@@ -95,8 +97,8 @@ class Parser(IdlVisitor):
             self.errors.append(Parser.ParsingException(
                 f'{msg}, {offendingSymbol}',
                 position=Position(
-                    start=Cursor(line=line, col=column),
-                    end=Cursor(line=line, col=column),
+                    start=Cursor(line=line - 1, col=column),
+                    end=Cursor(line=line - 1, col=column),
                     file=self.idl
                 )
             ))
@@ -105,13 +107,15 @@ class Parser(IdlVisitor):
         [self.visit(load) for load in ctx.load()]
         return [self.visit(content) for content in ctx.namespaceContent()]
 
-    def visitComment(self, ctx: IdlParser.CommentContext):
-        return "\n".join([line.getText()[1:].strip() for line in ctx.COMMENT()])
+    def visitComment(self, ctx: IdlParser.CommentContext) -> tuple[str, tuple[list, BlockState]]:
+        raw_comment = "\n".join([line.getText()[1:] for line in ctx.COMMENT()])
+        comment = "\n".join([line.getText()[1:].strip() for line in ctx.COMMENT()])
+        return (comment, self.markdown_parser.parse(raw_comment, self._position(ctx), self.current_namespace))
 
     def visitTypeDecl(self, ctx: IdlParser.TypeDeclContext):
         type_decl_context = ctx.enum() or ctx.flags() or ctx.record() or ctx.interface() or ctx.namedFunction() or ctx.errorDomain()
         if type_decl_context:
-            type_decl = self.visit(type_decl_context)
+            type_decl: BaseType = self.visit(type_decl_context)
             self.resolver.register(type_decl)
             self.type_decls.append(type_decl)
             return type_decl
@@ -128,41 +132,51 @@ class Parser(IdlVisitor):
         return Identifier((ctx.ID() or ctx.NS_ID()).getText())
 
     def visitEnum(self, ctx: IdlParser.EnumContext) -> Enum:
-        return Enum(
+        comment, parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
+        result = Enum(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
             items=[self.visit(item) for item in ctx.item()],
             namespace=self.current_namespace,
-            comment=self.visit(ctx.comment()) if ctx.comment() else None
+            comment=comment,
         )
+        result._parsed_comment = parsed_comment
+        return result
 
     def visitItem(self, ctx: IdlParser.ItemContext) -> Enum.Item:
+        comment, parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
         item = Enum.Item(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
-            comment=self.visit(ctx.comment()) if ctx.comment() else None
+            comment=comment
         )
+        item._parsed_comment = parsed_comment
         self.field_decls.append(item)
         return item
 
     def visitFlags(self, ctx: IdlParser.FlagsContext) -> Flags:
-        return Flags(
+        comment, parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
+        result = Flags(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
             flags=[self.visit(flag) for flag in ctx.flag()],
             namespace=self.current_namespace,
-            comment=self.visit(ctx.comment()) if ctx.comment() else None
+            comment=comment,
         )
+        result._parsed_comment = parsed_comment
+        return result
 
     def visitFlag(self, ctx: IdlParser.FlagContext):
         all, none = self.visit(ctx.modifier()) if ctx.modifier() else (False, False)
+        comment, parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
         flag = Flags.Flag(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
             all=all,
             none=none,
-            comment=self.visit(ctx.comment()) if ctx.comment() else None
+            comment=comment
         )
+        flag._parsed_comment = parsed_comment
         self.field_decls.append(flag)
         return flag
 
@@ -177,6 +191,7 @@ class Parser(IdlVisitor):
 
     def visitInterface(self, ctx: IdlParser.InterfaceContext) -> Interface:
         methods: list[Interface.Method] = [self.visit(method) for method in ctx.method()]
+        comment, parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
         properties: list[Interface.Property] = [self.visit(prop) for prop in ctx.prop()]
         dependencies: list[TypeReference] = []
 
@@ -199,8 +214,9 @@ class Parser(IdlVisitor):
             main=ctx.MAIN() is not None,
             namespace=self.current_namespace,
             dependencies=self._dependencies(dependencies),
-            comment=self.visit(ctx.comment()) if ctx.comment() else None
+            comment=comment
         )
+        interface._parsed_comment = parsed_comment
 
         if interface.main and interface.targets != [CppGenerator.key]:
             self.errors.append(
@@ -216,6 +232,7 @@ class Parser(IdlVisitor):
         return interface
 
     def visitMethod(self, ctx: IdlParser.MethodContext) -> Interface.Method:
+        comment, parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
         method = Interface.Method(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
@@ -225,8 +242,9 @@ class Parser(IdlVisitor):
             const=ctx.CONST() is not None,
             asynchronous=ctx.ASYNC() is not None,
             throwing=self.visit(ctx.throwing()) if ctx.throwing() else None,
-            comment=self.visit(ctx.comment()) if ctx.comment() else None
+            comment=comment
         )
+        method._parsed_comment = parsed_comment
         self.field_decls.append(method)
         if method.static and method.const:
             self.errors.append(Parser.ParsingException("method cannot be both static and const", method.position))
@@ -246,12 +264,15 @@ class Parser(IdlVisitor):
 
 
     def visitProp(self, ctx: IdlParser.PropContext) -> Interface.Property:
-        return Interface.Property(
+        comment, parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
+        result = Interface.Property(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
-            comment=self.visit(ctx.comment()) if ctx.comment() else None,
+            comment=comment,
             type_ref=self.visit(ctx.typeRef()) if ctx.typeRef() else None
         )
+        result._parsed_comment = parsed_comment
+        return result
 
     def visitTypeRef(self, ctx: IdlParser.TypeRefContext) -> TypeReference:
         if ctx.function():
@@ -321,50 +342,60 @@ class Parser(IdlVisitor):
     def visitRecord(self, ctx: IdlParser.RecordContext) -> Record:
         fields = [self.visit(field) for field in ctx.field()]
         deriving = (self.visit(ctx.deriving()) | self.default_deriving) if ctx.deriving() else self.default_deriving
-        return Record(
+        comment, parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
+        record = Record(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
-            comment=self.visit(ctx.comment()) if ctx.comment() else None,
+            comment=comment,
             fields=fields,
             targets=self.visit(ctx.targets()),
             namespace=self.current_namespace,
             dependencies=self._dependencies([field.type_ref for field in fields]),
             deriving=deriving
         )
+        record._parsed_comment = parsed_comment
+        return record
 
     def visitErrorDomain(self, ctx: IdlParser.ErrorDomainContext) -> ErrorDomain:
         error_codes = [self.visit(errorCode) for errorCode in ctx.errorCode()]
+        comment, parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
         dependencies = []
         for errorCode in error_codes:
             for param in errorCode.parameters:
                 dependencies.append(param.type_ref)
-        return ErrorDomain(
+        error_domain = ErrorDomain(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
-            comment=self.visit(ctx.comment()) if ctx.comment() else None,
+            comment=comment,
             error_codes=error_codes,
             namespace=self.current_namespace,
             dependencies=dependencies,
         )
+        error_domain._parsed_comment = parsed_comment
+        return error_domain
 
     def visitErrorCode(self, ctx: IdlParser.ErrorCodeContext) -> ErrorDomain.ErrorCode:
         parameters = [self.visit(parameter) for parameter in ctx.parameter()]
+        comment, parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
         error_code = ErrorDomain.ErrorCode(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
-            comment=self.visit(ctx.comment()) if ctx.comment() else None,
+            comment=comment,
             parameters=parameters,
         )
+        error_code._parsed_comment = parsed_comment
         self.field_decls.append(error_code)
         return error_code
 
     def visitField(self, ctx: IdlParser.FieldContext):
+        comment, parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
         field = DataField(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
-            comment=self.visit(ctx.comment()) if ctx.comment() else None,
+            comment=comment,
             type_ref=self.visit(ctx.typeRef())
         )
+        field._parsed_comment = parsed_comment
         if isinstance(field.type_ref.type_def, Function):
             self.errors.append(Parser.ParsingException(
                 "functions are not allowed as record field type",
@@ -390,10 +421,10 @@ class Parser(IdlVisitor):
         function.name = self.visit(ctx.identifier())
         function.position = self._position(ctx)
         function.anonymous = False
-        function.comment = self.visit(ctx.comment()) if ctx.comment() else None
+        function.comment, function._parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
         return function
 
-    def visitTargets(self, ctx: IdlParser.TargetsContext) -> [str]:
+    def visitTargets(self, ctx: IdlParser.TargetsContext) -> list[str]:
         includes = []
         excludes = []
 
@@ -418,6 +449,7 @@ class Parser(IdlVisitor):
         return targets
 
     def visitNamespace(self, ctx:IdlParser.NamespaceContext):
+        comment, parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
         name = Identifier(self.visit(ctx.nsIdentifier()))
         namespace: list[Identifier] = [Identifier(identifier) for identifier in
                                        name.split('.')]
@@ -425,11 +457,12 @@ class Parser(IdlVisitor):
         self.current_namespace_stack_size.append(len(namespace))
 
         output = Namespace(
-            comment=self.visit(ctx.comment()) if ctx.comment() else None,
+            comment=comment,
             name=name,
             position=self._position(ctx),
             children=list(filter(None, [self.visit(content) for content in ctx.namespaceContent()])),
         )
+        output._parsed_comment = parsed_comment
         for _ in range(self.current_namespace_stack_size.pop()):
             self.current_namespace.pop()
         return output
@@ -488,8 +521,8 @@ class Parser(IdlVisitor):
 
     def _position(self, ctx) -> Position:
         return Position(
-            start=Cursor(line=ctx.start.line, col=ctx.start.column),
-            end=Cursor(line=ctx.stop.line, col=ctx.stop.column + len(ctx.stop.text)),
+            start=Cursor(line=ctx.start.line - 1, col=ctx.start.column),
+            end=Cursor(line=ctx.stop.line - 1, col=ctx.stop.column + len(ctx.stop.text)),
             file=self.idl
         )
 
@@ -514,11 +547,13 @@ class Parser(IdlVisitor):
             tree = parser.idl()
             ast = self.visit(tree)
             for decl in self.type_decls + self.field_decls:
-                if decl.comment:
-                    ParserCommentProcessor(decl).render_tokens(*decl.parsed_comment)
+                if decl._parsed_comment:
+                    ParserCommentProcessor(decl).render_tokens(*decl._parsed_comment)
             for type_ref in self.type_refs:
                 if not type_ref.type_def:
                     try:
+                        # TODO: maybe the setter in type_ref should raise the exception, and not the resolver?
+                        # this way the behavior could be dynamic depending on the TypeReference class type (inversion of control)
                         type_ref.type_def = self.resolver.resolve(type_ref)
                     except Resolver.TypeResolvingException as e:
                         self.errors.append(e)

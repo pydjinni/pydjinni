@@ -28,7 +28,7 @@ final class PrimitiveTypesTests: XCTestCase {
     func testDescription() {
         XCTAssertEqual(
             record.description,
-            "<TSTPrimitiveTypes booleanT:YES byteT:8 shortT:16 intT:32 longT:64 floatT:32.32 doubleT:64.64 stringT:test string dateT:2023-07-01 12:08:29 +0000>"
+            "<SFTPrimitiveTypes booleanT:YES byteT:8 shortT:16 intT:32 longT:64 floatT:32.32 doubleT:64.64 stringT:test string dateT:2023-07-01 12:08:29 +0000>"
         )
     }
 }

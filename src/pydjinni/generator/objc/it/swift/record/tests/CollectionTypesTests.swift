@@ -41,7 +41,7 @@ final class CollectionTypesTests: XCTestCase {
         XCTAssertNotNil(
             record.description.range(of:
                 """
-                <TSTCollectionTypes intList:(
+                <SFTCollectionTypes intList:(
                     0,
                     1
                 ) stringList:(

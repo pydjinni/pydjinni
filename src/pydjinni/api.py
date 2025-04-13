@@ -26,6 +26,7 @@ from pydjinni.packaging.architecture import Architecture
 from pydjinni.packaging.packaging_config import PackageBaseConfig
 from pydjinni.packaging.target import PackageTarget
 from pydjinni.parser.ast import Namespace
+from pydjinni.parser.markdown_parser import MarkdownParser
 from pydjinni.parser.parser import Parser
 
 try:

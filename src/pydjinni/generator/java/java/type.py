@@ -21,7 +21,7 @@ from pydjinni.generator.java.java.comment_renderer import JavaDocCommentRenderer
 from pydjinni.generator.java.java.config import JavaConfig
 from pydjinni.generator.java.java.keywords import keywords
 from pydjinni.generator.validator import validate
-from pydjinni.parser.ast import Record, Function, Interface, Parameter
+from pydjinni.parser.ast import Record, Function
 from pydjinni.parser.base_models import BaseType, BaseField, BaseExternalType, TypeReference, DataField
 from pydjinni.parser.identifier import IdentifierType as Identifier
 
@@ -107,8 +107,8 @@ class JavaBaseType(JavaBase):
 
     @cached_property
     def comment(self):
-        return JavaDocCommentRenderer(self.config.identifier).render_tokens(*self.decl.parsed_comment).strip() \
-            if self.decl.comment else ''
+        return JavaDocCommentRenderer(self.config.identifier).render_tokens(*self.decl._parsed_comment).strip() \
+            if self.decl._parsed_comment else ''
 
     @cached_property
     def class_modifier(self):
@@ -127,8 +127,8 @@ class JavaBaseField(JavaBase):
 
     @cached_property
     def comment(self):
-        return JavaDocCommentRenderer(self.config.identifier).render_tokens(*self.decl.parsed_comment).strip() \
-            if self.decl.comment else ''
+        return JavaDocCommentRenderer(self.config.identifier).render_tokens(*self.decl._parsed_comment).strip() \
+            if self.decl._parsed_comment else ''
 
     @cached_property
     def data_type(self) -> str: return self.compute_data_type(self.decl.type_ref)

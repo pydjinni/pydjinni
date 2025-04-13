@@ -18,6 +18,7 @@ from mistune.renderers.markdown import MarkdownRenderer
 
 from pydjinni.generator.objc.objc.config import ObjcIdentifierStyle
 from pydjinni.parser.identifier import IdentifierType as Identifier
+from pydjinni.parser.base_models import TypeReference
 
 
 class DocCCommentRenderer(MarkdownRenderer):
@@ -37,4 +38,6 @@ class DocCCommentRenderer(MarkdownRenderer):
         return ""
 
     def throws(self, token: dict[str, Any], state: BlockState) -> str:
-        return f"- Throws: {self.render_children(token, state)}\n"
+        type_ref: TypeReference = token['attrs']['type_ref']
+        type_name = type_ref.type_def.objc.typename if type_ref.type_def else type_ref.name
+        return f"- Throws: ``{type_name}`` {self.render_children(token, state)}\n"

@@ -15,6 +15,7 @@
 from mistune import HTMLRenderer
 
 from pydjinni.generator.cppcli.cppcli.config import CppCliIdentifierStyle
+from pydjinni.parser.base_models import TypeReference
 from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
@@ -61,8 +62,9 @@ class XmlCommentRenderer(HTMLRenderer):
         self.params_doc.append(f'<param name="{Identifier(name).convert(self.identifier_style.local)}">{text}</param>\n')
         return ""
 
-    def throws(self, text: str, name: str) -> str:
-        self.params_doc.append(f'<exception cref="{Identifier(name).convert(self.identifier_style.type)}">{text}</exception>\n')
+    def throws(self, text: str, type_ref: TypeReference) -> str:
+        type_name = type_ref.type_def.cppcli.typename if type_ref.type_def else type_ref.name
+        self.params_doc.append(f'<exception cref="{type_name}">{text}</exception>\n')
         return ""
 
     def deprecated(self, text: str) -> str:

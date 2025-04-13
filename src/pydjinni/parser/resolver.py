@@ -21,8 +21,8 @@ import re
 
 from pydjinni.exceptions import InputParsingException, FileNotFoundException, ApplicationException
 from pydjinni.parser.ast import TypeReference, BaseType
-from pydjinni.parser.base_models import BaseExternalType
-from pydjinni.position import Position, Cursor
+from pydjinni.parser.base_models import BaseExternalType, CommentTypeReference
+from pydjinni.position import Position
 
 
 class Resolver:
@@ -43,10 +43,7 @@ class Resolver:
                     pattern = re.compile(r'^name: *(' + types_type.name + ')$', re.MULTILINE)
                     match = pattern.search(content)
                     if match:
-                        line = content[:match.start()].count('\n') + 1
-                        start = match.start(1) - content.rfind('\n', 0, match.start()) - 1
-                        end = match.end(1) - content.rfind('\n', 0, match.end()) - 1
-                        types_type.position = Position(file=path, start=Cursor(line=line, col=start), end=Cursor(line=line, col=end))
+                        types_type.position = Position.from_match(content, path, match)
                     else:
                         types_type.position = Position(file=path)
                     self.register(types_type)
@@ -77,7 +74,7 @@ class Resolver:
                 else:
                     break
 
-        if type_def is None:
+        if type_def is None and not isinstance(type_reference, CommentTypeReference):
             raise Resolver.TypeResolvingException(
                 f"Unknown type '{type_reference.name}'",
                 position=type_reference.position

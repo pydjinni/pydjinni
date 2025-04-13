@@ -14,7 +14,7 @@ from mkdocs_click._extension import load_command
 from pydjinni.api import API
 from pydjinni.exceptions import return_codes
 from pydjinni.parser.ast import Record
-from pydjinni.parser.markdown_plugins import markdown_commands
+from pydjinni.parser.markdown_parser import MarkdownCommand, MarkdownParser, ParameterMarkdownCommand
 from pydjinni_init.exceptions import init_return_codes
 
 
@@ -226,6 +226,9 @@ def define_env(env):
     @env.macro
     def markdown_special_commands():
         output = "| Command | Description |\n|-------|-------|\n"
-        for command in markdown_commands:
-            output += f"| `@{command.name} {f'<{command.parameter}> ' if command.parameter else ' '}{{ description }}` | {command.description} |\n"
+        for command in MarkdownParser().commands():
+            if isinstance(command, ParameterMarkdownCommand):
+                output += f"| `@{command.name} <{command.parameter}> {{ description }}` | {command.description} |\n"
+            else:
+                output += f"| `@{command.name} {{ description }}` | {command.description} |\n"
         return output

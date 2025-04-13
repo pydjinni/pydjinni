@@ -16,6 +16,8 @@ bar_error = error {
 }
 
 helper = main interface +cpp {
+    # @throws foo_error when something goes wrong
+    # @throws bar_error when something else goes wrong
     static throwing_error() throws foo_error, bar_error;
     static throwing_with_parameters() throws foo_error;
     static async throwing_async() throws foo_error;

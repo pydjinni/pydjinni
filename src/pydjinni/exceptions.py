@@ -42,7 +42,7 @@ class ApplicationException(Exception):
             if self.position.file:
                 output += f" in {self.position.file.absolute().as_uri()}"
             if self.position.start:
-                output += f" at ({self.position.start.line}, {self.position.start.col})"
+                output += f" at ({self.position.start.line + 1}, {self.position.start.col})"
         output += f":\n{self.description}"
         return output
 

@@ -70,10 +70,8 @@ class ObjcBaseCommentModel(BaseModel):
 
     @cached_property
     def comment(self) -> str:
-        if self.decl.comment:
-            return DocCCommentRenderer(self.config.identifier).render_tokens(*self.decl.parsed_comment).strip()
-        else:
-            return ""
+        return DocCCommentRenderer(self.config.identifier).render_tokens(*self.decl._parsed_comment).strip() \
+            if self.decl._parsed_comment else ''
 
     @property
     def deprecated(self) -> str:

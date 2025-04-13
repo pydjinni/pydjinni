@@ -6,7 +6,6 @@ from mistune.renderers.markdown import MarkdownRenderer
 from pydjinni.parser.ast import Interface, ErrorDomain
 from pydjinni.parser.base_models import BaseCommentModel
 
-
 class ParserCommentProcessor(MarkdownRenderer):
     def __init__(self, decl: BaseCommentModel):
         super().__init__()
@@ -28,8 +27,8 @@ class ParserCommentProcessor(MarkdownRenderer):
         name = token['attrs']['name']
         description = self.render_children(token, state)
         if (isinstance(self.decl, Interface.Method) or isinstance(self.decl, ErrorDomain.ErrorCode)) and description:
-            for param in self.decl.parameters:
-                if param.name == name:
-                    param.comment = description
-                    break
+            param = next((param for param in self.decl.parameters if param.name == name), None)
+            if param:
+                param.comment = description
+                param._parsed_comment = (token['children'], state)
         return ""
