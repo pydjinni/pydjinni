@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ from pydjinni.packaging.architecture import Architecture
 from pydjinni.packaging.packaging_config import PackageBaseConfig
 from pydjinni.packaging.target import PackageTarget
 from pydjinni.parser.ast import Namespace
-from pydjinni.parser.markdown_parser import MarkdownParser
 from pydjinni.parser.parser import Parser
 
 try:
@@ -45,7 +44,7 @@ from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.generator.generate_config import GenerateBaseConfig
 from pydjinni.generator.target import Target
 from pydjinni.builder.target import BuildTarget
-from pydjinni.parser.base_models import BaseType, BaseExternalType, TypeReference, FileReference
+from pydjinni.parser.base_models import BaseField, BaseType, BaseExternalType, TypeReference, FileReference
 from pydjinni.position import Position
 from pydjinni.parser.resolver import Resolver
 from pydjinni.parser.type_model_builder import TypeModelBuilder
@@ -322,7 +321,7 @@ class API:
             )
 
             # parsing the input IDL. The output is an AST that contains type definitions for each provided marshal
-            type_defs, type_refs, file_imports, ast = parser.parse()
+            type_defs, type_refs, file_imports, fields, ast = parser.parse()
 
             return API.ConfiguredContext.GenerateContext(
                 generate_targets=self._generate_targets,
@@ -330,6 +329,7 @@ class API:
                 defs=type_defs,
                 refs=type_refs,
                 file_imports=file_imports,
+                fields=fields,
                 ast=ast,
                 config=self._generate_config
             )
@@ -424,6 +424,7 @@ class API:
                          defs: list[BaseType],
                          refs: list[TypeReference],
                          file_imports: list[FileReference],
+                         fields: list[BaseField],
                          ast: list[BaseType | Namespace],
                          config: GenerateBaseConfig):
                 self._generate_targets = generate_targets
@@ -431,6 +432,7 @@ class API:
                 self.defs = defs
                 self.refs = refs
                 self.file_imports = file_imports
+                self.fields = fields
                 self.ast = ast
                 self._config = config
 

@@ -17,7 +17,7 @@ from re import Match
 from mistune import BlockState, Markdown
 
 from .identifier import Identifier
-from pydjinni.position import Position
+from pydjinni.position import Cursor, Position
 
 from .base_models import CommentTypeReference, TypeReference
 
@@ -81,9 +81,15 @@ class TypeReferenceMarkdownCommand(ParameterMarkdownCommand):
     def command(self):
         def parse_type_parameter_block_command(_, match: Match, state: BlockState):
             parameter = match.group(self.parameter_group)
+            typename = parameter.rsplit(".")[-1]
             text = match.group(self.command_content_group)
             position = Position.from_match(state.src, self.position.file, match, self.parameter_group).relative_to(self.position, column_offset=1)
-            parameter_type_ref = CommentTypeReference(name=parameter, namespace=self.namespace, position=position)
+            parameter_type_ref = CommentTypeReference(
+                name=parameter, 
+                namespace=self.namespace, 
+                position=position, 
+                identifier_position=position.with_offset(start=Cursor(col=len(parameter) - len(typename)))
+            )
             self.type_references.append(parameter_type_ref)
             state.append_token({'type': self.name, 'text': text, 'attrs': {self.parameter: parameter_type_ref}})
             return match.end() + 1
@@ -93,7 +99,7 @@ class MarkdownParser:
     def __init__(self, type_references: list[TypeReference] = []):
         self.type_references = type_references
 
-    def commands(self, position: Position = None, namespace: list[Identifier] = []):
+    def commands(self, namespace: list[Identifier] = [], position: Position = None) -> list[MarkdownCommand]:
         return [
             MarkdownCommand("returns", "documents the return value of a method"),
             MarkdownCommand("deprecated", "marks a type, field or method as deprecated"),
@@ -105,12 +111,12 @@ class MarkdownParser:
                 position=position, 
                 namespace=namespace,
                 type_references=self.type_references
-            ),
+            )
         ]
-        
-    def parse(self, text: str | None, position: Position, namespace: list[Identifier]) -> tuple[list, BlockState] | None:
+            
+    def parse(self, text: str | None, namespace: list[Identifier], position: Position = Position()) -> tuple[list, BlockState] | None:
         def commands_plugin(md: Markdown):
-            for command in self.commands(position, namespace): md.block.register(command.name, command.pattern, command.command)
+            for command in self.commands(namespace, position): md.block.register(command.name, command.pattern, command.command)
 
         if text:
             return Markdown(plugins=[commands_plugin]).parse(text)

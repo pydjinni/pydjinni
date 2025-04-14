@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import re
 from pydjinni.exceptions import InputParsingException, FileNotFoundException, ApplicationException
 from pydjinni.parser.ast import TypeReference, BaseType
 from pydjinni.parser.base_models import BaseExternalType, CommentTypeReference
+from pydjinni.parser.markdown_parser import MarkdownParser
 from pydjinni.position import Position
 
 
@@ -40,6 +41,7 @@ class Resolver:
             for type_dict in types_dict:
                 if type_dict is not None:
                     types_type = self._external_types_model.model_validate(type_dict)
+                    types_type._parsed_comment = MarkdownParser().parse(types_type.comment, namespace=types_type.namespace)
                     pattern = re.compile(r'^name: *(' + types_type.name + ')$', re.MULTILINE)
                     match = pattern.search(content)
                     if match:

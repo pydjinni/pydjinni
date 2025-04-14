@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ class Namespace(BaseModel):
     comment: str | None
     name: Identifier
     position: Position
+    identifier_position: Position
     children: list[BaseModel]
 
 

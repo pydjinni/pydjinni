@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ def test_parsing_inline_function(tmp_path: Path):
         """
     )
     # WHEN parsing the input
-    defs, _, _, _ = parser.parse()
+    defs, _, _, _, _ = parser.parse()
 
     # THEN the anonymous type should be registered in the output type_defs
     assert len(defs) == 2
@@ -124,7 +124,7 @@ def test_parsing_function_throwing(tmp_path: Path):
     )
 
     # WHEN parsing the input
-    ast, _, _, _ = parser.parse()
+    ast, _, _, _, _ = parser.parse()
 
     # THEN the parsed function should be marked as throwing
     assert len(ast) == 1
@@ -143,7 +143,7 @@ def test_parsing_function_throwing_specific_error(tmp_path: Path):
     resolver_mock.resolve.return_value = BaseExternalType(name="bar", primitive=BaseExternalType.Primitive.error)
 
     # WHEN parsing the input
-    ast, _, _, _ = parser.parse()
+    ast, _, _, _, _ = parser.parse()
 
     # THEN the parsed function should be marked as throwing `bar`
     assert len(ast) == 1

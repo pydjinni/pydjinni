@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,5 +52,18 @@ class Position(BaseModel):
                 line=base.start.line + self.end.line,
                 col=base.start.col + self.end.col + column_offset
             ),
+            file=self.file
+        )
+    
+    def with_offset(self, start: Cursor = Cursor(), end: Cursor = Cursor()):
+        """
+        Returns a new Position object with the given start and end offsets.
+
+        :param start: the start offset
+        :param end: the end offset
+        """
+        return Position(
+            start=Cursor(line=self.start.line + start.line, col=self.start.col + start.col),
+            end=Cursor(line=self.end.line + end.line, col=self.end.col + end.col),
             file=self.file
         )

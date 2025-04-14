@@ -127,6 +127,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Macos
+.DS_Store
+
 # Jetbrains
 .idea/*
 !.idea/icon.svg

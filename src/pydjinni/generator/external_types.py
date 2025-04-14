@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 from pydantic import BaseModel
 
 from pydjinni.parser.base_models import BaseExternalType
+from pydjinni.parser.markdown_parser import MarkdownParser
 
 
 class ExternalTypesBuilder:
@@ -93,11 +94,14 @@ class ExternalTypesBuilder:
         for field, model in self.external_types.items():
             field_kwargs = {key: external_types[field] for key, external_types in self._external_types.items() if
                             external_types.get(field)}
-            output.append(self._external_base_type(
+            type_decl = self._external_base_type(
                 name=model.name,
+                namespace=model.namespace,
                 primitive=model.primitive,
                 comment=model.comment,
                 params=model.params,
                 **field_kwargs
-            ))
+            )
+            type_decl._parsed_comment = MarkdownParser().parse(model.comment, namespace=model.namespace)
+            output.append(type_decl)
         return output

@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -81,11 +81,12 @@ class Parser(IdlVisitor):
         """IDL Parsing error"""
 
     class ParsingExceptionList(ApplicationExceptionList):
-        def __init__(self, errors: list[ApplicationException], type_decls: list[BaseType], type_refs: list[TypeReference], file_imports: list[FileReference], ast: list[BaseType | Namespace]):
+        def __init__(self, errors: list[ApplicationException], type_decls: list[BaseType], type_refs: list[TypeReference], file_imports: list[FileReference], fields: list[BaseField], ast: list[BaseType | Namespace]):
             super().__init__(errors)
             self.type_decls = type_decls
             self.type_refs = type_refs
             self.file_imports = file_imports
+            self.fields = fields
             self.ast = ast
 
     class ParsingErrorListener(ErrorListener):
@@ -110,7 +111,7 @@ class Parser(IdlVisitor):
     def visitComment(self, ctx: IdlParser.CommentContext) -> tuple[str, tuple[list, BlockState]]:
         raw_comment = "\n".join([line.getText()[1:] for line in ctx.COMMENT()])
         comment = "\n".join([line.getText()[1:].strip() for line in ctx.COMMENT()])
-        return (comment, self.markdown_parser.parse(raw_comment, self._position(ctx), self.current_namespace))
+        return (comment, self.markdown_parser.parse(raw_comment, self.current_namespace, self._position(ctx)))
 
     def visitTypeDecl(self, ctx: IdlParser.TypeDeclContext):
         type_decl_context = ctx.enum() or ctx.flags() or ctx.record() or ctx.interface() or ctx.namedFunction() or ctx.errorDomain()
@@ -136,6 +137,7 @@ class Parser(IdlVisitor):
         result = Enum(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
+            identifier_position=self._position(ctx.identifier()),
             items=[self.visit(item) for item in ctx.item()],
             namespace=self.current_namespace,
             comment=comment,
@@ -148,6 +150,7 @@ class Parser(IdlVisitor):
         item = Enum.Item(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
+            identifier_position=self._position(ctx.identifier()),
             comment=comment
         )
         item._parsed_comment = parsed_comment
@@ -159,6 +162,7 @@ class Parser(IdlVisitor):
         result = Flags(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
+            identifier_position=self._position(ctx.identifier()),
             flags=[self.visit(flag) for flag in ctx.flag()],
             namespace=self.current_namespace,
             comment=comment,
@@ -172,6 +176,7 @@ class Parser(IdlVisitor):
         flag = Flags.Flag(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
+            identifier_position=self._position(ctx.identifier()),
             all=all,
             none=none,
             comment=comment
@@ -208,6 +213,7 @@ class Parser(IdlVisitor):
         interface = Interface(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
+            identifier_position=self._position(ctx.identifier()),
             methods=methods,
             targets=self.visit(ctx.targets()) or self.target_keys,
             properties=properties,
@@ -236,6 +242,7 @@ class Parser(IdlVisitor):
         method = Interface.Method(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
+            identifier_position=self._position(ctx.identifier()),
             parameters=[self.visit(param) for param in ctx.parameter()],
             return_type_ref=self.visit(ctx.typeRef()) if ctx.typeRef() else None,
             static=ctx.STATIC() is not None,
@@ -254,6 +261,7 @@ class Parser(IdlVisitor):
         parameter = Parameter(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
+            identifier_position=self._position(ctx.identifier()),
             type_ref=self.visit(ctx.typeRef())
         )
         self.field_decls.append(parameter)
@@ -268,6 +276,7 @@ class Parser(IdlVisitor):
         result = Interface.Property(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
+            identifier_position=self._position(ctx.identifier()),
             comment=comment,
             type_ref=self.visit(ctx.typeRef()) if ctx.typeRef() else None
         )
@@ -278,9 +287,11 @@ class Parser(IdlVisitor):
         if ctx.function():
             function = self.visit(ctx.function())
             self.type_decls.append(function)
+            position = self._position(ctx)
             return TypeReference(
                 name="<function>",
-                position=self._position(ctx),
+                position=position,
+                identifier_position=position,
                 namespace=self.current_namespace,
                 type_def=function
             )
@@ -288,10 +299,14 @@ class Parser(IdlVisitor):
             return self.visit(ctx.dataType())
 
     def visitDataType(self, ctx: IdlParser.DataTypeContext) -> TypeReference:
+        position = self._position(ctx)
+        name = self.visit(ctx.nsIdentifier())
+        typename = name.rsplit('.', 1)[-1]
         type_ref = TypeReference(
-            name=self.visit(ctx.nsIdentifier()),
+            name=name,
             parameters=[self.visit(param) for param in ctx.dataType()],
-            position=self._position(ctx),
+            position=position,
+            identifier_position=position.with_offset(start=Cursor(col=len(name) - len(typename))),
             namespace=self.current_namespace,
             optional=ctx.OPTIONAL() is not None
         )
@@ -331,6 +346,7 @@ class Parser(IdlVisitor):
         return Function(
             name=Identifier(name),
             position=self._position(ctx),
+            identifier_position=self._position(ctx),
             parameters=parameters,
             targets=targets,
             namespace=self.current_namespace,
@@ -346,6 +362,7 @@ class Parser(IdlVisitor):
         record = Record(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
+            identifier_position=self._position(ctx.identifier()),
             comment=comment,
             fields=fields,
             targets=self.visit(ctx.targets()),
@@ -366,6 +383,7 @@ class Parser(IdlVisitor):
         error_domain = ErrorDomain(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
+            identifier_position=self._position(ctx.identifier()),
             comment=comment,
             error_codes=error_codes,
             namespace=self.current_namespace,
@@ -380,6 +398,7 @@ class Parser(IdlVisitor):
         error_code = ErrorDomain.ErrorCode(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
+            identifier_position=self._position(ctx.identifier()),
             comment=comment,
             parameters=parameters,
         )
@@ -392,6 +411,7 @@ class Parser(IdlVisitor):
         field = DataField(
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
+            identifier_position=self._position(ctx.identifier()),
             comment=comment,
             type_ref=self.visit(ctx.typeRef())
         )
@@ -420,6 +440,7 @@ class Parser(IdlVisitor):
         function = self.visit(ctx.function())
         function.name = self.visit(ctx.identifier())
         function.position = self._position(ctx)
+        function.identifier_position = self._position(ctx.identifier())
         function.anonymous = False
         function.comment, function._parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
         return function
@@ -456,16 +477,17 @@ class Parser(IdlVisitor):
         self.current_namespace += namespace
         self.current_namespace_stack_size.append(len(namespace))
 
-        output = Namespace(
+        result = Namespace(
             comment=comment,
             name=name,
             position=self._position(ctx),
+            identifier_position=self._position(ctx.nsIdentifier()),
             children=list(filter(None, [self.visit(content) for content in ctx.namespaceContent()])),
         )
-        output._parsed_comment = parsed_comment
+        result._parsed_comment = parsed_comment
         for _ in range(self.current_namespace_stack_size.pop()):
             self.current_namespace.pop()
-        return output
+        return result
 
 
     def visitFilepath(self, ctx: IdlParser.FilepathContext) -> FileReference | None:
@@ -481,9 +503,11 @@ class Parser(IdlVisitor):
                             position=self._position(ctx)
                         ))
                         return None
+                    position = self._position(ctx)
                     path = FileReference(
                         path=search_path.absolute(),
-                        position=self._position(ctx)
+                        position=position,
+                        identifier_position=position.with_offset(start=Cursor(col=1), end=Cursor(col=-1))
                     )
                     self.file_imports.append(path)
                     return path
@@ -502,7 +526,7 @@ class Parser(IdlVisitor):
         import_path = self.visit(ctx.filepath())
         if import_path:
             try:
-                imported_type_decls, type_refs, _, _ = Parser(
+                imported_type_decls, type_refs, _, _, _ = Parser(
                     resolver=self.resolver,
                     targets=self.targets,
                     supported_target_keys=self.target_keys,
@@ -533,7 +557,7 @@ class Parser(IdlVisitor):
             output += self._dependencies(type_ref.parameters)
         return output
 
-    def parse(self) -> tuple[list[BaseType], list[TypeReference], list[FileReference], list[BaseType | Namespace]]:
+    def parse(self) -> tuple[list[BaseType], list[TypeReference], list[FileReference], list[BaseField], list[BaseType | Namespace]]:
         ast: list[BaseType | Namespace] = []
         try:
             input_stream = InputStream(self.file_reader.read_idl(self.idl))
@@ -601,7 +625,7 @@ class Parser(IdlVisitor):
                             ))
                         if method.throwing is not None:
                             for type_ref in method.throwing:
-                                if type_ref.type_def.primitive != BaseExternalType.Primitive.error:
+                                if type_ref.type_def and type_ref.type_def.primitive != BaseExternalType.Primitive.error:
                                     self.errors.append(Parser.ParsingException(
                                         "Only errors can be thrown",
                                         position=type_ref.position
@@ -639,5 +663,5 @@ class Parser(IdlVisitor):
                 self.position
             ))
         if self.errors:
-            raise Parser.ParsingExceptionList(self.errors, self.type_decls, self.type_refs, self.file_imports, ast)
-        return self.type_decls, self.type_refs, self.file_imports, ast
+            raise Parser.ParsingExceptionList(self.errors, self.type_decls, self.type_refs, self.file_imports, self.field_decls, ast)
+        return self.type_decls, self.type_refs, self.file_imports, self.field_decls, ast

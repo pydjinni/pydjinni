@@ -1,4 +1,4 @@
-# Copyright 2024 jothepro
+# Copyright 2024 - 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,12 +25,13 @@ from pygls.workspace import TextDocument
 
 from pydjinni.exceptions import ConfigurationException
 from pydjinni.parser.ast import Function, Namespace
-from pydjinni.parser.base_models import TypeReference, BaseType, FileReference, BaseExternalType
+from pydjinni.parser.base_models import BaseField, TypeReference, BaseType, FileReference, BaseExternalType
 from pydjinni.parser.parser import Parser
-from pydjinni_language_server.text_document_path import TextDocumentPath
+from .comment_renderer import HoverTooltipCommentRenderer
+from .text_document_path import TextDocumentPath
 from .error_logger import error_logger
 from .tolerant_converter import tolerant_converter
-from .util import to_document_symbol, type_range, map_kind, configure_api, to_hover_cache, to_diagnostic
+from .util import identifier_range, to_document_symbol, type_range, map_kind, configure_api, to_hover_cache, to_diagnostic
 
 try:
     from enum import StrEnum
@@ -59,6 +60,7 @@ def init_language_server(config: Path, generate_on_save: bool, generate_base_pat
         refs = []
         defs = []
         file_imports: list[FileReference] = []
+        fields: list[BaseField] = []
         path = TextDocumentPath(document)
         try:
             generate_context = api.parse(path)
@@ -66,6 +68,7 @@ def init_language_server(config: Path, generate_on_save: bool, generate_base_pat
             ast = generate_context.ast
             file_imports = generate_context.file_imports
             defs = generate_context.defs
+            fields = generate_context.fields
         except Parser.ParsingExceptionList as e:
             error_items = [to_diagnostic(error, DiagnosticSeverity.Error, f"{error.__doc__}: {error.description}") for
                            error in e.items
@@ -74,6 +77,7 @@ def init_language_server(config: Path, generate_on_save: bool, generate_base_pat
             refs = e.type_refs
             file_imports = e.file_imports
             defs = e.type_decls
+            fields = e.fields
             ast = e.ast
         except ConfigurationException as e:
             ls.show_message_log(str(e), MessageType.Error)
@@ -100,7 +104,11 @@ def init_language_server(config: Path, generate_on_save: bool, generate_base_pat
              and ref.position.file.document.uri == uri],
             [file_ref for file_ref in file_imports
              if isinstance(file_ref.position.file, TextDocumentPath)
-             and file_ref.position.file.document.uri == uri]
+             and file_ref.position.file.document.uri == uri],
+            [field for field in fields
+             if isinstance(field.position.file, TextDocumentPath)
+             and field.position.file.document.uri == uri],
+             ast
         )
 
         dependency_cache[uri] = set([ref.type_def.position.file.as_uri() for ref in refs if
@@ -179,14 +187,22 @@ def init_language_server(config: Path, generate_on_save: bool, generate_base_pat
         uri = params.text_document.uri
         ls.show_message_log(f"[{TEXT_DOCUMENT_HOVER}] {unquote(uri)}: {row}, {col}")
 
-        cache_entry: TypeReference | None = hover_cache[uri].get(row, {}).get(col, None)
+        cache_entry: TypeReference | BaseField | None = hover_cache[uri].get(row, {}).get(col, None)
         if cache_entry and isinstance(cache_entry, TypeReference) and cache_entry.type_def and cache_entry.type_def.comment:
             return Hover(
                 contents=MarkupContent(
                     kind=MarkupKind.Markdown,
-                    value=cache_entry.type_def.comment
+                    value=HoverTooltipCommentRenderer().render_tokens(*cache_entry.type_def._parsed_comment)
                 ),
-                range=type_range(cache_entry)
+                range=identifier_range(cache_entry)
+            )
+        elif cache_entry and (isinstance(cache_entry, BaseField) or isinstance(cache_entry, BaseType) or isinstance(cache_entry, Namespace)) and cache_entry.comment:
+            return Hover(
+                contents=MarkupContent(
+                    kind=MarkupKind.Markdown,
+                    value=HoverTooltipCommentRenderer().render_tokens(*cache_entry._parsed_comment)
+                ),
+                range=identifier_range(cache_entry)
             )
         elif cache_entry and isinstance(cache_entry, FileReference):
             return Hover(
@@ -194,7 +210,7 @@ def init_language_server(config: Path, generate_on_save: bool, generate_base_pat
                     kind=MarkupKind.Markdown,
                     value=f"```txt\n{cache_entry.path}\n```"
                 ),
-                range=type_range(cache_entry)
+                range=identifier_range(cache_entry)
             )
 
     @server.feature(TEXT_DOCUMENT_DEFINITION)

@@ -1,3 +1,17 @@
+# Copyright 2025 jothepro
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from pathlib import Path
 
 from lsprotocol.types import DocumentSymbol, SymbolKind, DiagnosticSeverity, Diagnostic, Range, Position
@@ -17,20 +31,25 @@ def to_diagnostic(definition: ApplicationException | BaseType | BaseField, sever
     )
 
 
-def to_hover_cache(type_refs: list[TypeReference], file_imports: list[FileReference]) -> dict[int, dict[int, TypeReference | FileReference]]:
+def to_hover_cache(type_refs: list[TypeReference], file_imports: list[FileReference], fields: list[BaseField], ast: list[Namespace | BaseType]) -> dict[int, dict[int, TypeReference | FileReference]]:
     cache: dict[int, dict[int, TypeReference]] = {}
 
-    def cache_ref(ref: TypeReference | FileReference):
-        for i in range(ref.position.start.col, ref.position.end.col):
-            cache[ref.position.start.line][i] = ref
-        if isinstance(ref, TypeReference):
-            for parameter_ref in ref.parameters:
-                cache_ref(parameter_ref)
+    def cache_ref(ref: TypeReference | FileReference | BaseField | Namespace | BaseType):
+        if ref.identifier_position.start:
+            if not cache.get(ref.identifier_position.start.line):
+                cache[ref.identifier_position.start.line] = {}
+            for i in range(ref.identifier_position.start.col, ref.identifier_position.end.col):
+                cache[ref.identifier_position.start.line][i] = ref
+            if isinstance(ref, TypeReference):
+                for parameter_ref in ref.parameters:
+                    cache_ref(parameter_ref)
+            elif isinstance(ref, Namespace):
+                for child in ref.children:
+                    cache_ref(child)
+        else:
+            raise BaseException(ref)
 
-    for ref in type_refs + file_imports:
-        if not cache.get(ref.position.start.line):
-            cache[ref.position.start.line] = {}
-
+    for ref in fields + type_refs + file_imports + ast:
         cache_ref(ref)
     return cache
 
@@ -40,6 +59,15 @@ def type_range(definition: BaseField | BaseType | ApplicationException) -> Range
         return Range(
             start=Position(definition.position.start.line, definition.position.start.col),
             end=Position(definition.position.end.line, definition.position.end.col)
+        )
+    else:
+        return Range(start=Position(0, 0), end=Position(0, 0))
+
+def identifier_range(definition: BaseField | BaseType | ApplicationException) -> Range:
+    if definition.identifier_position.start and definition.identifier_position.end:
+        return Range(
+            start=Position(definition.identifier_position.start.line, definition.identifier_position.start.col),
+            end=Position(definition.identifier_position.end.line, definition.identifier_position.end.col)
         )
     else:
         return Range(start=Position(0, 0), end=Position(0, 0))

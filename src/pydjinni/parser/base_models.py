@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -71,12 +71,14 @@ class BaseExternalType(BaseCommentModel):
     )
     params: list[str] = []
     position: SkipJsonSchema[Position | None] = Field(exclude=True, default=None)
+    identifier_position: SkipJsonSchema[Position | None] = Field(exclude=True, default=None)
 
 
 class TypeReference(BaseModel):
     name: Identifier
     namespace: Namespace | list[Identifier] = []
     position: Position = Position()
+    identifier_position: Position = Position()
     parameters: list[TypeReference] = []
     optional: bool = False
     type_def: BaseExternalType = Field(
@@ -90,6 +92,7 @@ class CommentTypeReference(TypeReference):
 class FileReference(BaseModel):
     path: Path
     position: Position
+    identifier_position: Position
 
 class BaseType(BaseExternalType, extra='allow'):
     dependencies: list[TypeReference] = []
@@ -98,6 +101,7 @@ class BaseType(BaseExternalType, extra='allow'):
 class BaseField(BaseCommentModel, extra='allow'):
     name: Identifier
     position: Position = None
+    identifier_position: Position
 
 
 class ClassType(BaseType):

@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -82,7 +82,7 @@ def when(parser: Parser, type_type: type[TypeDef], type_name: str = None) -> Typ
         the one element in the AST that was returned by the parser
     """
     # WHEN parsing the input file
-    ast, _, _, _ = parser.parse()
+    ast, _, _, _, _ = parser.parse()
 
     # THEN the resulting AST should contain one element
     assert len(ast) == 1
@@ -255,7 +255,7 @@ def test_extern(tmp_path: Path):
     extern_file.touch()
 
     # WHEN parsing the file
-    ast, _, _, _ = parser.parse()
+    ast, _, _, _, _ = parser.parse()
 
     # THEN the Resolver should have been called in order to load the external type
     resolver_mock.load_external.assert_called_once()
@@ -305,7 +305,7 @@ def test_namespace(tmp_path: Path):
     )
 
     # WHEN parsing the idl file
-    defs, _, _, ast = parser.parse()
+    defs, _, _, _, ast = parser.parse()
 
     # THEN the type_defs should contain two types each labelled with their respective namespace
     assert len(defs) == 2
