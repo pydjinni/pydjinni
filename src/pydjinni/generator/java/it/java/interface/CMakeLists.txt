@@ -18,7 +18,7 @@ java_test_case(InterfaceTest
         generate.jni.identifier.file.prefix=marshal_
         generate.jni.identifier.file.style=snake_case
         generate.jni.namespace=test::interface::jni
-    SOURCES
+    TEST_SOURCES
         tests/TestInterface.java
         tests/TestOptionalInterface.java
 )

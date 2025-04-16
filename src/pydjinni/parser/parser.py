@@ -477,11 +477,12 @@ class Parser(IdlVisitor):
         self.current_namespace += namespace
         self.current_namespace_stack_size.append(len(namespace))
 
+        last_namespace_identifier = name.rsplit('.', 1)[-1]
         result = Namespace(
             comment=comment,
             name=name,
             position=self._position(ctx),
-            identifier_position=self._position(ctx.nsIdentifier()),
+            identifier_position=self._position(ctx.nsIdentifier()).with_offset(start=Cursor(col=len(name) - len(last_namespace_identifier))),
             children=list(filter(None, [self.visit(content) for content in ctx.namespaceContent()])),
         )
         result._parsed_comment = parsed_comment

@@ -21,7 +21,7 @@ function(java_test_case TEST_CASE_NAME)
         # one-value keywords
         ""
         # multi-value keywords
-        "SOURCES;OPTIONS"
+        "SOURCES;TEST_SOURCES;OPTIONS"
         # args
         ${ARGN}
     )
@@ -48,12 +48,16 @@ function(java_test_case TEST_CASE_NAME)
         OUTPUT_NAME ${TEST_CASE_NAME}
         SOURCES
             ${java_GENERATED_SOURCES}
+            ${TEST_CASE_TEST_SOURCES}
             ${TEST_CASE_SOURCES}
         INCLUDE_JARS
             ${junit-platform-console-standalone_JAR}
     )
+    create_javadoc(${JAVA_TARGET_NAME}
+        FILES ${java_GENERATED_SOURCES} ${TEST_CASE_SOURCES}
+    )
     set_target_properties(${JAVA_TARGET_NAME} PROPERTIES FOLDER "it/${TEST_CASE_NAME}")
-    add_dependencies(${JAVA_TARGET_NAME} ${JNI_TARGET_NAME})
+    add_dependencies(${JAVA_TARGET_NAME} ${JNI_TARGET_NAME} ${JAVA_TARGET_NAME}_javadoc)
     get_target_property(TEST_JAR_FILE ${JAVA_TARGET_NAME} JAR_FILE)
     add_test(NAME Java.${TEST_CASE_NAME} COMMAND ${Java_JAVA_EXECUTABLE}
         -Xcheck:jni

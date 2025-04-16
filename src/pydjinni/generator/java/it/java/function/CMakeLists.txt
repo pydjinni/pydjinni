@@ -18,6 +18,6 @@ java_test_case(FunctionTest
         generate.jni.identifier.file.prefix=marshal_
         generate.jni.identifier.file.style=snake_case
         generate.jni.namespace=test::function::jni
-    SOURCES
+    TEST_SOURCES
         tests/TestFunction.java
 )

@@ -45,7 +45,7 @@ class BaseCommentModel(BaseModel):
         default=False,
         description="Marks a type as deprecated"
     )
-    _parsed_comment: tuple[list, BlockState] = PrivateAttr(default=None)
+    _parsed_comment: tuple[list, BlockState] | None = PrivateAttr(default=None)
 
 class BaseExternalType(BaseCommentModel):
     class Primitive(StrEnum):
@@ -81,7 +81,7 @@ class TypeReference(BaseModel):
     identifier_position: Position = Position()
     parameters: list[TypeReference] = []
     optional: bool = False
-    type_def: BaseExternalType = Field(
+    type_def: BaseExternalType | None = Field(
         default=None,
         repr=False
     )

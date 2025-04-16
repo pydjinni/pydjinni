@@ -4,9 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pydjinni"
-authors = [
-    {name = "jothepro", email = "pydjinni@jothe.pro"},
-]
+authors = [{ name = "jothepro", email = "pydjinni@jothe.pro" }]
 dynamic = ["version"]
 description = "An opinionated Djinni reimplementation written in Python."
 readme = "README.md"
@@ -47,12 +45,9 @@ dev = [
     "pytest-asyncio==0.25.3",
     "pytest-lsp==0.4.3",
     "coverage==7.6.12",
-    "antlr4-tools==0.2.1"
+    "antlr4-tools==0.2.1",
 ]
-publish = [
-    "twine==6.1.0",
-    "build==1.0.3"
-]
+publish = ["twine==6.1.0", "build==1.0.3"]
 doc = [
     "mkdocs-material==9.6.7",
     "mkdocs-click==0.8.1",
@@ -68,13 +63,16 @@ doc = [
 Repository = "https://github.com/pydjinni/pydjinni"
 Homepage = "https://pydjinni.github.io/pydjinni"
 
+[tool.black]
+line-length = 120
+
 [project.scripts]
 pydjinni = "pydjinni.__main__:main"
 pydjinni-language-server = "pydjinni_language_server.__main__:main"
 pydjinni-init = "pydjinni_init.__main__:main"
 
 [project.entry-points.'pydjinni.generator']
-cpp  = 'pydjinni.generator.cpp:CppTarget'
+cpp = 'pydjinni.generator.cpp:CppTarget'
 java = 'pydjinni.generator.java:JavaTarget'
 objc = 'pydjinni.generator.objc:ObjcTarget'
 cppcli = 'pydjinni.generator.cppcli:CppCliTarget'
@@ -88,4 +86,4 @@ nuget = 'pydjinni.packaging.nuget:NuGetTarget'
 [project.entry-points.'pydjinni.init']
 conan-cmake = 'pydjinni_init.templates.conan_cmake:ConanCMakeTarget'
 [project.entry-points.'pygments.lexers']
-djinni='pydjinni.lexer:PyDjinniLexer'
+djinni = 'pydjinni.lexer:PyDjinniLexer'

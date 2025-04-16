@@ -18,6 +18,6 @@ java_test_case(ErrorTest
         generate.jni.identifier.file.prefix=marshal_
         generate.jni.identifier.file.style=snake_case
         generate.jni.namespace=test::error::jni
-    SOURCES
+    TEST_SOURCES
         tests/TestError.java
 )

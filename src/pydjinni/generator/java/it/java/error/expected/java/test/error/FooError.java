@@ -9,15 +9,18 @@ public abstract class FooError extends Exception {
     public FooError(String message) {
         super(message);
     }
-    /**
-     * error code comment
-     */
     public final static class SomethingWrong extends FooError {
+        /**
+         * error code comment
+         */
         public SomethingWrong(
         ) {
             this(null);
         }
 
+        /**
+         * error code comment
+         */
         public SomethingWrong(
             String message
         ) {
@@ -38,22 +41,27 @@ public abstract class FooError extends Exception {
         }
 
     }
-    /**
-     * an error with parameters
-     * 
-     * @param parameter is an important additional information
-     */
     public final static class SomethingWithParameters extends FooError {
         /**
          * is an important additional information
          */
         final byte parameter;
+        /**
+         * an error with parameters
+         * 
+         * @param parameter is an important additional information
+         */
         public SomethingWithParameters(
             byte parameter
         ) {
             this(parameter, null);
         }
 
+        /**
+         * an error with parameters
+         * 
+         * @param parameter is an important additional information
+         */
         public SomethingWithParameters(
             byte parameter,
             String message
