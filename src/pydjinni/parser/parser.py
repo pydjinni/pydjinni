@@ -18,22 +18,17 @@ from antlr4 import InputStream, CommonTokenStream
 from antlr4.error.ErrorListener import ErrorListener
 from antlr4.tree.Tree import ErrorNode
 from mistune import BlockState
-from pydjinni.exceptions import ApplicationException, FileNotFoundException, ApplicationExceptionList, \
-    InputParsingException
+from pydjinni.exceptions import (
+    ApplicationException,
+    FileNotFoundException,
+    ApplicationExceptionList,
+    InputParsingException,
+)
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.generator.cpp.cpp.generator import CppGenerator
 from pydjinni.generator.target import Target
 from pydjinni.position import Position, Cursor
-from .ast import (
-    Record,
-    Interface,
-    Enum,
-    Flags,
-    Parameter,
-    Function,
-    ErrorDomain,
-    Namespace
-)
+from .ast import Record, Interface, Enum, Flags, Parameter, Function, ErrorDomain, Namespace
 from .base_models import BaseType, TypeReference, BaseField, BaseExternalType, DataField, FileReference
 from .comment_processor import ParserCommentProcessor
 from .grammar.IdlLexer import IdlLexer
@@ -50,15 +45,15 @@ def unpack(list_input: []):
 
 class Parser(IdlVisitor):
     def __init__(
-            self,
-            resolver: Resolver,
-            targets: list[Target],
-            supported_target_keys: list[str],
-            include_dirs: list[Path],
-            default_deriving: set[Record.Deriving],
-            file_reader: FileReaderWriter,
-            idl: Path,
-            position: Position = None,
+        self,
+        resolver: Resolver,
+        targets: list[Target],
+        supported_target_keys: list[str],
+        include_dirs: list[Path],
+        default_deriving: set[Record.Deriving],
+        file_reader: FileReaderWriter,
+        idl: Path,
+        position: Position = None,
     ):
         self.resolver = resolver
         self.targets = targets
@@ -81,7 +76,15 @@ class Parser(IdlVisitor):
         """IDL Parsing error"""
 
     class ParsingExceptionList(ApplicationExceptionList):
-        def __init__(self, errors: list[ApplicationException], type_decls: list[BaseType], type_refs: list[TypeReference], file_imports: list[FileReference], fields: list[BaseField], ast: list[BaseType | Namespace]):
+        def __init__(
+            self,
+            errors: list[ApplicationException],
+            type_decls: list[BaseType],
+            type_refs: list[TypeReference],
+            file_imports: list[FileReference],
+            fields: list[BaseField],
+            ast: list[BaseType | Namespace],
+        ):
             super().__init__(errors)
             self.type_decls = type_decls
             self.type_refs = type_refs
@@ -95,16 +98,16 @@ class Parser(IdlVisitor):
             self.errors = errors
 
         def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-            self.errors.append(Parser.ParsingException(
-                f'{msg}, {offendingSymbol}',
-                position=Position(
-                    start=Cursor(line=line - 1, col=column),
-                    end=Cursor(line=line - 1, col=column),
-                    file=self.idl
+            self.errors.append(
+                Parser.ParsingException(
+                    f"{msg}, {offendingSymbol}",
+                    position=Position(
+                        start=Cursor(line=line - 1, col=column), end=Cursor(line=line - 1, col=column), file=self.idl
+                    ),
                 )
-            ))
+            )
 
-    def visitIdl(self, ctx:IdlParser.IdlContext):
+    def visitIdl(self, ctx: IdlParser.IdlContext):
         [self.visit(load) for load in ctx.load()]
         return [self.visit(content) for content in ctx.namespaceContent()]
 
@@ -114,17 +117,21 @@ class Parser(IdlVisitor):
         return (comment, self.markdown_parser.parse(raw_comment, self.current_namespace, self._position(ctx)))
 
     def visitTypeDecl(self, ctx: IdlParser.TypeDeclContext):
-        type_decl_context = ctx.enum() or ctx.flags() or ctx.record() or ctx.interface() or ctx.namedFunction() or ctx.errorDomain()
+        type_decl_context = (
+            ctx.enum() or ctx.flags() or ctx.record() or ctx.interface() or ctx.namedFunction() or ctx.errorDomain()
+        )
         if type_decl_context:
             type_decl: BaseType = self.visit(type_decl_context)
             self.resolver.register(type_decl)
             self.type_decls.append(type_decl)
             return type_decl
         else:
-            self.errors.append(Parser.ParsingException(
-                "unknown type. Expected enum | flags | record | interface | function | error",
-                position=self._position(ctx)
-            ))
+            self.errors.append(
+                Parser.ParsingException(
+                    "unknown type. Expected enum | flags | record | interface | function | error",
+                    position=self._position(ctx),
+                )
+            )
 
     def visitIdentifier(self, ctx: IdlParser.IdentifierContext) -> Identifier:
         return Identifier(ctx.ID().getText())
@@ -151,7 +158,7 @@ class Parser(IdlVisitor):
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
             identifier_position=self._position(ctx.identifier()),
-            comment=comment
+            comment=comment,
         )
         item._parsed_comment = parsed_comment
         self.field_decls.append(item)
@@ -179,7 +186,7 @@ class Parser(IdlVisitor):
             identifier_position=self._position(ctx.identifier()),
             all=all,
             none=none,
-            comment=comment
+            comment=comment,
         )
         flag._parsed_comment = parsed_comment
         self.field_decls.append(flag)
@@ -188,10 +195,9 @@ class Parser(IdlVisitor):
     def visitModifier(self, ctx: IdlParser.ModifierContext) -> tuple[bool, bool]:
         value = ctx.ID().getText()
         if value not in ["all", "none"]:
-            self.errors.append(Parser.ParsingException(
-                f"expected 'all' or 'none', got '{value}'",
-                position=self._position(ctx)
-            ))
+            self.errors.append(
+                Parser.ParsingException(f"expected 'all' or 'none', got '{value}'", position=self._position(ctx))
+            )
         return value == "all", value == "none"
 
     def visitInterface(self, ctx: IdlParser.InterfaceContext) -> Interface:
@@ -220,20 +226,22 @@ class Parser(IdlVisitor):
             main=ctx.MAIN() is not None,
             namespace=self.current_namespace,
             dependencies=self._dependencies(dependencies),
-            comment=comment
+            comment=comment,
         )
         interface._parsed_comment = parsed_comment
 
         if interface.main and interface.targets != [CppGenerator.key]:
             self.errors.append(
-                Parser.ParsingException("a 'main' interface can only be implemented in C++", interface.position))
+                Parser.ParsingException("a 'main' interface can only be implemented in C++", interface.position)
+            )
 
         for method in interface.methods:
             if not interface.targets == [CppGenerator.key] and method.static:
-                self.errors.append(Parser.ParsingException(
-                    f"methods are only allowed to be static on '{CppGenerator.key}' interfaces",
-                    method.position
-                ))
+                self.errors.append(
+                    Parser.ParsingException(
+                        f"methods are only allowed to be static on '{CppGenerator.key}' interfaces", method.position
+                    )
+                )
 
         return interface
 
@@ -249,7 +257,7 @@ class Parser(IdlVisitor):
             const=ctx.CONST() is not None,
             asynchronous=ctx.ASYNC() is not None,
             throwing=self.visit(ctx.throwing()) if ctx.throwing() else None,
-            comment=comment
+            comment=comment,
         )
         method._parsed_comment = parsed_comment
         self.field_decls.append(method)
@@ -262,14 +270,13 @@ class Parser(IdlVisitor):
             name=self.visit(ctx.identifier()),
             position=self._position(ctx),
             identifier_position=self._position(ctx.identifier()),
-            type_ref=self.visit(ctx.typeRef())
+            type_ref=self.visit(ctx.typeRef()),
         )
         self.field_decls.append(parameter)
         return parameter
 
-    def visitThrowing(self, ctx:IdlParser.ThrowingContext) -> list[TypeReference]:
+    def visitThrowing(self, ctx: IdlParser.ThrowingContext) -> list[TypeReference]:
         return [self.visit(typeRef) for typeRef in ctx.typeRef()]
-
 
     def visitProp(self, ctx: IdlParser.PropContext) -> Interface.Property:
         comment, parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
@@ -278,7 +285,7 @@ class Parser(IdlVisitor):
             position=self._position(ctx),
             identifier_position=self._position(ctx.identifier()),
             comment=comment,
-            type_ref=self.visit(ctx.typeRef()) if ctx.typeRef() else None
+            type_ref=self.visit(ctx.typeRef()),
         )
         result._parsed_comment = parsed_comment
         return result
@@ -293,7 +300,7 @@ class Parser(IdlVisitor):
                 position=position,
                 identifier_position=position,
                 namespace=self.current_namespace,
-                type_def=function
+                type_def=function,
             )
         else:
             return self.visit(ctx.dataType())
@@ -301,14 +308,14 @@ class Parser(IdlVisitor):
     def visitDataType(self, ctx: IdlParser.DataTypeContext) -> TypeReference:
         position = self._position(ctx)
         name = self.visit(ctx.nsIdentifier())
-        typename = name.rsplit('.', 1)[-1]
+        typename = name.rsplit(".", 1)[-1]
         type_ref = TypeReference(
             name=name,
             parameters=[self.visit(param) for param in ctx.dataType()],
             position=position,
             identifier_position=position.with_offset(start=Cursor(col=len(name) - len(typename))),
             namespace=self.current_namespace,
-            optional=ctx.OPTIONAL() is not None
+            optional=ctx.OPTIONAL() is not None,
         )
         self.type_refs.append(type_ref)
         return type_ref
@@ -334,14 +341,14 @@ class Parser(IdlVisitor):
             generic_signatures = []
             for param in type_ref.parameters:
                 generic_signatures.append(signature(param, depth + 1))
-            return ('_' * depth).join([output] + generic_signatures)
+            return ("_" * depth).join([output] + generic_signatures)
 
-        name = '_'.join(
-            ['function'] +
-            [target for target in targets] +
-            [signature(parameter.type_ref) for parameter in parameters] +
-            [signature(return_type_ref) if return_type_ref else 'void'] +
-            (["throws"] + [ref.name for ref in throwing] if throwing is not None else [])
+        name = "_".join(
+            ["function"]
+            + [target for target in targets]
+            + [signature(parameter.type_ref) for parameter in parameters]
+            + [signature(return_type_ref) if return_type_ref else "void"]
+            + (["throws"] + [ref.name for ref in throwing] if throwing is not None else [])
         )
         return Function(
             name=Identifier(name),
@@ -368,7 +375,7 @@ class Parser(IdlVisitor):
             targets=self.visit(ctx.targets()),
             namespace=self.current_namespace,
             dependencies=self._dependencies([field.type_ref for field in fields]),
-            deriving=deriving
+            deriving=deriving,
         )
         record._parsed_comment = parsed_comment
         return record
@@ -413,14 +420,15 @@ class Parser(IdlVisitor):
             position=self._position(ctx),
             identifier_position=self._position(ctx.identifier()),
             comment=comment,
-            type_ref=self.visit(ctx.typeRef())
+            type_ref=self.visit(ctx.typeRef()),
         )
         field._parsed_comment = parsed_comment
         if isinstance(field.type_ref.type_def, Function):
-            self.errors.append(Parser.ParsingException(
-                "functions are not allowed as record field type",
-                position=self._position(ctx.typeRef())
-            ))
+            self.errors.append(
+                Parser.ParsingException(
+                    "functions are not allowed as record field type", position=self._position(ctx.typeRef())
+                )
+            )
         self.field_decls.append(field)
         return field
 
@@ -432,8 +440,8 @@ class Parser(IdlVisitor):
         try:
             return Record.Deriving(value)
         except ValueError:
-            self.errors.append(Parser.ParsingException(
-                f"'{value}' is not a valid record extension", self._position(ctx))
+            self.errors.append(
+                Parser.ParsingException(f"'{value}' is not a valid record extension", self._position(ctx))
             )
 
     def visitNamedFunction(self, ctx: IdlParser.NamedFunctionContext) -> Function:
@@ -453,7 +461,7 @@ class Parser(IdlVisitor):
         if "+any" in targets:
             includes = self.target_keys
         for target in targets:
-            if target.startswith('+'):
+            if target.startswith("+"):
                 includes.append(target[1:])
             else:
                 excludes.append(target[1:])
@@ -463,33 +471,30 @@ class Parser(IdlVisitor):
         targets = [include for include in includes if include not in excludes]
         for target in targets:
             if target not in self.target_keys:
-                self.errors.append(Parser.ParsingException(
-                    f"Unknown interface target '{target}'",
-                    self._position(ctx)
-                ))
+                self.errors.append(Parser.ParsingException(f"Unknown interface target '{target}'", self._position(ctx)))
         return targets
 
-    def visitNamespace(self, ctx:IdlParser.NamespaceContext):
+    def visitNamespace(self, ctx: IdlParser.NamespaceContext):
         comment, parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
         name = Identifier(self.visit(ctx.nsIdentifier()))
-        namespace: list[Identifier] = [Identifier(identifier) for identifier in
-                                       name.split('.')]
+        namespace: list[Identifier] = [Identifier(identifier) for identifier in name.split(".")]
         self.current_namespace += namespace
         self.current_namespace_stack_size.append(len(namespace))
 
-        last_namespace_identifier = name.rsplit('.', 1)[-1]
+        last_namespace_identifier = name.rsplit(".", 1)[-1]
         result = Namespace(
             comment=comment,
             name=name,
             position=self._position(ctx),
-            identifier_position=self._position(ctx.nsIdentifier()).with_offset(start=Cursor(col=len(name) - len(last_namespace_identifier))),
+            identifier_position=self._position(ctx.nsIdentifier()).with_offset(
+                start=Cursor(col=len(name) - len(last_namespace_identifier))
+            ),
             children=list(filter(None, [self.visit(content) for content in ctx.namespaceContent()])),
         )
         result._parsed_comment = parsed_comment
         for _ in range(self.current_namespace_stack_size.pop()):
             self.current_namespace.pop()
         return result
-
 
     def visitFilepath(self, ctx: IdlParser.FilepathContext) -> FileReference | None:
         node = ctx.FILEPATH()
@@ -499,16 +504,18 @@ class Parser(IdlVisitor):
             for search_path in search_paths:
                 if search_path.exists() and not search_path.is_dir():
                     if search_path == self.idl:
-                        self.errors.append(Parser.ParsingException(
-                            f"Circular import detected: file {self.idl} directly references itself!",
-                            position=self._position(ctx)
-                        ))
+                        self.errors.append(
+                            Parser.ParsingException(
+                                f"Circular import detected: file {self.idl} directly references itself!",
+                                position=self._position(ctx),
+                            )
+                        )
                         return None
                     position = self._position(ctx)
                     path = FileReference(
                         path=search_path.absolute(),
                         position=position,
-                        identifier_position=position.with_offset(start=Cursor(col=1), end=Cursor(col=-1))
+                        identifier_position=position.with_offset(start=Cursor(col=1), end=Cursor(col=-1)),
                     )
                     self.file_imports.append(path)
                     return path
@@ -522,7 +529,6 @@ class Parser(IdlVisitor):
             except InputParsingException as e:
                 self.errors.append(e)
 
-
     def visitImportDef(self, ctx: IdlParser.ImportDefContext):
         import_path = self.visit(ctx.filepath())
         if import_path:
@@ -535,7 +541,7 @@ class Parser(IdlVisitor):
                     default_deriving=self.default_deriving,
                     file_reader=self.file_reader,
                     idl=import_path.path,
-                    position=self._position(ctx)
+                    position=self._position(ctx),
                 ).parse()
                 self.type_decls += imported_type_decls
                 self.type_refs += type_refs
@@ -548,7 +554,7 @@ class Parser(IdlVisitor):
         return Position(
             start=Cursor(line=ctx.start.line - 1, col=ctx.start.column),
             end=Cursor(line=ctx.stop.line - 1, col=ctx.stop.column + len(ctx.stop.text)),
-            file=self.idl
+            file=self.idl,
         )
 
     def _dependencies(self, type_refs: list[TypeReference]) -> list[TypeReference]:
@@ -558,7 +564,9 @@ class Parser(IdlVisitor):
             output += self._dependencies(type_ref.parameters)
         return output
 
-    def parse(self) -> tuple[list[BaseType], list[TypeReference], list[FileReference], list[BaseField], list[BaseType | Namespace]]:
+    def parse(
+        self,
+    ) -> tuple[list[BaseType], list[TypeReference], list[FileReference], list[BaseField], list[BaseType | Namespace]]:
         ast: list[BaseType | Namespace] = []
         try:
             input_stream = InputStream(self.file_reader.read_idl(self.idl))
@@ -583,18 +591,21 @@ class Parser(IdlVisitor):
                     except Resolver.TypeResolvingException as e:
                         self.errors.append(e)
                     if type_ref.parameters and not type_ref.type_def.params:
-                        self.errors.append(Parser.ParsingException(
-                            f"Type '{type_ref.name}' does not accept generic parameters",
-                            type_ref.position
-                        ))
+                        self.errors.append(
+                            Parser.ParsingException(
+                                f"Type '{type_ref.name}' does not accept generic parameters", type_ref.position
+                            )
+                        )
                     elif type_ref.parameters and len(type_ref.type_def.params) != len(type_ref.parameters):
                         expected_parameters = ", ".join(type_ref.type_def.params)
-                        self.errors.append(Parser.ParsingException(
-                            f"Invalid number of generic parameters given to '{type_ref.name}'. "
-                            f"Expects {len(type_ref.type_def.params)} ({expected_parameters}), "
-                            f"but {len(type_ref.parameters)} where given.",
-                            type_ref.position
-                        ))
+                        self.errors.append(
+                            Parser.ParsingException(
+                                f"Invalid number of generic parameters given to '{type_ref.name}'. "
+                                f"Expects {len(type_ref.type_def.params)} ({expected_parameters}), "
+                                f"but {len(type_ref.parameters)} where given.",
+                                type_ref.position,
+                            )
+                        )
             for target in self.targets:
                 target.marshal(self.type_decls, self.field_decls)
             for decl in self.type_decls:
@@ -602,67 +613,96 @@ class Parser(IdlVisitor):
                     for field in decl.fields:
                         if field.type_ref.type_def:
                             if field.type_ref.type_def.primitive == BaseExternalType.Primitive.error:
-                                self.errors.append(Parser.ParsingException(
-                                    "Cannot assign an error as record field type",
-                                    position=field.type_ref.position
-                                ))
+                                self.errors.append(
+                                    Parser.ParsingException(
+                                        "Cannot assign an error as record field type", position=field.type_ref.position
+                                    )
+                                )
                             elif field.type_ref.type_def.primitive == BaseExternalType.Primitive.interface:
-                                self.errors.append(Parser.ParsingException(
-                                    "Cannot assign an interface as record field type",
-                                    position=field.type_ref.position
-                                ))
+                                self.errors.append(
+                                    Parser.ParsingException(
+                                        "Cannot assign an interface as record field type",
+                                        position=field.type_ref.position,
+                                    )
+                                )
                         if Record.Deriving.ord in decl.deriving:
-                            if field.type_ref.type_def and field.type_ref.type_def.primitive == BaseExternalType.Primitive.collection:
-                                self.errors.append(Parser.ParsingException(
-                                    "Cannot compare collections in 'ord' deriving",
-                                    position=field.position
-                                ))
+                            if (
+                                field.type_ref.type_def
+                                and field.type_ref.type_def.primitive == BaseExternalType.Primitive.collection
+                            ):
+                                self.errors.append(
+                                    Parser.ParsingException(
+                                        "Cannot compare collections in 'ord' deriving", position=field.position
+                                    )
+                                )
                 if isinstance(decl, Interface):
                     for method in decl.methods:
-                        if method.return_type_ref and method.return_type_ref.type_def and method.return_type_ref.type_def.primitive == BaseExternalType.Primitive.error:
-                            self.errors.append(Parser.ParsingException(
-                                "Cannot return an error from a method",
-                                position=method.return_type_ref.position
-                            ))
+                        if (
+                            method.return_type_ref
+                            and method.return_type_ref.type_def
+                            and method.return_type_ref.type_def.primitive == BaseExternalType.Primitive.error
+                        ):
+                            self.errors.append(
+                                Parser.ParsingException(
+                                    "Cannot return an error from a method", position=method.return_type_ref.position
+                                )
+                            )
                         if method.throwing is not None:
                             for type_ref in method.throwing:
-                                if type_ref.type_def and type_ref.type_def.primitive != BaseExternalType.Primitive.error:
-                                    self.errors.append(Parser.ParsingException(
-                                        "Only errors can be thrown",
-                                        position=type_ref.position
-                                    ))
+                                if (
+                                    type_ref.type_def
+                                    and type_ref.type_def.primitive != BaseExternalType.Primitive.error
+                                ):
+                                    self.errors.append(
+                                        Parser.ParsingException("Only errors can be thrown", position=type_ref.position)
+                                    )
                         for parameter in method.parameters:
-                            if parameter.type_ref.type_def and parameter.type_ref.type_def.primitive == BaseExternalType.Primitive.error:
-                                self.errors.append(Parser.ParsingException(
-                                    "Cannot pass an error type to a method",
-                                    position=parameter.type_ref.position
-                                ))
+                            if (
+                                parameter.type_ref.type_def
+                                and parameter.type_ref.type_def.primitive == BaseExternalType.Primitive.error
+                            ):
+                                self.errors.append(
+                                    Parser.ParsingException(
+                                        "Cannot pass an error type to a method", position=parameter.type_ref.position
+                                    )
+                                )
                 if isinstance(decl, Function):
-                    if decl.return_type_ref and decl.return_type_ref.type_def and decl.return_type_ref.type_def.primitive == BaseExternalType.Primitive.error:
-                        self.errors.append(Parser.ParsingException(
-                            "Cannot return an error type from a function",
-                            position=decl.return_type_ref.position
-                        ))
+                    if (
+                        decl.return_type_ref
+                        and decl.return_type_ref.type_def
+                        and decl.return_type_ref.type_def.primitive == BaseExternalType.Primitive.error
+                    ):
+                        self.errors.append(
+                            Parser.ParsingException(
+                                "Cannot return an error type from a function", position=decl.return_type_ref.position
+                            )
+                        )
                     for parameter in decl.parameters:
-                        if parameter.type_ref.type_def and parameter.type_ref.type_def.primitive == BaseExternalType.Primitive.error:
-                            self.errors.append(Parser.ParsingException(
-                                "Cannot pass an error type to a function",
-                                position=parameter.type_ref.position
-                            ))
+                        if (
+                            parameter.type_ref.type_def
+                            and parameter.type_ref.type_def.primitive == BaseExternalType.Primitive.error
+                        ):
+                            self.errors.append(
+                                Parser.ParsingException(
+                                    "Cannot pass an error type to a function", position=parameter.type_ref.position
+                                )
+                            )
                     if decl.throwing is not None:
                         for type_ref in decl.throwing:
-                            if type_ref.type_def.primitive != BaseExternalType.Primitive.error:
-                                self.errors.append(Parser.ParsingException(
-                                    "Only errors can be thrown",
-                                    position=type_ref.position
-                                ))
+                            if type_ref.type_def and type_ref.type_def.primitive != BaseExternalType.Primitive.error:
+                                self.errors.append(
+                                    Parser.ParsingException("Only errors can be thrown", position=type_ref.position)
+                                )
         except FileNotFoundError as e:
             raise FileNotFoundException(Path(e.filename))
         except RecursionError:
-            self.errors.append(Parser.ParsingException(
-                f"Circular import detected: file {self.idl} indirectly imports itself!",
-                self.position
-            ))
+            self.errors.append(
+                Parser.ParsingException(
+                    f"Circular import detected: file {self.idl} indirectly imports itself!", self.position
+                )
+            )
         if self.errors:
-            raise Parser.ParsingExceptionList(self.errors, self.type_decls, self.type_refs, self.file_imports, self.field_decls, ast)
+            raise Parser.ParsingExceptionList(
+                self.errors, self.type_decls, self.type_refs, self.file_imports, self.field_decls, ast
+            )
         return self.type_decls, self.type_refs, self.file_imports, self.field_decls, ast

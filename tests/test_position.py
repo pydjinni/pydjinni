@@ -36,6 +36,7 @@ from pydjinni.position import Cursor, Position
 )
 def test_position_from_match(text, cursor_start, cursor_end):
     match = re.compile(r"(match)", flags=re.MULTILINE).search(text)
+    assert match
     position = Position.from_match(text, Path("test.txt"), match)
     assert position.start == cursor_start
     assert position.end == cursor_end

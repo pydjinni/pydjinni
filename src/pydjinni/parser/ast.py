@@ -14,6 +14,7 @@
 from pydantic import BaseModel
 
 from pydjinni.parser.base_models import (
+    BaseCommentModel,
     BaseType,
     BaseField,
     ClassType,
@@ -29,8 +30,7 @@ from pydjinni.parser.identifier import Identifier
 from pydjinni.position import Position
 
 
-class Namespace(BaseModel):
-    comment: str | None
+class Namespace(BaseCommentModel):
     name: Identifier
     position: Position
     identifier_position: Position
