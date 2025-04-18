@@ -20,11 +20,7 @@ from typing import cast
 import pytest
 import pytest_lsp
 from lsprotocol.types import *
-from pytest_lsp import (
-    ClientServerConfig,
-    LanguageClient,
-    client_capabilities,
-)
+from pytest_lsp import ClientServerConfig, LanguageClient, client_capabilities
 
 test_uri = "file:///path/to/interface.pydjinni"
 
@@ -32,12 +28,7 @@ test_uri = "file:///path/to/interface.pydjinni"
 async def when_did_open(client: LanguageClient, text: str):
     client.text_document_did_open(
         DidOpenTextDocumentParams(
-            text_document=TextDocumentItem(
-                uri=test_uri,
-                language_id="pydjinni",
-                version=1,
-                text=text,
-            )
+            text_document=TextDocumentItem(uri=test_uri, language_id="pydjinni", version=1, text=text)
         )
     )
     await client.wait_for_notification(TEXT_DOCUMENT_PUBLISH_DIAGNOSTICS)
@@ -46,7 +37,10 @@ async def when_did_open(client: LanguageClient, text: str):
 async def assert_hover(client: LanguageClient, position: Position, expected_range: Range, expected_contents: list[str]):
     # WHEN requesting hover information
     hover_result = await client.text_document_hover_async(
-        HoverParams(text_document=TextDocumentIdentifier(test_uri), position=position)
+        HoverParams(
+            text_document=TextDocumentIdentifier(test_uri),
+            position=position,
+        )
     )
 
     # THEN the hover should give context for the type
@@ -63,10 +57,7 @@ async def assert_definition(
     definition_result = cast(
         Location,
         await client.text_document_definition_async(
-            DefinitionParams(
-                text_document=TextDocumentIdentifier(test_uri),
-                position=position,
-            )
+            DefinitionParams(text_document=TextDocumentIdentifier(test_uri), position=position)
         ),
     )
 
@@ -85,11 +76,43 @@ class DiagnosticExpectation:
 async def assert_diagnostics(client: LanguageClient, expected_diagnostics: list[DiagnosticExpectation]):
     assert test_uri in client.diagnostics
     assert len(client.diagnostics[test_uri]) == len(expected_diagnostics)
-    for index, diagnostic in enumerate(client.diagnostics[test_uri]):
-        assert diagnostic.severity == expected_diagnostics[index].severity
-        assert diagnostic.range == expected_diagnostics[index].range
-        for expected_content in expected_diagnostics[index].contents:
+    for diagnostic, expected in zip(client.diagnostics[test_uri], expected_diagnostics):
+        assert diagnostic.severity == expected.severity
+        assert diagnostic.range == expected.range
+        for expected_content in expected.contents:
             assert expected_content in diagnostic.message
+
+
+@dataclass
+class DocumentSymbolExpectation:
+    name: str
+    kind: SymbolKind
+    range: Range
+    deprecated: bool = False
+    children: list["DocumentSymbolExpectation"] | None = None
+
+
+async def assert_document_symbols(client: LanguageClient, expected_symbols: list[DocumentSymbolExpectation]):
+    document_symbols = cast(
+        list[DocumentSymbol],
+        await client.text_document_document_symbol_async(
+            DocumentSymbolParams(text_document=TextDocumentIdentifier(test_uri))
+        ),
+    )
+    assert document_symbols
+
+    def assert_symbol_expectation(symbols: list[DocumentSymbol], expectations: list[DocumentSymbolExpectation]):
+        for symbol, expectation in zip(symbols, expectations):
+            assert symbol.name == expectation.name
+            assert symbol.kind == expectation.kind
+            assert symbol.range == expectation.range
+            if expectation.deprecated:
+                assert symbol.deprecated
+            if symbol.children:
+                assert expectation.children
+                assert_symbol_expectation(symbol.children, expectation.children)
+
+    assert_symbol_expectation(document_symbols, expected_symbols)
 
 
 @pytest_lsp.fixture(
@@ -103,8 +126,8 @@ async def assert_diagnostics(client: LanguageClient, expected_diagnostics: list[
             "STDIO",
             "--log",
             "pygls.log",
-        ],
-    ),
+        ]
+    )
 )
 async def client(lsp_client: LanguageClient):
     # Setup
@@ -180,6 +203,38 @@ async def test_record(client: LanguageClient):
         expected_range=Range(start=Position(line=1, character=0), end=Position(line=3, character=23)),
     )
 
+    # THEN the document symbols should be correct
+    await assert_document_symbols(
+        client,
+        [
+            DocumentSymbolExpectation(
+                name="foo",
+                kind=SymbolKind.Class,
+                range=Range(start=Position(line=1, character=0), end=Position(line=3, character=23)),
+                deprecated=True,
+                children=[
+                    DocumentSymbolExpectation(
+                        name="a",
+                        kind=SymbolKind.Field,
+                        range=Range(start=Position(line=3, character=15), end=Position(line=3, character=21)),
+                    )
+                ],
+            ),
+            DocumentSymbolExpectation(
+                name="bar",
+                kind=SymbolKind.Class,
+                range=Range(start=Position(line=4, character=0), end=Position(line=4, character=23)),
+                children=[
+                    DocumentSymbolExpectation(
+                        name="b",
+                        kind=SymbolKind.Field,
+                        range=Range(start=Position(line=4, character=15), end=Position(line=4, character=21)),
+                    )
+                ],
+            ),
+        ],
+    )
+
 
 @pytest.mark.asyncio
 async def test_interface(client: LanguageClient):
@@ -210,7 +265,7 @@ async def test_interface(client: LanguageClient):
                 severity=DiagnosticSeverity.Error,
                 range=Range(start=Position(line=9, character=29), end=Position(line=9, character=39)),
                 contents=["Type resolving error: Unknown type 'some_error'"],
-            ),
+            )
         ],
     )
 
@@ -262,4 +317,39 @@ async def test_interface(client: LanguageClient):
         position=Position(line=9, character=5),
         expected_range=Range(start=Position(line=9, character=4), end=Position(line=9, character=19)),
         expected_contents=["a method that is throwing", "Throws", "`some_error` when something goes wrong"],
+    )
+
+    await assert_document_symbols(
+        client,
+        [
+            DocumentSymbolExpectation(
+                name="foo",
+                kind=SymbolKind.Interface,
+                range=Range(start=Position(line=1, character=0), end=Position(line=10, character=1)),
+                children=[
+                    DocumentSymbolExpectation(
+                        name="get_instance",
+                        kind=SymbolKind.Method,
+                        range=Range(start=Position(line=3, character=4), end=Position(line=3, character=33)),
+                    ),
+                    DocumentSymbolExpectation(
+                        name="bar",
+                        kind=SymbolKind.Method,
+                        range=Range(start=Position(line=4, character=4), end=Position(line=6, character=28)),
+                        children=[
+                            DocumentSymbolExpectation(
+                                name="param",
+                                kind=SymbolKind.Variable,
+                                range=Range(start=Position(line=6, character=8), end=Position(line=6, character=19)),
+                            ),
+                        ],
+                    ),
+                    DocumentSymbolExpectation(
+                        name="throwing_method",
+                        kind=SymbolKind.Method,
+                        range=Range(start=Position(line=7, character=4), end=Position(line=9, character=40)),
+                    ),
+                ],
+            )
+        ],
     )

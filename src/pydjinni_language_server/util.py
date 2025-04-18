@@ -22,16 +22,20 @@ from pydjinni.parser.ast import Namespace, Interface, Record, Enum, Flags, Error
 from pydjinni.parser.base_models import BaseType, BaseField, TypeReference, SymbolicConstantType, FileReference
 
 
-def to_diagnostic(definition: ApplicationException | BaseType | BaseField, severity: DiagnosticSeverity, description: str) -> Diagnostic:
+def to_diagnostic(
+    definition: ApplicationException | BaseType | BaseField, severity: DiagnosticSeverity, description: str
+) -> Diagnostic:
     return Diagnostic(
-        range=type_range(definition),
-        severity=severity,
-        message=description,
-        source="pydjinni-language-server"
+        range=type_range(definition), severity=severity, message=description, source="pydjinni-language-server"
     )
 
 
-def to_hover_cache(type_refs: list[TypeReference], file_imports: list[FileReference], fields: list[BaseField], ast: list[Namespace | BaseType]) -> dict[int, dict[int, TypeReference | FileReference]]:
+def to_hover_cache(
+    type_refs: list[TypeReference],
+    file_imports: list[FileReference],
+    fields: list[BaseField],
+    ast: list[Namespace | BaseType],
+) -> dict[int, dict[int, TypeReference | FileReference]]:
     cache: dict[int, dict[int, TypeReference]] = {}
 
     def cache_ref(ref: TypeReference | FileReference | BaseField | Namespace | BaseType):
@@ -54,29 +58,32 @@ def to_hover_cache(type_refs: list[TypeReference], file_imports: list[FileRefere
     return cache
 
 
-def type_range(definition: BaseField | BaseType | ApplicationException) -> Range:
+def type_range(definition: BaseField | BaseType | Namespace | ApplicationException) -> Range:
     if definition.position.start and definition.position.end:
         return Range(
             start=Position(definition.position.start.line, definition.position.start.col),
-            end=Position(definition.position.end.line, definition.position.end.col)
+            end=Position(definition.position.end.line, definition.position.end.col),
         )
     else:
         return Range(start=Position(0, 0), end=Position(0, 0))
+
 
 def identifier_range(definition: BaseField | BaseType | ApplicationException) -> Range:
     if definition.identifier_position.start and definition.identifier_position.end:
         return Range(
             start=Position(definition.identifier_position.start.line, definition.identifier_position.start.col),
-            end=Position(definition.identifier_position.end.line, definition.identifier_position.end.col)
+            end=Position(definition.identifier_position.end.line, definition.identifier_position.end.col),
         )
     else:
         return Range(start=Position(0, 0), end=Position(0, 0))
+
 
 def configure_api(config: Path) -> API.ConfiguredContext:
     if config.exists():
         return API().configure(path=config)
     else:
-        return API().configure(options={ "generate": {} })
+        return API().configure(options={"generate": {}})
+
 
 def map_kind(type_def):
     if isinstance(type_def, Interface):
@@ -90,14 +97,15 @@ def map_kind(type_def):
     else:
         return SymbolKind.Null
 
-def to_document_symbol(type_def):
+
+def to_document_symbol(type_def) -> DocumentSymbol:
     if isinstance(type_def, Namespace):
         return DocumentSymbol(
             name=type_def.name,
             kind=SymbolKind.Namespace,
             range=type_range(type_def),
             selection_range=type_range(type_def),
-            children=[to_document_symbol(child) for child in type_def.children]
+            children=[to_document_symbol(child) for child in type_def.children],
         )
     elif isinstance(type_def, Interface):
         return DocumentSymbol(
@@ -121,12 +129,13 @@ def to_document_symbol(type_def):
                             kind=SymbolKind.Variable,
                             range=type_range(parameter),
                             selection_range=type_range(parameter),
-                            detail=parameter.type_ref.name
+                            detail=parameter.type_ref.name,
                         )
                         for parameter in method.parameters
-                    ]
-                ) for method in type_def.methods
-            ]
+                    ],
+                )
+                for method in type_def.methods
+            ],
         )
     elif isinstance(type_def, Record):
         return DocumentSymbol(
@@ -142,9 +151,10 @@ def to_document_symbol(type_def):
                     kind=SymbolKind.Field,
                     range=type_range(field),
                     selection_range=type_range(field),
-                    detail=field.type_ref.name
-                ) for field in type_def.fields
-            ]
+                    detail=field.type_ref.name,
+                )
+                for field in type_def.fields
+            ],
         )
     elif isinstance(type_def, Enum):
         return DocumentSymbol(
@@ -156,12 +166,10 @@ def to_document_symbol(type_def):
             detail="enum",
             children=[
                 DocumentSymbol(
-                    name=item.name,
-                    kind=SymbolKind.EnumMember,
-                    range=type_range(item),
-                    selection_range=type_range(item)
-                ) for item in type_def.items
-            ]
+                    name=item.name, kind=SymbolKind.EnumMember, range=type_range(item), selection_range=type_range(item)
+                )
+                for item in type_def.items
+            ],
         )
     elif isinstance(type_def, Flags):
         return DocumentSymbol(
@@ -177,9 +185,10 @@ def to_document_symbol(type_def):
                     kind=SymbolKind.EnumMember,
                     range=type_range(flag),
                     selection_range=type_range(flag),
-                    detail="all" if flag.all else "none" if flag.none else None
-                ) for flag in type_def.flags
-            ]
+                    detail="all" if flag.all else "none" if flag.none else None,
+                )
+                for flag in type_def.flags
+            ],
         )
     elif isinstance(type_def, ErrorDomain):
         return DocumentSymbol(
@@ -201,11 +210,13 @@ def to_document_symbol(type_def):
                             kind=SymbolKind.Variable,
                             range=type_range(parameter),
                             selection_range=type_range(parameter),
-                            detail=parameter.type_ref.name
-                        ) for parameter in error_code.parameters
-                    ]
-                ) for error_code in type_def.error_codes
-            ]
+                            detail=parameter.type_ref.name,
+                        )
+                        for parameter in error_code.parameters
+                    ],
+                )
+                for error_code in type_def.error_codes
+            ],
         )
     elif isinstance(type_def, Function):
         return DocumentSymbol(
@@ -221,15 +232,15 @@ def to_document_symbol(type_def):
                     kind=SymbolKind.Variable,
                     range=type_range(parameter),
                     selection_range=type_range(parameter),
-                    detail=parameter.type_ref.name
+                    detail=parameter.type_ref.name,
                 )
                 for parameter in type_def.parameters
-            ]
+            ],
         )
     else:
         return DocumentSymbol(
             name=type_def.name,
             kind=map_kind(type_def),
             range=type_range(type_def),
-            selection_range=type_range(type_def)
+            selection_range=type_range(type_def),
         )
