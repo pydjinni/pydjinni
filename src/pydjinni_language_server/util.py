@@ -35,11 +35,11 @@ def to_hover_cache(
     file_imports: list[FileReference],
     fields: list[BaseField],
     ast: list[Namespace | BaseType],
-) -> dict[int, dict[int, TypeReference | FileReference]]:
-    cache: dict[int, dict[int, TypeReference]] = {}
+) -> dict[int, dict[int, TypeReference | FileReference | BaseField | Namespace | BaseType]]:
+    cache: dict[int, dict[int, TypeReference | FileReference | BaseField | Namespace | BaseType]] = {}
 
     def cache_ref(ref: TypeReference | FileReference | BaseField | Namespace | BaseType):
-        if ref.identifier_position.start:
+        if ref.identifier_position and ref.identifier_position.start:
             if not cache.get(ref.identifier_position.start.line):
                 cache[ref.identifier_position.start.line] = {}
             for i in range(ref.identifier_position.start.col, ref.identifier_position.end.col):
@@ -58,8 +58,8 @@ def to_hover_cache(
     return cache
 
 
-def type_range(definition: BaseField | BaseType | Namespace | ApplicationException) -> Range:
-    if definition.position.start and definition.position.end:
+def type_range(definition: BaseField | BaseType | Namespace | TypeReference | ApplicationException) -> Range:
+    if definition.position and definition.position.start and definition.position.end:
         return Range(
             start=Position(definition.position.start.line, definition.position.start.col),
             end=Position(definition.position.end.line, definition.position.end.col),
@@ -68,8 +68,8 @@ def type_range(definition: BaseField | BaseType | Namespace | ApplicationExcepti
         return Range(start=Position(0, 0), end=Position(0, 0))
 
 
-def identifier_range(definition: BaseField | BaseType | ApplicationException) -> Range:
-    if definition.identifier_position.start and definition.identifier_position.end:
+def identifier_range(definition: BaseField | BaseType | TypeReference) -> Range:
+    if definition.identifier_position and definition.identifier_position.start and definition.identifier_position.end:
         return Range(
             start=Position(definition.identifier_position.start.line, definition.identifier_position.start.col),
             end=Position(definition.identifier_position.end.line, definition.identifier_position.end.col),
