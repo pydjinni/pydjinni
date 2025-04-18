@@ -1,4 +1,4 @@
-// Copyright 2023 jothepro
+// Copyright 2023 - 2025 jothepro
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "catch2/catch_test_macros.hpp"
 #include "example_enum.hpp"
 #include "helper.hpp"
+#include <catch2/catch_test_macros.hpp>
 #include <sstream>
 
-TEST_CASE("Cpp.EnumTest") {
+TEST_CASE("EnumTest") {
     GIVEN("a ExampleEnum enum value") {
         auto enum_value = test::enum_test::ExampleEnum::A;
         WHEN("passing the enum through a helper interface") {
@@ -30,7 +30,7 @@ TEST_CASE("Cpp.EnumTest") {
     GIVEN("a ExampleEnum enum value") {
         auto enum_value = test::enum_test::ExampleEnum::A;
         WHEN("stringifying he enum value") {
-                auto result = std::format("{}", enum_value);
+            auto result = std::format("{}", enum_value);
             THEN("the stringified value should be 'A'") {
                 REQUIRE(result == "A");
             }

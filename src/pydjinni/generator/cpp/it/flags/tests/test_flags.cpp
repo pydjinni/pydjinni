@@ -1,4 +1,4 @@
-// Copyright 2023 jothepro
+// Copyright 2023 - 2025 jothepro
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 #include "example_flags.hpp"
 #include "helper.hpp"
 
-TEST_CASE("Cpp.FlagsTest") {
+TEST_CASE("FlagsTest") {
     GIVEN("a ExampleFlags flag value") {
         auto flag_value = test::flags_test::ExampleFlags::A;
         WHEN("passing the flag through a helper interface") {

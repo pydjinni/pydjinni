@@ -1,4 +1,4 @@
-// Copyright 2024 jothepro
+// Copyright 2024 - 2025 jothepro
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,28 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "catch2/catch_test_macros.hpp"
-#include "test/async.hpp"
-#include "helper.hpp"
 #include "foo_error.hpp"
-#include "catch2/matchers/catch_matchers_exception.hpp"
+#include "helper.hpp"
+#include "test/async.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_exception.hpp>
 
-TEST_CASE("Cpp.ErrorTest") {
+TEST_CASE("ErrorTest") {
     WHEN("calling an interface that throws an error") {
         THEN("the expected exception should be thrown") {
             REQUIRE_THROWS_MATCHES(
-                    ::test::error::Helper::throwing_error(),
-                    ::test::error::FooError::SomethingWrong,
-                    Catch::Matchers::Message("some error")
+                ::test::error::Helper::throwing_error(),
+                ::test::error::FooError::SomethingWrong,
+                Catch::Matchers::Message("some error")
             );
         }
     }
     WHEN("calling an interface that throws an error with parameters") {
         THEN("the expected exception should be thrown") {
             REQUIRE_THROWS_MATCHES(
-                    ::test::error::Helper::throwing_with_parameters(),
-                    ::test::error::FooError::SomethingWithParameters,
-                    Catch::Matchers::Message("some error message")
+                ::test::error::Helper::throwing_with_parameters(),
+                ::test::error::FooError::SomethingWithParameters,
+                Catch::Matchers::Message("some error message")
             );
         }
         THEN("the expected parameters should be set on the exception") {
@@ -55,7 +55,7 @@ TEST_CASE("Cpp.ErrorTest") {
             }
         }
         WHEN("using a coroutine callback interface that throws an error") {
-            struct AsyncThrowingCallbackImpl : public ::test::error::AsyncThrowingCallback {
+            struct AsyncThrowingCallbackImpl: public ::test::error::AsyncThrowingCallback {
                 bool callback_called = false;
 
                 ::pydjinni::coroutine::task<> throwing_error() override {
@@ -64,6 +64,7 @@ TEST_CASE("Cpp.ErrorTest") {
                     co_return;
                 }
             };
+
             auto callback = std::make_shared<AsyncThrowingCallbackImpl>();
             THEN("the exception thrown by the callback should be forwarded to the calling coroutine accordingly") {
                 REQUIRE_THROWS_MATCHES(
@@ -71,8 +72,8 @@ TEST_CASE("Cpp.ErrorTest") {
                     ::test::error::FooError::SomethingWrong,
                     Catch::Matchers::Message("some async callback error")
                 );
-
             }
         }
-    } RUN_SYNCHRONOUS
+    }
+    RUN_SYNCHRONOUS
 }

@@ -13,21 +13,21 @@
 // limitations under the License.
 
 #include "catch2/catch_test_macros.hpp"
-#include <catch2/matchers/catch_matchers_string.hpp>
 #include "global_interface.hpp"
 #include "something/namespaced/namespaced_interface.hpp"
+#include <catch2/matchers/catch_matchers_string.hpp>
 
-TEST_CASE("Cpp.NamespaceTest") {
+TEST_CASE("NamespaceTest") {
     WHEN("using the global interface") {
         const auto result = ::test::namespace_test::GlobalInterface::get_namespaced_record();
         THEN("the namespaced record should be returned") {
-            REQUIRE(result == ::test::namespace_test::something::namespaced::NamespacedRecord { { { 5 } } });
+            REQUIRE(result == ::test::namespace_test::something::namespaced::NamespacedRecord {{{5}}});
         }
     }
     WHEN("using the namespaced interface") {
         const auto result = ::test::namespace_test::something::namespaced::NamespacedInterface::get_global_record();
         THEN("the global record should be returned") {
-            REQUIRE(result == ::test::namespace_test::GlobalRecord { { 5 } });
+            REQUIRE(result == ::test::namespace_test::GlobalRecord {{5}});
         }
     }
 }

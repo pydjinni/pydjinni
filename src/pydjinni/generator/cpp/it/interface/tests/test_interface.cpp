@@ -1,4 +1,4 @@
-// Copyright 2023 jothepro
+// Copyright 2023 - 2025 jothepro
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "calculator.hpp"
 #include "catch2/catch_test_macros.hpp"
 #include "catch2/matchers/catch_matchers_exception.hpp"
-#include "calculator.hpp"
-#include "platform_interface.hpp"
 #include "optional_interface.hpp"
+#include "platform_interface.hpp"
 
-TEST_CASE("Cpp.InterfaceTest") {
+TEST_CASE("InterfaceTest") {
     GIVEN("a Calculator interface instance") {
         auto calculator = ::test::interface_test::Calculator::get_instance();
         WHEN("using the calculator interface") {
@@ -34,8 +34,10 @@ TEST_CASE("Cpp.InterfaceTest") {
             }
         }
         AND_GIVEN("an implementation for the PlatformInterface interface") {
-            class PlatformInterfaceImpl : public ::test::interface_test::PlatformInterface {
-                int8_t get_value() noexcept override { return 5; }
+            class PlatformInterfaceImpl: public ::test::interface_test::PlatformInterface {
+                int8_t get_value() noexcept override {
+                    return 5;
+                }
             };
             WHEN("passing using the implementation") {
                 auto result = calculator->get_platform_value(std::make_shared<PlatformInterfaceImpl>());
@@ -47,14 +49,12 @@ TEST_CASE("Cpp.InterfaceTest") {
         WHEN("calling a method that throws an exception") {
             THEN("the exception should be received") {
                 REQUIRE_THROWS_MATCHES(
-                    calculator->throwing_exception(),
-                    std::runtime_error,
-                    Catch::Matchers::Message("shit hit the fan")
+                    calculator->throwing_exception(), std::runtime_error, Catch::Matchers::Message("shit hit the fan")
                 );
             }
         }
         WHEN("calling the `no_parameters_no_return_callback` method") {
-            struct NoParametersNoReturnCallbackImpl : public ::test::interface_test::NoParametersNoReturnCallback {
+            struct NoParametersNoReturnCallbackImpl: public ::test::interface_test::NoParametersNoReturnCallback {
                 bool callbackInvoked = false;
                 void invoke() noexcept override {
                     callbackInvoked = true;
@@ -67,7 +67,7 @@ TEST_CASE("Cpp.InterfaceTest") {
             }
         }
         WHEN("calling the `throwing_callback` method") {
-            struct ThrowingCallbackImpl : public ::test::interface_test::ThrowingCallback {
+            struct ThrowingCallbackImpl: public ::test::interface_test::ThrowingCallback {
                 void invoke() const override {
                     throw std::runtime_error("exception from callback");
                 }
@@ -79,7 +79,6 @@ TEST_CASE("Cpp.InterfaceTest") {
                     Catch::Matchers::Message("exception from callback")
                 );
             }
-
         }
     }
     GIVEN("OptionalInterface") {

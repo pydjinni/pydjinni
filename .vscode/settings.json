@@ -31,5 +31,6 @@
     "java.project.referencedLibraries": [
         "**/*.jar"
     ],
-    "C_Cpp.default.cppStandard": "c++23"
+    "C_Cpp.default.cppStandard": "c++23",
+    "cmake.ctest.testSuiteDelimiter": "\\."
 }

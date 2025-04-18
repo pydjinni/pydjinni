@@ -1,4 +1,4 @@
-// Copyright 2023 jothepro
+// Copyright 2023 - 2025 jothepro
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,19 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "catch2/catch_test_macros.hpp"
-#include "catch2/matchers/catch_matchers_exception.hpp"
-#include "test/async.hpp"
 #include "asynchronous.hpp"
+#include "test/async.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_exception.hpp>
 
-
-class MultiplyCallbackImpl : public ::test::async_test::MultiplyCallback {
+class MultiplyCallbackImpl: public ::test::async_test::MultiplyCallback {
     pydjinni::coroutine::task<int32_t> invoke(int32_t a, int32_t b) noexcept override {
-        co_return a * b;
+        co_return a* b;
     }
 };
 
-struct NoParametersNoReturnImpl : public ::test::async_test::NoParametersNoReturnCallback {
+struct NoParametersNoReturnImpl: public ::test::async_test::NoParametersNoReturnCallback {
     bool callbackInvoked = false;
     pydjinni::coroutine::task<> invoke() noexcept override {
         callbackInvoked = true;
@@ -32,15 +31,14 @@ struct NoParametersNoReturnImpl : public ::test::async_test::NoParametersNoRetur
     }
 };
 
-class ThrowingCallbackImpl : public ::test::async_test::ThrowingCallback {
+class ThrowingCallbackImpl: public ::test::async_test::ThrowingCallback {
     pydjinni::coroutine::task<> invoke() override {
         throw std::runtime_error("throwing from callback");
         co_return;
     }
 };
 
-
-TEST_CASE("Cpp.AsyncTest") {
+TEST_CASE("AsyncTest") {
     ASYNC {
         GIVEN("an Asynchronous object instance") {
             auto instance = co_await test::async_test::Asynchronous::get_instance();
@@ -58,7 +56,11 @@ TEST_CASE("Cpp.AsyncTest") {
             }
             WHEN("awaiting the `throwing_exception` method") {
                 THEN("the exception should be received") {
-                    REQUIRE_THROWS_MATCHES(co_await instance->throwing_exception(), std::runtime_error, Catch::Matchers::Message("asynchronous runtime error"));
+                    REQUIRE_THROWS_MATCHES(
+                        co_await instance->throwing_exception(),
+                        std::runtime_error,
+                        Catch::Matchers::Message("asynchronous runtime error")
+                    );
                 }
             }
             WHEN("awaiting the `multiply_callback` method and passing a callback implementation") {
@@ -76,9 +78,14 @@ TEST_CASE("Cpp.AsyncTest") {
             }
             WHEN("awaiting the `throwing_callback` method and passing a callback implementation") {
                 THEN("the exception should be received") {
-                    REQUIRE_THROWS_MATCHES(co_await instance->throwing_callback(std::make_shared<ThrowingCallbackImpl>()), std::runtime_error, Catch::Matchers::Message("throwing from callback"));
+                    REQUIRE_THROWS_MATCHES(
+                        co_await instance->throwing_callback(std::make_shared<ThrowingCallbackImpl>()),
+                        std::runtime_error,
+                        Catch::Matchers::Message("throwing from callback")
+                    );
                 }
             }
         }
-    } RUN_SYNCHRONOUS
+    }
+    RUN_SYNCHRONOUS
 }

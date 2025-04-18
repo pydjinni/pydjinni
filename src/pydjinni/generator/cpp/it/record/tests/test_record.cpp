@@ -1,4 +1,4 @@
-// Copyright 2023 - 2024 jothepro
+// Copyright 2023 - 2025 jothepro
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,25 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "catch2/catch_test_macros.hpp"
-#include <catch2/matchers/catch_matchers_string.hpp>
+#include "collection_types.hpp"
 #include "helper.hpp"
+#include "primitive_types.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <format>
 
-TEST_CASE("Cpp.RecordTest") {
-    #ifdef _WIN32
+TEST_CASE("RecordTest") {
+#ifdef _WIN32
     _putenv_s("TZ", "GMT");
     _tzset();
-    #else
+#else
     std::string tz = "TZ=Etc/GMT-0";
     putenv(tz.data());
     tzset();
-    #endif
+#endif
     GIVEN("a PrimitiveTypes record instance") {
         const auto record = test::record::PrimitiveTypes(
-                true, 8, 16, 32, 64, 32.32f, 64.64,
-                "test string",
-                std::chrono::time_point<std::chrono::system_clock>(std::chrono::seconds(1688213309))
+            true,
+            8,
+            16,
+            32,
+            64,
+            32.32f,
+            64.64,
+            "test string",
+            std::chrono::time_point<std::chrono::system_clock>(std::chrono::seconds(1688213309))
         );
         WHEN("passing the record through a helper interface") {
             const auto returned_record = test::record::Helper::get_primitive_types(record);
@@ -45,7 +53,10 @@ TEST_CASE("Cpp.RecordTest") {
                 REQUIRE(returned_record.double_t > 64);
                 REQUIRE(returned_record.double_t < 65);
                 REQUIRE(returned_record.string_t == "test string");
-                REQUIRE(returned_record.date_t == std::chrono::time_point<std::chrono::system_clock>(std::chrono::seconds(1688213309)));
+                REQUIRE(
+                    returned_record.date_t ==
+                    std::chrono::time_point<std::chrono::system_clock>(std::chrono::seconds(1688213309))
+                );
             }
             THEN("the records should pass the equality check") {
                 REQUIRE(record == returned_record);
@@ -54,22 +65,25 @@ TEST_CASE("Cpp.RecordTest") {
         WHEN("streaming the type to ostream") {
             const auto result = std::format("{}", record);
             THEN("a string representation of the type should be returned") {
-                REQUIRE_THAT(result, Catch::Matchers::Matches(R"(::test::record::PrimitiveTypes\(boolean_t=true, byte_t=8, short_t=16, int_t=32, long_t=64, float_t=32.32, double_t=64.64, string_t=test string, date_t=2023-07-01 12:08:29.0*\))"));
+                REQUIRE_THAT(
+                    result,
+                    Catch::Matchers::Matches(
+                        R"(::test::record::PrimitiveTypes\(boolean_t=true, byte_t=8, short_t=16, int_t=32, long_t=64, float_t=32.32, double_t=64.64, string_t=test string, date_t=2023-07-01 12:08:29.0*\))"
+                    )
+                );
             }
         }
     }
     GIVEN("A CollectionTypes record instance") {
         const auto record = test::record::CollectionTypes(
+            {0, 1},
+            {"foo", "bar"},
+            {0, 1},
+            {"foo", "bar"},
+            {
                 {0, 1},
-                {"foo", "bar"},
-                {0, 1},
-                {"foo", "bar"},
-                {
-                        {0, 1},
-                },
-                {
-                        {"foo", "bar"}
-                }
+            },
+            {{"foo", "bar"}}
         );
         WHEN("passing the record through a helper interface") {
             const auto returned_record = test::record::Helper::get_collection_types(record);
@@ -98,21 +112,28 @@ TEST_CASE("Cpp.RecordTest") {
             }
         }
         WHEN("streaming the type to ostream") {
-            const auto result = std::format("{}", record);;
+            const auto result = std::format("{}", record);
+            ;
             THEN("a string representation of the type should be returned") {
-                #ifdef __cpp_lib_format_ranges
-                REQUIRE_THAT(result, Catch::Matchers::Matches(R"(::test::record::CollectionTypes\(int_list=\[0, 1\], string_list=\[\"foo\", \"bar\"\], int_set=\{[10], [10]\}, string_set=\{\"(foo|bar)\", \"(foo|bar)\"\}, int_int_map=\{0: 1\}, string_string_map=\{\"foo\": \"bar\"\}\))"));
-                #else
-                REQUIRE(result == "::test::record::CollectionTypes(int_list={?}, string_list={?}, int_set={?}, string_set={?}, int_int_map={?}, string_string_map={?})");
-                #endif
+#ifdef __cpp_lib_format_ranges
+                REQUIRE_THAT(
+                    result,
+                    Catch::Matchers::Matches(
+                        R"(::test::record::CollectionTypes\(int_list=\[0, 1\], string_list=\[\"foo\", \"bar\"\], int_set=\{[10], [10]\}, string_set=\{\"(foo|bar)\", \"(foo|bar)\"\}, int_int_map=\{0: 1\}, string_string_map=\{\"foo\": \"bar\"\}\))"
+                    )
+                );
+#else
+                REQUIRE(
+                    result ==
+                    "::test::record::CollectionTypes(int_list={?}, string_list={?}, int_set={?}, string_set={?}, int_int_map={?}, string_string_map={?})"
+                );
+#endif
             }
         }
     }
     GIVEN("A OptionalTypes record instance") {
-        const auto record = test::record::OptionalTypes(
-                std::optional<int32_t>(42),
-                std::optional<std::string>("optional")
-        );
+        const auto record =
+            test::record::OptionalTypes(std::optional<int32_t>(42), std::optional<std::string>("optional"));
         WHEN("passing the record through a helper interface") {
             const auto returned_record = test::record::Helper::get_optional_types(record);
             THEN("the record should still contain the same data") {
@@ -123,20 +144,23 @@ TEST_CASE("Cpp.RecordTest") {
             }
         }
         WHEN("streaming the type to ostream") {
-            const auto result = std::format("{}", record);;
+            const auto result = std::format("{}", record);
+            ;
             THEN("a string representation of the type should be returned") {
                 REQUIRE(result == "::test::record::OptionalTypes(int_optional=42, string_optional=optional)");
             }
         }
     }
     GIVEN("A BinaryTypes record instance") {
-        const auto record = test::record::BinaryTypes(std::vector<uint8_t>{0x8F}, std::make_optional<std::vector<uint8_t>>({static_cast<uint8_t>(0x8F)}));
+        const auto record = test::record::BinaryTypes(
+            std::vector<uint8_t> {0x8F}, std::make_optional<std::vector<uint8_t>>({static_cast<uint8_t>(0x8F)})
+        );
         WHEN("passing the record through a helper interface") {
             const auto returned_record = test::record::Helper::get_binary_types(record);
             THEN("the record should still contain the same data") {
-                REQUIRE(returned_record.binary_t == std::vector<uint8_t>{0x8F});
+                REQUIRE(returned_record.binary_t == std::vector<uint8_t> {0x8F});
                 REQUIRE(returned_record.binary_optional.has_value());
-                REQUIRE(returned_record.binary_optional.value() == std::vector<uint8_t>{0x8F});
+                REQUIRE(returned_record.binary_optional.value() == std::vector<uint8_t> {0x8F});
             }
         }
     }
@@ -149,13 +173,16 @@ TEST_CASE("Cpp.RecordTest") {
             }
         }
         WHEN("streaming the type to ostream") {
-            const auto result = std::format("{}", record);;
+            const auto result = std::format("{}", record);
+            ;
             THEN("a string representation of the type should be returned") {
-                #ifdef __cpp_lib_format_ranges
-                REQUIRE(result == "::test::record::ParentType(nested=::test::record::NestedType(a=42, b=[[1, 2], [3, 4]]))");
-                #else
+#ifdef __cpp_lib_format_ranges
+                REQUIRE(
+                    result == "::test::record::ParentType(nested=::test::record::NestedType(a=42, b=[[1, 2], [3, 4]]))"
+                );
+#else
                 REQUIRE(result == "::test::record::ParentType(nested=::test::record::NestedType(a=42, b={?}))");
-                #endif
+#endif
             }
         }
     }

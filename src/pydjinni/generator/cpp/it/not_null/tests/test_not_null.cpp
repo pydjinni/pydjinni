@@ -15,9 +15,7 @@
 #include "catch2/catch_test_macros.hpp"
 #include "not_null_interface.hpp"
 
-TEST_CASE("Cpp.NotNullTest") {
-
+TEST_CASE("NotNullTest") {
     const auto instance = ::test::not_null_test::NotNullInterface::get_instance();
     instance->not_null_parameter(instance);
-
 }

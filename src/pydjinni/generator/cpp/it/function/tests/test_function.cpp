@@ -1,4 +1,4 @@
-// Copyright 2023 jothepro
+// Copyright 2023 - 2025 jothepro
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "catch2/catch_test_macros.hpp"
-#include "catch2/matchers/catch_matchers_exception.hpp"
-#include "helper.hpp"
 #include "bar.hpp"
+#include "helper.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_exception.hpp>
 
-TEST_CASE("Cpp.FunctionTest") {
+TEST_CASE("FunctionTest") {
     WHEN("passing a lambda to the named_function method") {
         THEN("the internal assert should not be triggered") {
             test::function::Helper::named_function([](std::string input) -> bool {
@@ -62,8 +62,8 @@ TEST_CASE("Cpp.FunctionTest") {
         const auto lambda = test::function::Helper::cpp_function_throwing_bar_error();
         WHEN("using calling the function") {
             THEN("the exception should be thrown as expected") {
-                REQUIRE_THROWS_MATCHES(lambda(), test::function::Bar,
-                    Catch::Matchers::Message("this lambda has thrown an exception")
+                REQUIRE_THROWS_MATCHES(
+                    lambda(), test::function::Bar, Catch::Matchers::Message("this lambda has thrown an exception")
                 );
             }
         }
@@ -77,9 +77,13 @@ TEST_CASE("Cpp.FunctionTest") {
     }
     WHEN("passing a lambda that throws an exception") {
         THEN("the exception should be passed through correctly when the lambda is called inside") {
-            REQUIRE_THROWS_MATCHES(test::function::Helper::function_parameter_throwing([]() -> void {
-                throw std::runtime_error("unexpected error from host");
-            }), std::runtime_error, Catch::Matchers::Message("unexpected error from host"));
+            REQUIRE_THROWS_MATCHES(
+                test::function::Helper::function_parameter_throwing([]() -> void {
+                    throw std::runtime_error("unexpected error from host");
+                }),
+                std::runtime_error,
+                Catch::Matchers::Message("unexpected error from host")
+            );
         }
     }
     WHEN("passing a nullptr instead of a lambda to an optional lambda parameter") {
@@ -89,7 +93,7 @@ TEST_CASE("Cpp.FunctionTest") {
         }
     }
     WHEN("passing a lambda to an optional lambda parameter") {
-        const auto result = test::function::Helper::optional_function_passing_function([](std::string input){
+        const auto result = test::function::Helper::optional_function_passing_function([](std::string input) {
             return input == "foo";
         });
         THEN("the resulting function should not be a nullptr") {
