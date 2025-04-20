@@ -156,7 +156,9 @@ async def assert_code_lenses(client: LanguageClient, expected_code_lenses: list[
 async def client(lsp_client: LanguageClient, tmp_path: Path):
     # Setup
     await lsp_client.initialize_session(
-        InitializeParams(capabilities=client_capabilities("visual-studio-code"), root_path=str(tmp_path))
+        InitializeParams(
+            capabilities=client_capabilities("visual-studio-code"), root_uri=tmp_path.as_uri(), root_path=str(tmp_path)
+        )
     )
 
     yield
