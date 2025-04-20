@@ -142,9 +142,15 @@ def init_language_server(config: Path, generate_on_save: bool, generate_base_pat
             + [config.absolute().as_uri()]
         )
 
+    @server.feature(INITIALIZE)
+    @error_logger
+    def initialize(ls: LanguageServer, params: InitializeParams):
+        if params.root_path:
+            os.chdir(params.root_path)
+
     @server.feature(INITIALIZED)
     @error_logger
-    def init(ls: LanguageServer, _: InitializedParams):
+    def init(ls: LanguageServer, params: InitializedParams):
         ls.show_message_log(f"Initialized PyDjinni language server {version('pydjinni')}")
         ls.show_message_log(f"Working directory: {Path(os.getcwd()).absolute().as_uri()}")
 
@@ -320,17 +326,11 @@ def init_language_server(config: Path, generate_on_save: bool, generate_base_pat
                             file_output_path: Path = (
                                 generate_base_path / main_generator.source_path / target_type.source
                             )
-                        line = type_def.position.start.line + (
-                            len(type_def.comment.split("\n")) if type_def.comment else 0
-                        )
                         generated_file_path = file_output_path.absolute()
                         if generated_file_path.exists():
                             lenses.append(
                                 CodeLens(
-                                    range=Range(
-                                        start=Position(line, type_def.position.start.col),
-                                        end=Position(line, type_def.position.start.col + 5),
-                                    ),
+                                    range=identifier_range(type_def),
                                     command=Command(
                                         title=target.display_key,
                                         command="open_generated_interface",
