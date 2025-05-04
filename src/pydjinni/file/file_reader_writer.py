@@ -29,7 +29,8 @@ class FileReaderWriter:
     added to the list of generated files.
     """
 
-    def __init__(self):
+    def __init__(self, root_path: Path):
+        self._root_path = root_path
         self._processed_files = None
         self._used_keys: list[str] = []
 
@@ -73,12 +74,15 @@ class FileReaderWriter:
             self._used_keys.append(key)
 
     def _write(self, filename: Path, content: str):
-        filename.parent.mkdir(parents=True, exist_ok=True)
-        filename.write_text(content)
+        absolute_filename = filename if filename.absolute() else self._root_path / filename
+        absolute_filename.parent.mkdir(parents=True, exist_ok=True)
+        absolute_filename.write_text(content)
 
     def _copy(self, source_file: Path, target_file: Path):
-        target_file.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy(source_file, target_file)
+        absolute_target_file = target_file if target_file.is_absolute() else self._root_path / target_file
+        absolute_source_file = source_file if source_file.is_absolute() else self._root_path / source_file
+        absolute_target_file.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(absolute_source_file, absolute_target_file)
 
     def copy_source_directory(self, key: str, source_dir: Path, target_dir: Path, append: bool = True):
         if source_dir.exists():

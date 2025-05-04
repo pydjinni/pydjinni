@@ -19,12 +19,8 @@ import click
 
 from pydjinni import API
 from pydjinni.defs import DEFAULT_CONFIG_PATH
-from .language_server import init_language_server
-
-try:
-    from enum import StrEnum
-except ImportError:
-    from strenum import StrEnum  # Fallback for python < 3.11
+from .server import server
+from enum import StrEnum
 
 
 def main():
@@ -52,21 +48,18 @@ def config_schema():
 
 
 @cli.command()
-@click.option('--connection',
-              type=click.Choice(ConnectionType, case_sensitive=False),
-              default=ConnectionType.STDIO,
-              help="Connection type of the language server.")
-@click.option('--host', '-h', type=str, default='127.0.0.1', help="Hostname for the TCP server.")
-@click.option('--port', '-p', type=int, default=8080, help="Port for the TCP server.")
-@click.option('--config', '-c', default=DEFAULT_CONFIG_PATH, type=Path, help="Path to the PyDjinni configuration file.")
-@click.option('--generate-on-save', '-g', is_flag=True, help="If enabled, the generator will run on file save.")
-@click.option('--generate-base-path', '-b', default=Path(), type=Path, help="Base path for the generated files.")
-@click.option('--log', '-l', default=None, type=Path, help="Log file for the Language Server.")
-def start(connection, host: str, port: int, config: Path, generate_on_save: bool, generate_base_path: Path, log: Path):
+@click.option(
+    "--connection",
+    type=click.Choice(ConnectionType, case_sensitive=False),
+    default=ConnectionType.STDIO,
+    help="Connection type of the language server.",
+)
+@click.option("--host", "-h", type=str, default="127.0.0.1", help="Hostname for the TCP server.")
+@click.option("--port", "-p", type=int, default=8080, help="Port for the TCP server.")
+def start(connection, host: str, port: int):
     """
     Start the Language Server
     """
-    server = init_language_server(config=config, generate_on_save=generate_on_save, generate_base_path=generate_base_path, log=log)
     match connection:
         case ConnectionType.TCP:
             server.start_tcp(host, port)

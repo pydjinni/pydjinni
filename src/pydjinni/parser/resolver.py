@@ -31,7 +31,7 @@ class Resolver:
         """Type resolving error"""
 
     def __init__(self, external_types_model: type[BaseExternalType]):
-        self.registry = dict()
+        self.registry: dict[str, BaseExternalType] = {}
         self._external_types_model = external_types_model
 
     def load_external(self, path: Path):
@@ -48,6 +48,7 @@ class Resolver:
                         types_type.position = Position.from_match(content, path, match)
                     else:
                         types_type.position = Position(file=path)
+                    types_type.identifier_position = types_type.position
                     self.register(types_type)
         except pydantic.ValidationError as e:
             raise InputParsingException.from_pydantic_error(e, file=path)
@@ -56,7 +57,7 @@ class Resolver:
         except FileNotFoundError:
             raise FileNotFoundException(path)
 
-    def register(self, datatype: BaseType):
+    def register(self, datatype: BaseExternalType):
         registry_name = ".".join(datatype.namespace + [datatype.name])
         if registry_name in self.registry:
             raise Resolver.TypeResolvingException(f"Type '{datatype.name}' already exists", datatype.position)
@@ -64,7 +65,7 @@ class Resolver:
             self.registry[registry_name] = datatype
 
     def resolve(self, type_reference: TypeReference) -> BaseType:
-        type_def: BaseType | None = None
+        type_def: BaseExternalType | None = None
         if type_reference.name.startswith('.'):  # absolute reference. No need to search for the type
             type_def = self.registry.get(type_reference.name[1:])
         else:  # relative type. Search in current and all above namespaces until a matching type is found
@@ -82,3 +83,7 @@ class Resolver:
                 position=type_reference.position
             )
         return type_def
+
+
+    def reset(self):
+        self.registry = dict()

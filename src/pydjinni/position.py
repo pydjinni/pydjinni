@@ -24,9 +24,9 @@ class Cursor(BaseModel):
 
 
 class Position(BaseModel):
-    start: Cursor = None
-    end: Cursor = None
-    file: Path = None
+    start: Cursor | None = None
+    end: Cursor | None = None
+    file: Path | None = None
 
     @staticmethod
     def from_match(content: str, file: Path, match: Match, group: str | int = 1):

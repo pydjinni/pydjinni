@@ -18,28 +18,24 @@ import sys
 from textwrap import dedent
 from typing import cast
 
-import pytest
 import pytest_lsp
 from lsprotocol.types import *
-from pytest_lsp import ClientServerConfig, LanguageClient, client_capabilities
-
-test_uri = "file:///path/to/interface.pydjinni"
+from pytest_lsp import ClientServerConfig, LanguageClient, client_capabilities, make_test_lsp_client
 
 
-async def when_did_open(client: LanguageClient, text: str):
+async def when_did_open(client: LanguageClient, uri: str, text: str):
     client.text_document_did_open(
         DidOpenTextDocumentParams(
-            text_document=TextDocumentItem(uri=test_uri, language_id="pydjinni", version=1, text=text)
+            text_document=TextDocumentItem(uri=uri, language_id="pydjinni", version=1, text=text)
         )
     )
-    await client.wait_for_notification(TEXT_DOCUMENT_PUBLISH_DIAGNOSTICS)
 
 
-async def assert_hover(client: LanguageClient, position: Position, expected_range: Range, expected_contents: list[str]):
+async def assert_hover(client: LanguageClient, uri: str, position: Position, expected_range: Range, expected_contents: list[str]):
     # WHEN requesting hover information
     hover_result = await client.text_document_hover_async(
         HoverParams(
-            text_document=TextDocumentIdentifier(test_uri),
+            text_document=TextDocumentIdentifier(uri),
             position=position,
         )
     )
@@ -52,19 +48,20 @@ async def assert_hover(client: LanguageClient, position: Position, expected_rang
 
 
 async def assert_definition(
-    client: LanguageClient, position: Position, expected_range: Range, expected_uri: str = test_uri
+    client: LanguageClient, uri: str, position: Position, expected_range: Range, expected_uri: str | None = None
 ):
     # WHEN requesting a type definition
     definition_result = cast(
-        Location,
+        list[LocationLink],
         await client.text_document_definition_async(
-            DefinitionParams(text_document=TextDocumentIdentifier(test_uri), position=position)
+            DefinitionParams(text_document=TextDocumentIdentifier(uri), position=position)
         ),
     )
+    assert len(definition_result) == 1
 
     # THEN the position of the `foo` type definition should be returned
-    assert definition_result.range == expected_range
-    assert definition_result.uri == expected_uri
+    assert definition_result[0].target_range == expected_range
+    assert definition_result[0].target_uri == expected_uri if expected_uri else uri
 
 
 @dataclass
@@ -74,10 +71,11 @@ class DiagnosticExpectation:
     contents: list[str]
 
 
-async def assert_diagnostics(client: LanguageClient, expected_diagnostics: list[DiagnosticExpectation]):
-    assert test_uri in client.diagnostics
-    assert len(client.diagnostics[test_uri]) == len(expected_diagnostics)
-    for diagnostic, expected in zip(client.diagnostics[test_uri], expected_diagnostics):
+async def assert_diagnostics(client: LanguageClient, uri: str, expected_diagnostics: list[DiagnosticExpectation]):
+    await client.wait_for_notification(TEXT_DOCUMENT_PUBLISH_DIAGNOSTICS)
+    assert uri in client.diagnostics
+    assert len(client.diagnostics[uri]) == len(expected_diagnostics)
+    for diagnostic, expected in zip(client.diagnostics[uri], expected_diagnostics):
         assert diagnostic.severity == expected.severity
         assert diagnostic.range == expected.range
         for expected_content in expected.contents:
@@ -93,11 +91,11 @@ class DocumentSymbolExpectation:
     children: list["DocumentSymbolExpectation"] | None = None
 
 
-async def assert_document_symbols(client: LanguageClient, expected_symbols: list[DocumentSymbolExpectation]):
+async def assert_document_symbols(client: LanguageClient, uri: str, expected_symbols: list[DocumentSymbolExpectation]):
     document_symbols = cast(
         list[DocumentSymbol],
         await client.text_document_document_symbol_async(
-            DocumentSymbolParams(text_document=TextDocumentIdentifier(test_uri))
+            DocumentSymbolParams(text_document=TextDocumentIdentifier(uri))
         ),
     )
     assert document_symbols
@@ -124,10 +122,10 @@ class CodeLensExpectation:
     arguments: list[Any] | None = None
 
 
-async def assert_code_lenses(client: LanguageClient, expected_code_lenses: list[CodeLensExpectation]):
+async def assert_code_lenses(client: LanguageClient, uri: str, expected_code_lenses: list[CodeLensExpectation]):
     code_lenses = cast(
         list[CodeLens],
-        await client.text_document_code_lens_async(CodeLensParams(text_document=TextDocumentIdentifier(test_uri))),
+        await client.text_document_code_lens_async(CodeLensParams(text_document=TextDocumentIdentifier(uri))),
     )
     assert len(code_lenses) == len(expected_code_lenses)
     for lens, expectation in zip(code_lenses, expected_code_lenses):
@@ -148,18 +146,33 @@ async def assert_code_lenses(client: LanguageClient, expected_code_lenses: list[
             "start",
             "--connection",
             "STDIO",
-            "--log",
-            "pygls.log",
         ]
     )
 )
 async def client(lsp_client: LanguageClient, tmp_path: Path):
+    lsp_client.set_configuration(
+        item={
+            "debugLogs": False,
+            "config": "pydjinni.yaml",
+            "generateOnSave": False
+        },
+        section="pydjinni",
+        scope_uri=tmp_path.as_uri(),
+    )
     # Setup
     await lsp_client.initialize_session(
         InitializeParams(
-            capabilities=client_capabilities("visual-studio-code"), root_uri=tmp_path.as_uri(), root_path=str(tmp_path)
+            capabilities=client_capabilities("visual-studio-code"), root_uri=tmp_path.as_uri(), root_path=str(tmp_path), workspace_folders=[WorkspaceFolder(tmp_path.as_uri(), "pydjinni")]
         )
     )
+
+    @lsp_client.feature("client/registerCapability")
+    async def _(params: RegistrationParams):
+        return None
+    
+    @lsp_client.feature("client/unregisterCapability")
+    async def _(params: RegistrationParams):
+        return None
 
     yield
 
@@ -167,7 +180,6 @@ async def client(lsp_client: LanguageClient, tmp_path: Path):
     await lsp_client.shutdown_session()
 
 
-@pytest.mark.asyncio
 async def test_code_lenses(client: LanguageClient, tmp_path: Path):
     (tmp_path / "pydjinni.yaml").write_text(
         dedent(
@@ -187,9 +199,12 @@ async def test_code_lenses(client: LanguageClient, tmp_path: Path):
             """
         )
     )
+
     # WHEN opening a document with a record
+    uri = (tmp_path / "interface.pydjinni").as_uri()
     await when_did_open(
         client,
+        uri,
         dedent(
             """
             # some record
@@ -201,6 +216,7 @@ async def test_code_lenses(client: LanguageClient, tmp_path: Path):
     # THEN no code lenses should be available
     await assert_code_lenses(
         client,
+        uri,
         [
             CodeLensExpectation(
                 range=Range(start=Position(line=2, character=0), end=Position(line=2, character=3)),

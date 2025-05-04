@@ -21,10 +21,7 @@ from pydjinni.parser.identifier import Identifier
 from pydjinni.parser.namespace import Namespace
 from pydjinni.position import Position
 
-try:
-    from enum import StrEnum
-except ImportError:
-    from strenum import StrEnum  # Fallback for python < 3.11
+from enum import StrEnum
 from pydantic import BaseModel, Field, PrivateAttr, SkipValidation, computed_field
 
 
@@ -65,7 +62,7 @@ class BaseExternalType(BaseCommentModel):
         default=[],
         description="Namespace that the type lives in"
     )
-    primitive: Primitive = Field(
+    primitive: str = Field(
         default=Primitive.primitive,
         description="The underlying primitive type"
     )
@@ -77,8 +74,8 @@ class BaseExternalType(BaseCommentModel):
 class TypeReference(BaseModel):
     name: Identifier
     namespace: Namespace | list[Identifier] = []
-    position: Position = Position()
-    identifier_position: Position = Position()
+    position: Position | None = None
+    identifier_position: Position | None = None
     parameters: list[TypeReference] = []
     optional: bool = False
     type_def: BaseExternalType | None = Field(

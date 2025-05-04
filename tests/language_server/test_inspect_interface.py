@@ -1,3 +1,4 @@
+from pathlib import Path
 from textwrap import dedent
 import pytest
 from pytest_lsp import LanguageClient
@@ -10,15 +11,16 @@ from test_language_server import (
     assert_document_symbols,
     assert_hover,
     when_did_open,
-    client
+    client,
 )
 
 
-@pytest.mark.asyncio
-async def test_inspect_interface(client: LanguageClient):
+async def test_inspect_interface(client: LanguageClient, tmp_path: Path):
     # WHEN opening a document with an interface
+    uri = (tmp_path / "interface.pydjinni").as_uri()
     await when_did_open(
         client,
+        uri,
         dedent(
             """
             # some **interesting** interface
@@ -38,6 +40,7 @@ async def test_inspect_interface(client: LanguageClient):
     # THEN the expected diagnostics should be reported
     await assert_diagnostics(
         client,
+        uri,
         [
             DiagnosticExpectation(
                 severity=DiagnosticSeverity.Error,
@@ -50,6 +53,7 @@ async def test_inspect_interface(client: LanguageClient):
     # THEN the hover information should be correct
     await assert_hover(
         client,
+        uri,
         position=Position(line=2, character=1),
         expected_range=Range(start=Position(line=2, character=0), end=Position(line=2, character=3)),
         expected_contents=["some **interesting** interface"],
@@ -57,6 +61,7 @@ async def test_inspect_interface(client: LanguageClient):
 
     await assert_hover(
         client,
+        uri,
         position=Position(line=3, character=30),
         expected_range=Range(start=Position(line=3, character=29), end=Position(line=3, character=32)),
         expected_contents=["some **interesting** interface"],
@@ -64,6 +69,7 @@ async def test_inspect_interface(client: LanguageClient):
 
     await assert_hover(
         client,
+        uri,
         position=Position(line=6, character=6),
         expected_range=Range(start=Position(line=6, character=4), end=Position(line=6, character=7)),
         expected_contents=["Parameter", "`param` is a parameter", "Returns", "an integer"],
@@ -71,6 +77,7 @@ async def test_inspect_interface(client: LanguageClient):
 
     await assert_hover(
         client,
+        uri,
         position=Position(line=6, character=9),
         expected_range=Range(start=Position(line=6, character=8), end=Position(line=6, character=13)),
         expected_contents=["is a parameter"],
@@ -78,6 +85,7 @@ async def test_inspect_interface(client: LanguageClient):
 
     await assert_hover(
         client,
+        uri,
         position=Position(line=6, character=17),
         expected_range=Range(start=Position(line=6, character=15), end=Position(line=6, character=19)),
         expected_contents=["boolean type"],
@@ -85,6 +93,7 @@ async def test_inspect_interface(client: LanguageClient):
 
     await assert_hover(
         client,
+        uri,
         position=Position(line=6, character=25),
         expected_range=Range(start=Position(line=6, character=24), end=Position(line=6, character=27)),
         expected_contents=["32 bit integer type"],
@@ -92,6 +101,7 @@ async def test_inspect_interface(client: LanguageClient):
 
     await assert_hover(
         client,
+        uri,
         position=Position(line=9, character=5),
         expected_range=Range(start=Position(line=9, character=4), end=Position(line=9, character=19)),
         expected_contents=["a method that is throwing", "Throws", "`some_error` when something goes wrong"],
@@ -99,6 +109,7 @@ async def test_inspect_interface(client: LanguageClient):
 
     await assert_document_symbols(
         client,
+        uri,
         [
             DocumentSymbolExpectation(
                 name="foo",
@@ -133,4 +144,4 @@ async def test_inspect_interface(client: LanguageClient):
     )
 
     # THEN no code lenses should be available
-    await assert_code_lenses(client, [])
+    await assert_code_lenses(client, uri, [])

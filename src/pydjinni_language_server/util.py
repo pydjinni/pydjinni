@@ -12,14 +12,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pathlib import Path
+from lsprotocol.types import (
+    DocumentSymbol,
+    SymbolKind,
+    DiagnosticSeverity,
+    Diagnostic,
+    Range,
+    Position,
+    CompletionItemKind,
+)
 
-from lsprotocol.types import DocumentSymbol, SymbolKind, DiagnosticSeverity, Diagnostic, Range, Position
-
-from pydjinni import API
+from pydjinni.position import Position as PyDjinniPosition
 from pydjinni.exceptions import ApplicationException
 from pydjinni.parser.ast import Namespace, Interface, Record, Enum, Flags, ErrorDomain, Function
-from pydjinni.parser.base_models import BaseType, BaseField, TypeReference, SymbolicConstantType, FileReference
+from pydjinni.parser.base_models import (
+    BaseExternalType,
+    BaseType,
+    BaseField,
+    TypeReference,
+    SymbolicConstantType,
+    FileReference,
+)
+from pydjinni_language_server.models import Diagnostics
 
 
 def to_diagnostic(
@@ -30,11 +44,20 @@ def to_diagnostic(
     )
 
 
+def to_diagnostics(diagnostics: Diagnostics):
+    error_diagnostics = [
+        Diagnostic(range=type_range(error.definition), severity=DiagnosticSeverity.Error, message=error.message)
+        for error in diagnostics.errors
+    ]
+    warning_diagnostics = [
+        Diagnostic(range=type_range(warning.definition), severity=DiagnosticSeverity.Warning, message=warning.message)
+        for warning in diagnostics.warnings
+    ]
+    return error_diagnostics + warning_diagnostics
+
+
 def to_hover_cache(
-    type_refs: list[TypeReference],
-    file_imports: list[FileReference],
-    fields: list[BaseField],
-    ast: list[Namespace | BaseType],
+    items: list[TypeReference | FileReference | BaseField | Namespace | BaseType],
 ) -> dict[int, dict[int, TypeReference | FileReference | BaseField | Namespace | BaseType]]:
     cache: dict[int, dict[int, TypeReference | FileReference | BaseField | Namespace | BaseType]] = {}
 
@@ -50,15 +73,13 @@ def to_hover_cache(
             elif isinstance(ref, Namespace):
                 for child in ref.children:
                     cache_ref(child)
-        else:
-            raise BaseException(ref)
 
-    for ref in fields + type_refs + file_imports + ast:
+    for ref in items:
         cache_ref(ref)
     return cache
 
 
-def type_range(definition: BaseField | BaseType | Namespace | TypeReference | ApplicationException) -> Range:
+def type_range(definition: BaseField | BaseExternalType | Namespace | TypeReference | ApplicationException) -> Range:
     if definition.position and definition.position.start and definition.position.end:
         return Range(
             start=Position(definition.position.start.line, definition.position.start.col),
@@ -68,7 +89,7 @@ def type_range(definition: BaseField | BaseType | Namespace | TypeReference | Ap
         return Range(start=Position(0, 0), end=Position(0, 0))
 
 
-def identifier_range(definition: BaseField | BaseType | TypeReference) -> Range:
+def identifier_range(definition: TypeReference | FileReference | BaseField | Namespace | BaseType) -> Range:
     if definition.identifier_position and definition.identifier_position.start and definition.identifier_position.end:
         return Range(
             start=Position(definition.identifier_position.start.line, definition.identifier_position.start.col),
@@ -78,11 +99,10 @@ def identifier_range(definition: BaseField | BaseType | TypeReference) -> Range:
         return Range(start=Position(0, 0), end=Position(0, 0))
 
 
-def configure_api(config: Path) -> API.ConfiguredContext:
-    if config.exists():
-        return API().configure(path=config)
-    else:
-        return API().configure(options={"generate": {}})
+def to_range(position: PyDjinniPosition):
+    return Range(
+        start=Position(position.start.line, position.start.col), end=Position(position.end.line, position.end.col)
+    )
 
 
 def map_kind(type_def):
@@ -96,6 +116,25 @@ def map_kind(type_def):
         return SymbolKind.Enum
     else:
         return SymbolKind.Null
+
+
+def map_completion_item_kind(type_def: BaseExternalType) -> CompletionItemKind | None:
+    match type_def.primitive:
+        case BaseExternalType.Primitive.interface:
+            return CompletionItemKind.Interface
+        case BaseExternalType.Primitive.record | BaseExternalType.Primitive.error:
+            return CompletionItemKind.Struct
+        case BaseExternalType.Primitive.function:
+            return CompletionItemKind.Function
+        case BaseExternalType.Primitive.enum | BaseExternalType.Primitive.flags:
+            return CompletionItemKind.Enum
+        case BaseExternalType.Primitive.collection:
+            return CompletionItemKind.Class
+        case _:
+            return CompletionItemKind.Value
+
+def map_completion_item_description(type_def: BaseExternalType) -> str | None:
+    return type_def.primitive
 
 
 def to_document_symbol(type_def) -> DocumentSymbol:

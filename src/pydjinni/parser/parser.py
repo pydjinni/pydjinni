@@ -79,14 +79,14 @@ class Parser(IdlVisitor):
         def __init__(
             self,
             errors: list[ApplicationException],
-            type_decls: list[BaseType],
+            type_defs: list[BaseType],
             type_refs: list[TypeReference],
             file_imports: list[FileReference],
             fields: list[BaseField],
             ast: list[BaseType | Namespace],
         ):
             super().__init__(errors)
-            self.type_decls = type_decls
+            self.type_defs = type_defs
             self.type_refs = type_refs
             self.file_imports = file_imports
             self.fields = fields
@@ -500,7 +500,7 @@ class Parser(IdlVisitor):
         node = ctx.FILEPATH()
         if not isinstance(node, ErrorNode):
             path = Path(node.getText()[1:-1])
-            search_paths = [path, self.idl.parent / path] + [include_dir / path for include_dir in self.include_dirs]
+            search_paths = [self.idl.parent / path] + [include_dir / path for include_dir in self.include_dirs]
             for search_path in search_paths:
                 if search_path.exists() and not search_path.is_dir():
                     if search_path == self.idl:
@@ -546,7 +546,7 @@ class Parser(IdlVisitor):
                 self.type_decls += imported_type_decls
                 self.type_refs += type_refs
             except Parser.ParsingExceptionList as e:
-                self.type_decls += e.type_decls
+                self.type_decls += e.type_defs
                 self.type_refs += e.type_refs
                 self.errors += e.items
 

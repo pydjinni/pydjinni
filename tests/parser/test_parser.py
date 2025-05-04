@@ -28,7 +28,7 @@ from pydjinni.parser.resolver import Resolver
 
 
 def given_mocks() -> tuple[FileReaderWriter, MagicMock]:
-    reader = FileReaderWriter()
+    reader = FileReaderWriter(Path.cwd())
     reader.setup(ProcessedFiles)
     return reader, MagicMock(spec=Resolver)
 
@@ -58,7 +58,7 @@ def given(tmp_path: Path, input_idl: str) -> tuple[Parser, MagicMock]:
         supported_target_keys=["cpp", "java"],
         include_dirs=[tmp_path],
         default_deriving=set(),
-        idl=input_file
+        idl=input_file,
     )
 
     return parser, resolver_mock
@@ -93,6 +93,7 @@ def when(parser: Parser, type_type: type[TypeDef], type_name: str = None) -> Typ
     assert type_def.name == type_name
     return type_def
 
+
 def assert_exception(parser: Parser, description: str):
     with pytest.raises(Parser.ParsingExceptionList) as excinfo:
         parser.parse()
@@ -100,6 +101,7 @@ def assert_exception(parser: Parser, description: str):
     exception = excinfo.value.items[0]
     assert isinstance(exception, Parser.ParsingException)
     assert exception.description == description
+
 
 def assert_field(field: DataField, name: str, typename: str, optional: bool = False):
     assert field.name == name
@@ -123,11 +125,8 @@ def test_parsing_invalid_input(tmp_path: Path):
 
 
 def test_parsing_non_existing_file(tmp_path: Path):
-    parser, _ = given(
-        tmp_path=tmp_path,
-        input_idl=""
-    )
-    parser.idl = tmp_path / 'test.djinni'
+    parser, _ = given(tmp_path=tmp_path, input_idl="")
+    parser.idl = tmp_path / "test.djinni"
 
     # WHEN parsing a file that does not exist
     # THEN a FileNotFoundException should be raised
@@ -141,15 +140,17 @@ def test_import(tmp_path: Path):
         tmp_path=tmp_path,
         input_idl="""
                 @import "foo.pydjinni"
-                """
+                """,
     )
     # AND GIVEN the imported file
     imported_file = tmp_path / "foo.pydjinni"
-    imported_file.write_text("""
+    imported_file.write_text(
+        """
     foo = record {
         bar: i8;
     }
-    """)
+    """
+    )
 
     # THEN the record from the imported file should be included in the AST
     record = when(parser, Record, "foo")
@@ -165,7 +166,8 @@ def test_missing_import(tmp_path: Path):
         tmp_path=tmp_path,
         input_idl="""
             @import "foo.pydjinni"
-            """)
+            """,
+    )
     # WHEN parsing the file
     # THEN a FileNotFoundException should be raised
     with pytest.raises(Parser.ParsingExceptionList) as excinfo:
@@ -181,9 +183,11 @@ def test_detect_direct_recursive_import(tmp_path: Path):
     # GIVEN an input file
     filename = f"{uuid.uuid4()}.pydjinni"
     input_file = tmp_path / filename
-    input_file.write_text(f"""
+    input_file.write_text(
+        f"""
         @import "{filename}"
-        """)
+        """
+    )
 
     # AND GIVEN a Parser instance
     parser = Parser(
@@ -193,7 +197,7 @@ def test_detect_direct_recursive_import(tmp_path: Path):
         supported_target_keys=["cpp", "java"],
         include_dirs=[tmp_path],
         default_deriving=set(),
-        idl=input_file
+        idl=input_file,
     )
 
     # WHEN parsing the input
@@ -213,12 +217,16 @@ def test_detect_indirect_recursive_import(tmp_path: Path):
     second_filename = f"{uuid.uuid4()}.pydjinni"
     input_file = tmp_path / filename
     second_file = tmp_path / second_filename
-    input_file.write_text(f"""
+    input_file.write_text(
+        f"""
         @import "{second_filename}"
-        """)
-    second_file.write_text(f"""
+        """
+    )
+    second_file.write_text(
+        f"""
         @import "{filename}"
-        """)
+        """
+    )
 
     # AND GIVEN a Parser instance
     parser = Parser(
@@ -228,7 +236,7 @@ def test_detect_indirect_recursive_import(tmp_path: Path):
         supported_target_keys=["cpp", "java"],
         include_dirs=[tmp_path],
         default_deriving=set(),
-        idl=input_file
+        idl=input_file,
     )
 
     # WHEN parsing the input
@@ -247,7 +255,7 @@ def test_extern(tmp_path: Path):
         tmp_path=tmp_path,
         input_idl="""
         @extern "extern.yaml"
-        """
+        """,
     )
 
     # AND GIVEN the extern file
@@ -271,7 +279,7 @@ def test_missing_extern(tmp_path: Path):
         tmp_path=tmp_path,
         input_idl="""
             @extern "extern.yaml"
-            """
+            """,
     )
 
     # WHEN parsing the file
@@ -301,7 +309,7 @@ def test_namespace(tmp_path: Path):
                 }
             }
         }
-        """
+        """,
     )
 
     # WHEN parsing the idl file
@@ -329,11 +337,11 @@ def test_generic_parameters_not_allowed(tmp_path: Path):
             foo = record {
                 a: i8<i32>;
             }
-                """
+                """,
     )
 
     # AND GIVEN a type that does not allow generic parameters
-    resolver_mock.resolve.return_value = BaseExternalType(name='i8')
+    resolver_mock.resolve.return_value = BaseExternalType(name="i8")
 
     # WHEN parsing the idl file
     # THEN an exception should be raised because of the unexpected generic parameter
@@ -353,11 +361,11 @@ def test_generic_parameters_invalid_number(tmp_path: Path):
             foo = record {
                 a: list<i32, i8>;
             }
-                """
+                """,
     )
 
     # AND GIVEN a type that does not allow generic parameters
-    resolver_mock.resolve.return_value = BaseExternalType(name='list', params=["T"])
+    resolver_mock.resolve.return_value = BaseExternalType(name="list", params=["T"])
 
     # WHEN parsing the idl file
     # THEN an exception should be raised because of the number of generic parameters is not correct
@@ -366,7 +374,10 @@ def test_generic_parameters_invalid_number(tmp_path: Path):
     assert len(excinfo.value.items) == 1
     exception = excinfo.value.items[0]
     assert isinstance(exception, Parser.ParsingException)
-    assert exception.description == "Invalid number of generic parameters given to 'list'. Expects 1 (T), but 2 where given."
+    assert (
+        exception.description
+        == "Invalid number of generic parameters given to 'list'. Expects 1 (T), but 2 where given."
+    )
 
 
 def test_multiple_errors(tmp_path: Path):
@@ -379,7 +390,7 @@ def test_multiple_errors(tmp_path: Path):
         
         # @deprecated
         bar = interface {
-        """
+        """,
     )
 
     # THEN an exception list should be raised
@@ -395,12 +406,12 @@ def test_multiple_errors(tmp_path: Path):
     assert second_exception.description.startswith("mismatched input")
 
     # THEN despite the errors, a syntax tree should be included in the exception list
-    assert len(excinfo.value.type_decls) == 2
-    foo_type = excinfo.value.type_decls[0]
+    assert len(excinfo.value.type_defs) == 2
+    foo_type = excinfo.value.type_defs[0]
     assert foo_type.name == "foo"
     assert len(foo_type.fields) == 1
     assert foo_type.fields[0].name == "a"
 
-    bar_type = excinfo.value.type_decls[1]
+    bar_type = excinfo.value.type_defs[1]
     assert bar_type.name == "bar"
     assert bar_type.deprecated

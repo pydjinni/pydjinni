@@ -1,5 +1,5 @@
+from pathlib import Path
 from textwrap import dedent
-import pytest
 from pytest_lsp import LanguageClient
 from lsprotocol.types import *
 from test_language_server import (
@@ -15,11 +15,12 @@ from test_language_server import (
 )
 
 
-@pytest.mark.asyncio
-async def test_inspect_record(client: LanguageClient):
+async def test_inspect_record(client: LanguageClient, tmp_path: Path):
     # WHEN opening a document with records
+    uri = (tmp_path / "interface.pydjinni").as_uri()
     await when_did_open(
         client,
+        uri,
         dedent(
             """
             # foo is a record
@@ -33,6 +34,7 @@ async def test_inspect_record(client: LanguageClient):
     # THEN the expected diagnostics should be reported
     await assert_diagnostics(
         client,
+        uri,
         [
             DiagnosticExpectation(
                 severity=DiagnosticSeverity.Error,
@@ -50,18 +52,21 @@ async def test_inspect_record(client: LanguageClient):
     # THEN the hover information should be correct
     await assert_hover(
         client,
+        uri,
         position=Position(line=3, character=19),
         expected_range=Range(start=Position(line=3, character=18), end=Position(line=3, character=20)),
         expected_contents=["8 bit integer type"],
     )
     await assert_hover(
         client,
+        uri,
         position=Position(line=3, character=1),
         expected_range=Range(start=Position(line=3, character=0), end=Position(line=3, character=3)),
         expected_contents=["foo is a record", "**Deprecated** because it is outdated"],
     )
     await assert_hover(
         client,
+        uri,
         position=Position(line=4, character=19),
         expected_range=Range(start=Position(line=4, character=18), end=Position(line=4, character=21)),
         expected_contents=["foo is a record", "**Deprecated** because it is outdated"],
@@ -70,6 +75,7 @@ async def test_inspect_record(client: LanguageClient):
     # THEN the definition location should be correct
     await assert_definition(
         client,
+        uri,
         position=Position(line=4, character=19),
         expected_range=Range(start=Position(line=1, character=0), end=Position(line=3, character=23)),
     )
@@ -77,6 +83,7 @@ async def test_inspect_record(client: LanguageClient):
     # THEN the document symbols should be correct
     await assert_document_symbols(
         client,
+        uri,
         [
             DocumentSymbolExpectation(
                 name="foo",
@@ -107,4 +114,4 @@ async def test_inspect_record(client: LanguageClient):
     )
 
     # THEN no code lenses should be available
-    await assert_code_lenses(client, [])
+    await assert_code_lenses(client, uri, [])

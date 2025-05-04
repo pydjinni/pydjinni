@@ -38,7 +38,7 @@ def given() -> FileReaderWriter:
         generated: GeneratedFilesModel = GeneratedFilesModel()
 
     # GIVEN a FileReaderWriter
-    reader_writer = FileReaderWriter()
+    reader_writer = FileReaderWriter(Path.cwd())
     reader_writer.setup(ProcessedFilesModel)
     return reader_writer
 
@@ -124,7 +124,7 @@ def test_copy_source_directory(tmp_path: Path):
 
     # AND GIVEN a header directory
     source_dir = tmp_path / "include"
-    source_dir.mkdir()
+    source_dir.mkdir(exist_ok=True)
     (source_dir / "source.cpp").touch()
 
     # WHEN copying the source directory

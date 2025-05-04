@@ -12,38 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
-import sys
-from pathlib import Path, WindowsPath, PosixPath
+from pathlib import Path
+from urllib.parse import unquote
 
 from pygls.workspace import TextDocument
 
-if sys.version_info >= (3, 12):
-    class TextDocumentPath(Path):
 
-        def __init__(self, document: TextDocument):
-            super().__init__(document.uri)
-            self.document = document
+class TextDocumentPath(Path):
 
-        def read_text(self, encoding=None, errors=None):
-            return self.document.source
+    def __init__(self, document: TextDocument):
+        super().__init__(document.uri)
+        self.document = document
 
-        def as_uri(self):
-            return self.document.uri
+    def read_text(self, encoding: str | None = None, errors: str | None = None, newline: str | None = None):
+        return self.document.source
 
-        @property
-        def parent(self):
-            return Path(self.document.path).parent
+    def as_uri(self):
+        return unquote(self.document.uri)
 
-else:
-    class TextDocumentPath(WindowsPath if os.name == 'nt' else PosixPath):
-        def __new__(cls, document: TextDocument):
-            self = super().__new__(cls, document.uri)
-            self.document = document
-            return self
-
-        def read_text(self, encoding=None, errors=None):
-            return self.document.source
-
-        def as_uri(self):
-            return self.document.uri
+    @property
+    def parent(self):
+        return Path(self.document.path).parent

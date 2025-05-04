@@ -99,7 +99,7 @@ class MarkdownParser:
     def __init__(self, type_references: list[TypeReference] = []):
         self.type_references = type_references
 
-    def commands(self, namespace: list[Identifier] = [], position: Position = None) -> list[MarkdownCommand]:
+    def commands(self, namespace: list[Identifier] = [], position: Position | None = None) -> list[MarkdownCommand]:
         return [
             MarkdownCommand("returns", "documents the return value of a method"),
             MarkdownCommand("deprecated", "marks a type, field or method as deprecated"),
@@ -114,7 +114,7 @@ class MarkdownParser:
             )
         ]
             
-    def parse(self, text: str | None, namespace: list[Identifier], position: Position = Position()) -> tuple[list, BlockState] | None:
+    def parse(self, text: str | None, namespace: list[Identifier], position: Position | None = None) -> tuple[list, BlockState] | None:
         def commands_plugin(md: Markdown):
             for command in self.commands(namespace, position): md.block.register(command.name, command.pattern, command.command)
 
