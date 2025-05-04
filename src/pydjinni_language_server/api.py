@@ -37,8 +37,9 @@ class Workspace:
     def configure(self, configuration: Configuration | None = None):
         if configuration:
             self.configuration = configuration
-        if self.configuration.config.exists():
-            self.configured_context = self.api.configure(path=self.configuration.config)
+        absolute_config = self.configuration.config if self.configuration.config.is_absolute() else self.root_path / self.configuration.config
+        if absolute_config.exists():
+            self.configured_context = self.api.configure(path=absolute_config)
         else:
             self.configured_context = self.api.configure(options={"generate": {}})
         self.configured_event.set()

@@ -216,9 +216,9 @@ class API:
             raise ConfigurationException("Provide either a config file or a list of configuration options!")
         try:
             if path:
-                absolute_path = path if path.absolute() else self._root_path / path
+                absolute_path = path if path.is_absolute() else self._root_path / path
                 with open(absolute_path, "rb") as file:
-                    match path.suffix:
+                    match absolute_path.suffix:
                         case ".yaml" | ".yml":
                             try:
                                 config_dict = yaml.safe_load(file)
@@ -235,7 +235,7 @@ class API:
                             except tomllib.TOMLDecodeError as e:
                                 raise ConfigurationException(e, position=Position(file=absolute_path))
                         case _:
-                            raise ConfigurationException(f"Unknown configuration file extension: '{path.suffix}'")
+                            raise ConfigurationException(f"Unknown configuration file extension: '{absolute_path.suffix}'")
             else:
                 config_dict = dict()
             combine_into(options, config_dict)
@@ -325,7 +325,7 @@ class API:
                 targets=self.configured_targets,
                 supported_target_keys=list(self._generate_targets.keys()),
                 file_reader=self._file_reader_writer,
-                include_dirs=[dir if dir.absolute() else self._root_path / dir for dir in self._generate_config.include_dirs],
+                include_dirs=[dir if dir.is_absolute() else self._root_path / dir for dir in self._generate_config.include_dirs],
                 default_deriving=set(self._generate_config.default_deriving),
                 idl=idl,
             )

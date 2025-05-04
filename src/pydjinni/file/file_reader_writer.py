@@ -74,7 +74,7 @@ class FileReaderWriter:
             self._used_keys.append(key)
 
     def _write(self, filename: Path, content: str):
-        absolute_filename = filename if filename.absolute() else self._root_path / filename
+        absolute_filename = filename if filename.is_absolute() else self._root_path / filename
         absolute_filename.parent.mkdir(parents=True, exist_ok=True)
         absolute_filename.write_text(content)
 
