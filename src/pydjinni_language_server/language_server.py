@@ -56,5 +56,9 @@ class PyDjinniLanguageServer(LanguageServer):
         await self.unregister_workspace_capabilities(workspace)
         await self.register_workspace_capabilites(workspace)
 
+    def request_code_lens_refresh(self):
+        if self.client_capabilities.workspace and self.client_capabilities.workspace.code_lens and self.client_capabilities.workspace.code_lens.refresh_support:
+            self.lsp.send_request(WORKSPACE_CODE_LENS_REFRESH)
+
     def get_text_document_path(self, uri: str):
         return TextDocumentPath(self.workspace.get_text_document(uri))

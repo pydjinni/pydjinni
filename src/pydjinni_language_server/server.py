@@ -13,16 +13,17 @@
 # limitations under the License.
 
 import re
+from typing import cast
 import uuid
 from importlib.metadata import version
 from urllib.parse import unquote
 from pygls.workspace.text_document import TextDocument
 from lsprotocol.types import *
 from pydjinni.parser.base_models import TypeReference, FileReference
+from .tolerant_converter import tolerant_converter
 from pydjinni_language_server.api import Configuration, LanguageServerAPI
 from pydjinni_language_server.language_server import PyDjinniLanguageServer
 from .comment_renderer import HoverTooltipCommentRenderer
-from .tolerant_converter import tolerant_converter
 from .util import (
     identifier_range,
     map_completion_item_description,
@@ -33,6 +34,7 @@ from .util import (
     type_range,
     map_kind,
 )
+
 
 api: LanguageServerAPI = LanguageServerAPI()
 
@@ -60,9 +62,14 @@ async def configure(ls: PyDjinniLanguageServer):
 @server.feature(INITIALIZE)
 def initialize(ls: PyDjinniLanguageServer, params: InitializeParams):
     ls.show_message_log(f"[{INITIALIZE}] Initializing PyDjinni language server {version('pydjinni')}")
-    for folder in ls.workspace.folders:
-        ls.show_message_log(f"[{INITIALIZE}] Adding workspace folder: {folder}")
-        api.add_workspace(folder)
+    if ls.client_capabilities.workspace and ls.client_capabilities.workspace.workspace_folders:
+        ls.show_message_log(f"[{INITIALIZE}] Multiroot support detected")
+        for folder in ls.workspace.folders:
+            ls.show_message_log(f"[{INITIALIZE}] Adding workspace folder: {folder}")
+            api.add_workspace(folder)
+    elif ls.workspace.root_uri:
+        ls.show_message_log(f"[{INITIALIZE}] Configuring project root: {ls.workspace.root_uri}")
+        api.add_workspace(ls.workspace.root_uri)
 
 
 @server.feature(INITIALIZED)
@@ -84,7 +91,8 @@ async def initialized(ls: PyDjinniLanguageServer, params: InitializedParams):
     for workspace in api.workspaces:
         await ls.register_workspace_capabilites(workspace)
 
-    await configure(ls)
+    if ls.client_capabilities.workspace and ls.client_capabilities.workspace.configuration:
+        await configure(ls)
 
 
 @server.feature(WORKSPACE_DID_CHANGE_WORKSPACE_FOLDERS)
@@ -101,15 +109,21 @@ async def did_change_workspace_folders(ls: PyDjinniLanguageServer, params: DidCh
 
 
 @server.feature(WORKSPACE_DID_CHANGE_CONFIGURATION)
-async def did_change_configuration(ls: PyDjinniLanguageServer, _):
+async def did_change_configuration(ls: PyDjinniLanguageServer, params: DidChangeConfigurationParams):
     ls.show_message_log(f"[{WORKSPACE_DID_CHANGE_CONFIGURATION}] configuration changed")
-    await configure(ls)
-
+    if ls.client_capabilities.workspace and ls.client_capabilities.workspace.configuration:
+        await configure(ls)
+    else:
+        configurations = Configuration.from_response([cast(dict, params.settings)["pydjinni"]])
+        api.configure(configurations[0])
+        for workspace, configuration in zip(api.workspaces, configurations):
+            workspace.configure(configuration)
+            await ls.update_workspace_capabilities(workspace)
     for uri in ls.workspace.documents.keys():
         diagnostics = await api.get_workspace(uri).validate(ls.get_text_document_path(uri))
         ls.publish_diagnostics(uri=uri, diagnostics=to_diagnostics(diagnostics))
 
-    ls.lsp.send_request(WORKSPACE_CODE_LENS_REFRESH)
+    ls.request_code_lens_refresh()
 
 
 @server.feature(TEXT_DOCUMENT_DID_CHANGE)
@@ -150,7 +164,7 @@ async def did_save(ls: PyDjinniLanguageServer, params: DidSaveTextDocumentParams
     await api.get_workspace(params.text_document.uri).generate_on_save(
         ls.get_text_document_path(params.text_document.uri)
     )
-    ls.lsp.send_request(WORKSPACE_CODE_LENS_REFRESH)
+    ls.request_code_lens_refresh()
 
 
 @server.feature(WORKSPACE_DID_CHANGE_WATCHED_FILES)
@@ -164,7 +178,7 @@ async def did_change_watched_files(ls: PyDjinniLanguageServer, params: DidChange
         change_uri = unquote(change.uri)
         if change_uri == (workspace.root_path / workspace.configuration.config).absolute().as_uri():
             workspace.configure()
-            ls.lsp.send_request(WORKSPACE_CODE_LENS_REFRESH)
+            ls.request_code_lens_refresh()
         for uri, dependencies in workspace.dependency_cache.items():
             if change_uri in dependencies:
                 diagnostics = await workspace.validate(ls.get_text_document_path(uri))
