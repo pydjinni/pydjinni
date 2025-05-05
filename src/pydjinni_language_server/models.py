@@ -11,7 +11,6 @@ from pydjinni.position import Position
 
 
 class Configuration(BaseModel, alias_generator=to_camel):
-    debug_logs: bool = False
     config: Path = DEFAULT_CONFIG_PATH
     generate_on_save: bool = False
 

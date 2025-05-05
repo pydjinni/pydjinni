@@ -202,17 +202,6 @@ class LanguageServerAPI:
     def __init__(self):
         self.workspaces: list[Workspace] = []
 
-    def configure(self, global_configuration: Configuration):
-        if global_configuration.debug_logs:
-            logging.basicConfig(
-                filename=Path("pydjinni-language-server.log"),
-                level=logging.DEBUG,
-                format="%(asctime)s [%(levelname)s] %(message)s",
-            )
-        else:
-            logging.disable(logging.CRITICAL)
-            
-
     def add_workspace(self, uri: str) -> Workspace:
         workspace = Workspace(uri)
         self.workspaces.append(workspace)

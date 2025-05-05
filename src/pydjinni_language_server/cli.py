@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import json
+import logging
 from pathlib import Path
 
 import click
@@ -50,16 +51,24 @@ def config_schema():
 @cli.command()
 @click.option(
     "--connection",
+    "-c",
     type=click.Choice(ConnectionType, case_sensitive=False),
     default=ConnectionType.STDIO,
     help="Connection type of the language server.",
 )
 @click.option("--host", "-h", type=str, default="127.0.0.1", help="Hostname for the TCP server.")
 @click.option("--port", "-p", type=int, default=8080, help="Port for the TCP server.")
-def start(connection, host: str, port: int):
+@click.option("--log", "-l", type=Path, default=None, help="Log file for the Language Server.")
+def start(connection, host: str, port: int, log: Path | None):
     """
     Start the Language Server
     """
+    if log:
+        logging.basicConfig(
+            filename=log,
+            level=logging.DEBUG,
+            format="%(asctime)s [%(levelname)s] %(message)s",
+        )
     match connection:
         case ConnectionType.TCP:
             server.start_tcp(host, port)

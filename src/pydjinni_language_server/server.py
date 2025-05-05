@@ -44,20 +44,10 @@ server = PyDjinniLanguageServer(
 )
 
 
-async def configure(ls: PyDjinniLanguageServer):
-    configurations = Configuration.from_response(
-        await ls.get_configuration_async(
-            WorkspaceConfigurationParams(
-                [ConfigurationItem(section="pydjinni", scope_uri=workspace.root_uri) for workspace in api.workspaces]
-            )
-        )
-    )
-    if configurations:
-        api.configure(configurations[0])
-        for workspace, configuration in zip(api.workspaces, configurations):
-            workspace.configure(configuration)
-            await ls.update_workspace_capabilities(workspace)
-
+async def configure(ls: PyDjinniLanguageServer, configurations: list[Configuration]):
+    for workspace, configuration in zip(api.workspaces, configurations):
+        workspace.configure(configuration)
+        await ls.update_workspace_capabilities(workspace)
 
 @server.feature(INITIALIZE)
 def initialize(ls: PyDjinniLanguageServer, params: InitializeParams):
@@ -92,7 +82,14 @@ async def initialized(ls: PyDjinniLanguageServer, params: InitializedParams):
         await ls.register_workspace_capabilites(workspace)
 
     if ls.client_capabilities.workspace and ls.client_capabilities.workspace.configuration:
-        await configure(ls)
+        configurations = Configuration.from_response(
+            await ls.get_configuration_async(
+                WorkspaceConfigurationParams(
+                    [ConfigurationItem(section="pydjinni", scope_uri=workspace.root_uri) for workspace in api.workspaces]
+                )
+            )
+        )
+        await configure(ls, configurations)
 
 
 @server.feature(WORKSPACE_DID_CHANGE_WORKSPACE_FOLDERS)
@@ -112,13 +109,17 @@ async def did_change_workspace_folders(ls: PyDjinniLanguageServer, params: DidCh
 async def did_change_configuration(ls: PyDjinniLanguageServer, params: DidChangeConfigurationParams):
     ls.show_message_log(f"[{WORKSPACE_DID_CHANGE_CONFIGURATION}] configuration changed")
     if ls.client_capabilities.workspace and ls.client_capabilities.workspace.configuration:
-        await configure(ls)
+        configurations = Configuration.from_response(
+            await ls.get_configuration_async(
+                WorkspaceConfigurationParams(
+                    [ConfigurationItem(section="pydjinni", scope_uri=workspace.root_uri) for workspace in api.workspaces]
+                )
+            )
+        )
+        await configure(ls, configurations)
     else:
         configurations = Configuration.from_response([cast(dict, params.settings)["pydjinni"]])
-        api.configure(configurations[0])
-        for workspace, configuration in zip(api.workspaces, configurations):
-            workspace.configure(configuration)
-            await ls.update_workspace_capabilities(workspace)
+        await configure(ls, configurations)
     for uri in ls.workspace.documents.keys():
         diagnostics = await api.get_workspace(uri).validate(ls.get_text_document_path(uri))
         ls.publish_diagnostics(uri=uri, diagnostics=to_diagnostics(diagnostics))
