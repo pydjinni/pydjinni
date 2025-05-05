@@ -169,7 +169,7 @@ class Workspace:
         ]
     
     def get_all_target_languages(self) -> list[Target]:
-        return list(self.api.generation_targets.values())
+        return [value for value in self.api.generation_targets.values() if not value.internal]
 
     async def generate_on_save(self, document: TextDocumentPath):
         await self.validated_event.wait()

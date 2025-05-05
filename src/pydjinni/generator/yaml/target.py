@@ -23,3 +23,4 @@ class YamlTarget(Target):
     key = "yaml"
     display_key = "YAML"
     generators = [YamlGenerator]
+    internal = True

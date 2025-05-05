@@ -152,7 +152,6 @@ async def assert_code_lenses(client: LanguageClient, uri: str, expected_code_len
 async def client(lsp_client: LanguageClient, tmp_path: Path):
     lsp_client.set_configuration(
         item={
-            "debugLogs": False,
             "config": "pydjinni.yaml",
             "generateOnSave": False
         },

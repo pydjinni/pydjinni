@@ -235,7 +235,9 @@ class API:
                             except tomllib.TOMLDecodeError as e:
                                 raise ConfigurationException(e, position=Position(file=absolute_path))
                         case _:
-                            raise ConfigurationException(f"Unknown configuration file extension: '{absolute_path.suffix}'")
+                            raise ConfigurationException(
+                                f"Unknown configuration file extension: '{absolute_path.suffix}'"
+                            )
             else:
                 config_dict = dict()
             combine_into(options, config_dict)
@@ -323,9 +325,11 @@ class API:
             parser = Parser(
                 resolver=resolver,
                 targets=self.configured_targets,
-                supported_target_keys=list(self._generate_targets.keys()),
+                supported_target_keys=[key for key, value in self._generate_targets.items() if not value.internal],
                 file_reader=self._file_reader_writer,
-                include_dirs=[dir if dir.is_absolute() else self._root_path / dir for dir in self._generate_config.include_dirs],
+                include_dirs=[
+                    dir if dir.is_absolute() else self._root_path / dir for dir in self._generate_config.include_dirs
+                ],
                 default_deriving=set(self._generate_config.default_deriving),
                 idl=idl,
             )
@@ -342,10 +346,10 @@ class API:
                 fields=fields,
                 ast=ast,
                 config=self._generate_config,
-                resolver=resolver
+                resolver=resolver,
             )
 
-        def package(self, target: str, configuration: str = None) -> PackageContext:
+        def package(self, target: str, configuration: str | None = None) -> PackageContext:
             """
             configure a context for package configuration
 
@@ -437,7 +441,7 @@ class API:
                 fields: list[BaseField],
                 ast: list[BaseType | Namespace],
                 config: GenerateBaseConfig,
-                resolver: Resolver
+                resolver: Resolver,
             ):
                 self._generate_targets = generate_targets
                 self._file_reader_writer = file_writer
@@ -463,7 +467,7 @@ class API:
                 target = self._generate_targets[target_name]
                 target.generate(self.type_defs, clean=clean, copy_support_lib_sources=self._config.support_lib_sources)
                 return self
-            
+
             @property
             def resolver(self):
                 return self._resolver
