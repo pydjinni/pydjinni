@@ -49,6 +49,7 @@ async def configure(ls: PyDjinniLanguageServer, configurations: list[Configurati
         workspace.configure(configuration)
         await ls.update_workspace_capabilities(workspace)
 
+
 @server.feature(INITIALIZE)
 def initialize(ls: PyDjinniLanguageServer, params: InitializeParams):
     ls.show_message_log(f"[{INITIALIZE}] Initializing PyDjinni language server {version('pydjinni')}")
@@ -85,7 +86,10 @@ async def initialized(ls: PyDjinniLanguageServer, params: InitializedParams):
         configurations = Configuration.from_response(
             await ls.get_configuration_async(
                 WorkspaceConfigurationParams(
-                    [ConfigurationItem(section="pydjinni", scope_uri=workspace.root_uri) for workspace in api.workspaces]
+                    [
+                        ConfigurationItem(section="pydjinni", scope_uri=workspace.root_uri)
+                        for workspace in api.workspaces
+                    ]
                 )
             )
         )
@@ -112,7 +116,10 @@ async def did_change_configuration(ls: PyDjinniLanguageServer, params: DidChange
         configurations = Configuration.from_response(
             await ls.get_configuration_async(
                 WorkspaceConfigurationParams(
-                    [ConfigurationItem(section="pydjinni", scope_uri=workspace.root_uri) for workspace in api.workspaces]
+                    [
+                        ConfigurationItem(section="pydjinni", scope_uri=workspace.root_uri)
+                        for workspace in api.workspaces
+                    ]
                 )
             )
         )

@@ -274,6 +274,7 @@ class API:
             self._package_targets = package_targets
             self._build_targets = build_targets
             self._file_reader_writer = file_reader_writer
+            self.resolver = Resolver(self._external_types_model)
 
             self._generate_config: GenerateBaseConfig = self._config.generate
             generate_targets: list[str] = list(self._generate_config.model_fields_set) if self._generate_config else []
@@ -317,13 +318,13 @@ class API:
                 target.register_external_types(external_types_builder)
                 target.configure(self._generate_config)
 
-            resolver = Resolver(self._external_types_model)
-            resolver.reset()
+            
+            self.resolver.reset()
             for external_type_def in external_types_builder.build():
-                resolver.register(external_type_def)
+                self.resolver.register(external_type_def)
 
             parser = Parser(
-                resolver=resolver,
+                resolver=self.resolver,
                 targets=self.configured_targets,
                 supported_target_keys=[key for key, value in self._generate_targets.items() if not value.internal],
                 file_reader=self._file_reader_writer,
@@ -346,7 +347,7 @@ class API:
                 fields=fields,
                 ast=ast,
                 config=self._generate_config,
-                resolver=resolver,
+                resolver=self.resolver,
             )
 
         def package(self, target: str, configuration: str | None = None) -> PackageContext:

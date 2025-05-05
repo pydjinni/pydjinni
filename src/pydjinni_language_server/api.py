@@ -154,17 +154,19 @@ class Workspace:
         a list of all known type_defs except of error types and anonymous function types
         """
         await self.validated_event.wait()
+        resolver = self.generate_context[uri].resolver if uri in self.generate_context else self.configured_context.resolver
         return [
             type_def
-            for type_def in self.generate_context[uri].resolver.registry.values()
+            for type_def in resolver.registry.values()
             if (not isinstance(type_def, Function) or not type_def.anonymous) and not isinstance(type_def, ErrorDomain)
         ]
 
     async def get_all_error_domains(self, uri: str) -> list[ErrorDomain]:
         await self.validated_event.wait()
+        resolver = self.generate_context[uri].resolver if uri in self.generate_context else self.configured_context.resolver
         return [
             type_def
-            for type_def in self.generate_context[uri].resolver.registry.values()
+            for type_def in resolver.registry.values()
             if isinstance(type_def, ErrorDomain)
         ]
     
