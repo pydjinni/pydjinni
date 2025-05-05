@@ -300,7 +300,7 @@ async def execute_command(ls: PyDjinniLanguageServer, arguments: list[str]):
     await ls.show_document_async(ShowDocumentParams(uri=uri))
 
 
-@server.feature(TEXT_DOCUMENT_COMPLETION, CompletionOptions(trigger_characters=[".", "+", "-"]))
+@server.feature(TEXT_DOCUMENT_COMPLETION, CompletionOptions(trigger_characters=["+", "-"]))
 async def completion(ls: PyDjinniLanguageServer, params: CompletionParams) -> list[CompletionItem] | None:
     text_document: TextDocument = ls.workspace.get_text_document(params.text_document.uri)
     line = text_document.lines[params.position.line][: params.position.character]
