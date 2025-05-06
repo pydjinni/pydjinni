@@ -312,18 +312,17 @@ async def completion(ls: PyDjinniLanguageServer, params: CompletionParams) -> li
     text_document: TextDocument = ls.workspace.get_text_document(params.text_document.uri)
     line = text_document.lines[params.position.line][: params.position.character]
     ls.show_message_log(f"[{TEXT_DOCUMENT_COMPLETION}] {params.text_document.uri} {line}")
-    error_pattern = re.compile(r"(throws *[\w.]*, *[\w.]*$)|(throws *[\w.]*$)")
-    type_pattern = re.compile(r"(: *[\w.]*$)|(-> *[\w.]*$)|([\w.] *< *[\w.]*$)|([\w.] *< *[\w.]* *, *[\w.]*$)")
-    target_pattern = re.compile(r" +[-\+]\w*$")
-    error_completion = re.findall(error_pattern, line)
-    type_completion = re.findall(type_pattern, line)
-    target_completion = re.findall(target_pattern, line)
-    if error_completion or type_completion or target_completion:
+    pattern = re.compile(
+        r"(?:(?P<error>(?:throws *(?:[\w.]+ *, *)*)|(?P<typeref>(?:: *)|(?:-> *)|(?:[\w.] *< *(?:[\w.]+ *, *)*)))(?P<typename>[\w.]*$))|(?P<language> +[-\+](?P<languagename>\w*$))"
+    )
+    completion = re.search(pattern, line)
+    if completion:
         workspace = api.get_workspace(params.text_document.uri)
-        if error_completion or type_completion:
+        if completion.group("error") or completion.group("typeref"):
+            completion_typename = completion.group("typename")
             type_defs = (
                 workspace.get_all_completion_type_defs(params.text_document.uri)
-                if type_completion
+                if completion.group("typeref")
                 else workspace.get_all_error_domains(params.text_document.uri)
             )
             return [
@@ -342,15 +341,36 @@ async def completion(ls: PyDjinniLanguageServer, params: CompletionParams) -> li
                         else None
                     ),
                     deprecated=type_def.deprecated != False,
+                    text_edit=TextEdit(
+                        range=Range(
+                            start=Position(
+                                line=params.position.line,
+                                character=params.position.character - len(completion_typename),
+                            ),
+                            end=Position(line=params.position.line, character=params.position.character),
+                        ),
+                        new_text=".".join(type_def.namespace + [type_def.name]),
+                    ),
                 )
                 for type_def in await type_defs
             ]
-        elif target_completion:
+        elif completion.group("language"):
+            completion_language = completion.group("languagename")
             return [
                 CompletionItem(
                     label=target.key,
                     label_details=CompletionItemLabelDetails(description=target.display_key),
                     detail=target.display_key,
+                    text_edit=TextEdit(
+                        range=Range(
+                            start=Position(
+                                line=params.position.line,
+                                character=params.position.character - len(completion_language),
+                            ),
+                            end=Position(line=params.position.line, character=params.position.character),
+                        ),
+                        new_text=target.key,
+                    ),
                 )
                 for target in workspace.get_all_target_languages()
             ]
