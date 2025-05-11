@@ -34,31 +34,32 @@ class FileReaderWriter:
         self._processed_files = None
         self._used_keys: list[str] = []
 
+    def _to_absolute_path(self, path: Path):
+        return path if path.is_absolute() else self._root_path / path
+
     def setup(self, processed_files_model: type[ProcessedFiles]):
         self._processed_files = processed_files_model().model_copy(deep=True)
 
     def setup_include_dir(self, key: str, include_dir: Path):
         generator = getattr(self.processed_files.generated, key)
-        if not include_dir.is_absolute():
-            include_dir = self._root_path / include_dir
-        generator.include_dir = include_dir
+        generator.include_dir = self._to_absolute_path(include_dir)
 
     def setup_source_dir(self, key: str, source_dir: Path):
         generator = getattr(self.processed_files.generated, key)
-        if not source_dir.is_absolute():
-            source_dir = self._root_path / source_dir
-        generator.source_dir = source_dir
+        generator.source_dir = self._to_absolute_path(source_dir)
 
     @property
     def processed_files(self) -> ProcessedFiles:
         return self._processed_files
 
     def read_idl(self, filename: Path, append: bool = True) -> str:
+        filename = self._to_absolute_path(filename)
         if append:
             self.processed_files.parsed.idl.append(filename)
         return filename.read_text()
 
     def read_external_type(self, filename: Path, append: bool = True) -> str:
+        filename = self._to_absolute_path(filename)
         if append:
             self.processed_files.parsed.external_types.append(filename)
         return filename.read_text()
@@ -78,14 +79,14 @@ class FileReaderWriter:
             self._used_keys.append(key)
 
     def _write(self, filename: Path, content: str) -> Path:
-        absolute_filename = filename if filename.is_absolute() else self._root_path / filename
+        absolute_filename = self._to_absolute_path(filename)
         absolute_filename.parent.mkdir(parents=True, exist_ok=True)
         absolute_filename.write_text(content)
         return absolute_filename
 
     def _copy(self, source_file: Path, target_file: Path) -> Path:
-        absolute_target_file = target_file if target_file.is_absolute() else self._root_path / target_file
-        absolute_source_file = source_file if source_file.is_absolute() else self._root_path / source_file
+        absolute_target_file = self._to_absolute_path(target_file)
+        absolute_source_file = self._to_absolute_path(source_file)
         absolute_target_file.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(absolute_source_file, absolute_target_file)
         return absolute_target_file

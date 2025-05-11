@@ -29,6 +29,9 @@ class TextDocumentPath(Path):
 
     def as_uri(self):
         return unquote(self.document.uri)
+    
+    def is_absolute(self) -> bool:
+        return True
 
     @property
     def parent(self):
