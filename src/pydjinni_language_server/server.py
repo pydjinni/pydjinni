@@ -26,7 +26,6 @@ from pydjinni_language_server.language_server import PyDjinniLanguageServer
 from .comment_renderer import HoverTooltipCommentRenderer
 from .util import (
     identifier_range,
-    map_completion_item_description,
     map_completion_item_kind,
     to_diagnostics,
     to_document_symbol,
@@ -325,35 +324,49 @@ async def completion(ls: PyDjinniLanguageServer, params: CompletionParams) -> li
                 if completion.group("typeref")
                 else workspace.get_all_error_domains(params.text_document.uri)
             )
-            return [
-                CompletionItem(
-                    label=".".join(type_def.namespace + [type_def.name]),
-                    label_details=CompletionItemLabelDetails(description=map_completion_item_description(type_def)),
-                    kind=map_completion_item_kind(type_def),
-                    tags=[CompletionItemTag.Deprecated] if type_def.deprecated else None,
-                    detail=map_completion_item_description(type_def),
-                    documentation=(
-                        MarkupContent(
-                            kind=MarkupKind.Markdown,
-                            value=HoverTooltipCommentRenderer().render_tokens(*type_def._parsed_comment),
-                        )
-                        if type_def._parsed_comment
-                        else None
-                    ),
-                    deprecated=type_def.deprecated != False,
-                    text_edit=TextEdit(
-                        range=Range(
-                            start=Position(
-                                line=params.position.line,
-                                character=params.position.character - len(completion_typename),
-                            ),
-                            end=Position(line=params.position.line, character=params.position.character),
+            result = []
+            for type_def in await type_defs:
+                label = ".".join(type_def.namespace + [type_def.name])
+                text_edit = label
+                if type_def.params:
+                    label += f"<{','.join(type_def.params)}>"
+                    if (
+                        ls.client_capabilities.text_document
+                        and ls.client_capabilities.text_document.completion
+                        and ls.client_capabilities.text_document.completion.completion_item
+                        and ls.client_capabilities.text_document.completion.completion_item.snippet_support
+                    ):
+                        text_edit += f"<{','.join([f"${{{index + 1}:{param}}}" for index, param in enumerate(type_def.params)])}>"
+                result.append(
+                    CompletionItem(
+                        label=label,
+                        label_details=CompletionItemLabelDetails(description=type_def.primitive),
+                        kind=map_completion_item_kind(type_def),
+                        tags=[CompletionItemTag.Deprecated] if type_def.deprecated else None,
+                        detail=type_def.primitive,
+                        documentation=(
+                            MarkupContent(
+                                kind=MarkupKind.Markdown,
+                                value=HoverTooltipCommentRenderer().render_tokens(*type_def._parsed_comment),
+                            )
+                            if type_def._parsed_comment
+                            else None
                         ),
-                        new_text=".".join(type_def.namespace + [type_def.name]),
-                    ),
+                        deprecated=type_def.deprecated != False,
+                        insert_text_format=InsertTextFormat.Snippet if type_def.params else InsertTextFormat.PlainText,
+                        text_edit=TextEdit(
+                            range=Range(
+                                start=Position(
+                                    line=params.position.line,
+                                    character=params.position.character - len(completion_typename),
+                                ),
+                                end=Position(line=params.position.line, character=params.position.character),
+                            ),
+                            new_text=text_edit,
+                        ),
+                    )
                 )
-                for type_def in await type_defs
-            ]
+            return result
         elif completion.group("language"):
             completion_language = completion.group("languagename")
             return [

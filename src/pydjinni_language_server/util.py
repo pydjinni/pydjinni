@@ -133,9 +133,6 @@ def map_completion_item_kind(type_def: BaseExternalType) -> CompletionItemKind |
         case _:
             return CompletionItemKind.Value
 
-def map_completion_item_description(type_def: BaseExternalType) -> str | None:
-    return type_def.primitive
-
 
 def to_document_symbol(type_def) -> DocumentSymbol:
     if isinstance(type_def, Namespace):
