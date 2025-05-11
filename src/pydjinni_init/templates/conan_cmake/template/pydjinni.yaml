@@ -1,19 +1,19 @@
 generate:
   cpp:
     out:
-      header: generated/cpp/include
-      source: generated/cpp/src
+      header: lib/generated/cpp/include
+      source: lib/generated/cpp/src
     namespace: pydjinni::example
     not_null:
       header: <gsl/pointers>
       type: ::gsl::not_null
   #> if "android" in platforms:
   java:
-    out: generated/java
+    out: lib/generated/java
     package: {{ cpp_namespace | replace("::", ".") }}
     native_lib: {{ target }}
   jni:
-    out: generated/jni
+    out: lib/generated/jni
     namespace: {{ cpp_namespace }}::jni
     identifier:
       file:
@@ -23,17 +23,17 @@ generate:
   #> if "darwin" in platforms:
   objc:
     out:
-      header: generated/objc/include
-      source: generated/objc/src
+      header: lib/generated/objc/include
+      source: lib/generated/objc/src
     swift:
       bridging_header: {{ target }}.h
   objcpp:
-    out: generated/objcpp
+    out: lib/generated/objcpp
     namespace: {{ cpp_namespace }}::objcpp
   #> endif
   #> if "windows" in platforms:
   cppcli:
-    out: generated/cppcli
+    out: lib/generated/cppcli
     namespace: {{ cpp_namespace }}::cppcli
   #> endif
 build:
