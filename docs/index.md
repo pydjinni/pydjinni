@@ -29,7 +29,7 @@ Heavily inspired by the original [Djinni by Dropbox](https://github.com/dropbox/
 
 The interface to C++ is defined with a custom interface definition language.
 
-```{ .djinni }
+```pydjinni
 person = record { # (1)!
     id: i16;
     name: str;
