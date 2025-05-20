@@ -27,7 +27,6 @@ Heavily inspired by the original [Djinni by Dropbox](https://github.com/dropbox/
 
 <h3><span class="feature-icon">💬</span>Interface Definition</h3>
 
-
 The interface to C++ is defined with a custom interface definition language.
 
 ```{ .djinni }
@@ -61,7 +60,7 @@ The output can be configured with a YAML configuration file.
 generate:
   list_processed_files: processed-files.json # (1)!
   cpp:
-    out: 
+    out:
       header: out/include # (2)!
       source: out/src
     namespace: my::lib
@@ -81,7 +80,6 @@ generate:
 <div class="secondary-feature-panels" markdown>
 
 <div class="feature-panel" markdown>
-
 
 <h3><span class="feature-icon">🔌</span>Modular</h3>
 
@@ -110,13 +108,12 @@ The tool can also be used through a Python API, in order to seamlessly embed int
 <br>
 <br>
 
-<center>
+<center markdown>
 
 # Roadmap
 
 PyDjinni is written completely from scratch and still has some rough edges.<br>
 Here is what is planned for the near future:
-
 
 <div id="roadmap" markdown>
 - [x] Publish initial preview
@@ -135,7 +132,6 @@ Here is what is planned for the near future:
 
 <br>
 <br>
-
 
 [&nbsp;&nbsp;Try Now &nbsp; :material-arrow-right:&nbsp;&nbsp;](installation.md){ .md-button .md-button--primary .try-now-button }
 
