@@ -30,19 +30,19 @@ class PyDjinniLexer(RegexLexer):
             (words(('interface', 'enum', 'record', 'flags', 'error', 'function', 'namespace'), prefix=r'\b', suffix=r'\b'), Keyword.Type), #types
             (words(('const', 'static', 'async', 'throws', 'main'), prefix=r'\b', suffix=r'\b'), Keyword.Reserved), #modifiers
             (r'\b(deriving)(\s*)(\()', bygroups(Keyword.Reserved, Whitespace, Punctuation), 'deriving_targets'), #deriving_targets
-            (r'([_\w]+)(\s*)(?=:|\(|=\s*all|=\s*none|;)', bygroups(Name, Whitespace)), #parameter
-            (r'([_\w]+)(\s*)(?=\=)', bygroups(Name.Class, Whitespace)), #typename
-            (r'(?<=:)(\s*)([<>_\w]+)', bygroups(Whitespace, Name.Class)), #typename_reference_parameter
-            (r'(?<=->)(\s*)([<>_\w]+)', bygroups(Whitespace, Name.Class)), #typename_reference_return
-            (r'(?<=\.)([<>_\w]+)', Name.Class), #typename_reference_namespace
-            (r'(?<=throws)(\s*)([<>_\w]+)(\s*)(?=,)', bygroups(Whitespace, Name.Class, Whitespace)), #typename_reference_throws_1
-            (r'(?<=throws)(\s*)([<>_\w]+)(\s*)(?=->)', bygroups(Whitespace, Name.Class, Whitespace)), #typename_reference_throws_2
-            (r'(?<=throws)(\s*)([<>_\w]+)(\s*)(?=;)', bygroups(Whitespace, Name.Class, Whitespace)), #typename_reference_throws_3
-            (r'(?<=,)(\s*)([<>_\w]+)(\s*)(?=,)', bygroups(Whitespace, Name.Class, Whitespace)), #typename_reference_throws_4
-            (r'(?<=,)(\s*)([<>_\w]+)(\s*)(?=->)', bygroups(Whitespace, Name.Class, Whitespace)), #typename_reference_throws_5
-            (r'(?<=,)(\s*)([<>_\w]+)(\s*)(?=;)', bygroups(Whitespace, Name.Class, Whitespace)), #typename_reference_throws_6
-            (r'(?<=namespace)(\s*)([_\w]+)', bygroups(Whitespace, Name.Namespace)), #namespace_typename
-            (r'\+[\w]+', Name.Tag), #interface_targets
+            (r'([\w]+)(\s*)(?=\=)', bygroups(Name.Class, Whitespace)), #typename
+            (r'(?<=:)(\s*)([<>\w]+)', bygroups(Whitespace, Name.Class)), #typename_reference_parameter
+            (r'(?<=->)(\s*)([<>\w]+)', bygroups(Whitespace, Name.Class)), #typename_reference_return
+            (r'(?<=\.)([<>\w]+)', Name.Class), #typename_reference_namespace
+            (r'(?<=throws)(\s*)([<>\w]+)(\s*)(?=,|.)', bygroups(Whitespace, Name.Class, Whitespace)), #typename_reference_throws_1
+            (r'(?<=throws)(\s*)([<>\w]+)(\s*)(?=->)', bygroups(Whitespace, Name.Class, Whitespace)), #typename_reference_throws_2
+            (r'(?<=throws)(\s*)([<>\w]+)(\s*)(?=;)', bygroups(Whitespace, Name.Class, Whitespace)), #typename_reference_throws_3
+            (r'(?<=,)(\s*)([<>\w]+)(\s*)(?=,|.)', bygroups(Whitespace, Name.Class, Whitespace)), #typename_reference_throws_4
+            (r'(?<=,)(\s*)([<>\w]+)(\s*)(?=->)', bygroups(Whitespace, Name.Class, Whitespace)), #typename_reference_throws_5
+            (r'(?<=,)(\s*)([<>\w]+)(\s*)(?=;)', bygroups(Whitespace, Name.Class, Whitespace)), #typename_reference_throws_6
+            (r'(?<=namespace)(\s*)([\w]+)', bygroups(Whitespace, Name.Namespace)), #namespace_typename
+            (r'([\w]+)(\s*)(?=:|\(|=\s*all|=\s*none|;)', bygroups(Name, Whitespace)), #parameter
+            (r'([+-][\w]+)', Name.Tag), #interface_targets
             (r';|{|}|,|\.|\(|\)', Punctuation), #punctuation_*
             (r'=|->|:', Operator), #operator_*
             (r'.', Text),
@@ -50,7 +50,8 @@ class PyDjinniLexer(RegexLexer):
         'comment': [
             (r'`.*`', Literal),
             (r'@returns|@deprecated', Literal),
-            (r'(@param|@throws)(\s*)(\w+)?', bygroups(Literal, Whitespace, Name.Attribute)),
+            (r'(@param)(\s*)(\w+)?', bygroups(Literal, Whitespace, Name.Attribute)),
+            (r'(@throws)(\s*)([\w.]+)?', bygroups(Literal, Whitespace, Name.Attribute)),
             (r'\*\*[^*]+\*\*', Generic.Strong),
             (r'\*[^*]+\*', Generic.Emph),
             (r'.+?', Comment),
