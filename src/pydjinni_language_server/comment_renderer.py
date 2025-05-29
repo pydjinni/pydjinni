@@ -33,3 +33,7 @@ class HoverTooltipCommentRenderer(MarkdownRenderer):
     def throws(self, token: dict[str, Any], state: BlockState) -> str:
         type_ref: TypeReference = token['attrs']['type_ref']
         return f"\n**Throws** `{type_ref.name}` {self.render_children(token, state)}\n"
+    
+    def inline_type_ref(self, token: dict[str, Any], state: BlockState) -> str:
+        type_ref: TypeReference = token['attrs']['type_ref']
+        return f"`{type_ref.name}`"

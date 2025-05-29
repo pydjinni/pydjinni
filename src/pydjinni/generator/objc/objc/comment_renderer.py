@@ -41,3 +41,10 @@ class DocCCommentRenderer(MarkdownRenderer):
         type_ref: TypeReference = token['attrs']['type_ref']
         type_name = type_ref.type_def.objc.typename if type_ref.type_def else type_ref.name
         return f"- Throws: ``{type_name}`` {self.render_children(token, state)}\n"
+    
+    def inline_type_ref(self, token: dict[str, Any], state: BlockState) -> str:
+        type_ref: TypeReference = token['attrs']['type_ref']
+        if type_ref.type_def:
+            return f"``{type_ref.type_def.objc.typename}``"
+        else:
+            return f"`{type_ref.name}`"

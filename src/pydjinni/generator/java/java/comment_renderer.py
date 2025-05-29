@@ -49,3 +49,9 @@ class JavaDocCommentRenderer(HTMLRenderer):
 
     def deprecated(self, text: str) -> str:
         return f"@deprecated {text}\n"
+    
+    def inline_type_ref(self, type_ref: TypeReference) -> str:
+        if type_ref.type_def:
+            return f"{{@link {type_ref.type_def.java.typename}}}"
+        else:
+            return f"{{@code {type_ref.name}}}"

@@ -1,12 +1,10 @@
 import asyncio
-import logging
 from pathlib import Path
-from typing import Any, AsyncGenerator, Generator
+from typing import AsyncGenerator
 from urllib.parse import unquote
 import uuid
 
 from pydjinni.api import API
-from pydjinni.builder.target import BuildTarget
 from pydjinni.generator.target import Target
 from pydjinni.parser.ast import ErrorDomain, Function, Namespace
 from pydjinni.parser.base_models import BaseExternalType, BaseField, BaseType, FileReference, TypeReference
@@ -83,7 +81,6 @@ class Workspace:
                 if isinstance(type_ref.type_def.deprecated, str):
                     message += f": {type_ref.type_def.deprecated}"
                 warnings.append(Diagnostics.DiagnosticItem(type_ref, message))
-
         self.hover_cache[uri] = to_hover_cache(
             [
                 ref
