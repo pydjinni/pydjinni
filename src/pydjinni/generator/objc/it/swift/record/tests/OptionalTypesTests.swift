@@ -14,7 +14,7 @@ final class OptionalTypesTests: XCTestCase {
     func testDescription() {
         XCTAssertEqual(
             record.description,
-            "<TSTOptionalTypes intOptional:42 stringOptional:optional>"
+            "<SFTOptionalTypes intOptional:42 stringOptional:optional>"
         )
     }
 }

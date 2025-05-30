@@ -29,66 +29,77 @@ class FileReaderWriter:
     added to the list of generated files.
     """
 
-    def __init__(self):
+    def __init__(self, root_path: Path):
+        self._root_path = root_path
         self._processed_files = None
         self._used_keys: list[str] = []
+
+    def _to_absolute_path(self, path: Path):
+        return path if path.is_absolute() else self._root_path / path
 
     def setup(self, processed_files_model: type[ProcessedFiles]):
         self._processed_files = processed_files_model().model_copy(deep=True)
 
     def setup_include_dir(self, key: str, include_dir: Path):
         generator = getattr(self.processed_files.generated, key)
-        generator.include_dir = include_dir
+        generator.include_dir = self._to_absolute_path(include_dir)
 
     def setup_source_dir(self, key: str, source_dir: Path):
         generator = getattr(self.processed_files.generated, key)
-        generator.source_dir = source_dir
+        generator.source_dir = self._to_absolute_path(source_dir)
 
     @property
     def processed_files(self) -> ProcessedFiles:
         return self._processed_files
 
     def read_idl(self, filename: Path, append: bool = True) -> str:
+        filename = self._to_absolute_path(filename)
         if append:
             self.processed_files.parsed.idl.append(filename)
         return filename.read_text()
 
     def read_external_type(self, filename: Path, append: bool = True) -> str:
+        filename = self._to_absolute_path(filename)
         if append:
             self.processed_files.parsed.external_types.append(filename)
         return filename.read_text()
 
     def write_source(self, key: str, filename: Path, content: str, append: bool = True):
-        self._write(filename, content)
+        absolute_filename = self._write(filename, content)
         if append:
             generator = getattr(self.processed_files.generated, key)
-            generator.source.append(filename)
+            generator.source.append(absolute_filename)
             self._used_keys.append(key)
 
     def write_header(self, key: str, filename: Path, content: str, append: bool = True):
-        self._write(filename, content)
+        absolute_filename = self._write(filename, content)
         if append:
             generator = getattr(self.processed_files.generated, key)
-            generator.header.append(filename)
+            generator.header.append(absolute_filename)
             self._used_keys.append(key)
 
-    def _write(self, filename: Path, content: str):
-        filename.parent.mkdir(parents=True, exist_ok=True)
-        filename.write_text(content)
+    def _write(self, filename: Path, content: str) -> Path:
+        absolute_filename = self._to_absolute_path(filename)
+        absolute_filename.parent.mkdir(parents=True, exist_ok=True)
+        absolute_filename.write_text(content)
+        return absolute_filename
 
-    def _copy(self, source_file: Path, target_file: Path):
-        target_file.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy(source_file, target_file)
+    def _copy(self, source_file: Path, target_file: Path) -> Path:
+        absolute_target_file = self._to_absolute_path(target_file)
+        absolute_source_file = self._to_absolute_path(source_file)
+        absolute_target_file.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(absolute_source_file, absolute_target_file)
+        return absolute_target_file
 
     def copy_source_directory(self, key: str, source_dir: Path, target_dir: Path, append: bool = True):
         if source_dir.exists():
             for file_path in source_dir.rglob('*'):
                 if file_path.is_file():
                     target_file_path = target_dir / file_path.relative_to(source_dir)
-                    self._copy(file_path, target_file_path)
+                    absolute_target_filename = self._copy(file_path, target_file_path)
                     if append:
                         generator = getattr(self.processed_files.generated, key)
-                        generator.source.append(target_file_path)
+                        generator.source.append(absolute_target_filename)
                         self._used_keys.append(key)
 
     def copy_header_directory(self, key: str, header_dir: Path, target_dir: Path, append: bool = True):
@@ -96,10 +107,10 @@ class FileReaderWriter:
             for file_path in header_dir.rglob('*'):
                 if file_path.is_file():
                     target_file_path = target_dir / file_path.relative_to(header_dir)
-                    self._copy(file_path, target_file_path)
+                    absolute_target_filename = self._copy(file_path, target_file_path)
                     if append:
                         generator = getattr(self.processed_files.generated, key)
-                        generator.header.append(target_file_path)
+                        generator.header.append(absolute_target_filename)
                         self._used_keys.append(key)
 
     def write_processed_files(self, filename: Path):

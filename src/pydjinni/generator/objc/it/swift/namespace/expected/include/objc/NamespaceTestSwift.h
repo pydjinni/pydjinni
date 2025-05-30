@@ -8,8 +8,8 @@ FOUNDATION_EXPORT double bridgingheaderVersionNumber;
 //! Project version string for bridgingheader.
 FOUNDATION_EXPORT const unsigned char bridgingheaderVersionString[];
 
-#import "TSTGlobalRecord.h"
-#import "TSTGlobalInterface.h"
-#import "TSTSomethingNamespacedNamespacedRecord.h"
-#import "TSTSomethingNamespacedOtherNamespacedRecord.h"
-#import "TSTSomethingNamespacedNamespacedInterface.h"
+#import "SFTGlobalRecord.h"
+#import "SFTGlobalInterface.h"
+#import "SFTSomethingNamespacedNamespacedRecord.h"
+#import "SFTSomethingNamespacedOtherNamespacedRecord.h"
+#import "SFTSomethingNamespacedNamespacedInterface.h"

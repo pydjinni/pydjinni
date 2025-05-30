@@ -33,7 +33,7 @@ function(swift_test_case TEST_CASE_NAME)
     implement_test_case(${TEST_CASE_NAME} LANGUAGE objc
         OPTIONS
             ${TEST_CASE_OPTIONS}
-            generate.objc.type_prefix=TST
+            generate.objc.type_prefix=SFT
             generate.objc.out.header=${CMAKE_CURRENT_LIST_DIR}/generated/include/objc
             generate.objc.out.source=${CMAKE_CURRENT_LIST_DIR}/generated/src/objc
             generate.objc.swift.rename_interfaces=True

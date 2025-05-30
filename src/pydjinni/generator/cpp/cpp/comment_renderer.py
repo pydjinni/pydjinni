@@ -18,6 +18,7 @@ from mistune.renderers.markdown import MarkdownRenderer
 
 from pydjinni.generator.cpp.cpp.config import CppIdentifier
 from pydjinni.parser.identifier import IdentifierType as Identifier
+from pydjinni.parser.base_models import TypeReference
 
 
 class DoxygenCommentRenderer(MarkdownRenderer):
@@ -37,5 +38,13 @@ class DoxygenCommentRenderer(MarkdownRenderer):
         return f"@deprecated {self.render_children(token, state)}\n"
 
     def throws(self, token: dict[str, Any], state: BlockState) -> str:
-        name = token['attrs']['name']
-        return f"@throws {Identifier(name).convert(self.identifier_style.type)} {self.render_children(token, state)}\n"
+        type_ref: TypeReference = token['attrs']['type_ref']
+        type_name = type_ref.type_def.cpp.typename.lstrip('::') if type_ref.type_def else type_ref.name
+        return f"@throws {type_name} {self.render_children(token, state)}\n"
+    
+    def inline_type_ref(self, token: dict[str, Any], state: BlockState) -> str:
+        type_ref: TypeReference = token['attrs']['type_ref']
+        if type_ref.type_def:
+            return f"@ref {type_ref.type_def.cpp.typename.lstrip('::')}"
+        else:
+            return f"`{type_ref.name}`"

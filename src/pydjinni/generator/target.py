@@ -56,6 +56,14 @@ class Target(ABC):
         pass
 
     @property
+    def internal(self) -> bool:
+        """
+        Whether a generator is an internal component that does not produce code.
+        This is used to flag the `yaml` generator as not being a language target.
+        """
+        return False
+
+    @property
     @abstractmethod
     def generators(self) -> list[type[Generator]]:
         """
@@ -68,17 +76,21 @@ class Target(ABC):
         pass
 
     def __init__(
-            self,
-            file_reader_writer: FileReaderWriter,
-            config_model_builder: ConfigModelBuilder,
-            external_type_model_builder: TypeModelBuilder,
-            processed_files_model_builder: ProcessedFilesModelBuilder):
-        self.generator_instances = [generator(
-            file_writer=file_reader_writer,
-            config_model_builder=config_model_builder,
-            external_type_model_builder=external_type_model_builder,
-            processed_files_model_builder=processed_files_model_builder
-        ) for generator in self.generators]
+        self,
+        file_reader_writer: FileReaderWriter,
+        config_model_builder: ConfigModelBuilder,
+        external_type_model_builder: TypeModelBuilder,
+        processed_files_model_builder: ProcessedFilesModelBuilder,
+    ):
+        self.generator_instances = [
+            generator(
+                file_writer=file_reader_writer,
+                config_model_builder=config_model_builder,
+                external_type_model_builder=external_type_model_builder,
+                processed_files_model_builder=processed_files_model_builder,
+            )
+            for generator in self.generators
+        ]
 
     def generate(self, ast: list[BaseType], clean: bool = False, copy_support_lib_sources: bool = True):
         for generator_instance in self.generator_instances:
@@ -94,18 +106,21 @@ class Target(ABC):
         for generator in self.generator_instances:
             generator.register_external_types(external_types_factory)
 
-
     def configure(self, config: ConfigModel):
         metadata_model = create_model(
             "Metadata",
             __base__=MetadataBase,
-            **{generator.key: (
-                generator.metadata_model,
-                FieldInfo(
-                    default=generator.metadata_model(config=getattr(config, generator.key)),
-                    description=inspect.cleandoc(generator.metadata_model.__doc__)
+            **{
+                generator.key: (
+                    generator.metadata_model,
+                    FieldInfo(
+                        default=generator.metadata_model(config=getattr(config, generator.key)),
+                        description=inspect.cleandoc(generator.metadata_model.__doc__),
+                    ),
                 )
-            ) for generator in self.generator_instances if generator.metadata_model is not None}
+                for generator in self.generator_instances
+                if generator.metadata_model is not None
+            },
         )
         for generator in self.generator_instances:
             generator.configure(getattr(config, generator.key), metadata_model())

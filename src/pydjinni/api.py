@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.generator.generate_config import GenerateBaseConfig
 from pydjinni.generator.target import Target
 from pydjinni.builder.target import BuildTarget
-from pydjinni.parser.base_models import BaseType, BaseExternalType, TypeReference, FileReference
+from pydjinni.parser.base_models import BaseField, BaseType, BaseExternalType, TypeReference, FileReference
 from pydjinni.position import Position
 from pydjinni.parser.resolver import Resolver
 from pydjinni.parser.type_model_builder import TypeModelBuilder
@@ -96,18 +96,20 @@ class API:
     ```
     """
 
-    def __init__(self):
-        self._file_reader_writer = FileReaderWriter()
+    def __init__(self, root_path: Path = Path.cwd()):
+        self._root_path = root_path
+        self._file_reader_writer = FileReaderWriter(root_path)
         self._config_model_builder = ConfigModelBuilder()
         self._external_type_model_builder = TypeModelBuilder(BaseExternalType)
         self._processed_files_model_builder = ProcessedFilesModelBuilder()
         # initializing plugins
-        self._generate_targets = [self._init_generator_plugin(plugin) for plugin in
-                                  entry_points(group='pydjinni.generator')]
-        self._build_targets = [self._init_build_plugin(plugin) for plugin in
-                               entry_points(group='pydjinni.builder')]
-        self._package_targets = [self._init_package_plugin(plugin) for plugin in
-                                 entry_points(group='pydjinni.packaging')]
+        self._generate_targets = [
+            self._init_generator_plugin(plugin) for plugin in entry_points(group="pydjinni.generator")
+        ]
+        self._build_targets = [self._init_build_plugin(plugin) for plugin in entry_points(group="pydjinni.builder")]
+        self._package_targets = [
+            self._init_package_plugin(plugin) for plugin in entry_points(group="pydjinni.packaging")
+        ]
 
         # generate models
         self._configuration_model = self._config_model_builder.build()
@@ -180,7 +182,7 @@ class API:
             file_reader_writer=self._file_reader_writer,
             config_model_builder=self._config_model_builder,
             external_type_model_builder=self._external_type_model_builder,
-            processed_files_model_builder=self._processed_files_model_builder
+            processed_files_model_builder=self._processed_files_model_builder,
         )
 
     def _init_build_plugin(self, plugin: EntryPoint) -> BuildTarget:
@@ -189,11 +191,9 @@ class API:
         )
 
     def _init_package_plugin(self, plugin: EntryPoint) -> PackageTarget:
-        return plugin.load()(
-            config_model_builder=self._config_model_builder
-        )
+        return plugin.load()(config_model_builder=self._config_model_builder)
 
-    def configure(self, path: Path | str = None, options: dict = None) -> ConfiguredContext:
+    def configure(self, path: Path | str | None = None, options: dict | None = None) -> ConfiguredContext:
         """
         Parses the configuration input.
 
@@ -216,36 +216,40 @@ class API:
             raise ConfigurationException("Provide either a config file or a list of configuration options!")
         try:
             if path:
-                with open(path, "rb") as file:
-                    match path.suffix:
-                        case '.yaml' | '.yml':
+                absolute_path = path if path.is_absolute() else self._root_path / path
+                with open(absolute_path, "rb") as file:
+                    match absolute_path.suffix:
+                        case ".yaml" | ".yml":
                             try:
                                 config_dict = yaml.safe_load(file)
                             except yaml.MarkedYAMLError as e:
                                 raise ConfigurationException.from_yaml_error(e)
-                        case '.json':
+                        case ".json":
                             try:
                                 config_dict = json.load(file)
                             except json.JSONDecodeError as e:
                                 raise ConfigurationException.from_json_error(path, e)
-                        case '.toml':
+                        case ".toml":
                             try:
                                 config_dict = tomllib.load(file)
                             except tomllib.TOMLDecodeError as e:
-                                raise ConfigurationException(e, position=Position(file=path))
+                                raise ConfigurationException(e, position=Position(file=absolute_path))
                         case _:
-                            raise ConfigurationException(f"Unknown configuration file extension: '{path.suffix}'")
+                            raise ConfigurationException(
+                                f"Unknown configuration file extension: '{absolute_path.suffix}'"
+                            )
             else:
                 config_dict = dict()
             combine_into(options, config_dict)
             config = self._configuration_model.model_validate(config_dict)
             return API.ConfiguredContext(
                 config=config,
+                root_path=self._root_path,
                 external_types_model=self.external_type_model,
                 generate_targets=self.generation_targets,
                 package_targets=self.package_targets,
                 build_targets=self.build_targets,
-                file_reader_writer=self._file_reader_writer
+                file_reader_writer=self._file_reader_writer,
             )
         except pydantic.ValidationError as e:
             raise ConfigurationException.from_pydantic_error(e)
@@ -253,21 +257,30 @@ class API:
             raise FileNotFoundException(path)
 
     class ConfiguredContext:
-        def __init__(self, config: BaseModel, external_types_model: type[BaseExternalType],
-                     generate_targets: dict[str, Target],
-                     package_targets: dict[str, PackageTarget],
-                     build_targets: dict[str, BuildTarget], file_reader_writer: FileReaderWriter):
+        def __init__(
+            self,
+            config: BaseModel,
+            root_path: Path,
+            external_types_model: type[BaseExternalType],
+            generate_targets: dict[str, Target],
+            package_targets: dict[str, PackageTarget],
+            build_targets: dict[str, BuildTarget],
+            file_reader_writer: FileReaderWriter,
+        ):
             self._config = config
+            self._root_path = root_path
             self._external_types_model = external_types_model
             self._generate_targets = generate_targets
             self._package_targets = package_targets
             self._build_targets = build_targets
             self._file_reader_writer = file_reader_writer
+            self.resolver = Resolver(self._external_types_model)
 
             self._generate_config: GenerateBaseConfig = self._config.generate
             generate_targets: list[str] = list(self._generate_config.model_fields_set) if self._generate_config else []
-            self._configured_targets: list[Target] = [target for key, target in self._generate_targets.items() if
-                                                      key in generate_targets]
+            self._configured_targets: list[Target] = [
+                target for key, target in self._generate_targets.items() if key in generate_targets
+            ]
 
         @property
         def configured_targets(self):
@@ -305,35 +318,39 @@ class API:
                 target.register_external_types(external_types_builder)
                 target.configure(self._generate_config)
 
-            resolver = Resolver(self._external_types_model)
-            resolver.registry = dict()
+            
+            self.resolver.reset()
             for external_type_def in external_types_builder.build():
-                resolver.register(external_type_def)
+                self.resolver.register(external_type_def)
 
             parser = Parser(
-                resolver=resolver,
+                resolver=self.resolver,
                 targets=self.configured_targets,
-                supported_target_keys=list(self._generate_targets.keys()),
+                supported_target_keys=[key for key, value in self._generate_targets.items() if not value.internal],
                 file_reader=self._file_reader_writer,
-                include_dirs=self._generate_config.include_dirs,
+                include_dirs=[
+                    dir if dir.is_absolute() else self._root_path / dir for dir in self._generate_config.include_dirs
+                ],
                 default_deriving=set(self._generate_config.default_deriving),
-                idl=idl
+                idl=idl,
             )
 
             # parsing the input IDL. The output is an AST that contains type definitions for each provided marshal
-            type_defs, type_refs, file_imports, ast = parser.parse()
+            type_defs, type_refs, file_imports, fields, ast = parser.parse()
 
             return API.ConfiguredContext.GenerateContext(
                 generate_targets=self._generate_targets,
                 file_writer=self._file_reader_writer,
-                defs=type_defs,
-                refs=type_refs,
+                type_defs=type_defs,
+                type_refs=type_refs,
                 file_imports=file_imports,
+                fields=fields,
                 ast=ast,
-                config=self._generate_config
+                config=self._generate_config,
+                resolver=self.resolver,
             )
 
-        def package(self, target: str, configuration: str = None) -> PackageContext:
+        def package(self, target: str, configuration: str | None = None) -> PackageContext:
             """
             configure a context for package configuration
 
@@ -346,17 +363,13 @@ class API:
                 package_config.configuration = configuration
             package_target = self._package_targets.get(target)
             if package_target:
-                build_config: BuildBaseConfig = get_config(self._config.build, package_config.build_strategy,
-                                                           "build")
+                build_config: BuildBaseConfig = get_config(self._config.build, package_config.build_strategy, "build")
                 build_strategy = self._build_targets[package_config.build_strategy]
                 build_strategy.configure(build_config)
 
                 package_target.configure(package_config)
 
-                return API.ConfiguredContext.PackageContext(
-                    target=package_target,
-                    build_strategy=build_strategy
-                )
+                return API.ConfiguredContext.PackageContext(target=package_target, build_strategy=build_strategy)
             else:
                 raise UnknownTargetException(target)
 
@@ -388,8 +401,9 @@ class API:
                 self._target = target
                 self._build_strategy = build_strategy
 
-            def build(self, target: str, architectures: set[Architecture] = None,
-                      clean: bool = False) -> API.ConfiguredContext.PackageContext:
+            def build(
+                self, target: str, architectures: set[Architecture] = None, clean: bool = False
+            ) -> API.ConfiguredContext.PackageContext:
                 """
                 Build the library for a given platform target.
 
@@ -418,20 +432,27 @@ class API:
                 return self._target.package(clean=clean)
 
         class GenerateContext:
-            def __init__(self, generate_targets: dict[str, Target],
-                         file_writer: FileReaderWriter,
-                         defs: list[BaseType],
-                         refs: list[TypeReference],
-                         file_imports: list[FileReference],
-                         ast: list[BaseType | Namespace],
-                         config: GenerateBaseConfig):
+            def __init__(
+                self,
+                generate_targets: dict[str, Target],
+                file_writer: FileReaderWriter,
+                type_defs: list[BaseType],
+                type_refs: list[TypeReference],
+                file_imports: list[FileReference],
+                fields: list[BaseField],
+                ast: list[BaseType | Namespace],
+                config: GenerateBaseConfig,
+                resolver: Resolver,
+            ):
                 self._generate_targets = generate_targets
                 self._file_reader_writer = file_writer
-                self.defs = defs
-                self.refs = refs
+                self.type_defs = type_defs
+                self.type_refs = type_refs
                 self.file_imports = file_imports
+                self.fields = fields
                 self.ast = ast
                 self._config = config
+                self._resolver = resolver
 
             def generate(self, target_name: str, clean: bool = False) -> API.ConfiguredContext.GenerateContext:
                 """
@@ -445,8 +466,12 @@ class API:
                     the same context. Generation commands can be chained.
                 """
                 target = self._generate_targets[target_name]
-                target.generate(self.defs, clean=clean, copy_support_lib_sources=self._config.support_lib_sources)
+                target.generate(self.type_defs, clean=clean, copy_support_lib_sources=self._config.support_lib_sources)
                 return self
+
+            @property
+            def resolver(self):
+                return self._resolver
 
             def write_processed_files(self) -> Path | None:
                 """

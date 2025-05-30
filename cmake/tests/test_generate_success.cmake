@@ -31,14 +31,14 @@ pydjinni_generate(${IDL_FILE}
 
 then("CMAKE_CONFIGURE_DEPENDS should contain both the IDL and config file")
 get_directory_property(DEPENDS CMAKE_CONFIGURE_DEPENDS)
-assert_in_list("resources/valid_idl.djinni" DEPENDS)
-assert_in_list("resources/valid_config.yaml" DEPENDS)
+assert_in_list("${CMAKE_CURRENT_SOURCE_DIR}/resources/valid_idl.djinni" DEPENDS)
+assert_in_list("${CMAKE_CURRENT_SOURCE_DIR}/resources/valid_config.yaml" DEPENDS)
 list(LENGTH DEPENDS DEPENDS_LENGTH)
 assert(DEPENDS_LENGTH EQUAL 2)
 
 then("the variable cpp_GENERATED_HEADERS should be set")
 assert(DEFINED cpp_GENERATED_HEADERS)
 then("the variable cpp_INCLUDE_DIR should be set to the configured include dir")
-assert(cpp_INCLUDE_DIR STREQUAL "out/cpp/header")
+assert(cpp_INCLUDE_DIR STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}/out/cpp/header")
 then("the variable java_GENERATED_SOURCES should be set")
 assert(DEFINED java_GENERATED_SOURCES)

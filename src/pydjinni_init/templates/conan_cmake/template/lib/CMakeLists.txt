@@ -15,8 +15,8 @@ project({{ target }} LANGUAGES ${PROJECT_LANGUAGES})
 
 find_package(Microsoft.GSL REQUIRED)
 
-pydjinni_generate(interface.pydjinni
-    CONFIG ${CMAKE_SOURCE_DIR}/pydjinni.yaml
+pydjinni_generate(${CMAKE_CURRENT_SOURCE_DIR}/interface.pydjinni
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     LANGUAGES cpp java objc cppcli
     CLEAN
 )

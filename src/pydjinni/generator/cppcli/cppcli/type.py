@@ -25,7 +25,7 @@ from pydjinni.parser.ast import Function
 from .comment_renderer import XmlCommentRenderer
 from .config import CppCliConfig
 from .keywords import keywords
-from pydjinni.parser.base_models import BaseExternalType, BaseType, BaseField, TypeReference, DataField, BaseCommentModel
+from pydjinni.parser.base_models import BaseType, BaseField, TypeReference, DataField, BaseCommentModel
 from pydjinni.generator.validator import validate
 
 from pydjinni.generator.filters import headers, quote
@@ -65,8 +65,8 @@ class CppCliBaseCommentModel(BaseModel):
 
     @cached_property
     def comment(self):
-        return XmlCommentRenderer(self.config.identifier).render(*self.decl.parsed_comment).strip() \
-            if self.decl.comment else ''
+        return XmlCommentRenderer(self.config.identifier).render(*self.decl._parsed_comment).strip() \
+            if self.decl._parsed_comment else ''
 
     @property
     def deprecated(self):

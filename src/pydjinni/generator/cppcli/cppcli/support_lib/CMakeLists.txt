@@ -1,4 +1,4 @@
-# Copyright 2024 jothepro
+# Copyright 2024 - 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,4 +19,5 @@ project(PyDjinniCppCli_SupportLib CXX CSharp)
 add_library(cppcli_support_lib INTERFACE)
 target_include_directories(cppcli_support_lib INTERFACE include)
 target_link_libraries(cppcli_support_lib INTERFACE support_lib::cpp)
+set_target_properties(cppcli_support_lib PROPERTIES FOLDER "support_lib")
 add_library(support_lib::cppcli ALIAS cppcli_support_lib)

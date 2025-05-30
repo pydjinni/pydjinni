@@ -1,7 +1,7 @@
 #pragma once
 
 #include "pydjinni/coroutine/continuation_runner.hpp"
-
+#include "pydjinni/coroutine/task.hpp"
 
 
 #define ASYNC []() -> ::pydjinni::coroutine::task<>

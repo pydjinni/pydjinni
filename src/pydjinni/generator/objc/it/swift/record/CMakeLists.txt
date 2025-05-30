@@ -26,7 +26,7 @@ swift_test_case(RecordTest
 )
 target_sources(RecordTestSwift
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/TSTBaseRecord.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/TSTBaseRecord.m
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/SFTBaseRecord.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/SFTBaseRecord.m
 )
 target_include_directories(RecordTestSwift PUBLIC include)

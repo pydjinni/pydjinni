@@ -1,4 +1,4 @@
-# Copyright 2023 - 2024 jothepro
+# Copyright 2023 - 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,6 +52,8 @@ if(BUILD_TESTING)
         GIT_SHALLOW ON
     )
     FetchContent_MakeAvailable(Catch2)
+    set_target_properties(Catch2 PROPERTIES FOLDER "dependencies")
+    set_target_properties(Catch2WithMain PROPERTIES FOLDER "dependencies")
     include(Catch)
 endif()
 

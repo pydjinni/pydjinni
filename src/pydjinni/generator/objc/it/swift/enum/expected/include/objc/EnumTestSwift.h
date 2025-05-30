@@ -8,8 +8,8 @@ FOUNDATION_EXPORT double bridgingheaderVersionNumber;
 //! Project version string for bridgingheader.
 FOUNDATION_EXPORT const unsigned char bridgingheaderVersionString[];
 
-#import "TSTExampleEnum.h"
-#import "TSTEnumWithComments.h"
-#import "TSTDeprecatedEnum.h"
-#import "TSTDeprecatedEnumItem.h"
-#import "TSTHelper.h"
+#import "SFTExampleEnum.h"
+#import "SFTEnumWithComments.h"
+#import "SFTDeprecatedEnum.h"
+#import "SFTDeprecatedEnumItem.h"
+#import "SFTHelper.h"

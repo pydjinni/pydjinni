@@ -10,16 +10,19 @@ public abstract class BarError extends Exception {
     public BarError(String message) {
         super(message);
     }
-    /**
-     * @deprecated error code is old
-     */
     @Deprecated
     public final static class OldErrorCode extends BarError {
+        /**
+         * @deprecated error code is old
+         */
         public OldErrorCode(
         ) {
             this(null);
         }
 
+        /**
+         * @deprecated error code is old
+         */
         public OldErrorCode(
             String message
         ) {

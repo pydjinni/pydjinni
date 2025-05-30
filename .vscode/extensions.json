@@ -1,0 +1,14 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "ms-python.debugpy",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "ms-vscode.cpptools-extension-pack",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        "pydjinni.pydjinni-vscode",
+        "editorconfig.editorconfig",
+        "redhat.java"
+    ]
+}

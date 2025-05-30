@@ -12,6 +12,10 @@
 namespace Test::Error::CppCli {
 public ref class Helper abstract {
 public:
+    /**
+     * <exception cref="::Test::Error::CppCli::FooError">when something goes wrong</exception>
+     * <exception cref="::Test::Error::CppCli::BarError">when something else goes wrong</exception>
+     */
     static void ThrowingError();
     static void ThrowingWithParameters();
     static System::Threading::Tasks::Task^ ThrowingAsync();

@@ -8,10 +8,10 @@ FOUNDATION_EXPORT double bridgingheaderVersionNumber;
 //! Project version string for bridgingheader.
 FOUNDATION_EXPORT const unsigned char bridgingheaderVersionString[];
 
-#import "TSTPlatformInterface.h"
-#import "TSTNoParametersNoReturnCallback.h"
-#import "TSTThrowingCallback.h"
-#import "TSTCalculator.h"
-#import "TSTDeprecationTest.h"
-#import "TSTDeprecatedMethodTest.h"
-#import "TSTOptionalInterface.h"
+#import "SFTPlatformInterface.h"
+#import "SFTNoParametersNoReturnCallback.h"
+#import "SFTThrowingCallback.h"
+#import "SFTCalculator.h"
+#import "SFTDeprecationTest.h"
+#import "SFTDeprecatedMethodTest.h"
+#import "SFTOptionalInterface.h"

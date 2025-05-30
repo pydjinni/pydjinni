@@ -23,8 +23,9 @@ java_test_case(ExternalTypesTest
         generate.jni.identifier.file.prefix=marshal_
         generate.jni.identifier.file.style=snake_case
     SOURCES
-        tests/ExternalTypesTest.java
         ${EXTERNAL_TYPES_JAVA_SOURCES}
+    TEST_SOURCES
+        tests/ExternalTypesTest.java 
 )
 
 target_include_directories(ExternalTypesTestJni PUBLIC generated/export/include/jni)

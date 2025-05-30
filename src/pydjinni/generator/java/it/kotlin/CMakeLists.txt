@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -87,6 +87,7 @@ function(kotlin_test_case TEST_CASE_NAME)
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
     add_custom_target(${KOTLIN_TARGET_NAME} ALL DEPENDS ${KOTLIN_JAR_FILE})
+    set_target_properties(${KOTLIN_TARGET_NAME} PROPERTIES FOLDER "it/${TEST_CASE_NAME}")
     add_dependencies(${KOTLIN_TARGET_NAME} ${JAVA_TARGET_NAME})
     add_test(NAME Kotlin.${TEST_CASE_NAME} COMMAND ${Java_JAVA_EXECUTABLE}
             -Xcheck:jni

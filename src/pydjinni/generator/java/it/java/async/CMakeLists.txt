@@ -18,6 +18,6 @@ java_test_case(AsyncTest
         generate.jni.identifier.file.prefix=marshal_
         generate.jni.identifier.file.style=snake_case
         generate.jni.namespace=test::async_test::jni
-    SOURCES
+    TEST_SOURCES
         tests/AsyncTest.java
 )

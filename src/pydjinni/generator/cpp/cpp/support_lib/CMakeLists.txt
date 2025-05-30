@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,6 +31,6 @@ if(BUILD_TESTING)
             support_lib::cpp
             Catch2::Catch2WithMain
     )
-
-    catch_discover_tests(cpp_support_lib_tests DISCOVERY_MODE PRE_TEST)
+    set_target_properties(cpp_support_lib_tests PROPERTIES FOLDER "support_lib/tests")
+    catch_discover_tests(cpp_support_lib_tests TEST_PREFIX Cpp.SupportLib. DISCOVERY_MODE PRE_TEST)
 endif()

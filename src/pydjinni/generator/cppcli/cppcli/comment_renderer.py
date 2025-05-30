@@ -15,6 +15,7 @@
 from mistune import HTMLRenderer
 
 from pydjinni.generator.cppcli.cppcli.config import CppCliIdentifierStyle
+from pydjinni.parser.base_models import TypeReference
 from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
@@ -37,40 +38,48 @@ class XmlCommentRenderer(HTMLRenderer):
             case _:
                 return text
 
-
     def paragraph(self, text: str) -> str:
-        return f'<para>{text}</para>\n'
+        return f"<para>{text}</para>\n"
 
     def list(self, text: str, ordered: bool, **attrs) -> str:
         return f'<list type="{"number" if ordered else "bullet"}">\n{text}</list>\n'
 
     def list_item(self, text: str) -> str:
-        return '<item>\n<description>' + text + '</description>\n</item>\n'
+        return "<item>\n<description>" + text + "</description>\n</item>\n"
 
     def codespan(self, text: str) -> str:
         return f"<c>{text}</c>"
 
     def block_code(self, code: str, info=None) -> str:
-        return f'<code>\n{code}\n</code>\n'
+        return f"<code>\n{code}\n</code>\n"
 
     def returns(self, text: str) -> str:
         self.returns_doc = f"<returns>\n{text}\n</returns>\n"
         return ""
 
     def param(self, text: str, name: str) -> str:
-        self.params_doc.append(f'<param name="{Identifier(name).convert(self.identifier_style.local)}">{text}</param>\n')
+        self.params_doc.append(
+            f'<param name="{Identifier(name).convert(self.identifier_style.local)}">{text}</param>\n'
+        )
         return ""
 
-    def throws(self, text: str, name: str) -> str:
-        self.params_doc.append(f'<exception cref="{Identifier(name).convert(self.identifier_style.type)}">{text}</exception>\n')
+    def throws(self, text: str, type_ref: TypeReference) -> str:
+        type_name = type_ref.type_def.cppcli.typename if type_ref.type_def else type_ref.name
+        self.params_doc.append(f'<exception cref="{type_name}">{text}</exception>\n')
         return ""
 
     def deprecated(self, text: str) -> str:
         return ""
 
+    def inline_type_ref(self, type_ref: TypeReference) -> str:
+        if type_ref.type_def:
+            return f'<see cref="{type_ref.type_def.cppcli.typename}">'
+        else:
+            return f"<c>{type_ref.name}</c>"
+
     def render(self, tokens, state) -> str:
-        summary = ''.join(self.iter_tokens(tokens, state))
+        summary = "".join(self.iter_tokens(tokens, state))
         output = f"<summary>\n{summary}</summary>\n" if summary else ""
-        output += ''.join(self.params_doc)
+        output += "".join(self.params_doc)
         output += self.returns_doc
         return output

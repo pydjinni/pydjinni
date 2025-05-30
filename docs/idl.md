@@ -242,6 +242,9 @@ Comments starting with `#` are converted to documentation comments in the genera
 
 [CommonMark](https://commonmark.org) flavored Markdown can be used to format the text.
 
+Types inside inline code blocks with double backticks will be resolved and transformed to the generated type in
+each target language: ``` ``foo`` ```.
+
 The following special commands are available:
 
 {{ markdown_special_commands() }}

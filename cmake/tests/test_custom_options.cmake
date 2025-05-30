@@ -37,4 +37,4 @@ pydjinni_generate(${IDL_FILE}
 then("the custom options should be taken into account in the generated output")
 
 assert(DEFINED java_GENERATED_SOURCES)
-assert_in_list("out/java-custom/foo/bar/Foo.java" java_GENERATED_SOURCES)
+assert_in_list("${CMAKE_CURRENT_SOURCE_DIR}/out/java-custom/foo/bar/Foo.java" java_GENERATED_SOURCES)

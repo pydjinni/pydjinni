@@ -6,6 +6,8 @@
 #import "TSTFooError.h"
 #import "TSTThrowingCallback.h"
 @interface TSTHelper : NSObject
+/// - Throws: ``TSTFooError`` when something goes wrong
+/// - Throws: ``TSTBarError`` when something else goes wrong
 + (void)throwingError:(NSError* _Nullable * _Nonnull)error;
 + (void)throwingWithParameters:(NSError* _Nullable * _Nonnull)error;
 + (void)throwingAsync:(nonnull void (^)(NSError* _Nullable))completion;

@@ -23,7 +23,6 @@ public abstract class {{ type_def.java.name }} extends Exception {
         super(message);
     }
 //> for error_code in type_def.error_codes:
-    //? error_code.comment : error_code.java.comment | comment | indent
     //? error_code.deprecated : "@Deprecated"
     public final static class {{ error_code.java.name }} extends {{ type_def.java.name }} {
     //> for parameter in error_code.parameters:
@@ -32,6 +31,7 @@ public abstract class {{ type_def.java.name }} extends Exception {
         {{ parameter.java.field_modifier ~ parameter.java.data_type }} {{ parameter.java.name }};
     //> endfor
 
+        //? error_code.comment : error_code.java.comment | comment | indent(8)
         public {{ error_code.java.name }}(
         //> for parameter in error_code.parameters:
             {{ parameter.java.data_type }} {{ parameter.java.name ~ ("," if not loop.last) }}
@@ -44,6 +44,7 @@ public abstract class {{ type_def.java.name }} extends Exception {
             null);
         }
 
+        //? error_code.comment : error_code.java.comment | comment | indent(8)
         public {{ error_code.java.name }}(
             //> for parameter in error_code.parameters:
             {{ parameter.java.data_type }} {{ parameter.java.name }},

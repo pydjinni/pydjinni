@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2025 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,56 +45,15 @@ function(cpp_test_case TEST_CASE_NAME)
             FOLDER "it/${TEST_CASE_NAME}"
     )
 
-catch_discover_tests(${TEST_CASE_NAME}Cpp DISCOVERY_MODE PRE_TEST)
+catch_discover_tests(${TEST_CASE_NAME}Cpp TEST_PREFIX Cpp. DISCOVERY_MODE PRE_TEST)
 
 endfunction()
 
-cpp_test_case(RecordTest
-    SOURCES
-        tests/test_record.cpp
-)
-
-cpp_test_case(InterfaceTest
-    SOURCES
-        tests/test_interface.cpp
-)
-
-cpp_test_case(EnumTest
-    SOURCES
-        tests/test_enum.cpp
-)
-
-cpp_test_case(FlagsTest
-    SOURCES
-        tests/test_flags.cpp
-)
-
-cpp_test_case(FunctionTest
-    SOURCES
-        tests/test_function.cpp
-)
-
-cpp_test_case(AsyncTest
-    SOURCES
-        tests/test_async.cpp
-    INCLUDES
-        include
-)
-
-cpp_test_case(ErrorTest
-    SOURCES
-        tests/test_error.cpp
-    INCLUDES
-        include
-)
-
-cpp_test_case(NamespaceTest
-    SOURCES
-        tests/test_namespace.cpp
-)
-
-cpp_test_case(NotNullTest
-    SOURCES
-        tests/test_not_null.cpp
-)
-
+add_subdirectory(record)
+add_subdirectory(interface)
+add_subdirectory(enum)
+add_subdirectory(flags)
+add_subdirectory(function)
+add_subdirectory(async)
+add_subdirectory(namespace)
+add_subdirectory(not_null)

@@ -20,6 +20,7 @@ java_test_case(RecordTest
         generate.jni.namespace=test::record::jni
     SOURCES
         src/BaseRecord.java
+    TEST_SOURCES
         tests/TestPrimitiveTypes.java
         tests/TestCollectionTypes.java
         tests/TestOptionalTypes.java

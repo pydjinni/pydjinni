@@ -13,7 +13,7 @@ method calls across the language boundary.
 
 Consult the [Interface Definition](idl.md) Reference for a full documentation of all features of the IDL.
 
-```djinni
+```pydjinni
 my_cool_enum = enum {
     option1;
     option2;

@@ -34,7 +34,7 @@ pydjinni_generate(resources/valid_idl.djinni
 
 then("CMAKE_CONFIGURE_DEPENDS should contain just the input IDL file")
 get_directory_property(DEPENDS CMAKE_CONFIGURE_DEPENDS)
-assert_in_list("resources/valid_idl.djinni" DEPENDS)
+assert_in_list("${CMAKE_CURRENT_SOURCE_DIR}/resources/valid_idl.djinni" DEPENDS)
 list(LENGTH DEPENDS DEPENDS_LENGTH)
 assert(DEPENDS_LENGTH EQUAL 1)
 

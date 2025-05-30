@@ -81,7 +81,8 @@ class CppBaseCommentModel(BaseModel):
 
     @cached_property
     def comment(self):
-        return DoxygenCommentRenderer(self.config.identifier).render_tokens(*self.decl.parsed_comment).strip()
+        return DoxygenCommentRenderer(self.config.identifier).render_tokens(*self.decl._parsed_comment).strip() \
+            if self.decl._parsed_comment else ''
 
     @property
     def deprecated(self):

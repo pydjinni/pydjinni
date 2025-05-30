@@ -6,6 +6,10 @@ public abstract class Helper {
     static {
         test.error.pydjinni.NativeErrorTestJniLoader.loadLibrary();
     }
+    /**
+     * @throws test.error.FooError when something goes wrong
+     * @throws test.error.BarError when something else goes wrong
+     */
     public static void throwingError() throws FooError, BarError {
         CppProxy.throwingError();
     };
