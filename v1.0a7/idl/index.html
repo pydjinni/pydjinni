@@ -1,0 +1,1912 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../api/">
+      
+      
+        <link rel="next" href="../types/">
+      
+      
+      <link rel="icon" href="../assets/logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.7">
+    
+    
+      
+        <title>Overview - PyDjinni</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.8608ea7d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Open Sans";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+      <link rel="stylesheet" href="../stylesheets/demo.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#interface-definition" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
+            
+              <button class="md-banner__button md-icon" aria-label="Don't show this again">
+                
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+              </button>
+            
+            
+    🚧 This is an <strong>Early Preview Version</strong>! Some features may be incomplete or even broken!
+
+          </div>
+          
+            <script>var el=document.querySelector("[data-md-component=announce]");if(el){var content=el.querySelector(".md-typeset");__md_hash(content.innerHTML)===__md_get("__announce")&&(el.hidden=!0)}</script>
+          
+        </aside>
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="PyDjinni" class="md-header__button md-logo" aria-label="PyDjinni" data-md-component="logo">
+      
+  <img src="../assets/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            PyDjinni
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Overview
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M8 12a4 4 0 1 1 0-8 4 4 0 0 1 0 8m0-1.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5m5.657-8.157a.75.75 0 0 1 0 1.061l-1.061 1.06a.749.749 0 0 1-1.275-.326.75.75 0 0 1 .215-.734l1.06-1.06a.75.75 0 0 1 1.06 0Zm-9.193 9.193a.75.75 0 0 1 0 1.06l-1.06 1.061a.75.75 0 1 1-1.061-1.06l1.06-1.061a.75.75 0 0 1 1.061 0M8 0a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0V.75A.75.75 0 0 1 8 0M3 8a.75.75 0 0 1-.75.75H.75a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 3 8m13 0a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 16 8m-8 5a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 13m3.536-1.464a.75.75 0 0 1 1.06 0l1.061 1.06a.75.75 0 0 1-1.06 1.061l-1.061-1.06a.75.75 0 0 1 0-1.061M2.343 2.343a.75.75 0 0 1 1.061 0l1.06 1.061a.75.75 0 0 1-.018 1.042.75.75 0 0 1-1.042.018l-1.06-1.06a.75.75 0 0 1 0-1.06Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="blue"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M9.598 1.591a.75.75 0 0 1 .785-.175 7.001 7.001 0 1 1-8.967 8.967.75.75 0 0 1 .961-.96 5.5 5.5 0 0 0 7.046-7.046.75.75 0 0 1 .175-.786m1.616 1.945a7 7 0 0 1-7.678 7.678 5.499 5.499 0 1 0 7.678-7.678"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pydjinni/pydjinni" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../installation/" class="md-tabs__link">
+          
+  
+  Getting started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../cli/" class="md-tabs__link">
+          
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../demo/" class="md-tabs__link">
+        
+  
+    
+  
+  Demo
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../dev_setup/" class="md-tabs__link">
+          
+  
+  Development
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="PyDjinni" class="md-nav__button md-logo" aria-label="PyDjinni" data-md-component="logo">
+      
+  <img src="../assets/logo.png" alt="logo">
+
+    </a>
+    PyDjinni
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pydjinni/pydjinni" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Getting started
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Getting started
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../introduction/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Introduction
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project_setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project Setup
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Migrating from Djinni
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Command Line Interface
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Programming Interface
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Interface Definition
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            Interface Definition
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#built-in-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Built-In Types
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Built-In Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#optional-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Optional types
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#enums" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enums
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      Flags
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#record" class="md-nav__link">
+    <span class="md-ellipsis">
+      Record
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Record">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#extensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extensions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deriving" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deriving
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interface
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#special-methods-for-c-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      Special Methods for C++ only
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#main-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      Main Interface
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#throwing-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Throwing exceptions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async" class="md-nav__link">
+    <span class="md-ellipsis">
+      Async
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Errors
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Functions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#namespaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      Namespaces
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comments" class="md-nav__link">
+    <span class="md-ellipsis">
+      Comments
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#antlr-grammar" class="md-nav__link">
+    <span class="md-ellipsis">
+      ANTLR grammar
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Types
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deriving/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Deriving
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../external_types/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    External Types
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../config/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Configuration
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../processed_files/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Processed Files
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cmake/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    CMake
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../setup_wizard/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Setup Wizard
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pygments/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Pygments
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../demo/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Demo
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Development
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev_setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Setup
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Plugins
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            Plugins
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../generator_plugin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Generator Plugin
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../build_plugin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Build Plugin
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../package_plugin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Package Plugin
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../template_plugin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Template Plugin
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#built-in-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Built-In Types
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Built-In Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#optional-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      Optional types
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#enums" class="md-nav__link">
+    <span class="md-ellipsis">
+      Enums
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      Flags
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#record" class="md-nav__link">
+    <span class="md-ellipsis">
+      Record
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Record">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#extensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extensions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deriving" class="md-nav__link">
+    <span class="md-ellipsis">
+      Deriving
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interface
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#special-methods-for-c-only" class="md-nav__link">
+    <span class="md-ellipsis">
+      Special Methods for C++ only
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#main-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      Main Interface
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#throwing-exceptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Throwing exceptions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async" class="md-nav__link">
+    <span class="md-ellipsis">
+      Async
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Errors
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Functions
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#namespaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      Namespaces
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comments" class="md-nav__link">
+    <span class="md-ellipsis">
+      Comments
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#antlr-grammar" class="md-nav__link">
+    <span class="md-ellipsis">
+      ANTLR grammar
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/pydjinni/pydjinni/edit/main/docs/idl.md" title="Edit this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="interface-definition">Interface Definition<a class="headerlink" href="#interface-definition" title="Permanent link">&para;</a></h1>
+<p>The Interface Definition Language (IDL) is used to define the interface between C++ and 
+the host language.</p>
+<h2 id="built-in-types">Built-In Types<a class="headerlink" href="#built-in-types" title="Permanent link">&para;</a></h2>
+<p>PyDjinni comes with a set of built-in data types. Consult the <a href="../types/">Types</a> reference for a full list of all 
+available types.</p>
+<h3 class="new-badge" id="optional-types">Optional types<a class="headerlink" href="#optional-types" title="Permanent link">&para;</a></h3>
+<p>Suffixing a type with a <code>?</code> marks it as optional. Optional values may be null.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nc">foo</span><span class="w"> </span><span class="o">=</span> <span class="kt">record</span> <span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">bar</span><span class="o">:</span><span class="w"> </span><span class="nc">i32</span>?<span class="p">;</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">}</span>
+</code></pre></div>
+<h2 id="enums">Enums<a class="headerlink" href="#enums" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nc">foo</span><span class="w"> </span><span class="o">=</span> <span class="kt">enum</span> <span class="p">{</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">option1</span><span class="p">;</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">option2</span><span class="p">;</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">option3</span><span class="p">;</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="p">}</span>
+</code></pre></div>
+<h2 id="flags">Flags<a class="headerlink" href="#flags" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nc">bar</span><span class="w"> </span><span class="o">=</span> <span class="kt">flags</span> <span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">flag1</span><span class="p">;</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">flag2</span><span class="p">;</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">flag3</span><span class="p">;</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="nc">no_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">none</span><span class="p">;</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="nc">all_flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">all</span><span class="p">;</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">}</span>
+</code></pre></div>
+<h2 id="record">Record<a class="headerlink" href="#record" title="Permanent link">&para;</a></h2>
+<p>Records are pure data value objects, that combine multiple fields into a data class.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nc">data</span><span class="w"> </span><span class="o">=</span> <span class="kt">record</span> <span class="p">{</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">id</span><span class="o">:</span><span class="w"> </span><span class="nc">i32</span><span class="p">;</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">info</span><span class="o">:</span><span class="w"> </span><span class="nc">string</span><span class="p">;</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">store</span><span class="o">:</span><span class="w"> </span><span class="nc">set&lt;string&gt;</span><span class="p">;</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">hash</span><span class="o">:</span><span class="w"> </span><span class="nc">map&lt;string</span><span class="p">,</span><span class="nc">i32&gt;</span><span class="p">;</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="extensions">Extensions<a class="headerlink" href="#extensions" title="Permanent link">&para;</a></h3>
+<p>To support extra fields and/or methods, a record can be "extended" in any language.
+To extend a record in a language, you can add a language target flag after the record tag.
+The generated type will have a Base suffix, and you should create a derived type without the suffix that extends 
+the record type.</p>
+<p>The derived type must be constructible in the same way as the Base type.
+Interfaces will always use the derived type.</p>
+<h3 id="deriving">Deriving<a class="headerlink" href="#deriving" title="Permanent link">&para;</a></h3>
+<p>For record types, Haskell-style "deriving" declarations are supported to generate some common methods.
+This way for example equality and order comparators or a method for giving a string representation of the record
+can be added. Not all features may be available in all target languages. 
+Consult the <a href="../deriving/">Deriving Reference</a> for a full list of available declarations.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nc">foo</span><span class="w"> </span><span class="o">=</span> <span class="kt">record</span> <span class="p">{</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">bar</span><span class="o">:</span><span class="w"> </span><span class="nc">i32</span><span class="p">;</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="p">}</span> <span class="kr">deriving</span><span class="w"> </span><span class="p">(</span><span class="nt">str</span><span class="err">, </span><span class="nt">eq</span><span class="err">, </span><span class="nt">ord</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="interface">Interface<a class="headerlink" href="#interface" title="Permanent link">&para;</a></h2>
+<p>Interfaces are objects with defined methods to call (in C++, passed by <code>shared_ptr</code>).
+PyDjinni produces code allowing an interface implemented in C++ to be transparently used from Objective-C or Java 
+and vice versa.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c"># This interface will be implemented in C++ </span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="c"># and can be called from any language.</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="nc">my_cpp_interface</span><span class="w"> </span><span class="o">=</span> <span class="kt">interface</span> <span class="nt">+cpp</span> <span class="p">{</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">method_returning_nothing</span><span class="p">(</span><span class="n">value</span><span class="o">:</span><span class="w"> </span><span class="nc">i32</span><span class="p">);</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">method_returning_some_type</span><span class="p">(</span><span class="n">key</span><span class="o">:</span><span class="w"> </span><span class="nc">string</span><span class="p">)</span> <span class="o">-&gt;</span><span class="w"> </span><span class="nc">data</span><span class="p">;</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="kr">static</span> <span class="n">get_version</span><span class="p">()</span> <span class="o">-&gt;</span><span class="w"> </span><span class="nc">i32</span><span class="p">;</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="p">}</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="c"># This interface will be implemented </span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="c"># in Java or Objective-C and can be called from C++.</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="nc">my_client_interface</span><span class="w"> </span><span class="o">=</span> <span class="kt">interface</span> <span class="nt">-cpp</span> <span class="p">{</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    <span class="n">log_string</span><span class="p">(</span><span class="n">str</span><span class="o">:</span><span class="w"> </span><span class="nc">string</span><span class="p">)</span> <span class="o">-&gt;</span><span class="w"> </span><span class="nc">bool</span><span class="p">;</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="special-methods-for-c-only">Special Methods for C++ only<a class="headerlink" href="#special-methods-for-c-only" title="Permanent link">&para;</a></h3>
+<p><code>+cpp</code> interfaces (implementable only in C++) can have methods flagged with the special keywords <code>const</code> and <code>static</code>
+which have special effects in C++:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nc">special_methods</span><span class="w"> </span><span class="o">=</span> <span class="kt">interface</span> <span class="nt">+cpp</span> <span class="p">{</span> 
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="kr">const</span> <span class="n">accessor_method</span><span class="p">();</span> 
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="kr">static</span> <span class="n">factory_method</span><span class="p">();</span> 
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="p">}</span>
+</code></pre></div>
+<ul>
+<li><code>const</code> methods will be declared as <code>const</code> in C++, though this cannot be enforced on callers in other languages, 
+  which lack this feature.</li>
+<li><code>static</code> methods will become a <code>static</code> method of the C++ class, which can be called from other languages without an 
+  object. This is often useful for factory methods to act as a cross-language constructor.</li>
+</ul>
+<h3 class="new-badge" id="main-interface">Main Interface<a class="headerlink" href="#main-interface" title="Permanent link">&para;</a></h3>
+<p>Usually a PyDjinni library will have one or more entrypoints, in the form of an <code>interface</code> with a <code>static</code> constructor.
+When using the library from Java, it is vital to ensure that the underlying native JNI library is loaded before 
+calling the constructor.</p>
+<p>Usually this requires a <code>System.loadLibrary("FooBar");</code> call ahead of time.</p>
+<p>To automate the native library loading, any C++ interface can be marked as <code>main</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nc">foo</span><span class="w"> </span><span class="o">=</span> <span class="kr">main</span> <span class="kt">interface</span> <span class="nt">+cpp</span> <span class="p">{</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="kr">static</span> <span class="n">get_instance</span><span class="p">()</span> <span class="o">-&gt;</span><span class="w"> </span><span class="nc">foo</span><span class="p">;</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="p">}</span>
+</code></pre></div>
+<p>Given that the name of the native library is configured in the <code>generator.java.native_lib</code> property, a static
+initialization block is added to the interface, ensuring that the native library is loaded automatically.</p>
+<h3 class="new-badge" id="throwing-exceptions">Throwing exceptions<a class="headerlink" href="#throwing-exceptions" title="Permanent link">&para;</a></h3>
+<p>Generated C++ Methods are marked as <code>noexcept</code> by default. By marking methods as <code>throws</code> in the IDL, 
+automatic exception translation can be enabled:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nc">foo</span><span class="w"> </span><span class="o">=</span> <span class="kt">interface</span> <span class="p">{</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">some_method</span><span class="p">()</span> <span class="kr">throws</span> <span class="o">-&gt;</span><span class="w"> </span><span class="nc">i8</span><span class="p">;</span> 
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="p">}</span>
+</code></pre></div>
+<p>Any exception raised in C++ is now translated to the target language and vice versa.</p>
+<h3 class="new-badge" id="async">Async<a class="headerlink" href="#async" title="Permanent link">&para;</a></h3>
+<p>The <code>async</code> modifier can be used to specify that a method is asynchronous.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nc">foo</span><span class="w"> </span><span class="o">=</span> <span class="kr">main</span> <span class="kt">interface</span> <span class="nt">+cpp</span> <span class="p">{</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span class="kr">static</span> <span class="kr">async</span> <span class="n">get_instance</span><span class="p">()</span><span class="o">:</span><span class="w"> </span><span class="nc">foo</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    <span class="kr">async</span> <span class="n">method</span><span class="p">(</span><span class="n">input</span><span class="o">:</span><span class="w"> </span><span class="nc">i32</span><span class="p">);</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="p">}</span>
+</code></pre></div>
+<p>Asynchronous methods are implemented as C++ coroutines and are mapped to similar asynchronous execution models in each target language:</p>
+<ul>
+<li>Java: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html"><code>CompletableFuture</code></a></li>
+<li>.NET: <a href="https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/async-return-types"><code>Task</code></a></li>
+<li>Objective-C: <a href="https://developer.apple.com/documentation/swift/calling-objective-c-apis-asynchronously"><code>completion</code> handlers</a></li>
+</ul>
+<p>When calling an asynchronous method in C++, the coroutine will automatically continue execution in a separate thread managed by the host language's default thread pool.
+This provides a convenient programming model for non-blocking execution of long-running tasks, such as network requests or file I/O operations across language boundaries.</p>
+<h2 class="new-badge" id="errors">Errors<a class="headerlink" href="#errors" title="Permanent link">&para;</a></h2>
+<p>Errors are specialized exception types that can optionally transport additional error data.
+They are grouped inside an error domain type, similar to the concept of <code>NSError</code> domains and codes in Objective-C.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nc">networking_error</span><span class="w"> </span><span class="o">=</span> <span class="kt">error</span> <span class="p">{</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span class="n">timeout</span><span class="p">;</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span class="n">error_code</span><span class="p">(</span><span class="n">code</span><span class="o">:</span><span class="w"> </span><span class="nc">i8</span><span class="p">);</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="p">}</span>
+</code></pre></div>
+<p>Methods can then be marked to throw a specific error domain:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nc">foo</span><span class="w"> </span><span class="o">=</span> <span class="kt">interface</span> <span class="p">{</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span class="n">some_method</span><span class="p">()</span> <span class="kr">throws</span><span class="w"> </span><span class="nc">networking_error</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nc">i8</span><span class="p">;</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="p">}</span>
+</code></pre></div>
+<p>Every error can optionally be provided with an error message by default, and can be thrown from either C++ or the host 
+language. When raised, the exception will be translated to its counterpart in the other language.</p>
+<h2 class="new-badge" id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
+<p>Functions can be passed to and returned from interface methods.
+They are represented by <a href="https://en.cppreference.com/w/cpp/utility/functional/function" target="blank"><code>std::function</code></a> in C++, 
+<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/FunctionalInterface.html" target="blank"><code>@FunctionalInterface</code></a> in Java, 
+<a href="https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/WorkingwithBlocks/WorkingwithBlocks.html" target="blank"><code>blocks</code></a> in Objective-C and <a href="https://learn.microsoft.com/en-US/dotnet/csharp/programming-guide/delegates/"><code>delegate</code></a> in C++/CLI (.NET).</p>
+<p>Functions can either be defined like a type, or can be defined inline where they are needed as anonymous functions:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nc">named_func</span><span class="w"> </span><span class="o">=</span> <span class="kt">function</span> <span class="p">(</span><span class="n">input</span><span class="o">:</span><span class="w"> </span><span class="nc">i32</span><span class="p">)</span> <span class="o">-&gt;</span><span class="w"> </span><span class="nc">bool</span><span class="p">;</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="nc">foo</span><span class="w"> </span><span class="o">=</span> <span class="kt">interface</span> <span class="p">{</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>    <span class="n">register_callback</span><span class="p">(</span><span class="n">callback</span><span class="o">:</span><span class="w"> </span><span class="nc">named_func</span><span class="p">);</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span class="n">register_anonymous_callback</span><span class="p">(</span><span class="n">callback</span><span class="o">:</span> <span class="p">(</span><span class="n">input</span><span class="o">:</span><span class="w"> </span><span class="nc">i32</span><span class="p">)</span> <span class="o">-&gt;</span><span class="w"> </span><span class="nc">bool</span><span class="p">);</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="p">}</span>
+</code></pre></div>
+<p>There is a short and a long form for defining functions.
+The long form allows target flags to be added in order to optimize the generated code:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nc">callback</span><span class="w"> </span><span class="o">=</span> <span class="kt">function</span> <span class="nt">-cpp</span> <span class="p">(</span><span class="n">input</span><span class="o">:</span><span class="w"> </span><span class="nc">i32</span><span class="p">)</span> <span class="o">-&gt;</span><span class="w"> </span><span class="nc">bool</span><span class="p">;</span>
+</code></pre></div>
+<p>The short form doesn't allow for code optimization, but in return is a lot more brief:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nc">callback</span><span class="w"> </span><span class="o">=</span> <span class="p">(</span><span class="n">input</span><span class="o">:</span><span class="w"> </span><span class="nc">i32</span><span class="p">)</span> <span class="o">-&gt;</span><span class="w"> </span><span class="nc">bool</span><span class="p">;</span>
+</code></pre></div></p>
+<h2 class="new-badge" id="namespaces">Namespaces<a class="headerlink" href="#namespaces" title="Permanent link">&para;</a></h2>
+<p>The interface file can be structured with namespaces:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kt">namespace</span><span class="w"> </span><span class="nn">foo</span> <span class="p">{</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span class="nc">bar</span><span class="w"> </span><span class="o">=</span> <span class="kt">record</span> <span class="p">{}</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="p">}</span>
+</code></pre></div>
+<p>The specified namespace is appended to the base namespace that is defined in the generator configuration.</p>
+<h2 class="new-badge" id="comments">Comments<a class="headerlink" href="#comments" title="Permanent link">&para;</a></h2>
+<p>Comments starting with <code>#</code> are converted to documentation comments in the generated interfaces.</p>
+<p><a href="https://commonmark.org">CommonMark</a> flavored Markdown can be used to format the text.</p>
+<p>Types inside inline code blocks with double backticks will be resolved and transformed to the generated type in
+each target language: <code>``foo``</code>.</p>
+<p>The following special commands are available:</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>@returns { description }</code></td>
+<td>documents the return value of a method</td>
+</tr>
+<tr>
+<td><code>@deprecated { description }</code></td>
+<td>marks a type, field or method as deprecated</td>
+</tr>
+<tr>
+<td><code>@param &lt;name&gt; { description }</code></td>
+<td>documents a method parameter</td>
+</tr>
+<tr>
+<td><code>@throws &lt;type_ref&gt; { description }</code></td>
+<td>documents an exception type that a method may throw</td>
+</tr>
+</tbody>
+</table>
+<p>Both JavaDoc or Doxygen style commands can be used: <code>@deprecated</code>, <code>\deprecated</code>.</p>
+<h2 id="antlr-grammar">ANTLR grammar<a class="headerlink" href="#antlr-grammar" title="Permanent link">&para;</a></h2>
+<p>The grammar of the IDL is defined with ANTRL. The grammar below is the actual definition used by the parser:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="k">grammar</span><span class="w"> </span><span class="nc">Idl</span><span class="p">;</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="nl">idl</span><span class="w">              </span><span class="p">:</span><span class="w"> </span><span class="nv">load</span><span class="o">*</span><span class="w"> </span><span class="nv">namespaceContent</span><span class="o">*</span><span class="w"> </span><span class="no">EOF</span><span class="p">;</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="nl">load</span><span class="w">             </span><span class="p">:</span><span class="w"> </span><span class="nv">importDef</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="nv">extern</span><span class="p">;</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="nl">comment</span><span class="w">          </span><span class="p">:</span><span class="w"> </span><span class="no">COMMENT</span><span class="o">+</span><span class="p">;</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="nl">importDef</span><span class="w">        </span><span class="p">:</span><span class="w"> </span><span class="no">IMPORT</span><span class="w"> </span><span class="nv">filepath</span><span class="p">;</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="nl">extern</span><span class="w">           </span><span class="p">:</span><span class="w"> </span><span class="no">EXTERN</span><span class="w"> </span><span class="nv">filepath</span><span class="p">;</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="nl">filepath</span><span class="w">         </span><span class="p">:</span><span class="w"> </span><span class="no">FILEPATH</span><span class="p">;</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="nl">namespace</span><span class="w">        </span><span class="p">:</span><span class="w"> </span><span class="nv">comment</span><span class="o">?</span><span class="w"> </span><span class="no">NAMESPACE</span><span class="w"> </span><span class="nv">nsIdentifier</span><span class="w"> </span><span class="no">LBRACE</span><span class="w"> </span><span class="nv">namespaceContent</span><span class="o">*</span><span class="w"> </span><span class="no">RBRACE</span><span class="p">;</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="nl">namespaceContent</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="nv">typeDecl</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="nv">namespace</span><span class="p">;</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="nl">typeDecl</span><span class="w">         </span><span class="p">:</span><span class="w"> </span><span class="nv">enum</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="nv">flags</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="nv">record</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="nv">interface</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="nv">namedFunction</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="nv">errorDomain</span><span class="p">;</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="nl">enum</span><span class="w">             </span><span class="p">:</span><span class="w"> </span><span class="nv">comment</span><span class="o">?</span><span class="w"> </span><span class="nv">identifier</span><span class="w"> </span><span class="no">ASSIGN</span><span class="w"> </span><span class="no">ENUM</span><span class="w"> </span><span class="no">LBRACE</span><span class="w"> </span><span class="nv">item</span><span class="o">*</span><span class="w"> </span><span class="no">RBRACE</span><span class="p">;</span>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="nl">item</span><span class="w">             </span><span class="p">:</span><span class="w"> </span><span class="nv">comment</span><span class="o">?</span><span class="w"> </span><span class="nv">identifier</span><span class="w"> </span><span class="no">SEMI</span><span class="p">;</span>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="nl">flags</span><span class="w">            </span><span class="p">:</span><span class="w"> </span><span class="nv">comment</span><span class="o">?</span><span class="w"> </span><span class="nv">identifier</span><span class="w"> </span><span class="no">ASSIGN</span><span class="w"> </span><span class="no">FLAGS</span><span class="w"> </span><span class="no">LBRACE</span><span class="w"> </span><span class="nv">flag</span><span class="o">*</span><span class="w"> </span><span class="no">RBRACE</span><span class="p">;</span>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a><span class="nl">flag</span><span class="w">             </span><span class="p">:</span><span class="w"> </span><span class="nv">comment</span><span class="o">?</span><span class="w"> </span><span class="nv">identifier</span><span class="w"> </span><span class="nv">modifier</span><span class="o">?</span><span class="w"> </span><span class="no">SEMI</span><span class="p">;</span>
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a><span class="nl">modifier</span><span class="w">         </span><span class="p">:</span><span class="w"> </span><span class="no">ASSIGN</span><span class="w"> </span><span class="no">ID</span><span class="p">;</span>
+<a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a><span class="nl">record</span><span class="w">           </span><span class="p">:</span><span class="w"> </span><span class="nv">comment</span><span class="o">?</span><span class="w"> </span><span class="nv">identifier</span><span class="w"> </span><span class="no">ASSIGN</span><span class="w"> </span><span class="no">RECORD</span><span class="w"> </span><span class="nv">targets</span><span class="w"> </span><span class="no">LBRACE</span><span class="w"> </span><span class="nv">field</span><span class="o">*</span><span class="w"> </span><span class="no">RBRACE</span><span class="w"> </span><span class="nv">deriving</span><span class="o">?</span><span class="p">;</span>
+<a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a><span class="nl">field</span><span class="w">            </span><span class="p">:</span><span class="w"> </span><span class="nv">comment</span><span class="o">?</span><span class="w"> </span><span class="nv">identifier</span><span class="w"> </span><span class="no">COLON</span><span class="w"> </span><span class="nv">typeRef</span><span class="w"> </span><span class="no">SEMI</span><span class="p">;</span>
+<a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a><span class="nl">typeRef</span><span class="w">          </span><span class="p">:</span><span class="w"> </span><span class="nv">dataType</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="nv">function</span><span class="p">;</span>
+<a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a><span class="nl">dataType</span><span class="w">         </span><span class="p">:</span><span class="w"> </span><span class="nv">nsIdentifier</span><span class="w"> </span><span class="o">(</span><span class="no">LT</span><span class="w"> </span><span class="o">(</span><span class="nv">dataType</span><span class="w"> </span><span class="no">COMMA</span><span class="o">)*</span><span class="w"> </span><span class="nv">dataType</span><span class="w"> </span><span class="no">GT</span><span class="o">)?</span><span class="w"> </span><span class="no">OPTIONAL</span><span class="o">?</span><span class="p">;</span>
+<a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a><span class="nl">function</span><span class="w">         </span><span class="p">:</span><span class="w"> </span><span class="o">(</span><span class="no">FUNCTION</span><span class="w"> </span><span class="nv">targets</span><span class="o">)?</span><span class="w"> </span><span class="no">LPAREN</span><span class="w"> </span><span class="o">((</span><span class="nv">parameter</span><span class="w"> </span><span class="no">COMMA</span><span class="o">)*</span><span class="w"> </span><span class="nv">parameter</span><span class="o">)?</span><span class="w"> </span><span class="no">RPAREN</span><span class="w"> </span><span class="nv">throwing</span><span class="o">?</span><span class="w"> </span><span class="o">(</span><span class="no">ARROW</span><span class="w"> </span><span class="nv">typeRef</span><span class="o">)?</span><span class="p">;</span>
+<a id="__codelineno-16-23" name="__codelineno-16-23" href="#__codelineno-16-23"></a><span class="nl">throwing</span><span class="w">         </span><span class="p">:</span><span class="w"> </span><span class="no">THROWS</span><span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="o">(</span><span class="nv">typeRef</span><span class="w"> </span><span class="no">COMMA</span><span class="o">)*</span><span class="w"> </span><span class="nv">typeRef</span><span class="o">)?</span><span class="p">;</span>
+<a id="__codelineno-16-24" name="__codelineno-16-24" href="#__codelineno-16-24"></a><span class="nl">targets</span><span class="w">          </span><span class="p">:</span><span class="w"> </span><span class="no">TARGET</span><span class="o">*</span><span class="p">;</span>
+<a id="__codelineno-16-25" name="__codelineno-16-25" href="#__codelineno-16-25"></a><span class="nl">parameter</span><span class="w">        </span><span class="p">:</span><span class="w"> </span><span class="nv">identifier</span><span class="w"> </span><span class="no">COLON</span><span class="w"> </span><span class="nv">typeRef</span><span class="p">;</span>
+<a id="__codelineno-16-26" name="__codelineno-16-26" href="#__codelineno-16-26"></a><span class="nl">deriving</span><span class="w">         </span><span class="p">:</span><span class="w"> </span><span class="no">DERIVING</span><span class="w"> </span><span class="no">LPAREN</span><span class="w"> </span><span class="o">((</span><span class="nv">declaration</span><span class="w"> </span><span class="no">COMMA</span><span class="o">)*</span><span class="w"> </span><span class="nv">declaration</span><span class="o">)?</span><span class="w"> </span><span class="no">RPAREN</span><span class="p">;</span>
+<a id="__codelineno-16-27" name="__codelineno-16-27" href="#__codelineno-16-27"></a><span class="nl">declaration</span><span class="w">      </span><span class="p">:</span><span class="w"> </span><span class="no">ID</span><span class="p">;</span>
+<a id="__codelineno-16-28" name="__codelineno-16-28" href="#__codelineno-16-28"></a><span class="nl">interface</span><span class="w">        </span><span class="p">:</span><span class="w"> </span><span class="nv">comment</span><span class="o">?</span><span class="w"> </span><span class="nv">identifier</span><span class="w"> </span><span class="no">ASSIGN</span><span class="w"> </span><span class="no">MAIN</span><span class="o">?</span><span class="w"> </span><span class="no">INTERFACE</span><span class="w"> </span><span class="nv">targets</span><span class="w"> </span><span class="no">LBRACE</span><span class="w"> </span><span class="o">(</span><span class="nv">method</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="nv">prop</span><span class="o">)*</span><span class="w"> </span><span class="no">RBRACE</span><span class="p">;</span>
+<a id="__codelineno-16-29" name="__codelineno-16-29" href="#__codelineno-16-29"></a><span class="nl">namedFunction</span><span class="w">    </span><span class="p">:</span><span class="w"> </span><span class="nv">comment</span><span class="o">?</span><span class="w"> </span><span class="nv">identifier</span><span class="w"> </span><span class="no">ASSIGN</span><span class="w"> </span><span class="nv">function</span><span class="w"> </span><span class="no">SEMI</span><span class="p">;</span>
+<a id="__codelineno-16-30" name="__codelineno-16-30" href="#__codelineno-16-30"></a><span class="nl">method</span><span class="w">           </span><span class="p">:</span><span class="w"> </span><span class="nv">comment</span><span class="o">?</span><span class="w"> </span><span class="no">STATIC</span><span class="o">?</span><span class="w"> </span><span class="no">CONST</span><span class="o">?</span><span class="w"> </span><span class="no">ASYNC</span><span class="o">?</span><span class="w"> </span><span class="nv">identifier</span><span class="w"> </span><span class="no">LPAREN</span><span class="w"> </span><span class="o">((</span><span class="nv">parameter</span><span class="w"> </span><span class="no">COMMA</span><span class="o">)*</span><span class="w"> </span><span class="nv">parameter</span><span class="o">)?</span><span class="w"> </span><span class="no">RPAREN</span><span class="w"> </span><span class="nv">throwing</span><span class="o">?</span><span class="w"> </span><span class="o">(</span><span class="no">ARROW</span><span class="w"> </span><span class="nv">typeRef</span><span class="o">)?</span><span class="w"> </span><span class="no">SEMI</span><span class="p">;</span>
+<a id="__codelineno-16-31" name="__codelineno-16-31" href="#__codelineno-16-31"></a><span class="nl">errorDomain</span><span class="w">      </span><span class="p">:</span><span class="w"> </span><span class="nv">comment</span><span class="o">?</span><span class="w"> </span><span class="nv">identifier</span><span class="w"> </span><span class="no">ASSIGN</span><span class="w"> </span><span class="no">ERROR</span><span class="w"> </span><span class="no">LBRACE</span><span class="w"> </span><span class="nv">errorCode</span><span class="o">*</span><span class="w"> </span><span class="no">RBRACE</span><span class="p">;</span>
+<a id="__codelineno-16-32" name="__codelineno-16-32" href="#__codelineno-16-32"></a><span class="nl">errorCode</span><span class="w">        </span><span class="p">:</span><span class="w"> </span><span class="nv">comment</span><span class="o">?</span><span class="w"> </span><span class="nv">identifier</span><span class="w"> </span><span class="o">(</span><span class="no">LPAREN</span><span class="w"> </span><span class="o">((</span><span class="nv">parameter</span><span class="o">)*</span><span class="w"> </span><span class="nv">parameter</span><span class="o">)?</span><span class="w"> </span><span class="no">RPAREN</span><span class="o">)?</span><span class="w"> </span><span class="no">SEMI</span><span class="p">;</span>
+<a id="__codelineno-16-33" name="__codelineno-16-33" href="#__codelineno-16-33"></a><span class="nl">prop</span><span class="w">             </span><span class="p">:</span><span class="w"> </span><span class="nv">comment</span><span class="o">?</span><span class="w"> </span><span class="no">PROPERTY</span><span class="w"> </span><span class="nv">identifier</span><span class="w"> </span><span class="no">COLON</span><span class="w"> </span><span class="nv">typeRef</span><span class="w"> </span><span class="no">SEMI</span><span class="p">;</span>
+<a id="__codelineno-16-34" name="__codelineno-16-34" href="#__codelineno-16-34"></a><span class="nl">identifier</span><span class="w">       </span><span class="p">:</span><span class="w"> </span><span class="no">ID</span><span class="p">;</span>
+<a id="__codelineno-16-35" name="__codelineno-16-35" href="#__codelineno-16-35"></a><span class="nl">nsIdentifier</span><span class="w">     </span><span class="p">:</span><span class="w"> </span><span class="no">NS_ID</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="no">ID</span><span class="p">;</span>
+<a id="__codelineno-16-36" name="__codelineno-16-36" href="#__codelineno-16-36"></a>
+<a id="__codelineno-16-37" name="__codelineno-16-37" href="#__codelineno-16-37"></a><span class="nl">IMPORT</span><span class="w">           </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;@import&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-38" name="__codelineno-16-38" href="#__codelineno-16-38"></a><span class="nl">EXTERN</span><span class="w">           </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;@extern&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-39" name="__codelineno-16-39" href="#__codelineno-16-39"></a><span class="nl">NAMESPACE</span><span class="w">        </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;namespace&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-40" name="__codelineno-16-40" href="#__codelineno-16-40"></a><span class="nl">ENUM</span><span class="w">             </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;enum&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-41" name="__codelineno-16-41" href="#__codelineno-16-41"></a><span class="nl">FLAGS</span><span class="w">            </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;flags&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-42" name="__codelineno-16-42" href="#__codelineno-16-42"></a><span class="nl">STATIC</span><span class="w">           </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;static&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-43" name="__codelineno-16-43" href="#__codelineno-16-43"></a><span class="nl">CONST</span><span class="w">            </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;const&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-44" name="__codelineno-16-44" href="#__codelineno-16-44"></a><span class="nl">MAIN</span><span class="w">             </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;main&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-45" name="__codelineno-16-45" href="#__codelineno-16-45"></a><span class="nl">INTERFACE</span><span class="w">        </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;interface&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-46" name="__codelineno-16-46" href="#__codelineno-16-46"></a><span class="nl">RECORD</span><span class="w">           </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;record&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-47" name="__codelineno-16-47" href="#__codelineno-16-47"></a><span class="nl">DERIVING</span><span class="w">         </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;deriving&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-48" name="__codelineno-16-48" href="#__codelineno-16-48"></a><span class="nl">FUNCTION</span><span class="w">         </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;function&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-49" name="__codelineno-16-49" href="#__codelineno-16-49"></a><span class="nl">PROPERTY</span><span class="w">         </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;property&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-50" name="__codelineno-16-50" href="#__codelineno-16-50"></a><span class="nl">ASYNC</span><span class="w">            </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;async&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-51" name="__codelineno-16-51" href="#__codelineno-16-51"></a><span class="nl">ERROR</span><span class="w">            </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;error&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-52" name="__codelineno-16-52" href="#__codelineno-16-52"></a><span class="nl">THROWS</span><span class="w">           </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;throws&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-53" name="__codelineno-16-53" href="#__codelineno-16-53"></a><span class="nl">ARROW</span><span class="w">            </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;-&gt;&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-54" name="__codelineno-16-54" href="#__codelineno-16-54"></a><span class="nl">OPTIONAL</span><span class="w">         </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;?&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-55" name="__codelineno-16-55" href="#__codelineno-16-55"></a><span class="nl">ASSIGN</span><span class="w">           </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;=&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-56" name="__codelineno-16-56" href="#__codelineno-16-56"></a><span class="nl">COLON</span><span class="w">            </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;:&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-57" name="__codelineno-16-57" href="#__codelineno-16-57"></a><span class="nl">LPAREN</span><span class="w">           </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;(&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-58" name="__codelineno-16-58" href="#__codelineno-16-58"></a><span class="nl">RPAREN</span><span class="w">           </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;)&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-59" name="__codelineno-16-59" href="#__codelineno-16-59"></a><span class="nl">LBRACE</span><span class="w">           </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;{&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-60" name="__codelineno-16-60" href="#__codelineno-16-60"></a><span class="nl">RBRACE</span><span class="w">           </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;}&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-61" name="__codelineno-16-61" href="#__codelineno-16-61"></a><span class="nl">GT</span><span class="w">               </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;&gt;&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-62" name="__codelineno-16-62" href="#__codelineno-16-62"></a><span class="nl">LT</span><span class="w">               </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;&lt;&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-63" name="__codelineno-16-63" href="#__codelineno-16-63"></a><span class="nl">SEMI</span><span class="w">             </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;;&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-64" name="__codelineno-16-64" href="#__codelineno-16-64"></a><span class="nl">COMMA</span><span class="w">            </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;,&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-65" name="__codelineno-16-65" href="#__codelineno-16-65"></a><span class="nl">DOT</span><span class="w">              </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;.&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-66" name="__codelineno-16-66" href="#__codelineno-16-66"></a><span class="nl">FILEPATH</span><span class="w">         </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;&quot;&#39;</span><span class="w"> </span><span class="o">.*?</span><span class="w"> </span><span class="s1">&#39;&quot;&#39;</span><span class="p">;</span>
+<a id="__codelineno-16-67" name="__codelineno-16-67" href="#__codelineno-16-67"></a><span class="nl">TARGET</span><span class="w">           </span><span class="p">:</span><span class="w"> </span><span class="o">(</span><span class="s1">&#39;+&#39;</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="s1">&#39;-&#39;</span><span class="o">)</span><span class="w"> </span><span class="p">[</span><span class="x">a-z</span><span class="p">]</span><span class="o">+</span><span class="p">;</span>
+<a id="__codelineno-16-68" name="__codelineno-16-68" href="#__codelineno-16-68"></a><span class="nl">COMMENT</span><span class="w">          </span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;#&#39;</span><span class="w"> </span><span class="o">~</span><span class="p">[</span><span class="x">\r\n</span><span class="p">]</span><span class="o">*</span><span class="p">;</span>
+<a id="__codelineno-16-69" name="__codelineno-16-69" href="#__codelineno-16-69"></a><span class="nl">WS</span><span class="w">               </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="x"> \t\r\n</span><span class="p">]</span><span class="o">+</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="nv">skip</span><span class="p">;</span>
+<a id="__codelineno-16-70" name="__codelineno-16-70" href="#__codelineno-16-70"></a>
+<a id="__codelineno-16-71" name="__codelineno-16-71" href="#__codelineno-16-71"></a>
+<a id="__codelineno-16-72" name="__codelineno-16-72" href="#__codelineno-16-72"></a><span class="nl">ID</span><span class="w">               </span><span class="p">:</span><span class="w"> </span><span class="no">Letter</span><span class="w"> </span><span class="no">LetterOrDigit</span><span class="o">*</span><span class="p">;</span>
+<a id="__codelineno-16-73" name="__codelineno-16-73" href="#__codelineno-16-73"></a><span class="nl">NS_ID</span><span class="w">            </span><span class="p">:</span><span class="w"> </span><span class="o">(</span><span class="s1">&#39;.&#39;</span><span class="o">?</span><span class="w"> </span><span class="no">ID</span><span class="w"> </span><span class="o">)+</span><span class="p">;</span>
+<a id="__codelineno-16-74" name="__codelineno-16-74" href="#__codelineno-16-74"></a>
+<a id="__codelineno-16-75" name="__codelineno-16-75" href="#__codelineno-16-75"></a><span class="k">fragment</span><span class="w"> </span><span class="nl">LetterOrDigit</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="no">Letter</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">[</span><span class="x">0-9_</span><span class="p">];</span>
+<a id="__codelineno-16-76" name="__codelineno-16-76" href="#__codelineno-16-76"></a><span class="k">fragment</span><span class="w"> </span><span class="nl">Letter</span><span class="w">        </span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="x">a-zA-Z</span><span class="p">];</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../api/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Programming Interface">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Programming Interface
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../types/" class="md-footer__link md-footer__link--next" aria-label="Next: Types">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Types
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 jothepro
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tabs", "navigation.tracking", "navigation.top", "navigation.footer", "content.action.edit", "content.code.copy", "content.code.annotate", "announce.dismiss"], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c8b220af.min.js"></script>
+      
+    
+  </body>
+</html>

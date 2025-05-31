@@ -1,0 +1,2932 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../external_types/">
+      
+      
+        <link rel="next" href="../processed_files/">
+      
+      
+      <link rel="icon" href="../assets/logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.7">
+    
+    
+      
+        <title>Configuration - PyDjinni</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.8608ea7d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Open Sans";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+      <link rel="stylesheet" href="../stylesheets/demo.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#configuration" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+        <aside class="md-banner">
+          <div class="md-banner__inner md-grid md-typeset">
+            
+              <button class="md-banner__button md-icon" aria-label="Don't show this again">
+                
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+              </button>
+            
+            
+    🚧 This is an <strong>Early Preview Version</strong>! Some features may be incomplete or even broken!
+
+          </div>
+          
+            <script>var el=document.querySelector("[data-md-component=announce]");if(el){var content=el.querySelector(".md-typeset");__md_hash(content.innerHTML)===__md_get("__announce")&&(el.hidden=!0)}</script>
+          
+        </aside>
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="PyDjinni" class="md-header__button md-logo" aria-label="PyDjinni" data-md-component="logo">
+      
+  <img src="../assets/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            PyDjinni
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Configuration
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m14.3 16-.7-2h-3.2l-.7 2H7.8L11 7h2l3.2 9zM20 8.69V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12zm-9.15 3.96h2.3L12 9z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M8 12a4 4 0 1 1 0-8 4 4 0 0 1 0 8m0-1.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5m5.657-8.157a.75.75 0 0 1 0 1.061l-1.061 1.06a.749.749 0 0 1-1.275-.326.75.75 0 0 1 .215-.734l1.06-1.06a.75.75 0 0 1 1.06 0Zm-9.193 9.193a.75.75 0 0 1 0 1.06l-1.06 1.061a.75.75 0 1 1-1.061-1.06l1.06-1.061a.75.75 0 0 1 1.061 0M8 0a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0V.75A.75.75 0 0 1 8 0M3 8a.75.75 0 0 1-.75.75H.75a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 3 8m13 0a.75.75 0 0 1-.75.75h-1.5a.75.75 0 0 1 0-1.5h1.5A.75.75 0 0 1 16 8m-8 5a.75.75 0 0 1 .75.75v1.5a.75.75 0 0 1-1.5 0v-1.5A.75.75 0 0 1 8 13m3.536-1.464a.75.75 0 0 1 1.06 0l1.061 1.06a.75.75 0 0 1-1.06 1.061l-1.061-1.06a.75.75 0 0 1 0-1.061M2.343 2.343a.75.75 0 0 1 1.061 0l1.06 1.061a.75.75 0 0 1-.018 1.042.75.75 0 0 1-1.042.018l-1.06-1.06a.75.75 0 0 1 0-1.06Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="blue"  aria-label="Switch to system preference"  type="radio" name="__palette" id="__palette_2">
+    
+      <label class="md-header__button md-icon" title="Switch to system preference" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M9.598 1.591a.75.75 0 0 1 .785-.175 7.001 7.001 0 1 1-8.967 8.967.75.75 0 0 1 .961-.96 5.5 5.5 0 0 0 7.046-7.046.75.75 0 0 1 .175-.786m1.616 1.945a7 7 0 0 1-7.678 7.678 5.499 5.499 0 1 0 7.678-7.678"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/pydjinni/pydjinni" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../installation/" class="md-tabs__link">
+          
+  
+  Getting started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../cli/" class="md-tabs__link">
+          
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../demo/" class="md-tabs__link">
+        
+  
+    
+  
+  Demo
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../dev_setup/" class="md-tabs__link">
+          
+  
+  Development
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="PyDjinni" class="md-nav__button md-logo" aria-label="PyDjinni" data-md-component="logo">
+      
+  <img src="../assets/logo.png" alt="logo">
+
+    </a>
+    PyDjinni
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/pydjinni/pydjinni" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Getting started
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Getting started
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../introduction/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Introduction
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project_setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project Setup
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Migrating from Djinni
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Reference
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Reference
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Command Line Interface
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Programming Interface
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Interface Definition
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            Interface Definition
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../idl/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../types/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Types
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deriving/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Deriving
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../external_types/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    External Types
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Configuration
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Configuration
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuration Parameters
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generate" class="md-nav__link">
+    <span class="md-ellipsis">
+      generate
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="generate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cpp" class="md-nav__link">
+    <span class="md-ellipsis">
+      cpp
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="cpp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#not_null" class="md-nav__link">
+    <span class="md-ellipsis">
+      not_null
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#identifier" class="md-nav__link">
+    <span class="md-ellipsis">
+      identifier
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cppcli" class="md-nav__link">
+    <span class="md-ellipsis">
+      cppcli
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="cppcli">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#identifier_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      identifier
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#java" class="md-nav__link">
+    <span class="md-ellipsis">
+      java
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="java">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#identifier_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      identifier
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jni" class="md-nav__link">
+    <span class="md-ellipsis">
+      jni
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="jni">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#identifier_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      identifier
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#objc" class="md-nav__link">
+    <span class="md-ellipsis">
+      objc
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="objc">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#swift" class="md-nav__link">
+    <span class="md-ellipsis">
+      swift
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#identifier_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      identifier
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#objcpp" class="md-nav__link">
+    <span class="md-ellipsis">
+      objcpp
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      yaml
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build" class="md-nav__link">
+    <span class="md-ellipsis">
+      build
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="build">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#conan" class="md-nav__link">
+    <span class="md-ellipsis">
+      conan
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#package" class="md-nav__link">
+    <span class="md-ellipsis">
+      package
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="package">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aar" class="md-nav__link">
+    <span class="md-ellipsis">
+      aar
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="aar">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#publish" class="md-nav__link">
+    <span class="md-ellipsis">
+      publish
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#platforms" class="md-nav__link">
+    <span class="md-ellipsis">
+      platforms
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nuget" class="md-nav__link">
+    <span class="md-ellipsis">
+      nuget
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="nuget">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#publish_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      publish
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#platforms_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      platforms
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swiftpackage" class="md-nav__link">
+    <span class="md-ellipsis">
+      swiftpackage
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="swiftpackage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#publish_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      publish
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#platforms_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      platforms
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type Definitions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Type Definitions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#outpaths" class="md-nav__link">
+    <span class="md-ellipsis">
+      OutPaths
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#identifierstyle" class="md-nav__link">
+    <span class="md-ellipsis">
+      IdentifierStyle
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../processed_files/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Processed Files
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cmake/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    CMake
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../setup_wizard/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Setup Wizard
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pygments/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Pygments
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../demo/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Demo
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Development
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dev_setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Setup
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Plugins
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            Plugins
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../generator_plugin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Generator Plugin
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../build_plugin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Build Plugin
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../package_plugin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Package Plugin
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../template_plugin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Template Plugin
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      Configuration Parameters
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generate" class="md-nav__link">
+    <span class="md-ellipsis">
+      generate
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="generate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cpp" class="md-nav__link">
+    <span class="md-ellipsis">
+      cpp
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="cpp">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#not_null" class="md-nav__link">
+    <span class="md-ellipsis">
+      not_null
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#identifier" class="md-nav__link">
+    <span class="md-ellipsis">
+      identifier
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cppcli" class="md-nav__link">
+    <span class="md-ellipsis">
+      cppcli
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="cppcli">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#identifier_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      identifier
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#java" class="md-nav__link">
+    <span class="md-ellipsis">
+      java
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="java">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#identifier_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      identifier
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jni" class="md-nav__link">
+    <span class="md-ellipsis">
+      jni
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="jni">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#identifier_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      identifier
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#objc" class="md-nav__link">
+    <span class="md-ellipsis">
+      objc
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="objc">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#swift" class="md-nav__link">
+    <span class="md-ellipsis">
+      swift
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#identifier_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      identifier
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#objcpp" class="md-nav__link">
+    <span class="md-ellipsis">
+      objcpp
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#yaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      yaml
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build" class="md-nav__link">
+    <span class="md-ellipsis">
+      build
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="build">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#conan" class="md-nav__link">
+    <span class="md-ellipsis">
+      conan
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#package" class="md-nav__link">
+    <span class="md-ellipsis">
+      package
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="package">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aar" class="md-nav__link">
+    <span class="md-ellipsis">
+      aar
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="aar">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#publish" class="md-nav__link">
+    <span class="md-ellipsis">
+      publish
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#platforms" class="md-nav__link">
+    <span class="md-ellipsis">
+      platforms
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nuget" class="md-nav__link">
+    <span class="md-ellipsis">
+      nuget
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="nuget">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#publish_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      publish
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#platforms_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      platforms
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#swiftpackage" class="md-nav__link">
+    <span class="md-ellipsis">
+      swiftpackage
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="swiftpackage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#publish_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      publish
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#platforms_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      platforms
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-definitions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Type Definitions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Type Definitions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#outpaths" class="md-nav__link">
+    <span class="md-ellipsis">
+      OutPaths
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#identifierstyle" class="md-nav__link">
+    <span class="md-ellipsis">
+      IdentifierStyle
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+    <a href="https://github.com/pydjinni/pydjinni/edit/main/docs/config.md" title="Edit this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4zm10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h1>
+<p>PyDjinni can be configured in different ways:</p>
+<ul>
+<li><strong>Configuration file</strong>: If a file named <code>pydjinni.yaml</code> exists, it is picked up automatically. 
+  With the parameter <code>--config</code> a custom filename can be specified.
+  The type of the file is determined by the filename extension.
+  <br>Supported extensions are: <code>.yaml</code>, <code>.yml</code>, <code>.json</code>, <code>.toml</code>
+  <br><strong>Example</strong>: <code>pydjinni --config=custom_filename.yaml generate input.djinni cpp</code></li>
+<li><strong>CLI</strong>: The CLI <code>--option</code> parameter allows to set one or more configuration keys.
+  Values from the configuration file can be overridden by commandline parameters.
+  <br><strong>Example</strong>: <code>pydjinni --option generate.cpp.out=cpp_out_path generate input.djinni cpp</code></li>
+<li><strong>Environment Variables</strong>: Options can also be provided by setting environment variables.
+  Environment variables can also be set in a <code>.env</code> file.
+  The file is automatically detected if present in the working directory.
+  <br><strong>Example</strong>: the environment variable <code>pydjinni__generate__cpp__out=header_out</code> is the equivalent to 
+                    passing <code>--option generate.cpp.out</code> to the CLI.</li>
+<li>For some common settings a shortcut in the form of a special argument is provided by the CLI. 
+  <br><strong>Example</strong>: When packaging a library, the default build configuration can be overridden like so:
+  <code>pydjinni package --configuration Debug aar android</code>. The <code>--configuration</code> argument is equivalent to setting the
+  <code>package.configuration</code> value in the configuration file or to passing the argument <code>-o package.configuration=Debug</code>
+  to the CLI.</li>
+</ul>
+<h2 id="configuration-parameters">Configuration Parameters<a class="headerlink" href="#configuration-parameters" title="Permanent link">&para;</a></h2>
+<p><a class="md-button" href="../json-schema/config_schema.json" target="_blank"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m23.5 17-5 5-3.5-3.5 1.5-1.5 2 2 3.5-3.5zM6 2a2 2 0 0 0-2 2v16c0 1.11.89 2 2 2h7.81c-.36-.62-.61-1.3-.73-2H6V4h7v5h5v4.08c.33-.05.67-.08 1-.08.34 0 .67.03 1 .08V8l-6-6M8 12v2h8v-2m-8 4v2h5v-2Z"/></svg></span> JSON-Schema</a></p>
+<h3 id="generate">generate<a class="headerlink" href="#generate" title="Permanent link">&para;</a></h3>
+<p>Configuration options related to language gluecode generation</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>list_processed_files</code></td>
+<td>string</td>
+<td>File that reports all the parsed and generated files. File format is determined by the file extension. Supported extensions: <code>.yaml</code>, <code>.yml</code>, <code>.json</code>, <code>.toml</code><br>(<em>Optional</em>)</td>
+</tr>
+<tr>
+<td><code>include_dirs</code></td>
+<td>array</td>
+<td>Include directories that are searched for <code>@import</code> and <code>@extern</code> directives.<br><strong>Default:</strong> <code>[]</code></td>
+</tr>
+<tr>
+<td><code>default_deriving</code></td>
+<td>array</td>
+<td>Deriving functionality that should be added to every record by default.<br><strong>Default:</strong> <code>[]</code></td>
+</tr>
+<tr>
+<td><code>support_lib_sources</code></td>
+<td>boolean</td>
+<td>Whether the required support lib sources should be copied to the generated output.<br><strong>Default:</strong> <code>True</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="cpp">cpp<a class="headerlink" href="#cpp" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>out</code></td>
+<td>string, <a href="#outpaths">OutPaths</a></td>
+<td>The output folder for the generated files. Separate folders for <code>source</code> and <code>header</code> files can be specified.<br></td>
+</tr>
+<tr>
+<td><code>namespace</code></td>
+<td>string, array</td>
+<td>The namespace name to use for generated C++ classes<br><strong>Default:</strong> <code>[]</code></td>
+</tr>
+<tr>
+<td><code>include_prefix</code></td>
+<td>string</td>
+<td>The prefix for <code>#includes</code> of header files from C++ files<br>(<em>Optional</em>)</td>
+</tr>
+<tr>
+<td><code>header_extension</code></td>
+<td>string</td>
+<td>The filename extension for C++ header files<br><strong>Default:</strong> <code>hpp</code></td>
+</tr>
+<tr>
+<td><code>source_extension</code></td>
+<td>string</td>
+<td>The filename extension for C++ files<br><strong>Default:</strong> <code>cpp</code></td>
+</tr>
+<tr>
+<td><code>string_serialization</code></td>
+<td>boolean</td>
+<td>Whether to generate <code>to_string</code> and <code>std::formatter</code> overloads for stringifying records, enums and flags<br><strong>Default:</strong> <code>True</code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="not_null">not_null<a class="headerlink" href="#not_null" title="Permanent link">&para;</a></h5>
+<p>Configuration for wrapping <code>std::shared_ptr</code> with a <code>not_null</code> type.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>header</code></td>
+<td>string</td>
+<td>The header file to include for not_null (e.g. <code>&lt;gsl/pointers&gt;</code>)<br>(<em>Optional</em>)</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td>string</td>
+<td>The type to use for not_null (e.g. <code>::gsl::not_null</code>)<br>(<em>Optional</em>)</td>
+</tr>
+</tbody>
+</table>
+<h5 id="identifier">identifier<a class="headerlink" href="#identifier" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>PascalCase</code></td>
+</tr>
+<tr>
+<td><code>enum</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>TRAIN_CASE</code></td>
+</tr>
+<tr>
+<td><code>file</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>snake_case</code></td>
+</tr>
+<tr>
+<td><code>field</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>snake_case</code></td>
+</tr>
+<tr>
+<td><code>method</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>snake_case</code></td>
+</tr>
+<tr>
+<td><code>namespace</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>snake_case</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="cppcli">cppcli<a class="headerlink" href="#cppcli" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>out</code></td>
+<td>string, <a href="#outpaths">OutPaths</a></td>
+<td>The output folder for the generated files. Separate folders for <code>source</code> and <code>header</code> files can be specified.<br></td>
+</tr>
+<tr>
+<td><code>namespace</code></td>
+<td>string, array</td>
+<td>The namespace name to use for generated C++/CLI classes<br><strong>Default:</strong> <code>[]</code></td>
+</tr>
+<tr>
+<td><code>include_cpp_prefix</code></td>
+<td>string</td>
+<td>The prefix for <code>#includes</code> of header files from C++ files<br>(<em>Optional</em>)</td>
+</tr>
+<tr>
+<td><code>nullability_attributes</code></td>
+<td>boolean</td>
+<td>Whether diagnostics nullability attributes should be added to methods, functions and fields (Not available in .NET Framework)<br><strong>Default:</strong> <code>True</code></td>
+</tr>
+<tr>
+<td><code>string_serialization</code></td>
+<td>boolean</td>
+<td>Whether to generate <code>ToString</code> overloads for records<br><strong>Default:</strong> <code>True</code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="identifier_1">identifier<a class="headerlink" href="#identifier_1" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>PascalCase</code></td>
+</tr>
+<tr>
+<td><code>type_param</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>PascalCase</code></td>
+</tr>
+<tr>
+<td><code>property</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>PascalCase</code></td>
+</tr>
+<tr>
+<td><code>method</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>PascalCase</code></td>
+</tr>
+<tr>
+<td><code>local</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>camelCase</code></td>
+</tr>
+<tr>
+<td><code>enum</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>PascalCase</code></td>
+</tr>
+<tr>
+<td><code>const</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>snake_case</code></td>
+</tr>
+<tr>
+<td><code>file</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <br>- <strong>style</strong>: <code>PascalCase</code><br>- <strong>prefix</strong>: <code>CppCli</code><br></td>
+</tr>
+<tr>
+<td><code>namespace</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>PascalCase</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="java">java<a class="headerlink" href="#java" title="Permanent link">&para;</a></h4>
+<p>Java configuration options</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>out</code></td>
+<td>string</td>
+<td>The output folder for the generated files.<br></td>
+</tr>
+<tr>
+<td><code>package</code></td>
+<td>string, array</td>
+<td>The package name to use for generated Java classes<br><strong>Examples:<br></strong>- <code>my.package.name</code><br>- <code>other.package.name</code><br></td>
+</tr>
+<tr>
+<td><code>support_types_package</code></td>
+<td>string, array</td>
+<td>The subpackage name where required support types are generated to<br><strong>Default:</strong> <code>['pydjinni']</code></td>
+</tr>
+<tr>
+<td><code>interfaces</code></td>
+<td>boolean</td>
+<td>Whether Java interfaces should be used instead of abstract classes where possible<br><strong>Default:</strong> <code>False</code></td>
+</tr>
+<tr>
+<td><code>class_access_modifier</code></td>
+<td>string</td>
+<td>One of <code>public</code>, <code>package</code><br></td>
+</tr>
+<tr>
+<td><code>cpp_exception</code></td>
+<td>string</td>
+<td>The type for translated C++ exceptions in Java<br><strong>Default:</strong> <code>java.lang.RuntimeException</code></td>
+</tr>
+<tr>
+<td><code>annotation</code></td>
+<td>string</td>
+<td>Java annotation to place on all generated Java classes<br>(<em>Optional</em>)<strong>Example:</strong> <code>@Foo</code></td>
+</tr>
+<tr>
+<td><code>nullable_annotation</code></td>
+<td>string</td>
+<td>annotation that is added to all optional fields, parameters and return types. E.g. <code>@org.jetbrains.annotations.Nullable</code><br>(<em>Optional</em>)</td>
+</tr>
+<tr>
+<td><code>nonnull_annotation</code></td>
+<td>string</td>
+<td>annotation that is added to all non-optional fields, parameters and return types. E.g. <code>@org.jetbrains.annotations.NotNull</code><br>(<em>Optional</em>)</td>
+</tr>
+<tr>
+<td><code>use_final_for_record</code></td>
+<td>boolean</td>
+<td>Whether generated Java classes for records should be marked <code>final</code><br><strong>Default:</strong> <code>True</code></td>
+</tr>
+<tr>
+<td><code>native_lib</code></td>
+<td>string</td>
+<td>Name of the native library containing the JNI interface. If this option is set and an interface is marked as <code>main</code>, a static block will be added to the interface, that loads the native library.<br>(<em>Optional</em>)</td>
+</tr>
+<tr>
+<td><code>function_prefix</code></td>
+<td>string</td>
+<td>Prefix for generated functional interfaces.<br><strong>Default:</strong> <code>Functional</code></td>
+</tr>
+<tr>
+<td><code>string_serialization</code></td>
+<td>boolean</td>
+<td>Whether to generate <code>toString</code> overloads for records<br><strong>Default:</strong> <code>True</code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="identifier_2">identifier<a class="headerlink" href="#identifier_2" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enum</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>TRAIN_CASE</code></td>
+</tr>
+<tr>
+<td><code>field</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>camelCase</code></td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>PascalCase</code></td>
+</tr>
+<tr>
+<td><code>method</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>camelCase</code></td>
+</tr>
+<tr>
+<td><code>package</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>snake_case</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="jni">jni<a class="headerlink" href="#jni" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>out</code></td>
+<td>string, <a href="#outpaths">OutPaths</a></td>
+<td>The output folder for the generated files. Separate folders for <code>source</code> and <code>header</code> files can be specified.<br></td>
+</tr>
+<tr>
+<td><code>namespace</code></td>
+<td>string, array</td>
+<td>The namespace name to use for generated JNI C++ classes<br></td>
+</tr>
+<tr>
+<td><code>include_prefix</code></td>
+<td>string</td>
+<td>The prefix for <code>#includes</code> of JNI header files from JNI C++ files.<br>(<em>Optional</em>)</td>
+</tr>
+<tr>
+<td><code>include_cpp_prefix</code></td>
+<td>string</td>
+<td>The prefix for <code>#includes</code> of the main header files from JNI C++ files.<br>(<em>Optional</em>)</td>
+</tr>
+<tr>
+<td><code>header_extension</code></td>
+<td>string</td>
+<td>The filename extension for JNI C++ header files<br><strong>Default:</strong> <code>hpp</code></td>
+</tr>
+<tr>
+<td><code>source_extension</code></td>
+<td>string</td>
+<td>The filename extension for JNI C++ files<br><strong>Default:</strong> <code>cpp</code></td>
+</tr>
+<tr>
+<td><code>loader</code></td>
+<td>boolean</td>
+<td>If enabled, a minimal <code>JNI_OnLoad</code>/<code>JNI_OnUnload</code> implementation is generated.<br><strong>Default:</strong> <code>True</code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="identifier_3">identifier<a class="headerlink" href="#identifier_3" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>file</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>snake_case</code></td>
+</tr>
+<tr>
+<td><code>class_name</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>PascalCase</code></td>
+</tr>
+<tr>
+<td><code>enum</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>TRAIN_CASE</code></td>
+</tr>
+<tr>
+<td><code>field</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>camelCase</code></td>
+</tr>
+<tr>
+<td><code>method</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>camelCase</code></td>
+</tr>
+<tr>
+<td><code>namespace</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>PascalCase</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="objc">objc<a class="headerlink" href="#objc" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>out</code></td>
+<td>string, <a href="#outpaths">OutPaths</a></td>
+<td>The output folder for the generated files. Separate folders for <code>source</code> and <code>header</code> files can be specified.<br></td>
+</tr>
+<tr>
+<td><code>type_prefix</code></td>
+<td>string</td>
+<td>The prefix for Objective-C data types (usually two or three letters).<br>(<em>Optional</em>)<strong>Default:</strong> ``</td>
+</tr>
+<tr>
+<td><code>header_extension</code></td>
+<td>string</td>
+<td>The filename extension for Objective-C header files.<br><strong>Default:</strong> <code>h</code></td>
+</tr>
+<tr>
+<td><code>source_extension</code></td>
+<td>string</td>
+<td>The filename extension for Objective-C source files.<br><strong>Default:</strong> <code>m</code></td>
+</tr>
+<tr>
+<td><code>swift_bridging_header</code></td>
+<td>string</td>
+<td>The name of the Objective-C Bridging Header required for using the interface from Swift.<br>(<em>Optional</em>)</td>
+</tr>
+<tr>
+<td><code>strict_protocols</code></td>
+<td>boolean</td>
+<td>All generated <code>@protocol</code> will implement <code>&lt;NSObject&gt;</code><br><strong>Default:</strong> <code>False</code></td>
+</tr>
+<tr>
+<td><code>string_serialization</code></td>
+<td>boolean</td>
+<td>Whether to generate <code>description</code> overloads for records<br><strong>Default:</strong> <code>True</code></td>
+</tr>
+</tbody>
+</table>
+<h5 id="swift">swift<a class="headerlink" href="#swift" title="Permanent link">&para;</a></h5>
+<p>Configuration options related to using the Objective-C interface from Swift</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rename_interfaces</code></td>
+<td>boolean</td>
+<td>Whether the Objective-C interface should be annotated with improved Swift method and class names.<br><strong>Default:</strong> <code>True</code></td>
+</tr>
+<tr>
+<td><code>bridging_header</code></td>
+<td>string</td>
+<td>The name of the Objective-C Bridging Header required for using the interface from Swift.<br>(<em>Optional</em>)</td>
+</tr>
+</tbody>
+</table>
+<h5 id="identifier_4">identifier<a class="headerlink" href="#identifier_4" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enum</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>PascalCase</code></td>
+</tr>
+<tr>
+<td><code>field</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>camelCase</code></td>
+</tr>
+<tr>
+<td><code>method</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>camelCase</code></td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>PascalCase</code></td>
+</tr>
+<tr>
+<td><code>param</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>PascalCase</code></td>
+</tr>
+<tr>
+<td><code>local</code></td>
+<td><a href="#identifierstyle">IdentifierStyle</a>, string</td>
+<td><strong>Default:</strong> <code>camelCase</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="objcpp">objcpp<a class="headerlink" href="#objcpp" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>out</code></td>
+<td>string, <a href="#outpaths">OutPaths</a></td>
+<td>The output folder for the generated files. Separate folders for <code>source</code> and <code>header</code> files can be specified.<br></td>
+</tr>
+<tr>
+<td><code>namespace</code></td>
+<td>string, array</td>
+<td>The namespace name to use for generated Objective-C++ classes<br><strong>Default:</strong> <code>[]</code></td>
+</tr>
+<tr>
+<td><code>header_extension</code></td>
+<td>string</td>
+<td>The filename extension for Objective-C++ header files<br><strong>Default:</strong> <code>h</code></td>
+</tr>
+<tr>
+<td><code>source_extension</code></td>
+<td>string</td>
+<td>The filename extension for Objective-C++ source files<br><strong>Default:</strong> <code>mm</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="yaml">yaml<a class="headerlink" href="#yaml" title="Permanent link">&para;</a></h4>
+<p>When generating the interface for your project and wish to make it available to other users
+you can tell Djinni to generate a special YAML file as part of the code generation process.
+This file then contains all the information Djinni requires to include your types in a different project.</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>out</code></td>
+<td>string</td>
+<td>The output folder for YAML files (One for each type by default).<br></td>
+</tr>
+<tr>
+<td><code>out_file</code></td>
+<td>string</td>
+<td>If specified, all types are merged into a single YAML file instead of generating one file per type (relative to <code>yaml.out</code>).<br>(<em>Optional</em>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="build">build<a class="headerlink" href="#build" title="Permanent link">&para;</a></h3>
+<p>Build strategy configuration</p>
+<h4 id="conan">conan<a class="headerlink" href="#conan" title="Permanent link">&para;</a></h4>
+<p>Settings specific to the Conan build strategy</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>profiles</code></td>
+<td>string</td>
+<td>The base directory where the target profiles are located<br><strong>Default:</strong> <code>profiles</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="package">package<a class="headerlink" href="#package" title="Permanent link">&para;</a></h3>
+<p>Packaging configuration</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>out</code></td>
+<td>string</td>
+<td>output base directory for the final distributable packages<br><strong>Default:</strong> <code>dist</code></td>
+</tr>
+<tr>
+<td><code>target</code></td>
+<td>string</td>
+<td>Name of the target that is going to produce the output<br></td>
+</tr>
+<tr>
+<td><code>build_strategy</code></td>
+<td>string</td>
+<td>Build system that should be used for compiling<br><strong>Default:</strong> <code>conan</code></td>
+</tr>
+<tr>
+<td><code>version</code></td>
+<td>string</td>
+<td>Version of the produced package<br><strong>Default:</strong> <code>0.0.0</code></td>
+</tr>
+<tr>
+<td><code>configuration</code></td>
+<td>string</td>
+<td>One of <code>Release</code>, <code>Debug</code>, <code>MinSizeRel</code>, <code>RelWithDebInfo</code><br></td>
+</tr>
+</tbody>
+</table>
+<h4 id="aar">aar<a class="headerlink" href="#aar" title="Permanent link">&para;</a></h4>
+<p>Android Archive</p>
+<h5 id="publish">publish<a class="headerlink" href="#publish" title="Permanent link">&para;</a></h5>
+<p>Maven publishing information</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>maven_registry</code></td>
+<td>string</td>
+<td>Url of the maven registry that the package should be published to.<br></td>
+</tr>
+<tr>
+<td><code>group_id</code></td>
+<td>string</td>
+<td>Maven package groupId<br></td>
+</tr>
+<tr>
+<td><code>artifact_id</code></td>
+<td>string</td>
+<td>Maven package artifactId<br></td>
+</tr>
+<tr>
+<td><code>username</code></td>
+<td>string</td>
+<td>Username for the maven registry<br>(<em>Optional</em>)</td>
+</tr>
+<tr>
+<td><code>password</code></td>
+<td>string</td>
+<td>Password (token) to access the maven registry.It is recommended to set this via the environment variable <code>PACKAGE__AAR__PUBLISH__PASSWORD</code><br>(<em>Optional</em>)</td>
+</tr>
+</tbody>
+</table>
+<h5 id="platforms">platforms<a class="headerlink" href="#platforms" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>android</code></td>
+<td>array</td>
+<td>List of targeted architectures. Supported: <code>x86</code>, <code>x86_64</code>, <code>armv7</code>, <code>armv8</code><br></td>
+</tr>
+</tbody>
+</table>
+<h4 id="nuget">nuget<a class="headerlink" href="#nuget" title="Permanent link">&para;</a></h4>
+<p>NuGet Package</p>
+<h5 id="publish_1">publish<a class="headerlink" href="#publish_1" title="Permanent link">&para;</a></h5>
+<p>NuGet packaging and publishing configuration</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source</code></td>
+<td>string, string</td>
+<td>NuGet server URL or local folder where the package should be published.<br><strong>Examples:<br></strong>- <code>https://nuget.pkg.github.com/NAMESPACE/index.json</code><br>- <code>C:\Users\Foo\Path\To\Local\Install</code><br><strong>Default:</strong> <code>https://api.nuget.org/v3/index.json</code></td>
+</tr>
+<tr>
+<td><code>repository</code></td>
+<td>string</td>
+<td>URL to the source Git repository.<br>(<em>Optional</em>)</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>string</td>
+<td>(short) description of the package.<br>(<em>Optional</em>)<strong>Default:</strong> ``</td>
+</tr>
+<tr>
+<td><code>readme</code></td>
+<td>string</td>
+<td>Path to a Markdown Readme file that should be included in the NuGet package.<br>(<em>Optional</em>)</td>
+</tr>
+<tr>
+<td><code>net_version</code></td>
+<td>string</td>
+<td>.NET version used to compile the binaries. The packaged binaries have to be compiled for the configured .NET version!<br><strong>Default:</strong> <code>net8.0</code></td>
+</tr>
+<tr>
+<td><code>authors</code></td>
+<td>array</td>
+<td>A comma-separated list of packages authors (matching the related profile names on <code>nuget.org</code> if published to the public registry)<br><strong>Default:</strong> <code>[]</code></td>
+</tr>
+<tr>
+<td><code>username</code></td>
+<td>string</td>
+<td>Username for the NuGet Server<br>(<em>Optional</em>)</td>
+</tr>
+<tr>
+<td><code>password</code></td>
+<td>string</td>
+<td>Password (token) to access the server.It is recommended to set this via the environment variable <code>PACKAGE__NUGET__PUBLISH__PASSWORD</code><br>(<em>Optional</em>)</td>
+</tr>
+</tbody>
+</table>
+<h5 id="platforms_1">platforms<a class="headerlink" href="#platforms_1" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>windows</code></td>
+<td>array</td>
+<td>List of targeted architectures. Supported: <code>x86</code>, <code>x86_64</code>, <code>armv7</code>, <code>armv8</code><br></td>
+</tr>
+</tbody>
+</table>
+<h4 id="swiftpackage">swiftpackage<a class="headerlink" href="#swiftpackage" title="Permanent link">&para;</a></h4>
+<p>Swift package</p>
+<h5 id="publish_2">publish<a class="headerlink" href="#publish_2" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>repository</code></td>
+<td>string, string</td>
+<td>Remote Git repository or path to a local directory where the package should be published<br><strong>Examples:<br></strong>- <code>https://github.com/foo/bar.git</code><br>- <code>/path/where/swiftpackage/should/be/copied/to</code><br>- <code>git@github.com:foo/bar.git</code><br></td>
+</tr>
+<tr>
+<td><code>branch</code></td>
+<td>string</td>
+<td>Git repository branch that the package should be pushed to.<br><strong>Default:</strong> <code>main</code></td>
+</tr>
+<tr>
+<td><code>username</code></td>
+<td>string</td>
+<td>Username of git repository<br>(<em>Optional</em>)</td>
+</tr>
+<tr>
+<td><code>password</code></td>
+<td>string</td>
+<td>Password (token) to access the git repository.It is recommended to set this via the environment variable <code>PACKAGE__SWIFTPACKAGE__PUBLISH__PASSWORD</code><br>(<em>Optional</em>)</td>
+</tr>
+</tbody>
+</table>
+<h5 id="platforms_2">platforms<a class="headerlink" href="#platforms_2" title="Permanent link">&para;</a></h5>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>macos</code></td>
+<td>array</td>
+<td>List of targeted architectures. Supported: <code>x86_64</code>, <code>armv8</code><br></td>
+</tr>
+<tr>
+<td><code>ios</code></td>
+<td>array</td>
+<td>List of targeted architectures. Supported: <code>armv8</code><br></td>
+</tr>
+<tr>
+<td><code>ios_simulator</code></td>
+<td>array</td>
+<td>List of targeted architectures. Supported: <code>x86_64</code>, <code>armv8</code><br></td>
+</tr>
+</tbody>
+</table>
+<h2 id="type-definitions">Type Definitions<a class="headerlink" href="#type-definitions" title="Permanent link">&para;</a></h2>
+<h3 id="outpaths">OutPaths<a class="headerlink" href="#outpaths" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source</code></td>
+<td>string</td>
+<td>The output directory for source files<br></td>
+</tr>
+<tr>
+<td><code>header</code></td>
+<td>string</td>
+<td>The output directory for header files<br></td>
+</tr>
+</tbody>
+</table>
+<h3 id="identifierstyle">IdentifierStyle<a class="headerlink" href="#identifierstyle" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>style</code></td>
+<td>string</td>
+<td>One of <code>none</code>, <code>camelCase</code>, <code>PascalCase</code>, <code>snake_case</code>, <code>kebab-case</code>, <code>TRAIN_CASE</code><br></td>
+</tr>
+<tr>
+<td><code>prefix</code></td>
+<td>string</td>
+<td>Prefix that is added to the beginning of the identifier<br>(<em>Optional</em>)</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../external_types/" class="md-footer__link md-footer__link--prev" aria-label="Previous: External Types">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                External Types
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../processed_files/" class="md-footer__link md-footer__link--next" aria-label="Next: Processed Files">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Processed Files
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2025 jothepro
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.tabs", "navigation.tracking", "navigation.top", "navigation.footer", "content.action.edit", "content.code.copy", "content.code.annotate", "announce.dismiss"], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c8b220af.min.js"></script>
+      
+    
+  </body>
+</html>
