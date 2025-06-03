@@ -62,6 +62,9 @@ def prepare(directory: Path, clean: bool = False):
 
 
 def execute(command: str | Path, arguments: list[str | os.PathLike], working_dir: Path = Path.cwd()) -> int:
+    dirname, _ = os.path.split(command)
+    if dirname:
+        command = (working_dir / command).resolve()
     absolute_command = shutil.which(command)
     args = [absolute_command] + [str(argument) for argument in arguments]
     if absolute_command:
