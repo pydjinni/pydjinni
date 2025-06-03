@@ -1,0 +1,282 @@
+{
+    "$defs": {
+        "CppCliExternalType": {
+            "properties": {
+                "typename": {
+                    "title": "Typename",
+                    "type": "string"
+                },
+                "translator": {
+                    "title": "Translator",
+                    "type": "string"
+                },
+                "header": {
+                    "default": null,
+                    "format": "path",
+                    "title": "Header",
+                    "type": "string"
+                },
+                "reference": {
+                    "default": true,
+                    "title": "Reference",
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "typename",
+                "translator"
+            ],
+            "title": "CppCliExternalType",
+            "type": "object"
+        },
+        "CppExternalType": {
+            "properties": {
+                "typename": {
+                    "description": "Must be a valid C++ type identifier",
+                    "examples": [
+                        "int8_t",
+                        "::some::Type"
+                    ],
+                    "title": "Typename",
+                    "type": "string"
+                },
+                "header": {
+                    "default": null,
+                    "format": "path",
+                    "title": "Header",
+                    "type": "string"
+                },
+                "by_value": {
+                    "default": false,
+                    "title": "By Value",
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "typename"
+            ],
+            "title": "CppExternalType",
+            "type": "object"
+        },
+        "JavaExternalType": {
+            "description": "Java type information",
+            "properties": {
+                "typename": {
+                    "default": null,
+                    "title": "Typename",
+                    "type": "string"
+                },
+                "boxed": {
+                    "default": "",
+                    "title": "Boxed",
+                    "type": "string"
+                },
+                "reference": {
+                    "default": true,
+                    "title": "Reference",
+                    "type": "boolean"
+                },
+                "generic": {
+                    "default": false,
+                    "title": "Generic",
+                    "type": "boolean"
+                }
+            },
+            "title": "JavaExternalType",
+            "type": "object"
+        },
+        "JniExternalType": {
+            "properties": {
+                "translator": {
+                    "pattern": "^(::)?([a-zA-Z][a-zA-Z0-9_]*(::))*[a-zA-Z][a-zA-Z0-9_]*$",
+                    "title": "Translator",
+                    "type": "string"
+                },
+                "header": {
+                    "format": "path",
+                    "title": "Header",
+                    "type": "string"
+                },
+                "typename": {
+                    "$ref": "#/$defs/NativeType",
+                    "default": "jobject",
+                    "description": "The Java native [`jvalue` union type](https://docs.oracle.com/en/java/javase/17/docs/specs/jni/types.html#the-value-type) as represented in JNI."
+                },
+                "type_signature": {
+                    "description": "[Java VM Type Signatures](https://docs.oracle.com/en/java/javase/17/docs/specs/jni/types.html#type-signatures)",
+                    "examples": [
+                        "I"
+                    ],
+                    "title": "Type Signature",
+                    "type": "string"
+                },
+                "boxed_type_signature": {
+                    "description": "Type signature of the boxed Java type. If the type is always boxed, both `type_signature` and `boxed_type_signature` should contain the same value.",
+                    "examples": [
+                        "Ljava/lang/Integer;"
+                    ],
+                    "title": "Boxed Type Signature",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "translator",
+                "header",
+                "type_signature",
+                "boxed_type_signature"
+            ],
+            "title": "JniExternalType",
+            "type": "object"
+        },
+        "NativeType": {
+            "enum": [
+                "jobject",
+                "jstring",
+                "jboolean",
+                "jbyte",
+                "jchar",
+                "jshort",
+                "jint",
+                "jlong",
+                "jfloat",
+                "jdouble",
+                "jbyteArray"
+            ],
+            "title": "NativeType",
+            "type": "string"
+        },
+        "ObjcExternalType": {
+            "properties": {
+                "typename": {
+                    "default": null,
+                    "title": "Typename",
+                    "type": "string"
+                },
+                "boxed": {
+                    "title": "Boxed",
+                    "type": "string"
+                },
+                "header": {
+                    "default": null,
+                    "format": "path",
+                    "title": "Header",
+                    "type": "string"
+                },
+                "pointer": {
+                    "default": true,
+                    "title": "Pointer",
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "boxed"
+            ],
+            "title": "ObjcExternalType",
+            "type": "object"
+        },
+        "ObjcppExternalType": {
+            "properties": {
+                "translator": {
+                    "title": "Translator",
+                    "type": "string"
+                },
+                "header": {
+                    "format": "path",
+                    "title": "Header",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "translator",
+                "header"
+            ],
+            "title": "ObjcppExternalType",
+            "type": "object"
+        }
+    },
+    "properties": {
+        "comment": {
+            "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "null"
+                }
+            ],
+            "default": null,
+            "description": "A short description of the type",
+            "title": "Comment"
+        },
+        "deprecated": {
+            "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "boolean"
+                }
+            ],
+            "default": false,
+            "description": "Marks a type as deprecated",
+            "title": "Deprecated"
+        },
+        "name": {
+            "description": "Name of the type in the IDL",
+            "title": "Name",
+            "type": "string"
+        },
+        "namespace": {
+            "default": [],
+            "description": "Namespace that the type lives in",
+            "items": {
+                "type": "string"
+            },
+            "title": "Namespace",
+            "type": "array"
+        },
+        "primitive": {
+            "default": "primitive",
+            "description": "The underlying primitive type",
+            "title": "Primitive",
+            "type": "string"
+        },
+        "params": {
+            "default": [],
+            "items": {
+                "type": "string"
+            },
+            "title": "Params",
+            "type": "array"
+        },
+        "cpp": {
+            "$ref": "#/$defs/CppExternalType",
+            "default": null
+        },
+        "cppcli": {
+            "$ref": "#/$defs/CppCliExternalType",
+            "default": null
+        },
+        "java": {
+            "$ref": "#/$defs/JavaExternalType",
+            "default": null
+        },
+        "jni": {
+            "$ref": "#/$defs/JniExternalType",
+            "default": null
+        },
+        "objc": {
+            "$ref": "#/$defs/ObjcExternalType",
+            "default": null
+        },
+        "objcpp": {
+            "$ref": "#/$defs/ObjcppExternalType",
+            "default": null
+        }
+    },
+    "required": [
+        "name"
+    ],
+    "title": "BaseExternalType",
+    "type": "object"
+}
