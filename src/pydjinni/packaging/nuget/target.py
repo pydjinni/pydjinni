@@ -17,24 +17,23 @@ from pydjinni.exceptions import ExternalCommandException
 from pydjinni.packaging.architecture import Architecture
 from pydjinni.packaging.nuget.publish_config import NuGetPublishConfig
 from pydjinni.packaging.platform import Platform
-from pydjinni.packaging.target import PackageTarget, copy_file, execute, copy_directory
+from pydjinni.packaging.target import PackageTarget, copy_file, execute, copy_directory, prepare
 
 
 class NuGetTarget(PackageTarget):
     """
     NuGet Package
     """
+
     key = "nuget"
-    platforms = {
-        Platform.windows: [Architecture.x86, Architecture.x86_64, Architecture.armv7, Architecture.armv8]
-    }
+    platforms = {Platform.windows: [Architecture.x86, Architecture.x86_64, Architecture.armv7, Architecture.armv8]}
     publish_config_model = NuGetPublishConfig
 
     architecture_mapping = {
         Architecture.x86: "win-x86",
         Architecture.x86_64: "win-x64",
         Architecture.armv7: "win-arm",
-        Architecture.armv8: "win-arm64"
+        Architecture.armv8: "win-arm64",
     }
     template_block_start_string = "<!-->"
     template_block_end_string = "-->"
@@ -46,49 +45,82 @@ class NuGetTarget(PackageTarget):
             for arch, path in artifacts.items():
                 if not ref_copied:
                     copy_directory(
-                        src=path,
-                        dst=self.package_build_path / 'ref' / self.config.nuget.publish.net_version
+                        src=path, dst=self.package_build_path / "ref" / self.config.nuget.publish.net_version
                     )
                     pdb_exists = (path / f"{self.config.target}.pdb").exists()
                     ref_copied = True
 
                 copy_directory(
                     src=path,
-                    dst=self.package_build_path / 'runtimes' / self.architecture_mapping[
-                        arch] / 'lib' / self.config.nuget.publish.net_version
+                    dst=self.package_build_path
+                    / "runtimes"
+                    / self.architecture_mapping[arch]
+                    / "lib"
+                    / self.config.nuget.publish.net_version,
                 )
         if self.config.nuget.publish.readme:
             copy_file(src=self.config.nuget.publish.readme, dst=self.package_build_path / "README.md")
-        execute("nuget", [
-            "pack", "Package.nuspec",
-            "-Properties", f"Configuration={self.config.configuration}",
-            "-Properties", "NoWarn=NU5131",  # see https://github.com/NuGet/Home/discussions/11097
-            "-OutputDirectory", f"{self.package_output_path.absolute()}",
-        ] + (["-Symbols"] if pdb_exists else []), working_dir=self.package_build_path)
+        execute(
+            "nuget",
+            [
+                "pack",
+                "Package.nuspec",
+                "-Properties",
+                f"Configuration={self.config.configuration}",
+                "-Properties",
+                "NoWarn=NU5131",  # see https://github.com/NuGet/Home/discussions/11097
+                "-OutputDirectory",
+                f"{self.package_output_path}",
+            ]
+            + (["-Symbols"] if pdb_exists else []),
+            working_dir=self.package_build_path,
+        )
 
     def publish(self):
         local = isinstance(self.config.nuget.publish.source, Path)
         if not local:
             try:
-                execute("nuget", [
-                    "sources", "update",
-                    "-Name", "nuget_server",
-                    "-Source", self.config.nuget.publish.source,
-                    "-username", self.config.nuget.publish.username,
-                    "-password", self.config.nuget.publish.password
-                ], working_dir=self.package_output_path)
+                execute(
+                    "nuget",
+                    [
+                        "sources",
+                        "update",
+                        "-Name",
+                        "nuget_server",
+                        "-Source",
+                        self.config.nuget.publish.source,
+                        "-username",
+                        self.config.nuget.publish.username,
+                        "-password",
+                        self.config.nuget.publish.password,
+                    ],
+                    working_dir=self.package_output_path,
+                )
             except ExternalCommandException:
-                execute("nuget", [
-                    "sources", "add",
-                    "-Name", "nuget_server",
-                    "-Source", self.config.nuget.publish.source,
-                    "-username", self.config.nuget.publish.username,
-                    "-password", self.config.nuget.publish.password
-                ], working_dir=self.package_output_path)
+                execute(
+                    "nuget",
+                    [
+                        "sources",
+                        "add",
+                        "-Name",
+                        "nuget_server",
+                        "-Source",
+                        self.config.nuget.publish.source,
+                        "-username",
+                        self.config.nuget.publish.username,
+                        "-password",
+                        self.config.nuget.publish.password,
+                    ],
+                    working_dir=self.package_output_path,
+                )
         symbols_nupkg = f"{self.config.target}.{self.config.version}.symbols.nupkg"
-        nupkg = symbols_nupkg if (self.package_output_path / symbols_nupkg).exists() else f"{self.config.target}.{self.config.version}.nupkg"
-        source = ["nuget_server", "-ApiKey", self.config.nuget.publish.password] if not local else [self.config.nuget.publish.source.absolute()]
-        execute("nuget", [
-            "push", nupkg,
-            "-Source"
-        ] + source, working_dir=self.package_output_path)
+        nupkg = (
+            symbols_nupkg
+            if (self.package_output_path / symbols_nupkg).exists()
+            else f"{self.config.target}.{self.config.version}.nupkg"
+        )
+        if local:
+            source = [prepare(self.config.nuget.publish.source)]
+        else:
+            source = ["nuget_server", "-ApiKey", self.config.nuget.publish.password]
+        execute("nuget", ["push", nupkg, "-Source"] + source, working_dir=self.package_output_path)

@@ -18,6 +18,7 @@ import shutil
 from abc import ABC, abstractmethod
 from functools import cached_property
 from pathlib import Path
+import subprocess
 
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel, create_model
@@ -47,7 +48,7 @@ def copy_file(src: Path, dst: Path):
         raise FileNotFoundException(e.filename)
 
 
-def prepare(directory: Path, clean: bool = False):
+def prepare(directory: Path, clean: bool = False) -> Path:
     """
     prepares a directory for later use. Makes sure the directory exists, and cleans it if requested
 
@@ -55,23 +56,28 @@ def prepare(directory: Path, clean: bool = False):
         directory: the directory that should be prepared
         clean: whether the directory should be cleaned if it may already contain files
     """
+    directory = directory.resolve()
     if clean and directory.exists():
         shutil.rmtree(directory)
     directory.mkdir(parents=True, exist_ok=True)
+    return directory
 
 
-def execute(command: str | Path, arguments: list[str], working_dir: Path = Path(os.getcwd())) -> int:
-    cwd = os.getcwd()
-    os.chdir(working_dir)
-    if shutil.which(command):
-        full_command = f'{command} {" ".join([str(argument) for argument in arguments])}'
-        result = os.system(full_command)
-        if result != 0:
-            raise ExternalCommandException(full_command)
-        os.chdir(cwd)
+def execute(command: str | Path, arguments: list, working_dir: Path = Path.cwd()) -> int:
+    dirname, _ = os.path.split(command)
+    if dirname:
+        command = (working_dir / command).resolve()
+    absolute_command = shutil.which(command)
+    args = [absolute_command] + [str(argument) for argument in arguments]
+    if absolute_command:
+        result = subprocess.run(
+            args,
+            cwd=working_dir
+        )
+        if result.returncode != 0:
+            raise ExternalCommandException(" ".join(args))
         return result
     else:
-        os.chdir(cwd)
         raise ExternalCommandException(f"Unknown command {command}")
 
 
@@ -99,15 +105,15 @@ class PackageTarget(ABC):
 
     @cached_property
     def package_output_path(self) -> Path:
-        return self.config.out / self.config.configuration / "package" / self.key
+        return self.root_path / self.config.out / self.config.configuration / "package" / self.key
 
     @cached_property
     def package_build_path(self) -> Path:
-        return self.config.out / self.config.configuration / 'build' / self.key / 'package'
+        return self.root_path / self.config.out / self.config.configuration / 'build' / self.key / 'package'
 
     @cached_property
     def build_path(self) -> Path:
-        return self.config.out / self.config.configuration / 'build' / self.key / 'platforms'
+        return self.root_path / self.config.out / self.config.configuration / 'build' / self.key / 'platforms'
 
     @property
     def template_line_statement_prefix(self) -> str: return "//>"
@@ -135,7 +141,9 @@ class PackageTarget(ABC):
 
     def __init__(
             self,
-            config_model_builder: ConfigModelBuilder):
+            config_model_builder: ConfigModelBuilder,
+            root_path: Path):
+        self.root_path = root_path
         self.config: PackageBaseConfig | None = None
         self._build_artifacts: dict[str, dict[Architecture, Path]] = {}
         field_kwargs = {platform: (list[Architecture],

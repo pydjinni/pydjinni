@@ -19,7 +19,7 @@ class Workspace:
     def __init__(self, root_uri: str):
         self.uuid = uuid.uuid4()
         self.root_uri = unquote(root_uri)
-        self.root_path = Path.from_uri(root_uri)
+        self.root_path = Path.from_uri(self.root_uri)
         self.api = API(root_path=self.root_path)
         self.ast_cache: dict[str, list[BaseType | Namespace]] = {}
         self.type_def_cache: dict[str, list[BaseType]] = {}
@@ -35,7 +35,11 @@ class Workspace:
     def configure(self, configuration: Configuration | None = None):
         if configuration:
             self.configuration = configuration
-        absolute_config = self.configuration.config if self.configuration.config.is_absolute() else self.root_path / self.configuration.config
+        absolute_config = (
+            self.configuration.config
+            if self.configuration.config.is_absolute()
+            else self.root_path / self.configuration.config
+        )
         if absolute_config.exists():
             self.configured_context = self.api.configure(path=absolute_config)
         else:
@@ -151,7 +155,9 @@ class Workspace:
         a list of all known type_defs except of error types and anonymous function types
         """
         await self.validated_event.wait()
-        resolver = self.generate_context[uri].resolver if uri in self.generate_context else self.configured_context.resolver
+        resolver = (
+            self.generate_context[uri].resolver if uri in self.generate_context else self.configured_context.resolver
+        )
         return [
             type_def
             for type_def in resolver.registry.values()
@@ -160,13 +166,11 @@ class Workspace:
 
     async def get_all_error_domains(self, uri: str) -> list[ErrorDomain]:
         await self.validated_event.wait()
-        resolver = self.generate_context[uri].resolver if uri in self.generate_context else self.configured_context.resolver
-        return [
-            type_def
-            for type_def in resolver.registry.values()
-            if isinstance(type_def, ErrorDomain)
-        ]
-    
+        resolver = (
+            self.generate_context[uri].resolver if uri in self.generate_context else self.configured_context.resolver
+        )
+        return [type_def for type_def in resolver.registry.values() if isinstance(type_def, ErrorDomain)]
+
     def get_all_target_languages(self) -> list[Target]:
         return [value for value in self.api.generation_targets.values() if not value.internal]
 
@@ -210,7 +214,7 @@ class LanguageServerAPI:
         for cache in self.workspaces:
             if unquote(uri).startswith(cache.root_uri):
                 return cache
-        raise ValueError(f"No cache found for URI: {uri}")
+        raise ValueError(f"No workspace cache found for URI: {uri}")
 
     def remove_workspace(self, uri: str) -> Workspace | None:
         for workspace in self.workspaces:

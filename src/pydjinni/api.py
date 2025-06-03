@@ -186,12 +186,10 @@ class API:
         )
 
     def _init_build_plugin(self, plugin: EntryPoint) -> BuildTarget:
-        return plugin.load()(
-            config_model_builder=self._config_model_builder,
-        )
+        return plugin.load()(config_model_builder=self._config_model_builder)
 
     def _init_package_plugin(self, plugin: EntryPoint) -> PackageTarget:
-        return plugin.load()(config_model_builder=self._config_model_builder)
+        return plugin.load()(config_model_builder=self._config_model_builder, root_path=self._root_path)
 
     def configure(self, path: Path | str | None = None, options: dict | None = None) -> ConfiguredContext:
         """
@@ -318,7 +316,6 @@ class API:
                 target.register_external_types(external_types_builder)
                 target.configure(self._generate_config)
 
-            
             self.resolver.reset()
             for external_type_def in external_types_builder.build():
                 self.resolver.register(external_type_def)
