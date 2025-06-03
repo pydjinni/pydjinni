@@ -129,7 +129,7 @@ class SwiftpackageTarget(PackageTarget):
                         ],
                     )
                 execute("git", ["checkout", self.config.swiftpackage.publish.branch], working_dir=git_repository_path)
-            (git_repository_path / "Package.swift").unlink()
+            (git_repository_path / "Package.swift").unlink(missing_ok=True)
             prepare(git_repository_path / "bin", clean=True)
             copy_directory(src=self.package_build_path, dst=git_repository_path)
             version = (self.package_build_path / "VERSION").read_text()
