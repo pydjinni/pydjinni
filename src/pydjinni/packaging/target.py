@@ -48,7 +48,7 @@ def copy_file(src: Path, dst: Path):
         raise FileNotFoundException(e.filename)
 
 
-def prepare(directory: Path, clean: bool = False):
+def prepare(directory: Path, clean: bool = False) -> Path:
     """
     prepares a directory for later use. Makes sure the directory exists, and cleans it if requested
 
@@ -56,12 +56,14 @@ def prepare(directory: Path, clean: bool = False):
         directory: the directory that should be prepared
         clean: whether the directory should be cleaned if it may already contain files
     """
+    directory = directory.resolve()
     if clean and directory.exists():
         shutil.rmtree(directory)
     directory.mkdir(parents=True, exist_ok=True)
+    return directory
 
 
-def execute(command: str | Path, arguments: list[str | os.PathLike], working_dir: Path = Path.cwd()) -> int:
+def execute(command: str | Path, arguments: list, working_dir: Path = Path.cwd()) -> int:
     dirname, _ = os.path.split(command)
     if dirname:
         command = (working_dir / command).resolve()

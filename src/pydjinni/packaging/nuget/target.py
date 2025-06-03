@@ -17,7 +17,7 @@ from pydjinni.exceptions import ExternalCommandException
 from pydjinni.packaging.architecture import Architecture
 from pydjinni.packaging.nuget.publish_config import NuGetPublishConfig
 from pydjinni.packaging.platform import Platform
-from pydjinni.packaging.target import PackageTarget, copy_file, execute, copy_directory
+from pydjinni.packaging.target import PackageTarget, copy_file, execute, copy_directory, prepare
 
 
 class NuGetTarget(PackageTarget):
@@ -87,7 +87,10 @@ class NuGetTarget(PackageTarget):
                 ], working_dir=self.package_output_path)
         symbols_nupkg = f"{self.config.target}.{self.config.version}.symbols.nupkg"
         nupkg = symbols_nupkg if (self.package_output_path / symbols_nupkg).exists() else f"{self.config.target}.{self.config.version}.nupkg"
-        source = ["nuget_server", "-ApiKey", self.config.nuget.publish.password] if not local else [self.config.nuget.publish.source.absolute()]
+        if local:
+            source = [prepare(self.config.nuget.publish.source)]
+        else:
+            source = ["nuget_server", "-ApiKey", self.config.nuget.publish.password]
         execute("nuget", [
             "push", nupkg,
             "-Source"
