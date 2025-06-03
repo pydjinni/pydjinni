@@ -63,7 +63,7 @@ def prepare(directory: Path, clean: bool = False):
 
 def execute(command: str | Path, arguments: list[str], working_dir: Path = Path.cwd()) -> int:
     absolute_command = shutil.which(command)
-    args = [absolute_command] + arguments
+    args = [absolute_command] + [str(argument) for argument in arguments]
     if absolute_command:
         result = subprocess.run(
             args,
