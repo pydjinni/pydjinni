@@ -63,7 +63,7 @@ class NuGetTarget(PackageTarget):
             "pack", "Package.nuspec",
             "-Properties", f"Configuration={self.config.configuration}",
             "-Properties", "NoWarn=NU5131",  # see https://github.com/NuGet/Home/discussions/11097
-            "-OutputDirectory", f"{self.package_output_path.absolute()}",
+            "-OutputDirectory", f"{self.package_output_path}",
         ] + (["-Symbols"] if pdb_exists else []), working_dir=self.package_build_path)
 
     def publish(self):
