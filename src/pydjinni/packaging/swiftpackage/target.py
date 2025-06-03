@@ -33,8 +33,9 @@ def lipo_combine_framework(input: list[Path], output: Path):
     output_absolute_path = (output / binary_name).resolve()
     execute("lipo", arguments=[
         "-create",
-        f"-output {str(output_absolute_path)}",
-        *[str(path) for path in input_absolute_paths]
+        "-output", 
+        output_absolute_path,
+        *input_absolute_paths,
     ])
 
 
@@ -79,14 +80,15 @@ class SwiftpackageTarget(PackageTarget):
         parameters = []
         for artifacts in self._build_artifacts.values():
             for path in artifacts.values():
-                parameters.append(f'-framework {str((path / framework_name).absolute())}')
+                parameters += ["-framework", (path / framework_name).absolute()]
                 dsym_path = path / f"{framework_name}.dSYM"
                 if dsym_path.exists():
-                    parameters.append(f'-debug-symbols {str(dsym_path.absolute())}')
+                    parameters += ["-debug-symbols", dsym_path.absolute()]
         execute("xcodebuild", [
             "-create-xcframework",
-            f"-output {str(xcframework_path.absolute())}",
-            *parameters
+            "-output", 
+            xcframework_path.absolute(),
+            *parameters,
         ])
         copy_directory(src=self.package_build_path, dst=self.package_output_path, clean=True)
 
