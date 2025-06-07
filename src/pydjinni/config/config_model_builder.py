@@ -18,7 +18,7 @@ import inspect
 
 from pydantic import create_model, BaseModel
 from pydantic.fields import FieldInfo
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
 
 from pydjinni.builder.build_config import BuildBaseConfig
 from pydjinni.generator.generate_config import GenerateBaseConfig
@@ -32,6 +32,17 @@ class Settings(BaseSettings):
         env_nested_delimiter='__',
         env_prefix='pydjinni__'
     )
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        return env_settings, dotenv_settings,file_secret_settings, init_settings
 
 
 class ConfigModelBuilder:
