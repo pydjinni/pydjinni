@@ -1,6 +1,7 @@
 plugins {
-    id("com.android.library") version "8.1.4"
+    id("com.android.library") version "8.10.1"
     id("maven-publish")
+    id("org.jetbrains.kotlin.android") version "2.1.21"
 }
 
 android {
@@ -12,6 +13,13 @@ android {
     }
     packaging {
         jniLibs.keepDebugSymbols.add("**/*.so")
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+    kotlinOptions {
+        jvmTarget = "11"
     }
     publishing {
         singleVariant("release") {

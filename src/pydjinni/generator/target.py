@@ -94,7 +94,7 @@ class Target(ABC):
 
     def generate(self, ast: list[BaseType], clean: bool = False, copy_support_lib_sources: bool = True):
         for generator_instance in self.generator_instances:
-            if clean:
+            if clean and generator_instance.config is not None:
                 generator_instance.clean()
             generator_instance.generate(ast, copy_support_lib_sources)
 
@@ -123,4 +123,7 @@ class Target(ABC):
             },
         )
         for generator in self.generator_instances:
-            generator.configure(getattr(config, generator.key), metadata_model())
+            if hasattr(config, generator.key):
+                configuration = getattr(config, generator.key)
+                if configuration is not None:
+                    generator.configure(configuration, metadata_model())

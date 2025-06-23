@@ -16,6 +16,7 @@ from pydjinni.generator.target import Target
 from pydjinni.parser.ast import Record
 from .java.generator import JavaGenerator
 from .jni.generator import JniGenerator
+from .kotlin.generator import KotlinGenerator
 
 
 class JavaTarget(Target):
@@ -26,5 +27,5 @@ class JavaTarget(Target):
     """
     key = "java"
     display_key = "Java"
-    generators = [JavaGenerator, JniGenerator]
+    generators = [JavaGenerator, KotlinGenerator, JniGenerator]
     supported_deriving = {Record.Deriving.eq, Record.Deriving.ord}

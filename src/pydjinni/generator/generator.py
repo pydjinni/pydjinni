@@ -49,63 +49,50 @@ class Generator(ABC):
             super().__init__(message)
             self.input_def = input_def
 
-    @property
-    @abstractmethod
-    def key(self) -> str:
-        """
-        The name of the generator. Will be used as configuration key and for importing/exporting external types.
+    """
+    The name of the generator. Will be used as configuration key and for importing/exporting external types.
 
-        Typically, a target will have one generator with the same name (key) as the target.
-        If additional glue code in C++ is provided, this will usually require a separate generator with a distinct name.
-        """
-        pass
+    Typically, a target will have one generator with the same name (key) as the target.
+    If additional glue code in C++ is provided, this will usually require a separate generator with a distinct name.
+    """
+    key: str = ""
+    
+    """
+    The Pydantic model that defines the configuration options for the generator.
 
-    @property
-    @abstractmethod
-    def config_model(self) -> type[ConfigModel]:
-        """
-        The Pydantic model that defines the configuration options for the generator.
+    The model will automatically be registered in the system and is then available in the documentation and as part
+    of the  JSON-Schema for the configuration file.
+    """
+    config_model: type[ConfigModel] = BaseModel
 
-        The model will automatically be registered in the system and is then available in the documentation and as part
-        of the  JSON-Schema for the configuration file.
-        """
-        pass
+    """
+    Whether the generator is optional. If set to `True`, the generator will not be executed if no configuration is provided.
+    """
+    optional: bool = False
 
-    @property
-    def template_line_statement_prefix(self) -> str: return "//>"
+    template_line_statement_prefix: str = "//>"
 
-    @property
-    def template_line_comment_prefix(self) -> str: return "///"
+    template_line_comment_prefix: str = "///"
 
-    @property
-    def template_variable_start_string(self) -> str: return "{{"
+    template_variable_start_string: str = "{{"
 
-    @property
-    def template_variable_end_string(self) -> str: return "}}"
+    template_variable_end_string: str = "}}"
 
-    @property
-    def template_block_start_string(self) -> str: return "/*>"
+    template_block_start_string: str = "/*>"
 
-    @property
-    def template_block_end_string(self) -> str: return "*/"
+    template_block_end_string: str = "*/"
 
-    @property
-    def template_comment_start_string(self) -> str: return "/*#"
+    template_comment_start_string: str = "/*#"
 
-    @property
-    def template_comment_end_string(self) -> str: return "*/"
+    template_comment_end_string: str = "*/"
 
-    @property
-    def template_optional_variable_prefix(self) -> str: return "//?"
+    template_optional_variable_prefix: str = "//?"
 
-    @property
-    def comment_start_string(self) -> str: return "/**"
+    comment_start_string: str = "/**"
 
-    @property
-    def comment_end_string(self) -> str: return " */"
+    comment_end_string: str = " */"
 
-    @property
-    def comment_line_prefix(self) -> str: return " * "
+    comment_line_prefix: str = " * "
 
     def template_preprocessing(self, template: Path) -> str:
         def _template_optional_variable_pattern() -> str:
@@ -126,92 +113,74 @@ class Generator(ABC):
             flags=re.MULTILINE
         )
 
-    @property
-    def external_type_model(self) -> type[ExternalTypeModel] | None:
-        """
-        The Pydantic model of the external type specification for the generator. The model should contain all
-        information that is required to reference and use an external type in the generated code.
+    """
+    The Pydantic model of the external type specification for the generator. The model should contain all
+    information that is required to reference and use an external type in the generated code.
 
-        The model will automatically be registered in the system and is then available in the documentation and as part
-        of the JSON-Schema for external types.
-        """
-        return None
+    The model will automatically be registered in the system and is then available in the documentation and as part
+    of the JSON-Schema for external types.
+    """
+    external_type_model: type[ExternalTypeModel] | None = None
 
-    @property
-    def external_types(self) -> dict[str, ExternalTypeModel]:
-        """
-        A dictionary of all builtin types that are supported by the generator.
-        If the list is incomplete, an error is thrown when the user tries to use an unsupported type in a project that
-        uses the generator.
+    """
+    A dictionary of all builtin types that are supported by the generator.
+    If the list is incomplete, an error is thrown when the user tries to use an unsupported type in a project that
+    uses the generator.
 
-        A complete list of all builtin types can be found in `pydjinni/generator/external_types.py`
-        """
-        return {}
+    A complete list of all builtin types can be found in `pydjinni/generator/external_types.py`
+    """
+    external_types: dict[str, ExternalTypeModel] = {}
 
-    @property
-    def marshal_models(self) -> dict[type, type]:
-        """
-        A mapping of AST types to the marshalling model required by the generator.
-        For each type in the AST, the generator searches for a matching marshalling model in this dictionary.
-        If no marshalling model is found, an error will be thrown suggesting that the given AST type is not supported
-        by the generator.
+    """
+    A mapping of AST types to the marshalling model required by the generator.
+    For each type in the AST, the generator searches for a matching marshalling model in this dictionary.
+    If no marshalling model is found, an error will be thrown suggesting that the given AST type is not supported
+    by the generator.
 
-        The generator will search for a matching marshalling model by traversing the type hierarchy of the AST type until
-        a matching marshalling model is found.
+    The generator will search for a matching marshalling model by traversing the type hierarchy of the AST type until
+    a matching marshalling model is found.
 
-        A marshalling model must be a Pydantic model with two fields:
-        - `decl` for the type of field declaration and
-        - `config` for the generator configuration
+    A marshalling model must be a Pydantic model with two fields:
+    - `decl` for the type of field declaration and
+    - `config` for the generator configuration
 
-        All marshalling must happen in methods decorated as `@cached_property`, where the declaration and the
-        configuration is used to derive information needed by the generator.
-        Type marshalling properties must at least contain a property for each field in the given external type model.
-        Every property that should be exported as part of the external type YAML definition must be decorated with
-        `@computed_field`.
-        """
-        return {}
+    All marshalling must happen in methods decorated as `@cached_property`, where the declaration and the
+    configuration is used to derive information needed by the generator.
+    Type marshalling properties must at least contain a property for each field in the given external type model.
+    Every property that should be exported as part of the external type YAML definition must be decorated with
+    `@computed_field`.
+    """
+    marshal_models: dict[type, type] = {}
 
-    @property
-    def metadata_model(self) -> type[MetadataModel] | None:
-        return None
 
-    @property
-    def writes_header(self) -> bool:
-        """
-        Whether the generator will generate header files. This information is required for documentation purposes and
-        for providing a valid JSON-Schema for the processed files report.
-        """
-        return False
+    metadata_model: type[MetadataModel] | None = None
 
-    @property
-    def writes_source(self) -> bool:
-        """
-        Whether the generator will generate source files. This information is required for documentation purposes and
-        for providing a valid JSON-Schema for the processed files report.
-        """
-        return False
+    """
+    Whether the generator will generate header files. This information is required for documentation purposes and
+    for providing a valid JSON-Schema for the processed files report.
+    """
+    writes_header: bool = False
 
-    @property
-    def support_lib_commons(self) -> bool:
-        """
-        Whether the code generated by this generator depends on the common support lib code provided by pydjinni.
-        """
-        return False
+    """
+    Whether the generator will generate source files. This information is required for documentation purposes and
+    for providing a valid JSON-Schema for the processed files report.
+    """
+    writes_source: bool = False
 
-    @property
-    def filters(self) -> list[Callable]:
-        """
-        Jinja2 filter functions that are required in the generators Jinja templates
-        """
-        return []
+    """
+    Whether the code generated by this generator depends on the common support lib code provided by pydjinni.
+    """
+    support_lib_commons: bool = False
 
-    @property
-    def tests(self) -> list[Callable]:
-        """
-        Jinja2 test functions that are required in the generators Jinja templates
-        """
-        return []
+    """
+    Jinja2 filter functions that are required in the generators Jinja templates
+    """
+    filters: list[Callable] = []
 
+    """
+    Jinja2 test functions that are required in the generators Jinja templates
+    """
+    tests: list[Callable] = []
 
     def __init__(
             self,
@@ -439,7 +408,7 @@ class Generator(ABC):
                 self.generate_support_lib()
             for type_def in ast:
                 call_generate_method(type_def)
-        else:
+        elif not self.optional:
             raise ConfigurationException(f"Missing configuration for 'generator.{self.key}'!")
 
     def marshal(self, type_decls: list[BaseType], field_decls: list[BaseField]):
@@ -477,5 +446,5 @@ class Generator(ABC):
                 for definitions in [type_decls, field_decls]:
                     for definition in definitions:
                         traverse_hierarchy(type(definition), definition)
-        else:
+        elif not self.optional:
             raise ConfigurationException(f"Missing configuration for 'generator.{self.key}'!")

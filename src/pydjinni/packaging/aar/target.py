@@ -46,7 +46,7 @@ class AndroidArchiveTarget(PackageTarget):
         so_name = f'lib{self.config.target}.so'
         for artifacts in self._build_artifacts.values():
             for arch, path in artifacts.items():
-                copy_directory(src=path / self.config.target, dst=self.package_build_path / 'src' / 'main' / 'java')
+                copy_directory(src=path / self.config.target, dst=self.package_build_path / 'src' / 'main')
                 copy_file(src=path / so_name,
                           dst=self.package_build_path / 'src' / 'main' / 'jniLibs' / self.architecture_mapping[
                               arch] / so_name)
