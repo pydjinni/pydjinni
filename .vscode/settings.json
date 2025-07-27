@@ -32,5 +32,7 @@
         "**/*.jar"
     ],
     "C_Cpp.default.cppStandard": "c++23",
-    "cmake.ctest.testSuiteDelimiter": "\\."
+    "cmake.ctest.testSuiteDelimiter": "\\.",
+    "cmake.ctest.testExplorerIntegrationEnabled": true,
+    "cmake.ctest.allowParallelJobs": true
 }
