@@ -64,7 +64,7 @@ jobs:
       - name: Build
         run: cmake --build build --parallel
       - name: Run Tests
-        run: ctest --test-dir build --output-on-failure -C Debug
+        run: ctest --test-dir build --output-on-failure -C Debug --parallel
   package_test:
     name: package test
     strategy:
