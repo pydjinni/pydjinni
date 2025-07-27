@@ -28,11 +28,7 @@ from pydjinni.packaging.target import PackageTarget
 from pydjinni.parser.ast import Namespace
 from pydjinni.parser.parser import Parser
 
-try:
-    import tomllib
-except ModuleNotFoundError:
-    import tomli as tomllib  # Fallback for Python < 3.11
-
+import tomllib
 import pydantic
 import yaml
 from pydantic import BaseModel
