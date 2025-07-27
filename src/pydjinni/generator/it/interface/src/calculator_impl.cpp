@@ -14,8 +14,8 @@
 
 #include "calculator_impl.hpp"
 #include <cassert>
-#include <stdexcept>
 #include <exception>
+#include <stdexcept>
 #include <string>
 
 using namespace test::interface_test;
@@ -25,7 +25,7 @@ int8_t CalculatorImpl::add(int8_t a, int8_t b) const noexcept {
 }
 
 int8_t CalculatorImpl::get_platform_value(const std::shared_ptr<PlatformInterface>& platform) noexcept {
-    auto val =  platform->get_value();
+    auto val = platform->get_value();
     assert(val == 5);
     return val;
 }
@@ -36,11 +36,13 @@ void CalculatorImpl::throwing_exception() {
     throw std::runtime_error("shit hit the fan");
 }
 
-void CalculatorImpl::no_parameters_no_return_callback(const std::shared_ptr<NoParametersNoReturnCallback> &callback) noexcept {
+void CalculatorImpl::no_parameters_no_return_callback(
+    const std::shared_ptr<NoParametersNoReturnCallback>& callback
+) noexcept {
     callback->invoke();
 }
 
-void CalculatorImpl::throwing_callback(const std::shared_ptr<ThrowingCallback> &callback) {
+void CalculatorImpl::throwing_callback(const std::shared_ptr<ThrowingCallback>& callback) {
     try {
         callback->invoke();
     } catch (const std::exception& e) {
@@ -48,4 +50,9 @@ void CalculatorImpl::throwing_callback(const std::shared_ptr<ThrowingCallback> &
         std::rethrow_exception(std::current_exception());
     }
     assert(false); // this should never be reached because of the exception
+}
+
+std::vector<std::string> test::interface_test::CalculatorImpl::generic_parameter_and_return(const std::vector<std::string>& param) noexcept {
+    assert(param.size() == 2);
+    return param;
 }

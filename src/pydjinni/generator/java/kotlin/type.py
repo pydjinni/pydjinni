@@ -42,6 +42,8 @@ class KotlinBaseField(BaseModel):
     @property
     def data_type(self) -> str:
         result = self.decl.type_ref.type_def.kotlin.typename
+        if self.decl.type_ref.parameters:
+            result += f"<{', '.join([parameter.type_ref.type_def.kotlin.data_type for parameter in self.decl.type_ref.parameters])}>"
         if self.decl.type_ref.optional:
             result += "?"
         return result
@@ -52,6 +54,8 @@ class KotlinBaseField(BaseModel):
             result = self.decl.type_ref.type_def.java.typename
         else:
             result = self.decl.type_ref.type_def.kotlin.typename
+        if self.decl.type_ref.parameters:
+            result += f"<{', '.join([parameter.type_ref.type_def.kotlin.java_delegate_data_type for parameter in self.decl.type_ref.parameters])}>"
         if self.decl.type_ref.optional:
             result += "?"
         return result
@@ -60,6 +64,8 @@ class KotlinBaseField(BaseModel):
     def return_type(self) -> str:
         if self.decl.return_type_ref:
             result = self.decl.return_type_ref.type_def.kotlin.typename
+            if self.decl.return_type_ref.parameters:
+                result += f"<{', '.join([parameter.type_ref.type_def.kotlin.return_type for parameter in self.decl.return_type_ref.parameters])}>"
             if self.decl.return_type_ref.optional:
                 result += "?"
         else:
@@ -73,6 +79,8 @@ class KotlinBaseField(BaseModel):
                 result = self.decl.return_type_ref.type_def.java.typename
             else:
                 result = self.decl.return_type_ref.type_def.kotlin.typename
+            if self.decl.return_type_ref.parameters:
+                result += f"<{', '.join([parameter.type_ref.type_def.kotlin.java_delegate_raw_return_type for parameter in self.decl.return_type_ref.parameters])}>"
             if self.decl.return_type_ref.optional:
                 result += "?"
         else:

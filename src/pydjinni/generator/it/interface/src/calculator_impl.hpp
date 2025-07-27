@@ -24,6 +24,7 @@ public:
     void throwing_exception() override;
     void no_parameters_no_return_callback(const std::shared_ptr<NoParametersNoReturnCallback>& callback) noexcept override;
     void throwing_callback(const std::shared_ptr<ThrowingCallback>& callback) override;
+    std::vector<std::string> generic_parameter_and_return(const std::vector<std::string> & param) noexcept override;
 };
 
 }

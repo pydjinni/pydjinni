@@ -22,6 +22,7 @@ calculator = main interface +cpp {
     throwing_exception() throws;
     no_parameters_no_return_callback(callback: no_parameters_no_return_callback);
     throwing_callback(callback: throwing_callback) throws;
+    generic_parameter_and_return(param: list<string>) -> list<string>;
 }
 
 # @deprecated testing class deprecation annotation

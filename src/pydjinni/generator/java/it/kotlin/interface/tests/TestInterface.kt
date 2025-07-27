@@ -64,4 +64,11 @@ class TestInterface {
         calculator.noParametersNoReturnCallback(callback)
         assertTrue(callbackInvoked)
     }
+
+    @Test
+    fun testMethodGenericParameterAndReturn() {
+        val input = arrayListOf("foo", "bar")
+        val result = calculator.genericParameterAndReturn(param = input)
+        assertEquals(input, result)
+    }
 }
