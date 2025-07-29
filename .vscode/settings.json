@@ -34,5 +34,7 @@
     "C_Cpp.default.cppStandard": "c++23",
     "cmake.ctest.testSuiteDelimiter": "\\.",
     "cmake.ctest.testExplorerIntegrationEnabled": true,
-    "cmake.ctest.allowParallelJobs": true
+    "cmake.ctest.allowParallelJobs": true,
+    "cmake.ctest.parallelJobs": 8,
+    "cmake.parallelJobs": 8,
 }
