@@ -42,37 +42,37 @@ public abstract class Asynchronous {
         public static native java.util.concurrent.@org.jetbrains.annotations.NotNull CompletableFuture<test.async_test.@org.jetbrains.annotations.NotNull Asynchronous> getInstance();
         @Override
         public java.util.concurrent.@org.jetbrains.annotations.NotNull CompletableFuture<@org.jetbrains.annotations.NotNull Integer> add(@org.jetbrains.annotations.NotNull int a, @org.jetbrains.annotations.NotNull int b) {
-            return native_add(this.nativeRef , a, b);
+            return native_add(this.nativeRef, a, b);
         }
         private native java.util.concurrent.@org.jetbrains.annotations.NotNull CompletableFuture<@org.jetbrains.annotations.NotNull Integer> native_add(long _nativeRef, @org.jetbrains.annotations.NotNull int a, @org.jetbrains.annotations.NotNull int b);
         @Override
         public java.util.concurrent.@org.jetbrains.annotations.NotNull CompletableFuture<Void> noParametersNoReturn() {
-            return native_noParametersNoReturn(this.nativeRef );
+            return native_noParametersNoReturn(this.nativeRef);
         }
         private native java.util.concurrent.@org.jetbrains.annotations.NotNull CompletableFuture<Void> native_noParametersNoReturn(long _nativeRef);
         @Override
         public java.util.concurrent.@org.jetbrains.annotations.NotNull CompletableFuture<Void> throwingException() {
-            return native_throwingException(this.nativeRef );
+            return native_throwingException(this.nativeRef);
         }
         private native java.util.concurrent.@org.jetbrains.annotations.NotNull CompletableFuture<Void> native_throwingException(long _nativeRef);
         @Override
         public java.util.concurrent.@org.jetbrains.annotations.NotNull CompletableFuture<@org.jetbrains.annotations.NotNull Integer> multiplyCallback(test.async_test.@org.jetbrains.annotations.NotNull MultiplyCallback callback) {
-            return native_multiplyCallback(this.nativeRef , callback);
+            return native_multiplyCallback(this.nativeRef, callback);
         }
         private native java.util.concurrent.@org.jetbrains.annotations.NotNull CompletableFuture<@org.jetbrains.annotations.NotNull Integer> native_multiplyCallback(long _nativeRef, test.async_test.@org.jetbrains.annotations.NotNull MultiplyCallback callback);
         @Override
         public java.util.concurrent.@org.jetbrains.annotations.NotNull CompletableFuture<Void> noParametersNoReturnCallback(test.async_test.@org.jetbrains.annotations.NotNull NoParametersNoReturnCallback callback) {
-            return native_noParametersNoReturnCallback(this.nativeRef , callback);
+            return native_noParametersNoReturnCallback(this.nativeRef, callback);
         }
         private native java.util.concurrent.@org.jetbrains.annotations.NotNull CompletableFuture<Void> native_noParametersNoReturnCallback(long _nativeRef, test.async_test.@org.jetbrains.annotations.NotNull NoParametersNoReturnCallback callback);
         @Override
         public java.util.concurrent.@org.jetbrains.annotations.NotNull CompletableFuture<Void> throwingCallback(test.async_test.@org.jetbrains.annotations.NotNull ThrowingCallback callback) {
-            return native_throwingCallback(this.nativeRef , callback);
+            return native_throwingCallback(this.nativeRef, callback);
         }
         private native java.util.concurrent.@org.jetbrains.annotations.NotNull CompletableFuture<Void> native_throwingCallback(long _nativeRef, test.async_test.@org.jetbrains.annotations.NotNull ThrowingCallback callback);
         @Override
         public java.util.concurrent.@org.jetbrains.annotations.NotNull CompletableFuture<@org.jetbrains.annotations.Nullable Integer> returningOptional() {
-            return native_returningOptional(this.nativeRef );
+            return native_returningOptional(this.nativeRef);
         }
         private native java.util.concurrent.@org.jetbrains.annotations.NotNull CompletableFuture<@org.jetbrains.annotations.Nullable Integer> native_returningOptional(long _nativeRef);
     }

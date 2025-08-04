@@ -48,32 +48,32 @@ public abstract class Calculator {
         public static native test.interface_test.@org.jetbrains.annotations.NotNull Calculator getInstance();
         @Override
         public @org.jetbrains.annotations.NotNull byte add(@org.jetbrains.annotations.NotNull byte a, @org.jetbrains.annotations.NotNull byte b) {
-            return native_add(this.nativeRef , a, b);
+            return native_add(this.nativeRef, a, b);
         }
         private native @org.jetbrains.annotations.NotNull byte native_add(long _nativeRef, @org.jetbrains.annotations.NotNull byte a, @org.jetbrains.annotations.NotNull byte b);
         @Override
         public @org.jetbrains.annotations.NotNull byte getPlatformValue(test.interface_test.@org.jetbrains.annotations.NotNull PlatformInterface platform) {
-            return native_getPlatformValue(this.nativeRef , platform);
+            return native_getPlatformValue(this.nativeRef, platform);
         }
         private native @org.jetbrains.annotations.NotNull byte native_getPlatformValue(long _nativeRef, test.interface_test.@org.jetbrains.annotations.NotNull PlatformInterface platform);
         @Override
         public void noParametersNoReturn() {
-            native_noParametersNoReturn(this.nativeRef );
+            native_noParametersNoReturn(this.nativeRef);
         }
         private native void native_noParametersNoReturn(long _nativeRef);
         @Override
         public void throwingException() {
-            native_throwingException(this.nativeRef );
+            native_throwingException(this.nativeRef);
         }
         private native void native_throwingException(long _nativeRef);
         @Override
         public void noParametersNoReturnCallback(test.interface_test.@org.jetbrains.annotations.NotNull NoParametersNoReturnCallback callback) {
-            native_noParametersNoReturnCallback(this.nativeRef , callback);
+            native_noParametersNoReturnCallback(this.nativeRef, callback);
         }
         private native void native_noParametersNoReturnCallback(long _nativeRef, test.interface_test.@org.jetbrains.annotations.NotNull NoParametersNoReturnCallback callback);
         @Override
         public void throwingCallback(test.interface_test.@org.jetbrains.annotations.NotNull ThrowingCallback callback) {
-            native_throwingCallback(this.nativeRef , callback);
+            native_throwingCallback(this.nativeRef, callback);
         }
         private native void native_throwingCallback(long _nativeRef, test.interface_test.@org.jetbrains.annotations.NotNull ThrowingCallback callback);
     }

@@ -15,7 +15,7 @@
 import XCTest
 import InterfaceTestSwift
 
-class InterfaceTestsSwiftTests: XCTestCase {
+final class InterfaceTests: XCTestCase {
     let calculator = Calculator.getInstance()
     
     func testCalculator() {

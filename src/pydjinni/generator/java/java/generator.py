@@ -15,20 +15,8 @@
 from pathlib import Path
 
 from pydjinni.generator.generator import Generator
-from pydjinni.parser.ast import (
-    Enum,
-    Flags,
-    Record,
-    Interface,
-    Function,
-    ErrorDomain, Parameter
-)
-from pydjinni.parser.base_models import (
-    BaseType,
-    BaseField,
-    SymbolicConstantField,
-    DataField
-)
+from pydjinni.parser.ast import Enum, Flags, Record, Interface, Function, ErrorDomain, Parameter
+from pydjinni.parser.base_models import BaseType, BaseField, SymbolicConstantField, DataField
 from .config import JavaConfig
 from .external_types import external_types
 from .metadata import JavaMetadata
@@ -44,7 +32,7 @@ from .type import (
     JavaErrorDomain,
     JavaDataField,
     NativeLibLoader,
-    NativeCleaner
+    NativeCleaner,
 )
 
 
@@ -64,6 +52,7 @@ class JavaGenerator(Generator):
         SymbolicConstantField: JavaSymbolicConstantField,
         Interface: JavaInterface,
         Interface.Method: JavaInterface.JavaMethod,
+        Interface.Property: JavaInterface.JavaProperty,
         ErrorDomain: JavaErrorDomain,
         ErrorDomain.ErrorCode: JavaErrorDomain.JavaErrorCode,
     }
@@ -84,56 +73,64 @@ class JavaGenerator(Generator):
             template="interface.jinja2.java",
             type_def=type_def,
             native_lib_loader=NativeLibLoader(self.config),
-            native_cleaner=NativeCleaner(self.config)
+            native_cleaner=NativeCleaner(self.config),
         )
 
     def generate_function(self, type_def: Function):
-        self.write_source(
-            template="function.jinja2.java",
-            type_def=type_def,
-            native_cleaner=NativeCleaner(self.config)
-        )
+        self.write_source(template="function.jinja2.java", type_def=type_def, native_cleaner=NativeCleaner(self.config))
 
     def generate_error_domain(self, type_def: ErrorDomain):
-        self.write_source(
-            template="error_domain.jinja2.java",
-            type_def=type_def
-        )
+        self.write_source(template="error_domain.jinja2.java", type_def=type_def)
 
     def generate_loader(self):
         native_lib_loader = NativeLibLoader(self.config)
         self.write_source(
-            template="loader.jinja2.java",
-            filename=native_lib_loader.source,
-            native_lib_loader=native_lib_loader
+            template="loader.jinja2.java", filename=native_lib_loader.source, native_lib_loader=native_lib_loader
         )
 
     def generate_runnable(self):
-        package = '.'.join(self.config.package + self.config.support_types_package)
+        package = ".".join(self.config.package + self.config.support_types_package)
         package_path = Path("/".join(package.split(".")))
         self.write_source(
             template="runnable.jinja2.java",
             filename=package_path / f"NativeRunnable.java",
             package=package,
-            native_cleaner=NativeCleaner(self.config)
+            native_cleaner=NativeCleaner(self.config),
         )
 
     def generate_completion(self):
-        package = '.'.join(self.config.package + self.config.support_types_package)
+        package = ".".join(self.config.package + self.config.support_types_package)
         package_path = Path("/".join(package.split(".")))
         self.write_source(
             template="completion.jinja2.java",
             filename=package_path / f"NativeCompletion.java",
             package=package,
-            native_cleaner=NativeCleaner(self.config)
+            native_cleaner=NativeCleaner(self.config),
         )
 
     def generate_cleaner(self):
         native_cleaner = NativeCleaner(self.config)
+        self.write_source(template="cleaner.jinja2.java", filename=native_cleaner.source, native_cleaner=native_cleaner)
+
+    def generate_connection(self):
+        package = ".".join(self.config.package + self.config.support_types_package)
+        package_path = Path("/".join(package.split(".")))
         self.write_source(
-            template="cleaner.jinja2.java",
-            filename=native_cleaner.source,
-            native_cleaner=native_cleaner
+            template="connection.jinja2.java",
+            filename=package_path / f"Connection.java",
+            package=package,
+            native_cleaner=NativeCleaner(self.config),
+        )
+        self.write_source(
+            template="on_property_changed_callback.jinja2.java",
+            filename=package_path / f"OnPropertyChangedCallback.java",
+            package=package,
+            native_cleaner=NativeCleaner(self.config)
+        )
+        self.write_source(
+            template="signal.jinja2.java",
+            filename=package_path / f"Signal.java",
+            package=package,
         )
 
     def generate(self, ast: list[BaseType], copy_support_lib_sources: bool = True):
@@ -142,12 +139,22 @@ class JavaGenerator(Generator):
         if self.config.native_lib:
             self.generate_loader()
         if any(
-            isinstance(type_def, Interface) and "cpp" in type_def.targets and any(method.asynchronous for method in type_def.methods)
+            isinstance(type_def, Interface)
+            and "cpp" in type_def.targets
+            and any(method.asynchronous for method in type_def.methods)
             for type_def in ast
         ):
             self.generate_runnable()
         if any(
-            isinstance(type_def, Interface) and "java" in type_def.targets and any(method.asynchronous for method in type_def.methods)
+            isinstance(type_def, Interface)
+            and "java" in type_def.targets
+            and any(method.asynchronous for method in type_def.methods)
             for type_def in ast
         ):
             self.generate_completion()
+        if any(
+            isinstance(type_def, Interface)
+            and type_def.properties
+            for type_def in ast
+        ):
+            self.generate_connection()

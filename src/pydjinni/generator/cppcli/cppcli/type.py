@@ -216,6 +216,10 @@ class CppCliInterface(CppCliBaseType):
             else:
                 return ""
 
+    class CppCliProperty(CppCliBaseField):
+        decl: Interface.Property = Field(exclude=True, repr=False)
+
+        
 class CppCliRecord(CppCliBaseType):
     decl: Record = Field(exclude=True, repr=False)
 
@@ -359,7 +363,7 @@ class CppCliFunction(CppCliBaseType):
 
     @property
     def header_includes(self) -> set[str]:
-        return super().header_includes | { "<functional>", "<vcclr.h>" }
+        return super().header_includes | { "<functional>", "<vcclr.h>", quote(PurePosixPath("pydjinni/cppcli/AutoPtr.hpp")) }
 
     @property
     def source_includes(self) -> set[str]: return super().source_includes | {

@@ -21,18 +21,18 @@ from pydjinni.generator.java.java.comment_renderer import JavaDocCommentRenderer
 from pydjinni.generator.java.java.config import JavaConfig
 from pydjinni.generator.java.java.keywords import keywords
 from pydjinni.generator.validator import validate
-from pydjinni.parser.ast import Record, Function
+from pydjinni.parser.ast import Interface, Record, Function
 from pydjinni.parser.base_models import BaseType, BaseField, BaseExternalType, TypeReference, DataField
 from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
-
 def filename(package, name):
-    return PurePosixPath(*package.split('.')) / f"{name}.java"
+    return PurePosixPath(*package.split(".")) / f"{name}.java"
 
 
 class JavaExternalType(BaseModel):
     """Java type information"""
+
     typename: str = None
     boxed: str = ""
     reference: bool = True
@@ -41,7 +41,7 @@ class JavaExternalType(BaseModel):
 
 def apply_type_annotation(type_input: str, annotation: str) -> str:
     if annotation:
-        split_output = type_input.rsplit('.', maxsplit=1)
+        split_output = type_input.rsplit(".", maxsplit=1)
         if len(split_output) == 2:
             package, typename = split_output
             return f"{package}.{annotation} {typename}"
@@ -60,7 +60,10 @@ class JavaBase(BaseModel):
         else:
             output = "Void" if asynchronous else "void"
         if asynchronous:
-            output = apply_type_annotation(f"java.util.concurrent.CompletableFuture", self.config.nonnull_annotation) + f"<{output}>"
+            output = (
+                apply_type_annotation(f"java.util.concurrent.CompletableFuture", self.config.nonnull_annotation)
+                + f"<{output}>"
+            )
         return output
 
     def compute_data_type(self, type_ref: TypeReference, boxed: bool = False) -> str:
@@ -70,45 +73,59 @@ class JavaBase(BaseModel):
         else:
             output = apply_type_annotation(output, self.config.nonnull_annotation)
         if type_ref.parameters:
-            output += f"<{', '.join([self.compute_data_type(parameter, boxed=True) for parameter in type_ref.parameters])}>"
+            output += (
+                f"<{', '.join([self.compute_data_type(parameter, boxed=True) for parameter in type_ref.parameters])}>"
+            )
         return output
+
 
 class JavaBaseType(JavaBase):
     decl: BaseType = Field(exclude=True, repr=False)
 
     @cached_property
     @validate(keywords)
-    def name(self) -> str: return self.decl.name.convert(self.config.identifier.type)
+    def name(self) -> str:
+        return self.decl.name.convert(self.config.identifier.type)
 
     @computed_field
     @cached_property
-    def typename(self) -> str: return f"{self.package}.{self.name}"
+    def typename(self) -> str:
+        return f"{self.package}.{self.name}"
 
     @computed_field
     @cached_property
-    def boxed(self) -> str: return self.typename
+    def boxed(self) -> str:
+        return self.typename
 
     @computed_field
     @cached_property
-    def reference(self) -> bool: return True
+    def reference(self) -> bool:
+        return True
 
     @computed_field
     @cached_property
-    def generic(self) -> bool: return False
+    def generic(self) -> bool:
+        return False
 
     @cached_property
-    @validate(keywords, separator='.')
+    @validate(keywords, separator=".")
     def package(self) -> str:
-        return '.'.join(self.config.package + [identifier.convert(self.config.identifier.package) for identifier in
-                                               self.decl.namespace])
+        return ".".join(
+            self.config.package
+            + [identifier.convert(self.config.identifier.package) for identifier in self.decl.namespace]
+        )
 
     @cached_property
-    def source(self): return PurePosixPath(*self.package.split('.')) / f"{self.name}.java"
+    def source(self):
+        return PurePosixPath(*self.package.split(".")) / f"{self.name}.java"
 
     @cached_property
     def comment(self):
-        return JavaDocCommentRenderer(self.config.identifier).render_tokens(*self.decl._parsed_comment).strip() \
-            if self.decl._parsed_comment else ''
+        return (
+            JavaDocCommentRenderer(self.config.identifier).render_tokens(*self.decl._parsed_comment).strip()
+            if self.decl._parsed_comment
+            else ""
+        )
 
     @cached_property
     def class_modifier(self):
@@ -123,15 +140,20 @@ class JavaBaseField(JavaBase):
 
     @computed_field
     @cached_property
-    def name(self) -> str: return self.decl.name.convert(self.config.identifier.field)
+    def name(self) -> str:
+        return self.decl.name.convert(self.config.identifier.field)
 
     @cached_property
     def comment(self):
-        return JavaDocCommentRenderer(self.config.identifier).render_tokens(*self.decl._parsed_comment).strip() \
-            if self.decl._parsed_comment else ''
+        return (
+            JavaDocCommentRenderer(self.config.identifier).render_tokens(*self.decl._parsed_comment).strip()
+            if self.decl._parsed_comment
+            else ""
+        )
 
     @cached_property
-    def data_type(self) -> str: return self.compute_data_type(self.decl.type_ref)
+    def data_type(self) -> str:
+        return self.compute_data_type(self.decl.type_ref)
 
 
 class JavaRecord(JavaBaseType):
@@ -160,6 +182,7 @@ class JavaRecord(JavaBaseType):
         if self.config.use_final_for_record and not self.base_type:
             output += "final "
         return output
+
 
 class JavaDataField(JavaBaseField):
     @cached_property
@@ -215,7 +238,8 @@ class JavaDataField(JavaBaseField):
 class JavaFlags(JavaBaseType):
     @computed_field
     @cached_property
-    def typename(self) -> str: return f"java.util.EnumSet<{self.package}.{self.name}>"
+    def typename(self) -> str:
+        return f"java.util.EnumSet<{self.package}.{self.name}>"
 
 
 class JavaFunction(JavaBaseType):
@@ -238,7 +262,8 @@ class JavaSymbolicConstantField(JavaBaseField):
     @computed_field
     @cached_property
     @validate(keywords)
-    def name(self) -> str: return self.decl.name.convert(self.config.identifier.enum)
+    def name(self) -> str:
+        return self.decl.name.convert(self.config.identifier.enum)
 
 
 class JavaInterface(JavaBaseType):
@@ -246,18 +271,66 @@ class JavaInterface(JavaBaseType):
         @computed_field
         @cached_property
         @validate(keywords)
-        def name(self) -> str: return self.decl.name.convert(self.config.identifier.method)
+        def name(self) -> str:
+            return self.decl.name.convert(self.config.identifier.method)
 
         @cached_property
         def return_type(self) -> str:
             return self.compute_return_type(self.decl.return_type_ref, self.decl.asynchronous)
 
-
         @cached_property
         def callback_type(self) -> str:
             return self.compute_return_type(self.decl.return_type_ref, self.decl.asynchronous)
 
+    class JavaProperty(JavaBaseField):
+        decl: Interface.Property = Field(exclude=True, repr=False)
 
+        @computed_field
+        @property
+        @validate(keywords)
+        def getter(self) -> str:
+            return Identifier(f"get_{self.decl.name}").convert(self.config.identifier.method)
+
+        @computed_field
+        @property
+        @validate(keywords)
+        def setter(self) -> str:
+            return Identifier(f"set_{self.decl.name}").convert(self.config.identifier.method)
+
+        @computed_field
+        @property
+        @validate(keywords)
+        def notifier(self) -> str:
+            return Identifier(f"on_{self.decl.name}_changed").convert(self.config.identifier.method)
+        
+        @computed_field
+        @property
+        @validate(keywords)
+        def functional_interface(self) -> str:
+            return Identifier(f"{self.decl.name}_changed_functional_interface").convert(self.config.identifier.type)
+        
+        @property
+        def connection_type(self) -> str:
+            package = ".".join(self.config.package + self.config.support_types_package)
+            if self.config.nonnull_annotation:
+                package += f".{self.config.nonnull_annotation} "
+            else:
+                package += "."
+            return f"{package}Connection"
+        
+        @property
+        def callback_type(self) -> str:
+            package = ".".join(self.config.package + self.config.support_types_package)
+            if self.config.nonnull_annotation:
+                package += f".{self.config.nonnull_annotation} "
+            else:
+                package += "."
+            return f"{package}OnPropertyChangedCallback<{self.compute_data_type(self.decl.type_ref, boxed=True)}>"
+
+        @property
+        def signal_type(self) -> str:
+            package = ".".join(self.config.package + self.config.support_types_package)
+            return f"{package}.Signal<{self.compute_data_type(self.decl.type_ref, boxed=True)}>"
 
 
 class JavaErrorDomain(JavaBaseType):
@@ -277,14 +350,15 @@ class NativeLibLoader:
 
     @property
     def package(self) -> str:
-        return '.'.join(self.config.package + self.config.support_types_package)
+        return ".".join(self.config.package + self.config.support_types_package)
 
     @property
     def native_lib(self) -> str:
         return self.config.native_lib
 
     @property
-    def source(self) -> PurePosixPath: return filename(self.package, self.name)
+    def source(self) -> PurePosixPath:
+        return filename(self.package, self.name)
 
 
 @dataclass
@@ -297,7 +371,8 @@ class NativeCleaner:
 
     @property
     def package(self) -> str:
-        return '.'.join(self.config.package + self.config.support_types_package)
+        return ".".join(self.config.package + self.config.support_types_package)
 
     @property
-    def source(self) -> PurePosixPath: return filename(self.package, self.name)
+    def source(self) -> PurePosixPath:
+        return filename(self.package, self.name)

@@ -13,7 +13,7 @@ jobs:
     name: test
     strategy:
       matrix:
-        os: [ ubuntu-24.04, windows-2022, macos-15 ]
+        os: [ ubuntu-24.04, windows-2025, macos-26 ]
         python-version: [ "3.13" ]
     runs-on: ${{ matrix.os }}
     steps:
@@ -34,9 +34,9 @@ jobs:
         include:
           - os: ubuntu-24.04
             generator: Unix Makefiles
-          - os: windows-2022
+          - os: windows-2025
             generator: Visual Studio 17 2022
-          - os: macos-15
+          - os: macos-26
             generator: Xcode
     runs-on: ${{ matrix.os }}
     steps:
@@ -60,7 +60,7 @@ jobs:
           path: build/_deps
           key: ${{ runner.os }}-cmake-cache-${{ hashFiles('CMakeLists.txt') }}
       - name: Configure CMake
-        run: cmake -G "${{ matrix.generator }}" -B build
+        run: cmake -G "${{ matrix.generator }}" -B build -DCMAKE_OSX_SYSROOT=macosx
       - name: Build
         run: cmake --build build --parallel 4
       - name: Run Tests
@@ -73,16 +73,16 @@ jobs:
           - os: ubuntu-24.04
             package: aar
             target: android
-          - os: windows-2022
+          - os: windows-2025
             package: nuget
             target: windows
-          - os: windows-2022
+          - os: windows-2025
             package: aar
             target: android
-          - os: macos-15
+          - os: macos-26
             package: aar
             target: android
-          - os: macos-15
+          - os: macos-26
             package: swiftpackage
             target: ios ios_simulator macos
     runs-on: ${{ matrix.os }}
@@ -125,7 +125,7 @@ jobs:
     name: CMake test
     strategy:
       matrix:
-        os: [ ubuntu-24.04, windows-2022, macos-15 ]
+        os: [ ubuntu-24.04, windows-2025, macos-26 ]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4

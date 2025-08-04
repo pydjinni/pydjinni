@@ -31,8 +31,6 @@ ref class {{ type_def.cppcli.delegate_name }}CppProxy
 {
 public:
     {{ type_def.cppcli.delegate_name }}CppProxy(const {{ type_def.cpp.typename }}& lambda) : _lambda(new {{ type_def.cpp.typename }}(lambda)) {}
-    ~{{ type_def.cppcli.delegate_name }}CppProxy();
-    !{{ type_def.cppcli.delegate_name }}CppProxy();
 
     {{ type_def.cppcli.return_typename }} Invoke(
     /*>- for param in type_def.parameters -*/
@@ -40,7 +38,7 @@ public:
     /*>- endfor -*/
     );
 private:
-    {{ type_def.cpp.typename }}* _lambda;
+    AutoPtr<{{ type_def.cpp.typename }}> _lambda;
 };
 
 class {{ type_def.cppcli.delegate_name }} {

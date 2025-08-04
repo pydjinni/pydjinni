@@ -37,7 +37,7 @@ public abstract class DeprecationTest {
 
         @Override
         public @org.jetbrains.annotations.NotNull int deprecationTestMethod() {
-            return native_deprecationTestMethod(this.nativeRef );
+            return native_deprecationTestMethod(this.nativeRef);
         }
         private native @org.jetbrains.annotations.NotNull int native_deprecationTestMethod(long _nativeRef);
     }

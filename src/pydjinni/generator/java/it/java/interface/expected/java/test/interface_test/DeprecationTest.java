@@ -37,7 +37,7 @@ public abstract class DeprecationTest {
 
         @Override
         public int deprecationTestMethod() {
-            return native_deprecationTestMethod(this.nativeRef );
+            return native_deprecationTestMethod(this.nativeRef);
         }
         private native int native_deprecationTestMethod(long _nativeRef);
     }

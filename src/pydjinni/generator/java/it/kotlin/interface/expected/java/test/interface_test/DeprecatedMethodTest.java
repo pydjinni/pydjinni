@@ -33,7 +33,7 @@ public abstract class DeprecatedMethodTest {
 
         @Override
         public @org.jetbrains.annotations.NotNull boolean deprecatedTestMethod() {
-            return native_deprecatedTestMethod(this.nativeRef );
+            return native_deprecatedTestMethod(this.nativeRef);
         }
         private native @org.jetbrains.annotations.NotNull boolean native_deprecatedTestMethod(long _nativeRef);
     }

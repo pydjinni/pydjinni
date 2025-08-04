@@ -1,0 +1,44 @@
+cpp_properties = main interface +cpp {
+    static get_instance() -> cpp_properties;
+    # this property has a comment
+    readwrite_property: i64;
+    readonly readonly_property: string;
+    change_readonly_property();
+    optional_property: i64?;
+    # @deprecated this property should not be used!
+    deprecated_property: list<string>;
+}
+
+# property class owned by the host language
+host_properties = interface -cpp {
+    readwrite_property: i64;
+    readonly readonly_property: string;
+    change_readonly_property();
+    optional_property: i64?;
+}
+
+readwrite_property_data = record {
+    change_counter: i32;
+    callback_value: i64;
+    read_value: i64;
+}
+
+readonly_property_data = record {
+    change_counter: i32;
+    callback_value: string;
+    read_value: string;
+}
+
+optional_property_data = record {
+    change_counter: i32;
+    callback_value: i64?;
+    read_value: i64?;
+}
+
+host_property_helper = main interface +cpp {
+    static setup(properties: host_properties) -> host_property_helper;
+    readwrite_property_data() -> readwrite_property_data;
+    modify_host_readwrite_property();
+    readonly_property_data() -> readonly_property_data;
+    optional_property_data() -> optional_property_data;
+}

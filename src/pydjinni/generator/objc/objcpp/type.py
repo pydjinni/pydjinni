@@ -14,6 +14,7 @@
 
 from functools import cached_property
 from pathlib import PurePosixPath
+import re
 
 from pydantic import BaseModel, Field, computed_field
 
@@ -23,6 +24,7 @@ from pydjinni.generator.objc.objcpp import external_types
 from pydjinni.generator.objc.objcpp.config import ObjcppConfig
 from pydjinni.parser.ast import Function, Interface, Record
 from pydjinni.parser.base_models import BaseType, BaseField, BaseCommentModel, TypeReference
+from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
 def translator(type_ref: TypeReference) -> str:
@@ -156,6 +158,12 @@ class ObjcppInterface(ObjcppBaseType):
         decl: Interface.Method = Field(exclude=True, repr=False)
         @property
         def return_type_translator(self): return translator(self.decl.return_type_ref)
+
+    class ObjcppProperty(ObjcppBaseField):
+        decl: Interface.Property = Field(exclude=True, repr=False)
+
+        @property
+        def type_translator(self): return translator(self.decl.type_ref)
 
 
 class ObjcppRecord(ObjcppBaseType):

@@ -18,6 +18,10 @@ limitations under the License.
 //> block content
 //? type_def.comment : type_def.cpp.comment | comment
 class {{ type_def.cpp.deprecated ~ type_def.cpp.name }} {
+//> for property in type_def.properties
+    pydjinni::signals::signal<{{ property.cpp.type_spec }}> _signal_{{ property.cpp.name }}_changed;
+    {{ property.cpp.return_type_spec }} _{{ property.cpp.name }};
+//> endfor
 public:
     virtual ~{{ type_def.cpp.name }}() = default;
 //> for method in type_def.methods
@@ -27,6 +31,19 @@ public:
     /*>- for parameter in method.parameters -*/
         {{ parameter.cpp.type_spec }} {{ parameter.cpp.name ~ (", " if not loop.last) }}
     /*>- endfor */){{ method.cpp.postfix_specifiers() }};
+//> endfor
+//> for property in type_def.properties
+    //? property.comment : property.cpp.comment | comment | indent
+    //? property.deprecated : property.cpp.deprecated
+    [[nodiscard]] {{ property.cpp.return_type_spec }} {{ property.cpp.getter }}() const noexcept;
+    //? property.comment : property.cpp.comment | comment | indent
+    //? property.deprecated : property.cpp.deprecated
+    pydjinni::signals::connection {{ property.cpp.notifier }}(const std::function<void({{ property.cpp.type_spec }})>& callback) noexcept;
+//? property.readonly : "protected:"
+    //? property.comment : property.cpp.comment | comment | indent
+    //? property.deprecated : property.cpp.deprecated
+    virtual void {{ property.cpp.setter }}({{ property.cpp.type_spec }} value) noexcept;
+//? property.readonly : "public:"
 //> endfor
 };
 //> endblock

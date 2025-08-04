@@ -32,6 +32,7 @@
         "**/*.jar"
     ],
     "C_Cpp.default.cppStandard": "c++23",
+    "python.useEnvironmentsExtension": true,
     "cmake.ctest.testSuiteDelimiter": "\\.",
     "cmake.ctest.testExplorerIntegrationEnabled": true,
     "cmake.ctest.allowParallelJobs": true,

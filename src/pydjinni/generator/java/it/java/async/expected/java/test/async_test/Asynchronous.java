@@ -42,37 +42,37 @@ public abstract class Asynchronous {
         public static native java.util.concurrent.CompletableFuture<test.async_test.Asynchronous> getInstance();
         @Override
         public java.util.concurrent.CompletableFuture<Integer> add(int a, int b) {
-            return native_add(this.nativeRef , a, b);
+            return native_add(this.nativeRef, a, b);
         }
         private native java.util.concurrent.CompletableFuture<Integer> native_add(long _nativeRef, int a, int b);
         @Override
         public java.util.concurrent.CompletableFuture<Void> noParametersNoReturn() {
-            return native_noParametersNoReturn(this.nativeRef );
+            return native_noParametersNoReturn(this.nativeRef);
         }
         private native java.util.concurrent.CompletableFuture<Void> native_noParametersNoReturn(long _nativeRef);
         @Override
         public java.util.concurrent.CompletableFuture<Void> throwingException() {
-            return native_throwingException(this.nativeRef );
+            return native_throwingException(this.nativeRef);
         }
         private native java.util.concurrent.CompletableFuture<Void> native_throwingException(long _nativeRef);
         @Override
         public java.util.concurrent.CompletableFuture<Integer> multiplyCallback(test.async_test.MultiplyCallback callback) {
-            return native_multiplyCallback(this.nativeRef , callback);
+            return native_multiplyCallback(this.nativeRef, callback);
         }
         private native java.util.concurrent.CompletableFuture<Integer> native_multiplyCallback(long _nativeRef, test.async_test.MultiplyCallback callback);
         @Override
         public java.util.concurrent.CompletableFuture<Void> noParametersNoReturnCallback(test.async_test.NoParametersNoReturnCallback callback) {
-            return native_noParametersNoReturnCallback(this.nativeRef , callback);
+            return native_noParametersNoReturnCallback(this.nativeRef, callback);
         }
         private native java.util.concurrent.CompletableFuture<Void> native_noParametersNoReturnCallback(long _nativeRef, test.async_test.NoParametersNoReturnCallback callback);
         @Override
         public java.util.concurrent.CompletableFuture<Void> throwingCallback(test.async_test.ThrowingCallback callback) {
-            return native_throwingCallback(this.nativeRef , callback);
+            return native_throwingCallback(this.nativeRef, callback);
         }
         private native java.util.concurrent.CompletableFuture<Void> native_throwingCallback(long _nativeRef, test.async_test.ThrowingCallback callback);
         @Override
         public java.util.concurrent.CompletableFuture<Integer> returningOptional() {
-            return native_returningOptional(this.nativeRef );
+            return native_returningOptional(this.nativeRef);
         }
         private native java.util.concurrent.CompletableFuture<Integer> native_returningOptional(long _nativeRef);
     }

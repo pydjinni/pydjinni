@@ -18,8 +18,22 @@ limitations under the License.
 //> block content
 //? type_def.cppcli.comment : type_def.cppcli.comment | comment
 //? type_def.deprecated : type_def.cppcli.deprecated
-public ref class {{ type_def.cppcli.name }} abstract {
+public ref class {{ type_def.cppcli.name }} abstract {{ ": System::ComponentModel::INotifyPropertyChanged " if type_def.properties }}{
 public:
+    //> if type_def.properties:
+    virtual event System::ComponentModel::PropertyChangedEventHandler ^ PropertyChanged;
+    //> endif
+    //> for property in type_def.properties:
+    //? property.cppcli.comment : property.cppcli.comment | comment | indent
+    //? property.deprecated : property.cppcli.deprecated
+    property {{ property.cppcli.typename }} {{ property.cppcli.property }} {
+        {{ "virtual " if 'cpp' in type_def.targets }}{{ property.cppcli.typename }} get() { return _{{ property.cppcli.name }}; }
+        {{ "protected: " if property.readonly }}{{ "virtual " if 'cpp' in type_def.targets }}void set({{ property.cppcli.typename }} value) { 
+            _{{ property.cppcli.name }} = value;
+            OnPropertyChanged("{{ property.cppcli.property }}");
+         }
+    }
+    //> endfor
     //> for method in type_def.methods:
     //? method.cppcli.comment : method.cppcli.comment | comment | indent
     //? method.deprecated : method.cppcli.deprecated
@@ -40,6 +54,15 @@ internal:
     static CppType ToCpp(CsType cs);
     static CsType FromCppOpt(const CppOptType& cpp);
     static CsType FromCpp(const CppType& cpp) { return FromCppOpt(cpp); }
+    //> for property in type_def.properties:
+    {{ property.cppcli.typename }} _{{ property.cppcli.name }};
+    //> endfor
+    //> if type_def.properties:
+    void OnPropertyChanged(System::String^ propertyName)
+    {
+        PropertyChanged(this, gcnew System::ComponentModel::PropertyChangedEventArgs(propertyName));
+    }
+    //> endif
     //> for method in type_def.methods if method.asynchronous and not method.static:
     ref class {{ method.cppcli.name }}CallbackHandleProxy {
     public:
