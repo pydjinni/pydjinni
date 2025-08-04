@@ -37,10 +37,17 @@ private:
 
 //> if 'java' in type_def.targets:
     class JavaProxy final : ::pydjinni::JavaProxyHandle<JavaProxy>, public {{ type_def.cpp.typename }} {
+        //> for property in type_def.properties:
+        ::pydjinni::GlobalRef<jobject> _{{ property.jni.name }}_connection;
+        //> endfor
     public:
         JavaProxy(JniType j);
         ~JavaProxy();
 
+        //> for property in type_def.properties:
+        void {{ property.cpp.setter }}({{ property.cpp.type_spec }} value) noexcept override;
+        void {{ property.cpp.notifier }}_handler({{ property.cpp.type_spec }} value) noexcept;
+        //> endfor
         //> for method in type_def.methods:
         {{ method.cpp.prefix_specifiers(implementation=True) ~ method.cpp.type_spec }} {{ method.cpp.name }}(
         /*>- for parameter in method.parameters -*/
@@ -53,6 +60,10 @@ private:
     };
 
     const ::pydjinni::GlobalRef<jclass> clazz { ::pydjinni::jniFindClass("{{ type_def.jni.class_descriptor }}") };
+    //> for property in type_def.properties:
+    const jmethodID property_{{ property.jni.name }}_setter { ::pydjinni::jniGetMethodID(clazz.get(), "{{ property.java.setter }}", "{{ property.jni.setter_type_signature }}") };
+    const jmethodID property_{{ property.jni.name }}_notifier { ::pydjinni::jniGetMethodID(clazz.get(), "{{ property.java.notifier }}", "(L{{ callback_type }};)L{{ connection_type }};") };
+    //> endfor
     //> for method in type_def.methods:
     const jmethodID method_{{ method.jni.name }} { ::pydjinni::jniGetMethodID(clazz.get(), "{{ method.java.name }}", "{{ method.jni.type_signature }}") };
     //> endfor

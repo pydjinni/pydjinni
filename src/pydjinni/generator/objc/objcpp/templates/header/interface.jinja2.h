@@ -37,7 +37,9 @@ public:
     static ObjcType fromCppOpt(const CppOptType& cpp);
     static ObjcType fromCpp(const CppType& cpp) { return fromCppOpt(cpp); }
 
+//> if not type_def.properties:
 private:
+//> endif
     class ObjcProxy;
 };
 //> endblock

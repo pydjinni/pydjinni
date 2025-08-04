@@ -28,6 +28,7 @@ from pydantic import BaseModel, Field, computed_field
 from pydjinni.generator.java.jni.config import JniConfig
 from pydjinni.parser.ast import Interface, Parameter, Function
 from pydjinni.parser.base_models import BaseExternalType, BaseType, BaseField, TypeReference
+from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
 class NativeType(StrEnum):
@@ -229,8 +230,18 @@ class JniSymbolicConstantField(JniBaseField):
     @cached_property
     def name(self) -> str: return self.decl.name.convert(self.config.identifier.enum)
 
+class JniParameter(JniBaseField):
+    decl: Parameter = Field(exclude=True, repr=False)
+
+    @cached_property
+    def field_accessor(self): return get_field_accessor(self.decl.type_ref)
+
+    @cached_property
+    def typename(self): return get_typename(self.decl.type_ref)
+
 
 class JniInterface(JniBaseType):
+    decl: Interface = Field(exclude=True, repr=False)
 
     @cached_property
     def header_includes(self) -> set[str]:
@@ -253,6 +264,9 @@ class JniInterface(JniBaseType):
         output = super().source_includes
         if any(method.deprecated for method in self.decl.methods):
             output.add(quote(PurePosixPath("pydjinni/deprecated.hpp")))
+        if self.decl.properties:
+            output.add(quote(PurePosixPath("pydjinni/jni/connection.hpp")))
+            output.add(quote(PurePosixPath("pydjinni/jni/on_property_changed_callback.hpp")))
         return output
 
     class JniMethod(JniBaseField):
@@ -279,15 +293,13 @@ class JniInterface(JniBaseType):
         @cached_property
         def return_type_translator(self) -> str: return translator(self.decl.return_type_ref)
 
+    class JniProperty(JniParameter):
+        decl: Interface.Property = Field(exclude=True, repr=False)
 
-class JniParameter(JniBaseField):
-    decl: Parameter = Field(exclude=True, repr=False)
-
-    @cached_property
-    def field_accessor(self): return get_field_accessor(self.decl.type_ref)
-
-    @cached_property
-    def typename(self): return get_typename(self.decl.type_ref)
+        @property
+        def setter_type_signature(self) -> str:
+            type_signature = self.decl.type_ref.type_def.jni.boxed_type_signature if self.decl.type_ref.optional else self.decl.type_ref.type_def.jni.type_signature
+            return f"({type_signature})V"
 
 
 class JniRecord(JniBaseType):

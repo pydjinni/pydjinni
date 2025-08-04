@@ -32,9 +32,45 @@ limitations under the License.
 {{ type_def.jni.name }}::~{{ type_def.jni.name }}() = default;
 
 //> if 'java' in type_def.targets:
-{{ type_def.jni.name }}::JavaProxy::JavaProxy(JniType j) : Handle(::pydjinni::jniGetThreadEnv(), j) {}
+{{ type_def.jni.name }}::JavaProxy::JavaProxy(JniType j) : Handle(::pydjinni::jniGetThreadEnv(), j) {
+    //> if type_def.properties:
+    ::pydjinni::jni::ScopedJni jni {};
+    const auto& data = ::pydjinni::JniClass<{{ type_def.jni.translator }}>::get();
+    //> for property in type_def.properties:
+    _{{ property.jni.name }}_connection = ::pydjinni::GlobalRef<jobject>(
+        jni.env, 
+        jni.env->CallObjectMethod(Handle::get().get(), data.property_{{ property.jni.name }}_notifier, ::pydjinni::get(::pydjinni::jni::OnPropertyChangedCallback::fromCpp(
+            jni.env, 
+            std::make_shared<::pydjinni::jni::OnPropertyChangedCallbackCppWrapper>(
+                [&](const ::pydjinni::GlobalRef<jobject>& value){
+                    ::pydjinni::jni::ScopedJni jni {};
+                    {{ property.cpp.notifier }}_handler({{ property.jni.translator }}::Boxed::toCpp(jni.env, ({{ property.jni.translator }}::Boxed::JniType) value.get()));
+                }
+            )
+        )))
+    );
+    if(const auto& e = jni.ExceptionOccurred()) {
+        jni.Terminate(e);
+    }
+    //> endfor
+    //> endif
+}
 {{ type_def.jni.name }}::JavaProxy::~JavaProxy() = default;
 
+//> for property in type_def.properties:
+void {{ type_def.jni.name }}::JavaProxy::{{ property.cpp.setter }}({{ property.cpp.type_spec }} value) noexcept {
+    ::pydjinni::jni::ScopedJni jni {};
+    const auto& data = ::pydjinni::JniClass<{{ type_def.jni.translator }}>::get();
+    jni.env->CallVoidMethod(Handle::get().get(), data.property_{{ property.jni.name }}_setter, ::pydjinni::get({{ property.jni.translator }}::fromCpp(jni.env, value)));
+    if(const auto& e = jni.ExceptionOccurred()) {
+        jni.Terminate(e);
+    }
+}
+
+void {{ type_def.jni.name }}::JavaProxy::{{ property.cpp.notifier }}_handler({{ property.cpp.type_spec }} value) noexcept {
+    {{ type_def.jni.name }}::{{ property.cpp.setter }}(value);
+}
+//> endfor
 //> for method in type_def.methods:
 {{ method.cpp.prefix_specifiers(implementation=True) ~ method.cpp.type_spec }} {{ type_def.jni.name }}::JavaProxy::{{ method.cpp.name }}(
 /*>- for parameter in method.parameters -*/
@@ -44,7 +80,7 @@ limitations under the License.
     //> call coroutine(method):
     ::pydjinni::jni::ScopedJni jni {};
     const auto& data = ::pydjinni::JniClass<{{ type_def.jni.translator }}>::get();
-    {{ "auto jret = " if method.return_type_ref or method.asynchronous }}jni.env->{{ method.jni.routine_name }}(Handle::get().get(), data.method_{{ method.java.name }}
+    {{ "auto jret = " if method.return_type_ref or method.asynchronous }}jni.env->{{ method.jni.routine_name }}(Handle::get().get(), data.method_{{ method.jni.name }}
     /*>- for parameter in method.parameters -*/
         , ::pydjinni::get({{ parameter.jni.translator }}::fromCpp(jni.env, {{ parameter.cpp.name }}))
     /*>- endfor -*/
@@ -100,10 +136,38 @@ extern "C" {
     //? type_def.deprecated : "PYDJINNI_ENABLE_WARNINGS"
 }
 
+//> for property in type_def.properties:
+[[maybe_unused]] JNIEXPORT {{ property.jni.typename }} JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_native_1{{ property.java.getter }}(JNIEnv* jniEnv, jobject, jlong nativeRef) {
+    const ::pydjinni::jni::Jni jni { jniEnv };
+    const auto& ref = ::pydjinni::objectFromHandleAddress<{{ type_def.cpp.typename }}>(nativeRef);
+    return ::pydjinni::release({{ property.jni.translator }}::fromCpp(jni.env, ref->{{ property.cpp.getter }}()));
+}
+
+[[maybe_unused]] JNIEXPORT jobject JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_native_1{{ property.java.notifier }}(JNIEnv* jniEnv, jobject, jlong nativeRef, jobject callback) {
+    const ::pydjinni::jni::Jni jni { jniEnv };
+    const auto& ref = ::pydjinni::objectFromHandleAddress<{{ type_def.cpp.typename }}>(nativeRef);
+    const auto globalRef = ::pydjinni::GlobalRef<jobject> { jni.env, callback };
+    return ::pydjinni::release(pydjinni::jni::NativeConnection::fromCpp(jni.env, std::move(ref->{{ property.cpp.notifier }}([globalRef]({{ property.cpp.type_spec }} value){
+         const auto localEnv = ::pydjinni::jniGetThreadEnv();
+         const auto clazz = localEnv->FindClass("{{ callback_type }}");
+         const auto methodId = localEnv->GetMethodID(clazz, "callback", "(Ljava/lang/Object;)V");
+         localEnv->CallVoidMethod(globalRef.get(), methodId, ::pydjinni::get({{ property.jni.translator }}::Boxed::fromCpp(localEnv, value)));
+    }))));
+}
+
+//> if not property.readonly:
+[[maybe_unused]] JNIEXPORT void JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_native_1{{ property.java.setter }}(JNIEnv* jniEnv, jobject, jlong nativeRef, {{ property.jni.typename }} value) {
+    const ::pydjinni::jni::Jni jni { jniEnv };
+    const auto& ref = ::pydjinni::objectFromHandleAddress<{{ type_def.cpp.typename }}>(nativeRef);
+    ref->{{ property.cpp.setter }}({{ property.jni.translator }}::toCpp(jni.env, value));
+}
+//> endif
+//> endfor
+
 //> for method in type_def.methods:
 [[maybe_unused]] JNIEXPORT {{ method.jni.return_type_spec }} JNICALL {{ type_def.jni.jni_prefix }}_00024CppProxy_{{ "native_1" if not method.static }}{{ method.jni.name }}(JNIEnv* jniEnv, {{ "jclass" if method.static else "jobject, jlong nativeRef" }}
     /*>- for parameter in method.parameters -*/
-    , {{ parameter.type_ref.type_def.jni.typename.value }} {{ parameter.jni.name }}
+    , {{ parameter.jni.typename }} {{ parameter.jni.name }}
     /*>- endfor -*/
     ) noexcept {
     const ::pydjinni::jni::Jni jni { jniEnv };

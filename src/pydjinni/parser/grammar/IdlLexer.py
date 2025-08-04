@@ -74,10 +74,10 @@ def serializedATN():
         153,5,105,0,0,153,154,5,110,0,0,154,155,5,103,0,0,155,22,1,0,0,0,
         156,157,5,102,0,0,157,158,5,117,0,0,158,159,5,110,0,0,159,160,5,
         99,0,0,160,161,5,116,0,0,161,162,5,105,0,0,162,163,5,111,0,0,163,
-        164,5,110,0,0,164,24,1,0,0,0,165,166,5,112,0,0,166,167,5,114,0,0,
-        167,168,5,111,0,0,168,169,5,112,0,0,169,170,5,101,0,0,170,171,5,
-        114,0,0,171,172,5,116,0,0,172,173,5,121,0,0,173,26,1,0,0,0,174,175,
-        5,97,0,0,175,176,5,115,0,0,176,177,5,121,0,0,177,178,5,110,0,0,178,
+        164,5,110,0,0,164,24,1,0,0,0,165,166,5,114,0,0,166,167,5,101,0,0,
+        167,168,5,97,0,0,168,169,5,100,0,0,169,170,5,111,0,0,170,171,5,110,
+        0,0,171,172,5,108,0,0,172,173,5,121,0,0,173,26,1,0,0,0,174,175,5,
+        97,0,0,175,176,5,115,0,0,176,177,5,121,0,0,177,178,5,110,0,0,178,
         179,5,99,0,0,179,28,1,0,0,0,180,181,5,101,0,0,181,182,5,114,0,0,
         182,183,5,114,0,0,183,184,5,111,0,0,184,185,5,114,0,0,185,30,1,0,
         0,0,186,187,5,116,0,0,187,188,5,104,0,0,188,189,5,114,0,0,189,190,
@@ -124,7 +124,7 @@ class IdlLexer(Lexer):
     RECORD = 10
     DERIVING = 11
     FUNCTION = 12
-    PROPERTY = 13
+    READONLY = 13
     ASYNC = 14
     ERROR = 15
     THROWS = 16
@@ -155,21 +155,21 @@ class IdlLexer(Lexer):
     literalNames = [ "<INVALID>",
             "'@import'", "'@extern'", "'namespace'", "'enum'", "'flags'", 
             "'static'", "'const'", "'main'", "'interface'", "'record'", 
-            "'deriving'", "'function'", "'property'", "'async'", "'error'", 
+            "'deriving'", "'function'", "'readonly'", "'async'", "'error'", 
             "'throws'", "'->'", "'?'", "'='", "':'", "'('", "')'", "'{'", 
             "'}'", "'>'", "'<'", "';'", "','", "'.'" ]
 
     symbolicNames = [ "<INVALID>",
             "IMPORT", "EXTERN", "NAMESPACE", "ENUM", "FLAGS", "STATIC", 
             "CONST", "MAIN", "INTERFACE", "RECORD", "DERIVING", "FUNCTION", 
-            "PROPERTY", "ASYNC", "ERROR", "THROWS", "ARROW", "OPTIONAL", 
+            "READONLY", "ASYNC", "ERROR", "THROWS", "ARROW", "OPTIONAL", 
             "ASSIGN", "COLON", "LPAREN", "RPAREN", "LBRACE", "RBRACE", "GT", 
             "LT", "SEMI", "COMMA", "DOT", "FILEPATH", "TARGET", "COMMENT", 
             "WS", "ID", "NS_ID" ]
 
     ruleNames = [ "IMPORT", "EXTERN", "NAMESPACE", "ENUM", "FLAGS", "STATIC", 
                   "CONST", "MAIN", "INTERFACE", "RECORD", "DERIVING", "FUNCTION", 
-                  "PROPERTY", "ASYNC", "ERROR", "THROWS", "ARROW", "OPTIONAL", 
+                  "READONLY", "ASYNC", "ERROR", "THROWS", "ARROW", "OPTIONAL", 
                   "ASSIGN", "COLON", "LPAREN", "RPAREN", "LBRACE", "RBRACE", 
                   "GT", "LT", "SEMI", "COMMA", "DOT", "FILEPATH", "TARGET", 
                   "COMMENT", "WS", "ID", "NS_ID", "LetterOrDigit", "Letter" ]

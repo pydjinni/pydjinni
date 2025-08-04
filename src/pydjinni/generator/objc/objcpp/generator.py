@@ -26,7 +26,7 @@ from .type import (
     ObjcppFunction,
     ObjcppInterface,
     ObjcppRecord,
-    ObjcppErrorDomain
+    ObjcppErrorDomain,
 )
 
 
@@ -41,9 +41,10 @@ class ObjcppGenerator(Generator):
         Function: ObjcppFunction,
         Interface: ObjcppInterface,
         Interface.Method: ObjcppInterface.ObjcppMethod,
+        Interface.Property: ObjcppInterface.ObjcppProperty,
         SymbolicConstantField: ObjcppSymbolicConstantField,
         Record: ObjcppRecord,
-        ErrorDomain: ObjcppErrorDomain
+        ErrorDomain: ObjcppErrorDomain,
     }
     writes_header = True
     writes_source = True

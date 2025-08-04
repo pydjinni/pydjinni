@@ -15,22 +15,8 @@ from pathlib import Path
 
 from pydjinni.generator.filters import headers, quote
 from pydjinni.generator.generator import Generator
-from pydjinni.parser.ast import (
-    Interface,
-    Record,
-    Flags,
-    Enum,
-    Function,
-    Parameter,
-    ErrorDomain
-)
-from pydjinni.parser.base_models import (
-    BaseType,
-    BaseField,
-    DataField,
-    SymbolicConstantField,
-    SymbolicConstantType
-)
+from pydjinni.parser.ast import Interface, Record, Flags, Enum, Function, Parameter, ErrorDomain
+from pydjinni.parser.base_models import BaseType, BaseField, DataField, SymbolicConstantField, SymbolicConstantType
 from .config import CppConfig
 from .external_types import external_types
 from .filters import needs_optional
@@ -46,7 +32,7 @@ from .type import (
     CppErrorDomain,
     CppEnum,
     CppFlags,
-    CppSymbolicConstantType
+    CppSymbolicConstantType,
 )
 
 
@@ -59,6 +45,7 @@ class CppGenerator(Generator):
         BaseType: CppBaseType,
         Interface: CppInterface,
         Interface.Method: CppInterface.CppMethod,
+        Interface.Property: CppInterface.CppProperty,
         Record: CppRecord,
         DataField: CppDataField,
         Function: CppFunction,
@@ -68,7 +55,7 @@ class CppGenerator(Generator):
         SymbolicConstantField: CppSymbolicConstantType.CppSymbolicConstantField,
         Parameter: CppParameter,
         ErrorDomain: CppErrorDomain,
-        ErrorDomain.ErrorCode: CppErrorDomain.CppErrorCode
+        ErrorDomain.ErrorCode: CppErrorDomain.CppErrorCode,
     }
     writes_header = True
     writes_source = True
@@ -89,15 +76,18 @@ class CppGenerator(Generator):
 
     def generate_record(self, type_def: Record):
         self.write_header(Path("header/record.jinja2.hpp"), type_def=type_def)
-        if (Record.Deriving.eq in type_def.deriving
-                or Record.Deriving.ord in type_def.deriving
-                or (self.config.string_serialization and not type_def.cpp.base_type)
-                and type_def.fields):
+        if (
+            Record.Deriving.eq in type_def.deriving
+            or Record.Deriving.ord in type_def.deriving
+            or (self.config.string_serialization and not type_def.cpp.base_type)
+            and type_def.fields
+        ):
             self.write_source(Path("source/record.jinja2.cpp"), type_def=type_def)
 
     def generate_interface(self, type_def: Interface):
         self.write_header(Path("header/interface.jinja2.hpp"), type_def=type_def)
+        if type_def.properties:
+            self.write_source(Path("source/interface.jinja2.cpp"), type_def=type_def)
 
     def generate_function(self, type_def: Function):
         self.write_header(Path("header/function.jinja2.hpp"), type_def=type_def)
-

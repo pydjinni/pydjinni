@@ -14,21 +14,8 @@
 
 from pydjinni.generator.filters import quote, headers
 from pydjinni.generator.generator import Generator
-from pydjinni.parser.ast import (
-    Interface,
-    Record,
-    Flags,
-    Enum,
-    Parameter,
-    Function,
-    ErrorDomain
-)
-from pydjinni.parser.base_models import (
-    BaseType,
-    BaseField,
-    SymbolicConstantField,
-    DataField
-)
+from pydjinni.parser.ast import Interface, Record, Flags, Enum, Parameter, Function, ErrorDomain
+from pydjinni.parser.base_models import BaseType, BaseField, SymbolicConstantField, DataField
 from .config import ObjcConfig
 from .external_types import external_types
 from .type import (
@@ -55,13 +42,14 @@ class ObjcGenerator(Generator):
         BaseField: ObjcBaseField,
         Interface: ObjcInterface,
         Interface.Method: ObjcInterface.ObjcMethod,
+        Interface.Property: ObjcInterface.ObjcProperty,
         Function: ObjcFunction,
         SymbolicConstantField: ObjcSymbolicConstantField,
         Record: ObjcRecord,
         DataField: ObjcDataField,
         Parameter: ObjcParameter,
         ErrorDomain: ObjcErrorDomain,
-        ErrorDomain.ErrorCode: ObjcErrorDomain.ObjcErrorCode
+        ErrorDomain.ErrorCode: ObjcErrorDomain.ObjcErrorCode,
     }
     writes_header = True
     writes_source = True
@@ -93,9 +81,7 @@ class ObjcGenerator(Generator):
     def generate_bridging_header(self, ast: list[BaseType]):
         if self.config.swift.bridging_header:
             self.write_header(
-                template="header/bridging_header.jinja2.h",
-                filename=self.config.swift.bridging_header,
-                ast=ast
+                template="header/bridging_header.jinja2.h", filename=self.config.swift.bridging_header, ast=ast
             )
 
     def generate(self, ast: list[BaseType], copy_support_lib_sources: bool = True):

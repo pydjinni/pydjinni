@@ -203,7 +203,7 @@ class Parser(IdlVisitor):
     def visitInterface(self, ctx: IdlParser.InterfaceContext) -> Interface:
         methods: list[Interface.Method] = [self.visit(method) for method in ctx.method()]
         comment, parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
-        properties: list[Interface.Property] = [self.visit(prop) for prop in ctx.prop()]
+        properties: list[Interface.Property] = [self.visit(prop) for prop in ctx.property_()]
         dependencies: list[TypeReference] = []
 
         for method in methods:
@@ -278,7 +278,7 @@ class Parser(IdlVisitor):
     def visitThrowing(self, ctx: IdlParser.ThrowingContext) -> list[TypeReference]:
         return [self.visit(typeRef) for typeRef in ctx.typeRef()]
 
-    def visitProp(self, ctx: IdlParser.PropContext) -> Interface.Property:
+    def visitProperty(self, ctx: IdlParser.PropertyContext) -> Interface.Property:
         comment, parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
         result = Interface.Property(
             name=self.visit(ctx.identifier()),
@@ -286,8 +286,10 @@ class Parser(IdlVisitor):
             identifier_position=self._position(ctx.identifier()),
             comment=comment,
             type_ref=self.visit(ctx.typeRef()),
+            readonly=ctx.READONLY() is not None,
         )
         result._parsed_comment = parsed_comment
+        self.field_decls.append(result)
         return result
 
     def visitTypeRef(self, ctx: IdlParser.TypeRefContext) -> TypeReference:

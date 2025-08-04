@@ -81,12 +81,62 @@ static {{ method.cppcli.typename }} {{ method.cppcli.async_proxy_name }}(
 }
 //> endfor
 
+//> if type_def.properties:
+class {{ type_def.cppcli.name }}CppUnmanagedProxy {
+    gcroot<System::WeakReference^> _managed_proxy;
+    //> for property in type_def.properties:
+    pydjinni::signals::connection _{{ property.cppcli.name }}_connection;
+    //> endfor
+public:
+    {{ type_def.cppcli.name }}CppUnmanagedProxy(gcroot<System::WeakReference^> managed_proxy, std::shared_ptr<{{ type_def.cpp.typename }}> _cppRef)
+    : _managed_proxy(managed_proxy)
+    //> for property in type_def.properties:
+    , _{{ property.cppcli.name }}_connection(std::move(_cppRef->{{ property.cpp.notifier }}([&]({{ property.cpp.type_spec }} value) {  
+        auto managedProxy = dynamic_cast<{{ type_def.cppcli.name }}^>(_managed_proxy->Target);
+        if(managedProxy != nullptr) {
+            managedProxy->_{{ property.cppcli.name }} = {{ property.cppcli.translator }}::FromCpp(value);
+            managedProxy->OnPropertyChanged("{{ property.cppcli.property }}");
+        }
+    })))
+    //> endfor
+    {}
+};
+//> endif
+
 ref class {{ type_def.cppcli.name }}CppProxy : public {{ type_def.cppcli.name }} {
     using CppType = std::shared_ptr<{{ type_def.cpp.typename }}>;
     using HandleType = ::pydjinni::CppProxyCache::Handle<CppType>;
-public:
-    {{ type_def.cppcli.name }}CppProxy(const CppType& cppRef) : _cppRefHandle(new HandleType(cppRef)) {}
 
+    AutoPtr<HandleType> _cppRefHandle;
+    //> if type_def.properties:
+    AutoPtr<{{ type_def.cppcli.name }}CppUnmanagedProxy> _unmanaged_proxy;
+    //> endif
+public:
+    {{ type_def.cppcli.name }}CppProxy(const CppType& cppRef) 
+    : _cppRefHandle(new HandleType(cppRef))
+    //> if type_def.properties:
+    , _unmanaged_proxy(new {{ type_def.cppcli.name }}CppUnmanagedProxy(gcnew System::WeakReference(this), _cppRefHandle->get()))
+    //> endif
+    {
+        //> for property in type_def.properties:
+        _{{ property.cppcli.name }} = {{ property.cppcli.translator }}::FromCpp(_cppRefHandle->get()->{{ property.cpp.getter }}());
+        //> endfor
+    }
+
+    //> for property in type_def.properties:
+    //? property.cppcli.comment : property.cppcli.comment | comment | indent
+    //? property.deprecated : property.cppcli.deprecated
+    property {{ property.cppcli.typename }} {{ property.cppcli.property }} {
+        virtual {{ property.cppcli.typename }} get() override {
+            return _{{ property.cppcli.name }};
+        }
+        //> if not property.readonly:
+        virtual void set({{ property.cppcli.typename }} value) override {
+            _cppRefHandle->get()->{{ property.cpp.setter }}({{ property.cppcli.translator }}::ToCpp(value));
+        }
+        //> endif
+    }
+    //> endfor
     //> for method in type_def.methods if not method.static:
     {{ method.cppcli.typename }} {{ method.cppcli.name }}(
     /*>- for param in method.parameters -*/
@@ -120,19 +170,48 @@ public:
     CppType djinni_private_get_proxied_cpp_object() {
         return _cppRefHandle->get();
     }
-
-private:
-    AutoPtr<HandleType> _cppRefHandle;
 };
+
 //> endif
 //> if 'cppcli' in type_def.targets:
+//> if type_def.properties:
+class {{ type_def.cppcli.name }}CsProxy;
+ref class {{ type_def.cppcli.name }}PropertyChangedEventProxy {
+    {{ type_def.cppcli.name }}CsProxy* _csProxy;
+public:
+    {{ type_def.cppcli.name }}PropertyChangedEventProxy({{ type_def.cppcli.name }}CsProxy* csProxy) : _csProxy(csProxy) {}
+
+    void PropertyChangedEventHandler(System::Object ^ sender, System::ComponentModel::PropertyChangedEventArgs ^ e);
+};
+//> endif
 class {{ type_def.cppcli.name }}CsProxy : public {{ type_def.cpp.typename }} {
     using CsType = {{ type_def.cppcli.typename }}^;
     using CsRefType = ::pydjinni::CsRef<CsType>;
     using HandleType = ::pydjinni::CsProxyCache::Handle<::pydjinni::CsRef<CsType>>;
+    //> if type_def.properties:
+    gcroot<{{ type_def.cppcli.name }}PropertyChangedEventProxy^> _propertyChangedEventProxy;
+    //> endif
 public:
-    {{ type_def.cppcli.name }}CsProxy(CsRefType cs) : m_djinni_private_proxy_handle(std::move(cs)) {}
+    {{ type_def.cppcli.name }}CsProxy(CsRefType cs) : m_djinni_private_proxy_handle(std::move(cs)) {
+        //> if type_def.properties:
+        _propertyChangedEventProxy = gcnew {{ type_def.cppcli.name }}PropertyChangedEventProxy(this);
+        djinni_private_get_proxied_cs_object()->PropertyChanged += gcnew System::ComponentModel::PropertyChangedEventHandler(_propertyChangedEventProxy, &{{ type_def.cppcli.name }}PropertyChangedEventProxy::PropertyChangedEventHandler);
+        //> for property in type_def.properties:
+        {{ type_def.cpp.typename }}::{{ property.cpp.setter }}({{ property.cppcli.translator }}::ToCpp(djinni_private_get_proxied_cs_object()->{{ property.cppcli.property }}));
+        //> endfor
+        //> endif
+    }
     {{ type_def.cppcli.name }}CsProxy(const ::pydjinni::CsRef<System::Object^>& ptr) : {{ type_def.cppcli.name }}CsProxy(CsRefType(dynamic_cast<CsType>(ptr.get()))) {}
+    //> for property in type_def.properties:
+    //> if not property.readonly:
+    void {{ property.cpp.setter }}({{ property.cpp.type_spec }} value) noexcept override {
+        djinni_private_get_proxied_cs_object()->{{ property.cppcli.property }} = {{ property.cppcli.translator }}::FromCpp(value);
+    }
+    //> endif
+    void {{ property.cpp.notifier }}_handler() {
+        {{ type_def.cpp.typename }}::{{ property.cpp.setter }}({{ property.cppcli.translator }}::ToCpp(djinni_private_get_proxied_cs_object()->{{ property.cppcli.property }}));
+    }
+    //> endfor
     //> for method in type_def.methods:
     {{ method.cpp.prefix_specifiers(implementation=True) ~ method.cpp.type_spec }} {{ method.cpp.name }}(
     /*>- for param in method.parameters -*/
@@ -172,6 +251,17 @@ public:
 private:
     HandleType m_djinni_private_proxy_handle;
 };
+//> if type_def.properties:
+void {{ type_def.cppcli.name }}PropertyChangedEventProxy::PropertyChangedEventHandler(System::Object ^ sender, System::ComponentModel::PropertyChangedEventArgs ^ e) {
+    if(_csProxy) {
+        //> for property in type_def.properties:
+        {{ "else " if not loop.first }}if(e->PropertyName == "{{ property.cppcli.property }}") {
+            _csProxy->{{ property.cpp.notifier }}_handler();
+        }
+        //> endfor
+    }
+}
+//> endif
 //> endif
 
 {{ type_def.cppcli.name }}::CppType {{ type_def.cppcli.name }}::ToCpp({{ type_def.cppcli.name }}::CsType cs)

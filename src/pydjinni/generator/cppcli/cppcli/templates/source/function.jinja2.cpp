@@ -22,7 +22,7 @@ limitations under the License.
 //> endfor
 ) {
     //> call cpp_error_handling(type_def)
-    {{ "auto cpp_result = " if type_def.return_type_ref }}(*_lambda)(
+    {{ "auto cpp_result = " if type_def.return_type_ref }}(_lambda.GetRef())(
         //> for param in type_def.parameters:
         {{ param.cppcli.translator }}::ToCpp({{ param.cppcli.name }}){{ "," if not loop.last }}
         //> endfor
@@ -31,16 +31,6 @@ limitations under the License.
     return {{ type_def.return_type_ref.type_def.cppcli.translator }}::FromCpp(cpp_result);
     //> endif
     //> endcall
-}
-
-{{ type_def.cppcli.delegate_name }}CppProxy::~{{ type_def.cppcli.delegate_name }}CppProxy()
-{
-    this->!{{ type_def.cppcli.delegate_name }}CppProxy();
-}
-
-{{ type_def.cppcli.delegate_name }}CppProxy::!{{ type_def.cppcli.delegate_name }}CppProxy()
-{
-    delete _lambda;
 }
 
 {{ type_def.cppcli.delegate_name }}::CppType {{ type_def.cppcli.delegate_name }}::ToCpp(gcroot<{{ type_def.cppcli.delegate_name }}::CsType> delegate)

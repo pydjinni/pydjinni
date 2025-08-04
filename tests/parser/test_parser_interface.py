@@ -60,7 +60,8 @@ def test_parsing_interface(tmp_path: Path):
         "method_throwing_specific_error_and_return() throws application_error -> i8;"
     ]
     property_decls = [
-        "property a: i8;"
+        "a: i8;",
+        "readonly b: i8;"
     ]
     parser, resolver_mock = given(
         tmp_path=tmp_path,
@@ -112,6 +113,11 @@ def test_parsing_interface(tmp_path: Path):
     property_def = interface.properties[0]
     assert property_def.name == "a"
     assert property_def.type_ref.name == "i8"
+    assert not property_def.readonly
+    readonly_property_def = interface.properties[1]
+    assert readonly_property_def.name == "b"
+    assert readonly_property_def.type_ref.name == "i8"
+    assert readonly_property_def.readonly
 
 
 def test_parsing_interface_unknown_target(tmp_path: Path):
@@ -297,7 +303,7 @@ def test_parsing_interface_comment(tmp_path: Path):
                 static init_foo() -> foo;
                 
                 # this is a property
-                property foo: i8;
+                foo: i8;
             }
             """
     )

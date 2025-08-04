@@ -42,7 +42,9 @@ def type_decl(type_ref: TypeReference, parameter: bool = False, boxed: bool = Fa
         optional = type_ref.optional
         typename = type_def.objc.boxed if boxed or optional else type_def.objc.typename
         if type_ref.parameters:
-            generic_types = f'<{", ".join([type_decl(parameter_ref, boxed=True) for parameter_ref in type_ref.parameters])}>'
+            generic_types = (
+                f'<{", ".join([type_decl(parameter_ref, boxed=True) for parameter_ref in type_ref.parameters])}>'
+            )
         if type_def.primitive == BaseExternalType.Primitive.interface:
             if parameter:
                 typename = f"id<{typename}>"
@@ -70,13 +72,16 @@ class ObjcBaseCommentModel(BaseModel):
 
     @cached_property
     def comment(self) -> str:
-        return DocCCommentRenderer(self.config.identifier).render_tokens(*self.decl._parsed_comment).strip() \
-            if self.decl._parsed_comment else ''
+        return (
+            DocCCommentRenderer(self.config.identifier).render_tokens(*self.decl._parsed_comment).strip()
+            if self.decl._parsed_comment
+            else ""
+        )
 
     @property
     def deprecated(self) -> str:
         if isinstance(self.decl.deprecated, str):
-            return 'DEPRECATED_MSG_ATTRIBUTE("' + self.decl.deprecated.replace('\n', r'\n').replace('"', r'\"') + '")'
+            return 'DEPRECATED_MSG_ATTRIBUTE("' + self.decl.deprecated.replace("\n", r"\n").replace('"', r"\"") + '")'
         elif self.decl.deprecated is True:
             return "DEPRECATED_ATTRIBUTE"
         else:
@@ -135,7 +140,7 @@ class ObjcBaseType(ObjcBaseCommentModel):
     @validate(keywords)
     @validate(swift_keywords)
     def namespace(self):
-        return Identifier('_'.join(self.decl.namespace)).convert(self.config.identifier.type)
+        return Identifier("_".join(self.decl.namespace)).convert(self.config.identifier.type)
 
     @cached_property
     def imports(self) -> set[str]:
@@ -157,8 +162,9 @@ class ObjcFunction(ObjcBaseType):
     def typename(self) -> str:
         return_type_decl = type_decl(self.decl.return_type_ref) if self.decl.return_type_ref else "void"
         parameter_type_decls = [
-            f"{type_decl(parameter.type_ref, parameter=True)} {annotation(parameter.type_ref, macro_style=True)}" for
-            parameter in self.decl.parameters]
+            f"{type_decl(parameter.type_ref, parameter=True)} {annotation(parameter.type_ref, macro_style=True)}"
+            for parameter in self.decl.parameters
+        ]
         if not self.decl.cpp.noexcept:
             parameter_type_decls.append("NSError* _Nullable * _Nonnull")
         return f"{return_type_decl} (^)({', '.join(parameter_type_decls)})"
@@ -171,7 +177,8 @@ class ObjcFunction(ObjcBaseType):
 class ObjcBaseClassType(ObjcBaseType):
     @computed_field
     @cached_property
-    def pointer(self) -> bool: return True
+    def pointer(self) -> bool:
+        return True
 
 
 class ObjcBaseField(ObjcBaseCommentModel):
@@ -181,7 +188,8 @@ class ObjcBaseField(ObjcBaseCommentModel):
     @computed_field
     @cached_property
     @validate(keywords)
-    def name(self) -> str: return self.decl.name.convert(self.config.identifier.field)
+    def name(self) -> str:
+        return self.decl.name.convert(self.config.identifier.field)
 
 
 class ObjcRecord(ObjcBaseClassType):
@@ -217,14 +225,20 @@ class ObjcRecord(ObjcBaseClassType):
 
     @cached_property
     def init(self) -> str:
-        return Identifier(f"init_with_{self.decl.fields[0].name}").convert(self.config.identifier.method) \
-            if self.decl.fields else "init"
+        return (
+            Identifier(f"init_with_{self.decl.fields[0].name}").convert(self.config.identifier.method)
+            if self.decl.fields
+            else "init"
+        )
 
     @cached_property
     def convenience_init(self) -> str:
         name = f"{self.decl.name}_base" if self.base_type else self.decl.name
-        return Identifier(f"{name}_with_{self.decl.fields[0].name}").convert(self.config.identifier.method) \
-            if self.decl.fields else self.decl.name.convert(self.config.identifier.method)
+        return (
+            Identifier(f"{name}_with_{self.decl.fields[0].name}").convert(self.config.identifier.method)
+            if self.decl.fields
+            else self.decl.name.convert(self.config.identifier.method)
+        )
 
     @property
     def imports(self) -> set[str]:
@@ -245,38 +259,35 @@ class ObjcDataField(ObjcBaseField):
 
     @cached_property
     def hash_code(self) -> str:
-        if self.decl.type_ref.type_def.primitive in [
-            BaseExternalType.Primitive.enum,
-            BaseExternalType.Primitive.flags
-        ]:
+        if self.decl.type_ref.type_def.primitive in [BaseExternalType.Primitive.enum, BaseExternalType.Primitive.flags]:
             return f"(NSUInteger)self.{self.decl.objc.name}"
-        elif self.decl.type_ref.optional or self.decl.type_ref.type_def.objc.typename == self.decl.type_ref.type_def.objc.boxed:
+        elif (
+            self.decl.type_ref.optional
+            or self.decl.type_ref.type_def.objc.typename == self.decl.type_ref.type_def.objc.boxed
+        ):
             return f"self.{self.decl.objc.name}.hash"
         else:
             return f"(NSUInteger)self.{self.decl.objc.name}"
 
     @cached_property
     def equals(self) -> str:
-        if self.decl.type_ref.type_def.primitive in [
-            BaseExternalType.Primitive.enum,
-            BaseExternalType.Primitive.flags
-        ]:
+        if self.decl.type_ref.type_def.primitive in [BaseExternalType.Primitive.enum, BaseExternalType.Primitive.flags]:
             return f"self.{self.decl.objc.name} == typedOther.{self.decl.objc.name}"
         elif self.decl.type_ref.optional:
             return f"((self.{self.decl.objc.name} == nil && typedOther.{self.decl.objc.name} == nil) || (self.{self.decl.objc.name} != nil && [self.{self.decl.objc.name} isEqual:typedOther.{self.decl.objc.name}]))"
         elif self.decl.type_ref.type_def.objc.typename == self.decl.type_ref.type_def.objc.boxed:
             match self.decl.type_ref.type_def.name:
-                case 'binary':
+                case "binary":
                     return f"[self.{self.decl.objc.name} isEqualToData:typedOther.{self.decl.objc.name}]"
-                case 'list':
+                case "list":
                     return f"[self.{self.decl.objc.name} isEqualToArray:typedOther.{self.decl.objc.name}]"
-                case 'set':
+                case "set":
                     return f"[self.{self.decl.objc.name} isEqualToSet:typedOther.{self.decl.objc.name}]"
-                case 'map':
+                case "map":
                     return f"[self.{self.decl.objc.name} isEqualToDictionary:typedOther.{self.decl.objc.name}]"
-                case 'string':
+                case "string":
                     return f"[self.{self.decl.objc.name} isEqualToString:typedOther.{self.decl.objc.name}]"
-                case 'date':
+                case "date":
                     return f"[self.{self.decl.objc.name} isEqualToDate:typedOther.{self.decl.objc.name}]"
                 case _:
                     return f"[self.{self.decl.objc.name} isEqual:typedOther.{self.decl.objc.name}]"
@@ -288,10 +299,12 @@ class ObjcParameter(ObjcBaseField):
     decl: Parameter = Field(exclude=True, repr=False)
 
     @cached_property
-    def type_decl(self) -> str: return type_decl(self.decl.type_ref, parameter=True)
+    def type_decl(self) -> str:
+        return type_decl(self.decl.type_ref, parameter=True)
 
     @cached_property
-    def annotation(self) -> str: return annotation(self.decl.type_ref)
+    def annotation(self) -> str:
+        return annotation(self.decl.type_ref)
 
 
 class CustomObjcParameter(BaseModel):
@@ -304,7 +317,8 @@ class ObjcSymbolicConstantField(ObjcBaseField):
     @computed_field
     @cached_property
     @validate(keywords)
-    def name(self) -> str: return self.decl.name.convert(self.config.identifier.enum)
+    def name(self) -> str:
+        return self.decl.name.convert(self.config.identifier.enum)
 
     @property
     def attributes(self) -> str:
@@ -329,17 +343,11 @@ class ObjcInterface(ObjcBaseClassType):
         def parameters(self) -> list[ObjcParameter | CustomObjcParameter]:
             output = [parameter.objc for parameter in self.decl.parameters]
             if self.decl.asynchronous:
-                output.append(CustomObjcParameter(
-                    name="completion",
-                    annotation="",
-                    type_decl=self.completion_handler
-                ))
+                output.append(CustomObjcParameter(name="completion", annotation="", type_decl=self.completion_handler))
             elif not self.decl.cpp.noexcept:
-                output.append(CustomObjcParameter(
-                    name="error",
-                    annotation="",
-                    type_decl="NSError* _Nullable * _Nonnull"
-                ))
+                output.append(
+                    CustomObjcParameter(name="error", annotation="", type_decl="NSError* _Nullable * _Nonnull")
+                )
             return output
 
         @property
@@ -381,6 +389,25 @@ class ObjcInterface(ObjcBaseClassType):
                 output.append(f"NS_SWIFT_NAME({self._swift_name})")
             return output
 
+    class ObjcProperty(ObjcBaseField):
+        decl: Interface.Property = Field(exclude=True, repr=False)
+
+        @cached_property
+        def type_decl(self) -> str:
+            return type_decl(self.decl.type_ref)
+
+        @property
+        def setter(self) -> str:
+            return Identifier(f"set_{self.decl.name}").convert(self.config.identifier.method)
+
+        @property
+        def annotation(self) -> str:
+            return annotation(self.decl.type_ref)
+
+        @property
+        def read_access(self) -> str:
+            return "readonly" if self.decl.readonly else "readwrite"
+
 
 class ObjcErrorDomain(ObjcBaseClassType):
     decl: ErrorDomain = Field(exclude=True, repr=False)
@@ -388,7 +415,8 @@ class ObjcErrorDomain(ObjcBaseClassType):
     class ObjcErrorCode(ObjcBaseCommentModel):
         @cached_property
         @validate(keywords)
-        def name(self) -> str: return self.decl.name.convert(self.config.identifier.type)
+        def name(self) -> str:
+            return self.decl.name.convert(self.config.identifier.type)
 
     @dataclass
     class UserInfoKey:
@@ -404,5 +432,8 @@ class ObjcErrorDomain(ObjcBaseClassType):
         return [
             ObjcErrorDomain.UserInfoKey(
                 self.typename + error_code.objc.name + parameter.name.convert(self.config.identifier.type),
-                self.swift_typename + error_code.objc.name + parameter.name.convert(self.config.identifier.type)
-            ) for error_code in self.decl.error_codes for parameter in error_code.parameters]
+                self.swift_typename + error_code.objc.name + parameter.name.convert(self.config.identifier.type),
+            )
+            for error_code in self.decl.error_codes
+            for parameter in error_code.parameters
+        ]

@@ -23,6 +23,9 @@ See the License for the specific language governing permissions and
 //> else:
 @interface {{ type_def.objc.name }} : NSObject
 //> endif
+//> for property in type_def.properties:
+@property ({{ property.objc.read_access }}{{ (", " ~ property.objc.annotation) if property.objc.annotation }}) {{ property.objc.type_decl }} {{ property.objc.name }};
+//> endfor
 //> for method in type_def.methods
 //? method.objc.comment : method.objc.comment | comment
 {{ method.objc.specifier }} ({{ (((method.objc.annotation ~ " ") if method.objc.annotation) ~ method.objc.type_decl) if not method.asynchronous else "void" }}){{ method.objc.name }}

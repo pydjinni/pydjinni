@@ -3,6 +3,7 @@
 #pragma once
 #include "CppCliFoo.hpp"
 #include "function_cpp_cppcli_java_objc_foo_bool.hpp"
+#include "pydjinni/cppcli/AutoPtr.hpp"
 #include "pydjinni/cppcli/Marshal.hpp"
 #include <functional>
 #include <vcclr.h>
@@ -11,12 +12,10 @@ ref class _FunctionCppCppcliJavaObjcFooBoolDelegateCppProxy
 {
 public:
     _FunctionCppCppcliJavaObjcFooBoolDelegateCppProxy(const std::function<bool(::test::function::Foo)>& lambda) : _lambda(new std::function<bool(::test::function::Foo)>(lambda)) {}
-    ~_FunctionCppCppcliJavaObjcFooBoolDelegateCppProxy();
-    !_FunctionCppCppcliJavaObjcFooBoolDelegateCppProxy();
 
     bool Invoke(::Test::Function::CppCli::Foo^ param);
 private:
-    std::function<bool(::test::function::Foo)>* _lambda;
+    AutoPtr<std::function<bool(::test::function::Foo)>> _lambda;
 };
 
 class _FunctionCppCppcliJavaObjcFooBoolDelegate {

@@ -154,8 +154,8 @@ class IdlVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by IdlParser#prop.
-    def visitProp(self, ctx:IdlParser.PropContext):
+    # Visit a parse tree produced by IdlParser#property.
+    def visitProperty(self, ctx:IdlParser.PropertyContext):
         return self.visitChildren(ctx)
 
 

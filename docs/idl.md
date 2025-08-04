@@ -169,6 +169,22 @@ Asynchronous methods are implemented as C++ coroutines and are mapped to similar
 When calling an asynchronous method in C++, the coroutine will automatically continue execution in a separate thread managed by the host language's default thread pool.
 This provides a convenient programming model for non-blocking execution of long-running tasks, such as network requests or file I/O operations across language boundaries.
 
+### Properties { .new-badge }
+
+- .NET: Do **not** override properties defined in the IDL! Make sure to initialize them with default values in the constructor:
+  ```cs
+  class PersonImpl : Person {
+    // ❌ Do not override properties!
+    public override string Name { get; set; } = "Default value";
+    // ✅ Initialize with default values in the constructor instead!
+    public PersonImpl()
+    {
+        Name = "Default value";
+    }
+  }
+  ```
+
+
 ## Errors { .new-badge }
 
 Errors are specialized exception types that can optionally transport additional error data.

@@ -41,12 +41,12 @@ public abstract class OptionalInterface {
         public static native test.interface_test.@org.jetbrains.annotations.Nullable OptionalInterface getNullInstance();
         @Override
         public @org.jetbrains.annotations.Nullable String optionalParameter(@org.jetbrains.annotations.Nullable String param) {
-            return native_optionalParameter(this.nativeRef , param);
+            return native_optionalParameter(this.nativeRef, param);
         }
         private native @org.jetbrains.annotations.Nullable String native_optionalParameter(long _nativeRef, @org.jetbrains.annotations.Nullable String param);
         @Override
         public @org.jetbrains.annotations.Nullable String optionalNullParameter(@org.jetbrains.annotations.Nullable String param) {
-            return native_optionalNullParameter(this.nativeRef , param);
+            return native_optionalNullParameter(this.nativeRef, param);
         }
         private native @org.jetbrains.annotations.Nullable String native_optionalNullParameter(long _nativeRef, @org.jetbrains.annotations.Nullable String param);
     }

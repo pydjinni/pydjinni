@@ -30,7 +30,7 @@ from pydjinni.parser.base_models import (
     BaseExternalType,
     DataField,
     SymbolicConstantType,
-    BaseCommentModel
+    BaseCommentModel,
 )
 from pydjinni.parser.identifier import IdentifierType as Identifier
 
@@ -40,12 +40,7 @@ def append_if(lst: list, item, condition) -> list:
 
 
 class CppExternalType(BaseModel):
-    typename: str = Field(
-        description="Must be a valid C++ type identifier",
-        examples=[
-            "int8_t", "::some::Type"
-        ]
-    )
+    typename: str = Field(description="Must be a valid C++ type identifier", examples=["int8_t", "::some::Type"])
     header: PurePosixPath = None
     by_value: bool = False
 
@@ -53,7 +48,7 @@ class CppExternalType(BaseModel):
 def deprecated(decl: BaseCommentModel, prefix: str = "", postfix: str = ""):
     message = ""
     if isinstance(decl.deprecated, str):
-        message = '("' + decl.deprecated.replace('\n', r'\n').replace('"', r'\"') + '")'
+        message = '("' + decl.deprecated.replace("\n", r"\n").replace('"', r"\"") + '")'
     return f"{prefix}[[deprecated{message}]]{postfix}" if decl.deprecated else ""
 
 
@@ -81,8 +76,11 @@ class CppBaseCommentModel(BaseModel):
 
     @cached_property
     def comment(self):
-        return DoxygenCommentRenderer(self.config.identifier).render_tokens(*self.decl._parsed_comment).strip() \
-            if self.decl._parsed_comment else ''
+        return (
+            DoxygenCommentRenderer(self.config.identifier).render_tokens(*self.decl._parsed_comment).strip()
+            if self.decl._parsed_comment
+            else ""
+        )
 
     @property
     def deprecated(self):
@@ -100,9 +98,10 @@ class CppBaseType(CppBaseCommentModel):
     @cached_property
     @validate(keywords, separator="::")
     def namespace(self):
-        return '::'.join(
-            self.config.namespace + [identifier.convert(self.config.identifier.namespace) for
-                                     identifier in self.decl.namespace])
+        return "::".join(
+            self.config.namespace
+            + [identifier.convert(self.config.identifier.namespace) for identifier in self.decl.namespace]
+        )
 
     @computed_field
     @cached_property
@@ -115,13 +114,17 @@ class CppBaseType(CppBaseCommentModel):
     @computed_field
     @cached_property
     def header(self) -> PurePosixPath:
-        return PurePosixPath(
-            *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}"
+        return (
+            PurePosixPath(*self.decl.namespace)
+            / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}"
+        )
 
     @cached_property
     def source(self) -> PurePosixPath:
-        return PurePosixPath(
-            *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.source_extension}"
+        return (
+            PurePosixPath(*self.decl.namespace)
+            / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.source_extension}"
+        )
 
     @computed_field
     @cached_property
@@ -134,20 +137,19 @@ class CppBaseType(CppBaseCommentModel):
 
     @property
     def header_includes(self) -> set[str]:
-        dependency_headers = headers(self.decl.dependencies, 'cpp')
+        dependency_headers = headers(self.decl.dependencies, "cpp")
         if any(dependency.optional for dependency in self.decl.dependencies):
             dependency_headers.add("<optional>")
         if self.config.not_null.header and any(
-                not dependency.optional and dependency.type_def.primitive == BaseExternalType.Primitive.interface for
-                dependency in self.decl.dependencies):
+            not dependency.optional and dependency.type_def.primitive == BaseExternalType.Primitive.interface
+            for dependency in self.decl.dependencies
+        ):
             dependency_headers.add(self.config.not_null.header)
         return dependency_headers
 
     @property
     def source_includes(self) -> set[str]:
-        return {
-            quote(self.header)
-        }
+        return {quote(self.header)}
 
 
 class CppBaseField(CppBaseCommentModel):
@@ -157,10 +159,12 @@ class CppBaseField(CppBaseCommentModel):
     @computed_field
     @cached_property
     @validate(keywords)
-    def name(self) -> str: return self.decl.name.convert(self.config.identifier.field)
+    def name(self) -> str:
+        return self.decl.name.convert(self.config.identifier.field)
 
     @property
-    def deprecated(self): return deprecated(self.decl, prefix=" ")
+    def deprecated(self):
+        return deprecated(self.decl, prefix=" ")
 
 
 class CppInterface(CppBaseType):
@@ -180,6 +184,8 @@ class CppInterface(CppBaseType):
         dependency_headers = super().header_includes | {"<memory>"}
         if any(method.asynchronous for method in self.decl.methods):
             dependency_headers.add(quote(PurePosixPath("pydjinni/coroutine/task.hpp")))
+        if self.decl.properties:
+            dependency_headers.add(quote(PurePosixPath("pydjinni/signals.hpp")))
         return dependency_headers
 
     class CppMethod(CppBaseField):
@@ -231,6 +237,39 @@ class CppInterface(CppBaseType):
         def noexcept(self) -> bool:
             return self.decl.throwing is None
 
+    class CppProperty(CppBaseField):
+        decl: Interface.Property = Field(exclude=True, repr=False)
+
+        @computed_field
+        @property
+        @validate(keywords)
+        def getter(self) -> str:
+            return Identifier(f"get_{self.decl.name}").convert(self.config.identifier.method)
+
+        @computed_field
+        @property
+        @validate(keywords)
+        def setter(self) -> str:
+            return Identifier(f"set_{self.decl.name}").convert(self.config.identifier.method)
+
+        @computed_field
+        @property
+        @validate(keywords)
+        def notifier(self) -> str:
+            return Identifier(f"on_{self.decl.name}_changed").convert(self.config.identifier.method)
+
+        @cached_property
+        def type_spec(self):
+            return self._type_specifier(self.decl.type_ref, is_parameter=True, use_notnull=True)
+
+        @cached_property
+        def return_type_spec(self):
+            return self._type_specifier(self.decl.type_ref, is_parameter=False, use_notnull=True)
+
+        @property
+        def deprecated(self):
+            return deprecated(self.decl, postfix=" ")
+
 
 class CppSymbolicConstantType(CppBaseType):
     decl: SymbolicConstantType = Field(exclude=True, repr=False)
@@ -248,7 +287,8 @@ class CppSymbolicConstantType(CppBaseType):
         @computed_field
         @cached_property
         @validate(keywords)
-        def name(self) -> str: return self.decl.name.convert(self.config.identifier.enum)
+        def name(self) -> str:
+            return self.decl.name.convert(self.config.identifier.enum)
 
 
 class CppEnum(CppSymbolicConstantType):
@@ -324,8 +364,10 @@ class CppRecord(CppBaseType):
 
     @cached_property
     def derived_header(self) -> PurePosixPath:
-        return PurePosixPath(
-            *self.decl.namespace) / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}"
+        return (
+            PurePosixPath(*self.decl.namespace)
+            / f"{self.decl.name.convert(self.config.identifier.file)}.{self.config.header_extension}"
+        )
 
     @property
     def header_includes(self) -> set[str]:
@@ -346,15 +388,17 @@ class CppRecord(CppBaseType):
 
     @property
     def constructor_comment(self):
-        return '\n'.join(
-            [f"@param {field.cpp.name} {field.cpp.comment}" for field in self.decl.fields if field.comment is not None])
+        return "\n".join(
+            [f"@param {field.cpp.name} {field.cpp.comment}" for field in self.decl.fields if field.comment is not None]
+        )
 
 
 class CppDataField(CppBaseField):
     decl: DataField = Field(exclude=True, repr=False)
 
     @cached_property
-    def type_spec(self): return self._type_specifier(self.decl.type_ref)
+    def type_spec(self):
+        return self._type_specifier(self.decl.type_ref)
 
 
 class CppFunction(CppBaseType):
@@ -362,32 +406,40 @@ class CppFunction(CppBaseType):
 
     @computed_field
     @cached_property
-    def typename(self) -> str: return f"std::function<{self._type_specifier(self.decl.return_type_ref)}" \
-                                      f"({','.join([self._type_specifier(parameter.type_ref) for parameter in self.decl.parameters])})>"
+    def typename(self) -> str:
+        return (
+            f"std::function<{self._type_specifier(self.decl.return_type_ref)}"
+            f"({','.join([self._type_specifier(parameter.type_ref) for parameter in self.decl.parameters])})>"
+        )
 
     @computed_field
     @cached_property
-    def by_value(self) -> bool: return False
+    def by_value(self) -> bool:
+        return False
 
     @cached_property
-    def proxy(self): return "cpp" in self.decl.targets
+    def proxy(self):
+        return "cpp" in self.decl.targets
 
     @cached_property
-    def type_spec(self): return self._type_specifier(self.decl.return_type_ref)
+    def type_spec(self):
+        return self._type_specifier(self.decl.return_type_ref)
 
     @cached_property
     def header_includes(self) -> set[str]:
         return super().header_includes | {"<functional>"}
 
     @cached_property
-    def noexcept(self) -> bool: return self.decl.throwing is None
+    def noexcept(self) -> bool:
+        return self.decl.throwing is None
 
 
 class CppParameter(CppBaseField):
     decl: Parameter = Field(exclude=True, repr=False)
 
     @cached_property
-    def type_spec(self): return self._type_specifier(self.decl.type_ref, is_parameter=True, use_notnull=True)
+    def type_spec(self):
+        return self._type_specifier(self.decl.type_ref, is_parameter=True, use_notnull=True)
 
 
 class CppErrorDomain(CppBaseType):
@@ -408,6 +460,10 @@ class CppErrorDomain(CppBaseType):
     class CppErrorCode(CppBaseType):
         @property
         def constructor_comment(self):
-            return '\n'.join(
-                [f"@param {parameter.cpp.name} {parameter.cpp.comment}" for parameter in self.decl.parameters if
-                 parameter.comment is not None])
+            return "\n".join(
+                [
+                    f"@param {parameter.cpp.name} {parameter.cpp.comment}"
+                    for parameter in self.decl.parameters
+                    if parameter.comment is not None
+                ]
+            )

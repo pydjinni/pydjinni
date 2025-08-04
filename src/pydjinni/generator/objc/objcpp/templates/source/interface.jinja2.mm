@@ -29,11 +29,23 @@ limitations under the License.
 
 @implementation {{ type_def.objc.typename ~ ("CppProxy" if "objc" in type_def.targets) }} {
     ::pydjinni::CppProxyCache::Handle<std::shared_ptr<{{ type_def.cpp.typename }}>> _cppRefHandle;
+    //> for property in type_def.properties:
+    std::unique_ptr<pydjinni::signals::connection> _connection_{{ property.objc.name }};
+    {{ property.objc.type_decl }} _{{ property.objc.name }};
+    //> endfor
 }
 
 - (id)initWithCpp:(const std::shared_ptr<{{ type_def.cpp.typename }}>&)cppRef {
     if (self = [super init]) {
         _cppRefHandle.assign(cppRef);
+        //> for property in type_def.properties:
+        _connection_{{ property.objc.name }} = std::make_unique<pydjinni::signals::connection>(std::move(_cppRefHandle.get()->{{ property.cpp.notifier }}([self]({{ property.cpp.type_spec}} value){
+            [self willChangeValueForKey:@"{{ property.objc.name }}"];
+            _{{ property.objc.name }} = {{ property.objcpp.type_translator }}::fromCpp(value);
+            [self didChangeValueForKey:@"{{ property.objc.name }}"];
+        })));
+        _{{ property.objc.name }} = {{ property.objcpp.type_translator }}::fromCpp(_cppRefHandle.get()->{{ property.cpp.getter }}());
+        //> endfor
     }
     return self;
 }
@@ -99,6 +111,17 @@ limitations under the License.
 }
 //> endfor
 
+//> for property in type_def.properties:
+- ({{ (property.objc.annotation ~ " ") if property.objc.annotation }}{{ property.objc.type_decl }}){{ property.objc.name }} {
+    return _{{ property.objc.name }};
+}
+//> if not property.readonly
+- (void){{ property.objc.setter }}:({{ property.objc.annotation }} {{ property.objc.type_decl }}){{ property.objc.name }} {
+    _cppRefHandle.get()->{{ property.cpp.setter }}({{ property.objcpp.type_translator }}::toCpp({{ property.objc.name }}));
+}
+//> endif
+//> endfor
+
 /*> if "objc" not in type_def.targets */
 namespace {{ type_def.objcpp.namespace }} {
 
@@ -118,15 +141,47 @@ auto {{ type_def.objcpp.translator }}::fromCppOpt(const CppOptType& cpp) -> Objc
 } // namespace {{ type_def.objcpp.namespace }}
 /*> endif */
 @end
+
+//> if "objc" in type_def.targets and type_def.properties:
+static void *{{ type_def.objc.typename }}PropertyKVOContext = &{{ type_def.objc.typename }}PropertyKVOContext;
+
+@interface {{ type_def.objc.typename }}PropertyObserver : NSObject
+- (instancetype)initWithTarget:(id)target cppProxy:({{ type_def.objcpp.namespace }}::{{ type_def.objcpp.name }}::ObjcProxy*)cppProxy;
+@end
+//> endif
 //> endblock
 
 //> block content
 //> if "objc" in type_def.targets
 class {{ type_def.objcpp.name }}::ObjcProxy final : public {{ type_def.cpp.typename }}, private ::pydjinni::ObjcProxyBase<ObjcType> {
     friend class {{ type_def.objcpp.translator }};
+    //> if type_def.properties:
+    {{ type_def.objc.typename }}PropertyObserver* _observer;
+    //> endif
 public:
     using ObjcProxyBase::ObjcProxyBase;
-    //> for method in type_def.methods
+
+    //> if type_def.properties:
+    ObjcProxy(ObjcType objc) : ObjcProxyBase(objc) {
+        @autoreleasepool {
+            _observer = [[{{ type_def.objc.typename }}PropertyObserver alloc] initWithTarget: objc cppProxy:this];
+        }
+    }
+    //> endif
+
+    //> for property in type_def.properties:
+    void {{ property.cpp.notifier }}_handler({{ property.cpp.type_spec }} value) noexcept {
+        {{ type_def.cpp.typename }}::{{ property.cpp.setter }}(value);
+    }
+    //> if not property.readonly:
+    void {{ property.cpp.setter }}({{ property.cpp.type_spec }} value) noexcept override {
+        @autoreleasepool {
+            djinni_private_get_proxied_objc_object().{{ property.objc.name }} = {{ property.objcpp.translator }}::fromCpp(value);
+        }
+    }
+    //> endif
+    //> endfor
+    //> for method in type_def.methods:
     //? method.deprecated : "[[deprecated]]"
     {{ method.cpp.prefix_specifiers(implementation=True) ~ method.cpp.type_spec }} {{ method.cpp.name }}(
     /*>- for parameter in method.parameters -*/
@@ -200,5 +255,53 @@ auto {{ type_def.objcpp.name }}::fromCppOpt(const CppOptType& cpp) -> ObjcType {
     }
     return dynamic_cast<ObjcProxy&>(*cpp).djinni_private_get_proxied_objc_object();
 }
+//> endif
+//> endblock
+
+//> block post_global
+//> if "objc" in type_def.targets and type_def.properties:
+@implementation {{ type_def.objc.typename }}PropertyObserver {
+    __weak id _target;
+    {{ type_def.objcpp.namespace }}::{{ type_def.objcpp.name }}::ObjcProxy* _cppProxy;
+}
+- (instancetype)initWithTarget:(id)target cppProxy:({{ type_def.objcpp.namespace }}::{{ type_def.objcpp.name }}::ObjcProxy*)cppProxy {
+    if (self = [super init]) {
+        _target = target;
+        _cppProxy = cppProxy;
+    }
+    if(_target) {
+        //> for property in type_def.properties:
+        [_target addObserver:self
+                forKeyPath:@"{{ property.objc.name }}"
+                    options:(NSKeyValueObservingOptionNew)
+                    context:{{ type_def.objc.typename }}PropertyKVOContext];
+        //> endfor
+    }
+    return self;
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary *)change
+                       context:(void *)context {
+    if (_cppProxy && context == {{ type_def.objc.typename }}PropertyKVOContext) {
+        //> for property in type_def.properties:
+        {{ "else " if not loop.first }}if ([keyPath isEqualToString:@"{{ property.objc.name }}"]) {
+            id value = change[NSKeyValueChangeNewKey];
+            _cppProxy->{{ property.cpp.notifier }}_handler({{ property.objcpp.translator }}::Boxed::toCpp({{ "(value == [NSNull null]) ? nil : value" if property.type_ref.optional else "value" }}));
+        }
+        //> endfor
+    }
+}
+
+- (void)dealloc {
+    if(_target) {
+        //> for property in type_def.properties:
+        [_target removeObserver:self forKeyPath:@"{{ property.objc.name }}" context:{{ type_def.objc.typename }}PropertyKVOContext];
+        //> endfor
+    }
+}
+
+@end
 //> endif
 //> endblock

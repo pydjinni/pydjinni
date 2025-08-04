@@ -1,0 +1,30 @@
+/*#
+Copyright 2024 jothepro
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+#*/
+#include {{ header_path | quote }}
+#include "pydjinni/jni/jni.hpp"
+
+extern "C" {
+
+[[maybe_unused]] JNIEXPORT void JNICALL {{ jni_prefix }}_00024CleanupTask_nativeDestroy(JNIEnv* jniEnv, jobject /*this*/, jlong nativeRef) noexcept {
+    delete reinterpret_cast<::pydjinni::CppProxyHandle<::pydjinni::jni::OnPropertyChangedCallbackCppWrapper>*>(nativeRef);
+}
+
+[[maybe_unused]] JNIEXPORT void JNICALL {{ jni_prefix }}_native_1callback(JNIEnv* jniEnv, jobject, jlong nativeRef, jobject value) {
+    const ::pydjinni::jni::Jni jni { jniEnv };
+    ::pydjinni::objectFromHandleAddress<::pydjinni::jni::OnPropertyChangedCallbackCppWrapper>(nativeRef)->callback(::pydjinni::GlobalRef<jobject>(jni.env, value));
+}
+
+}

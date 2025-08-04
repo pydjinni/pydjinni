@@ -13,21 +13,8 @@
 # limitations under the License.
 
 from pydjinni.generator.generator import Generator
-from pydjinni.parser.ast import (
-    Interface,
-    Record,
-    Flags,
-    Enum,
-    Function,
-    ErrorDomain
-)
-from pydjinni.parser.base_models import (
-    BaseType,
-    BaseField,
-    DataField,
-    SymbolicConstantField,
-    SymbolicConstantType
-)
+from pydjinni.parser.ast import Interface, Record, Flags, Enum, Function, ErrorDomain
+from pydjinni.parser.base_models import BaseType, BaseField, DataField, SymbolicConstantField, SymbolicConstantType
 from .config import CppCliConfig
 from .external_types import external_types
 from .type import (
@@ -39,7 +26,7 @@ from .type import (
     CppCliSymbolicConstant,
     CppCliFunction,
     CppCliInterface,
-    CppCliErrorDomain
+    CppCliErrorDomain,
 )
 from pydjinni.generator.filters import quote, headers
 
@@ -56,10 +43,11 @@ class CppCliGenerator(Generator):
         DataField: CppCliDataField,
         Interface: CppCliInterface,
         Interface.Method: CppCliInterface.CppCliMethod,
+        Interface.Property: CppCliInterface.CppCliProperty,
         SymbolicConstantField: CppCliSymbolicConstant.Field,
         SymbolicConstantType: CppCliSymbolicConstant,
         Function: CppCliFunction,
-        ErrorDomain: CppCliErrorDomain
+        ErrorDomain: CppCliErrorDomain,
     }
     filters = [quote, headers]
     support_lib_commons = True

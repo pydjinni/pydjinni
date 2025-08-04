@@ -60,7 +60,7 @@ public abstract class Helper {
         public static native java.util.concurrent.CompletableFuture<Void> throwingAsyncCallbackError(test.error.AsyncThrowingCallback callback);
         @Override
         public void nonstaticThrowingError() {
-            native_nonstaticThrowingError(this.nativeRef );
+            native_nonstaticThrowingError(this.nativeRef);
         }
         private native void native_nonstaticThrowingError(long _nativeRef);
     }
