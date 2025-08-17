@@ -4,11 +4,10 @@ import kotlinx.coroutines.future.future
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import test.async_test.Asynchronous
-import test.async_test.MultiplyCallback
-import test.async_test.NoParametersNoReturnCallback
-import test.async_test.ThrowingCallback
-import java.util.concurrent.CompletableFuture
+import test.async_test.kotlin.Asynchronous
+import test.async_test.kotlin.MultiplyCallback
+import test.async_test.kotlin.NoParametersNoReturnCallback
+import test.async_test.kotlin.ThrowingCallback
 import java.util.concurrent.ExecutionException
 
 class TestAsync {
@@ -16,49 +15,47 @@ class TestAsync {
 
     @BeforeEach
     fun setup() = runTest {
-        instance = Asynchronous.getInstance().await()
+        instance = Asynchronous.getInstance()
     }
 
     @Test
     fun testAsyncAdd() = runTest {
-        val result = instance.add(40, 2).await()
+        val result = instance.add(a=40, b=2)
         assertEquals(42, result)
     }
 
     @Test
     fun testNoParametersNoReturn() = runTest {
-        instance.noParametersNoReturn().await()
+        instance.noParametersNoReturn()
     }
 
     @Test
     fun testAsyncCallback() = runTest {
-        val result = instance.multiplyCallback(object : MultiplyCallback() {
-            override fun invoke(a: Int, b: Int): CompletableFuture<Int> {
-                return future { a * b }
+        val result = instance.multiplyCallback(object : MultiplyCallback {
+            override suspend fun invoke(a: Int, b: Int): Int {
+                return a * b
             }
-        }).await()
+        })
         assertEquals(42, result)
     }
 
     @Test
     fun testAsyncNoParametersNoReturnCallback() = runTest {
-        val callback = object : NoParametersNoReturnCallback() {
+        val callback = object : NoParametersNoReturnCallback {
             var callbackInvoked = false
 
-            override fun invoke(): CompletableFuture<Void> {
-                return CompletableFuture.runAsync {
-                    callbackInvoked = true
-                }
+            override suspend fun invoke() {
+                callbackInvoked = true
             }
         }
-        instance.noParametersNoReturnCallback(callback).await()
+        instance.noParametersNoReturnCallback(callback)
         assertTrue(callback.callbackInvoked)
     }
 
     @Test
     fun testAsyncThrowingException() = runTest {
         val result = runCatching {
-            instance.throwingException().await()
+            instance.throwingException()
         }.onFailure {
             assertInstanceOf(RuntimeException::class.java, it)
             assertEquals(it.message, "asynchronous runtime error")
@@ -68,15 +65,13 @@ class TestAsync {
 
     @Test
     fun testAsyncThrowingExceptionCallback() = runTest {
-        val callback = object : ThrowingCallback() {
-            override fun invoke(): CompletableFuture<Void> {
-                return CompletableFuture.runAsync {
-                    throw RuntimeException("asynchronous callback runtime error")
-                }
+        val callback = object : ThrowingCallback {
+            override suspend fun invoke() {
+                throw RuntimeException("asynchronous callback runtime error")
             }
         }
         val result = runCatching {
-            instance.throwingCallback(callback).await()
+            instance.throwingCallback(callback)
         }.onFailure {
             assertTrue(it is RuntimeException)
             assertEquals(it.message, "asynchronous callback runtime error")
@@ -86,7 +81,7 @@ class TestAsync {
 
     @Test
     fun testAsyncReturningOptional() = runTest {
-        val result = instance.returningOptional().await()
+        val result = instance.returningOptional()
         assertNull(result)
     }
 }

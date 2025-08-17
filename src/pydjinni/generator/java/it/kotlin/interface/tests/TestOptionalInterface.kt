@@ -1,7 +1,7 @@
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import test.interface_test.OptionalInterface
+import test.interface_test.kotlin.OptionalInterface
 
 class TestOptionalInterface {
     private var instance: OptionalInterface? = OptionalInterface.getInstance()
@@ -20,8 +20,21 @@ class TestOptionalInterface {
     }
 
     @Test
+    fun testOptionalNamedParameter() {
+        val result: String? = instance?.optionalParameter(param = "some optional string")
+        assertNotNull(result)
+        assertEquals("some optional string", result)
+    }
+
+    @Test
     fun testOptionalNullParameter() {
         val result: String? = instance?.optionalNullParameter(null)
+        assertNull(result)
+    }
+
+    @Test
+    fun testOptionalNamedNullParameter() {
+        val result: String? = instance?.optionalNullParameter(param = null)
         assertNull(result)
     }
 }

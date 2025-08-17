@@ -14,8 +14,8 @@
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import test.namespace_test.GlobalInterface
-import test.namespace_test.something.namespaced.NamespacedInterface
+import test.namespace_test.kotlin.GlobalInterface
+import test.namespace_test.something.namespaced.kotlin.NamespacedInterface
 import test.namespace_test.GlobalRecord
 import test.namespace_test.something.namespaced.NamespacedRecord
 import test.namespace_test.something.namespaced.OtherNamespacedRecord

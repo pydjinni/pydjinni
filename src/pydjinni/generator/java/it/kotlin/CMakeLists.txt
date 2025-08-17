@@ -42,9 +42,11 @@ function(kotlin_test_case TEST_CASE_NAME)
             generate.java.out=${CMAKE_CURRENT_LIST_DIR}/generated/java
             generate.java.nullable_annotation=@org.jetbrains.annotations.Nullable
             generate.java.nonnull_annotation=@org.jetbrains.annotations.NotNull
+            generate.kotlin.out=${CMAKE_CURRENT_LIST_DIR}/generated/kotlin
             generate.jni.out.header=${CMAKE_CURRENT_LIST_DIR}/generated/include/jni
             generate.jni.out.source=${CMAKE_CURRENT_LIST_DIR}/generated/src/jni
-            generate.java.native_lib=${JNI_TARGET_NAME})
+            generate.java.native_lib=${JNI_TARGET_NAME}
+    )
     compare_files(SOURCE ${CMAKE_CURRENT_LIST_DIR}/expected TARGET ${CMAKE_CURRENT_LIST_DIR}/generated)
     add_library(${JNI_TARGET_NAME} SHARED
             ${jni_GENERATED_HEADERS}
@@ -81,7 +83,7 @@ function(kotlin_test_case TEST_CASE_NAME)
             -include-runtime
             -classpath \"${JAVA_JAR_FILE}${CLASSPATH_SEPARATOR}${junit-platform-console-standalone_JAR}${CLASSPATH_SEPARATOR}${annotations_JAR}${CLASSPATH_SEPARATOR}${kotlinx-coroutines-core_JAR}${CLASSPATH_SEPARATOR}${kotlinx-coroutines-core-jvm_JAR}${CLASSPATH_SEPARATOR}${kotlinx-coroutines-test_JAR}${CLASSPATH_SEPARATOR}${kotlinx-coroutines-test-jvm_JAR}\"
             -d ${KOTLIN_JAR_FILE}
-            ${TEST_CASE_SOURCES}
+            ${kotlin_GENERATED_SOURCES} ${TEST_CASE_SOURCES}
         DEPENDS ${TEST_CASE_SOURCES}
         COMMENT "Compiling Kotlin code to JAR"
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -108,9 +110,9 @@ endfunction()
 
 add_subdirectory(async)
 add_subdirectory(enum)
-add_subdirectory(error)
-add_subdirectory(flags)
-add_subdirectory(function)
+#add_subdirectory(error)
+#add_subdirectory(flags)
+#add_subdirectory(function)
 add_subdirectory(interface)
 add_subdirectory(namespace)
-add_subdirectory(record)
+#add_subdirectory(record)

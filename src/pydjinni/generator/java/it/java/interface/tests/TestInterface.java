@@ -14,6 +14,9 @@
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.junit.jupiter.api.*;
 import test.interface_test.Calculator;
 import test.interface_test.PlatformInterface;
@@ -64,6 +67,13 @@ class TestInterface {
         };
         calculator.noParametersNoReturnCallback(callback);
         assertTrue(callback.callbackInvoked);
+    }
+
+    @Test
+    public void testMethodGenericParameterAndReturn() {
+        var param = new ArrayList<>(Arrays.asList("foo", "bar"));
+        var result = calculator.genericParameterAndReturn(param);
+        assertEquals(param, result);
     }
 
 }
