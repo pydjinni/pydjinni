@@ -73,19 +73,19 @@ class ConfigModelBuilder:
                 self._create_config_model("Generate", GenerateBaseConfig, self._generator_config_models) | None,
                 FieldInfo(
                     default=None,
-                    description=inspect.cleandoc(GenerateBaseConfig.__doc__)
+                    description=inspect.cleandoc(GenerateBaseConfig.__doc__) if GenerateBaseConfig.__doc__ else None
                 )
             ),
             build=(
                 self._create_config_model("Build", BuildBaseConfig, self._builder_config_models) | None, FieldInfo(
                     default=None,
-                    description=inspect.cleandoc(BuildBaseConfig.__doc__)
+                    description=inspect.cleandoc(BuildBaseConfig.__doc__) if BuildBaseConfig.__doc__ else None
                 )
             ),
             package=(
                 self._create_config_model("Package", PackageBaseConfig, self._package_config_models) | None, FieldInfo(
                     default=None,
-                    description=inspect.cleandoc(PackageBaseConfig.__doc__)
+                    description=inspect.cleandoc(PackageBaseConfig.__doc__) if PackageBaseConfig.__doc__ else None
                 )
             )
         )

@@ -11,11 +11,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import inspect
-from abc import ABC, abstractmethod
+from typing import Any
 
-from pydantic import create_model
-from pydantic.fields import FieldInfo
+from pydantic import BaseModel
 
 from pydjinni.config.config_model_builder import ConfigModelBuilder
 from pydjinni.file.file_reader_writer import FileReaderWriter
@@ -24,56 +22,43 @@ from pydjinni.parser.ast import Record
 from pydjinni.parser.base_models import BaseType, BaseField
 from pydjinni.parser.type_model_builder import TypeModelBuilder
 from .external_types import ExternalTypesBuilder
-from .generator import Generator, ConfigModel
-from .metadata import MetadataBase
+from .generator import Generator
+from .metadata import MetadataModelBuilder
 
 
-class Target(ABC):
+class Target:
     """
     Abstract class for defining generation targets. A target combines multiple generators to one entity.
     E.g. to allow Java interop, both a Java and JNI generator are required.
     """
 
-    @property
-    def supported_deriving(self) -> set[Record.Deriving]:
-        """
-        Record derivings that are supported by the target language.
-        For documentation purposes only.
-        """
-        return set()
+    supported_deriving: set[Record.Deriving] = set()
+    """
+    Record derivings that are supported by the target language.
+    For documentation purposes only.
+    """
 
-    @property
-    @abstractmethod
-    def key(self) -> str:
-        """
-        The name of the target. Will be used by the API/CLI for selecting the target.
-        """
-        pass
+    key: str
+    """
+    The name of the target. Will be used by the API/CLI for selecting the target.
+    """
 
-    @property
-    @abstractmethod
-    def display_key(self) -> str:
-        pass
+    display_key: str
 
-    @property
-    def internal(self) -> bool:
-        """
-        Whether a generator is an internal component that does not produce code.
-        This is used to flag the `yaml` generator as not being a language target.
-        """
-        return False
+    internal: bool = False
+    """
+    Whether a generator is an internal component that does not produce code.
+    This is used to flag the `yaml` generator as not being a language target.
+    """
 
-    @property
-    @abstractmethod
-    def generators(self) -> list[type[Generator]]:
-        """
-        A list of generators related to the target.
-        Typically, targets will have two generators:
+    generators: list[type[Generator[Any, Any, Any]]] = []
+    """
+    A list of generators related to the target.
+    Typically, targets will have two generators:
 
-        1. For the target (host) language
-        2. For the glue-code required in C++ to interact with the host language
-        """
-        pass
+    1. For the target (host) language
+    2. For the glue-code required in C++ to interact with the host language
+    """
 
     def __init__(
         self,
@@ -82,10 +67,12 @@ class Target(ABC):
         external_type_model_builder: TypeModelBuilder,
         processed_files_model_builder: ProcessedFilesModelBuilder,
     ):
+        self.__metadata_model_builder = MetadataModelBuilder()
         self.generator_instances = [
             generator(
                 file_writer=file_reader_writer,
                 config_model_builder=config_model_builder,
+                metadata_model_builder=self.__metadata_model_builder,
                 external_type_model_builder=external_type_model_builder,
                 processed_files_model_builder=processed_files_model_builder,
             )
@@ -106,21 +93,7 @@ class Target(ABC):
         for generator in self.generator_instances:
             generator.register_external_types(external_types_factory)
 
-    def configure(self, config: ConfigModel):
-        metadata_model = create_model(
-            "Metadata",
-            __base__=MetadataBase,
-            **{
-                generator.key: (
-                    generator.metadata_model,
-                    FieldInfo(
-                        default=generator.metadata_model(config=getattr(config, generator.key)),
-                        description=inspect.cleandoc(generator.metadata_model.__doc__),
-                    ),
-                )
-                for generator in self.generator_instances
-                if generator.metadata_model is not None
-            },
-        )
+    def configure(self, config: BaseModel):
+        metadata_model = self.__metadata_model_builder.build(config)
         for generator in self.generator_instances:
             generator.configure(getattr(config, generator.key), metadata_model())

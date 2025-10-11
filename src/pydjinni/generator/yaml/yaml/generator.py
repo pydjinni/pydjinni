@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from encodings import undefined
 from pathlib import Path
 import yaml
 
@@ -20,9 +21,8 @@ from pydjinni.parser.base_models import BaseType, BaseExternalType
 from .config import YamlConfig
 
 
-class YamlGenerator(Generator):
+class YamlGenerator(Generator[YamlConfig]):
     key = "yaml"
-    config_model = YamlConfig
     writes_source = True
 
     def generate_type_dict(self, type_def: BaseType) -> dict:

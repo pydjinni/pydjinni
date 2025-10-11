@@ -16,9 +16,9 @@ import inspect
 import os
 import shutil
 from abc import ABC, abstractmethod
-from functools import cached_property
 from pathlib import Path
 import subprocess
+from typing import Generic, TypeVar, get_args
 
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel, create_model
@@ -63,105 +63,92 @@ def prepare(directory: Path, clean: bool = False) -> Path:
     return directory
 
 
-def execute(command: str | Path, arguments: list, working_dir: Path = Path.cwd()) -> int:
+def execute(command: str | Path, arguments: list, working_dir: Path = Path.cwd()):
     dirname, _ = os.path.split(command)
     if dirname:
         command = (working_dir / command).resolve()
     absolute_command = shutil.which(command)
-    args = [absolute_command] + [str(argument) for argument in arguments]
     if absolute_command:
-        result = subprocess.run(
-            args,
-            cwd=working_dir
-        )
+        args: list[str] = [absolute_command] + [str(argument) for argument in arguments]
+        result = subprocess.run(args, cwd=working_dir)
         if result.returncode != 0:
             raise ExternalCommandException(" ".join(args))
-        return result
     else:
         raise ExternalCommandException(f"Unknown command {command}")
 
 
-class PackageTarget(ABC):
+PublishConfigModel = TypeVar("PublishConfigModel", bound=BaseModel)
 
-    @abstractmethod
-    @cached_property
-    def key(self) -> str:
-        """
-        The name of the package plugin. Will be used as configuration key.
-        """
-        pass
 
-    @abstractmethod
-    @cached_property
-    def publish_config_model(self) -> type[BaseModel]:
-        pass
+class PackageTarget(ABC, Generic[PublishConfigModel]):
 
-    @abstractmethod
-    @cached_property
-    def platforms(self) -> dict[Platform, list[Architecture]]:
-        """
-        Dictionary of supported platforms and architectures
-        """
+    __publish_config_model: type
 
-    @cached_property
+    def __init_subclass__(cls) -> None:
+        generic_types = get_args(cls.__orig_bases__[0])  # type: ignore
+        assert (
+            len(generic_types) > 0
+        ), "A PackageTarget implementation must specify a publish config model as generic parameter"
+        cls.__publish_config_model = generic_types[0]
+
+    key: str
+    """
+    The name of the package plugin. Will be used as configuration key.
+    """
+
+    platforms: dict[Platform, list[Architecture]] = {}
+    """
+    Dictionary of supported platforms and architectures
+    """
+
+    @property
     def package_output_path(self) -> Path:
         return self.root_path / self.config.out / self.config.configuration / "package" / self.key
 
-    @cached_property
+    @property
     def package_build_path(self) -> Path:
-        return self.root_path / self.config.out / self.config.configuration / 'build' / self.key / 'package'
+        return self.root_path / self.config.out / self.config.configuration / "build" / self.key / "package"
 
-    @cached_property
+    @property
     def build_path(self) -> Path:
-        return self.root_path / self.config.out / self.config.configuration / 'build' / self.key / 'platforms'
+        return self.root_path / self.config.out / self.config.configuration / "build" / self.key / "platforms"
 
     @property
-    def template_line_statement_prefix(self) -> str: return "//>"
+    def publish_config(self) -> PublishConfigModel:
+        return getattr(getattr(self.config, self.key), "publish")
 
-    @property
-    def template_line_comment_prefix(self) -> str: return "///"
+    template_line_statement_prefix: str = "//>"
+    template_line_comment_prefix: str = "///"
+    template_variable_start_string: str = "{{"
+    template_variable_end_string: str = "}}"
+    template_block_start_string: str = "/*>"
+    template_block_end_string: str = "*/"
+    template_comment_start_string: str = "/*#"
+    template_comment_end_string: str = "*/"
 
-    @property
-    def template_variable_start_string(self) -> str: return "{{"
-
-    @property
-    def template_variable_end_string(self) -> str: return "}}"
-
-    @property
-    def template_block_start_string(self) -> str: return "/*>"
-
-    @property
-    def template_block_end_string(self) -> str: return "*/"
-
-    @property
-    def template_comment_start_string(self) -> str: return "/*#"
-
-    @property
-    def template_comment_end_string(self) -> str: return "*/"
-
-    def __init__(
-            self,
-            config_model_builder: ConfigModelBuilder,
-            root_path: Path):
+    def __init__(self, config_model_builder: ConfigModelBuilder, root_path: Path):
         self.root_path = root_path
-        self.config: PackageBaseConfig | None = None
+        self.config: PackageBaseConfig
         self._build_artifacts: dict[str, dict[Architecture, Path]] = {}
-        field_kwargs = {platform: (list[Architecture],
-                                   FieldInfo(
-                                       description=f"List of targeted architectures. Supported: `{'`, `'.join(architectures)}`"))
-                        for
-                        platform, architectures in self.platforms.items()}
-        config_model_builder.add_package_config(self.key, create_model(
-            f"{self.key}_config",
-            __doc__=inspect.cleandoc(self.__doc__),
-            publish=(self.publish_config_model, None),
-            platforms=(create_model(
-                f"{self.key}_platform_config",
-                **field_kwargs
-            ), FieldInfo(
-                description="Configuration of target platforms that should be included in the package."
-            ))
-        ))
+        field_kwargs = {
+            platform: (
+                list[Architecture],
+                FieldInfo(description=f"List of targeted architectures. Supported: `{'`, `'.join(architectures)}`"),
+            )
+            for platform, architectures in self.platforms.items()
+        }
+        config_model_builder.add_package_config(
+            self.key,
+            create_model(
+                f"{self.key}_config",
+                __doc__=inspect.cleandoc(self.__doc__) if self.__doc__ else None,
+                publish=(self.__publish_config_model, None),
+                platforms=(
+                    create_model(f"{self.key}_platform_config", **field_kwargs),  # type: ignore
+                    FieldInfo(description="Configuration of target platforms that should be included in the package."),
+                ),
+            ),
+        )
         self._template_directory = Path(inspect.getfile(self.__class__)).parent / "template"
         self._jinja_env = Environment(
             loader=FileSystemLoader(self._template_directory),
@@ -179,7 +166,7 @@ class PackageTarget(ABC):
         )
 
     def configure(self, config: PackageBaseConfig):
-        self.config = config
+        self.config: PackageBaseConfig = config
 
     def build(self, build_strategy: BuildTarget, target: str, architectures: set[Architecture], clean: bool = False):
         build_architectures = architectures or getattr(getattr(self.config, self.key).platforms, target)
@@ -188,10 +175,7 @@ class PackageTarget(ABC):
             build_path = self.build_path / target / arch
             prepare(build_path, clean)
             build_artifacts[arch] = build_strategy.build(
-                build_dir=build_path,
-                platform=target,
-                build_type=self.config.configuration,
-                architecture=arch
+                build_dir=build_path, platform=target, build_type=self.config.configuration, architecture=arch
             )
         self._build_artifacts[target] = build_artifacts
         self.after_build(target, architectures)
@@ -212,14 +196,16 @@ class PackageTarget(ABC):
         """
         prepare(self.package_build_path, clean)
         prepare(self.package_output_path, True)
-        for file in self._template_directory.rglob('*'):
+        for file in self._template_directory.rglob("*"):
             if file.is_file():
                 output_file = self.package_build_path / file.relative_to(self._template_directory)
                 prepare(output_file.parent)
                 try:
                     output_file.write_text(
                         self._jinja_env.get_template(str(file.relative_to(self._template_directory).as_posix())).render(
-                            config=self.config))
+                            config=self.config
+                        )
+                    )
                 except UnicodeDecodeError:
                     copy_file(src=file, dst=output_file)
 

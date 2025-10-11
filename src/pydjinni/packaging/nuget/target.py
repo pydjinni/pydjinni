@@ -20,15 +20,12 @@ from pydjinni.packaging.platform import Platform
 from pydjinni.packaging.target import PackageTarget, copy_file, execute, copy_directory, prepare
 
 
-class NuGetTarget(PackageTarget):
+class NuGetTarget(PackageTarget[NuGetPublishConfig]):
     """
     NuGet Package
     """
-
     key = "nuget"
     platforms = {Platform.windows: [Architecture.x86, Architecture.x86_64, Architecture.armv7, Architecture.armv8]}
-    publish_config_model = NuGetPublishConfig
-
     architecture_mapping = {
         Architecture.x86: "win-x86",
         Architecture.x86_64: "win-x64",
@@ -45,7 +42,7 @@ class NuGetTarget(PackageTarget):
             for arch, path in artifacts.items():
                 if not ref_copied:
                     copy_directory(
-                        src=path, dst=self.package_build_path / "ref" / self.config.nuget.publish.net_version
+                        src=path, dst=self.package_build_path / "ref" / self.publish_config.net_version
                     )
                     pdb_exists = (path / f"{self.config.target}.pdb").exists()
                     ref_copied = True
@@ -56,10 +53,10 @@ class NuGetTarget(PackageTarget):
                     / "runtimes"
                     / self.architecture_mapping[arch]
                     / "lib"
-                    / self.config.nuget.publish.net_version,
+                    / self.publish_config.net_version,
                 )
-        if self.config.nuget.publish.readme:
-            copy_file(src=self.config.nuget.publish.readme, dst=self.package_build_path / "README.md")
+        if self.publish_config.readme:
+            copy_file(src=self.publish_config.readme, dst=self.package_build_path / "README.md")
         execute(
             "nuget",
             [
@@ -77,7 +74,7 @@ class NuGetTarget(PackageTarget):
         )
 
     def publish(self):
-        local = isinstance(self.config.nuget.publish.source, Path)
+        local = isinstance(self.publish_config.source, Path)
         if not local:
             try:
                 execute(
@@ -88,11 +85,11 @@ class NuGetTarget(PackageTarget):
                         "-Name",
                         "nuget_server",
                         "-Source",
-                        self.config.nuget.publish.source,
+                        self.publish_config.source,
                         "-username",
-                        self.config.nuget.publish.username,
+                        self.publish_config.username,
                         "-password",
-                        self.config.nuget.publish.password,
+                        self.publish_config.password,
                     ],
                     working_dir=self.package_output_path,
                 )
@@ -105,11 +102,11 @@ class NuGetTarget(PackageTarget):
                         "-Name",
                         "nuget_server",
                         "-Source",
-                        self.config.nuget.publish.source,
+                        self.publish_config.source,
                         "-username",
-                        self.config.nuget.publish.username,
+                        self.publish_config.username,
                         "-password",
-                        self.config.nuget.publish.password,
+                        self.publish_config.password,
                     ],
                     working_dir=self.package_output_path,
                 )
@@ -120,7 +117,7 @@ class NuGetTarget(PackageTarget):
             else f"{self.config.target}.{self.config.version}.nupkg"
         )
         if local:
-            source = [prepare(self.config.nuget.publish.source)]
+            source = [prepare(self.publish_config.source)]
         else:
-            source = ["nuget_server", "-ApiKey", self.config.nuget.publish.password]
+            source = ["nuget_server", "-ApiKey", self.publish_config.password]
         execute("nuget", ["push", nupkg, "-Source"] + source, working_dir=self.package_output_path)
