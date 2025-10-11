@@ -39,7 +39,7 @@ from .markdown_parser import MarkdownParser
 from .resolver import Resolver
 
 
-def unpack(list_input: []):
+def unpack(list_input: list):
     return list_input[0] if list_input else None
 
 

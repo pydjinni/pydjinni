@@ -23,7 +23,7 @@ public class Signal<T> {
     private AtomicLong slotCounter = new AtomicLong(0);
 
     public Connection connect(OnPropertyChangedCallback<T> callback) {
-        var currentSlotIndex = slotCounter.incrementAndGet();
+        long currentSlotIndex = slotCounter.incrementAndGet();
         slots.put(currentSlotIndex, callback);
         return new Connection.Host(() -> {
             slots.remove(currentSlotIndex);

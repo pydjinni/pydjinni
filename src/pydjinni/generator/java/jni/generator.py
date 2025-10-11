@@ -88,20 +88,20 @@ class JniGenerator(Generator[JniConfig, JniExternalType]):
         self.write_source(Path("source/error_domain.jinja2.cpp"), type_def)
 
     def generate_loader(self):
-        self.write_source(template=Path("source/loader.jinja2.cpp"), filename=self.source_path / "loader.cpp")
+        self.write_source(template=Path("source/loader.jinja2.cpp"), filename=Path("loader.cpp"))
 
     def generate_runnable(self):
         header_path = Path("pydjinni") / "coroutine" / "schedule.hpp"
         java_runnable_type = self.metadata.java.support_types_package.split(".") + ["NativeRunnable"]
         self.write_header(
             template=Path("header/schedule.jinja2.hpp"),
-            filename=self.header_path / header_path,
+            filename=header_path,
             java_type_signature="/".join(java_runnable_type),
             namespace="::".join(self.config.namespace + ["schedule"]),
         )
         self.write_source(
             template=Path("source/schedule.jinja2.cpp"),
-            filename=self.source_path / "pydjinni" / "coroutine" / "schedule.cpp",
+            filename=Path("pydjinni") / "coroutine" / "schedule.cpp",
             namespace="::".join(self.config.namespace + ["schedule"]),
             header_path=header_path,
             jni_prefix=jni_prefix(java_runnable_type),
@@ -112,13 +112,13 @@ class JniGenerator(Generator[JniConfig, JniExternalType]):
         java_runnable_type = self.metadata.java.support_types_package.split(".") + ["NativeCompletion"]
         self.write_header(
             template=Path("header/completion.jinja2.hpp"),
-            filename=self.header_path / header_path,
+            filename=header_path,
             java_type_signature="/".join(java_runnable_type),
             namespace="::".join(self.config.namespace + ["schedule"]),
         )
         self.write_source(
             template=Path("source/completion.jinja2.cpp"),
-            filename=self.source_path / "pydjinni" / "coroutine" / "completion.cpp",
+            filename=Path("pydjinni") / "coroutine" / "completion.cpp",
             namespace="::".join(self.config.namespace + ["schedule"]),
             header_path=header_path,
             jni_prefix=jni_prefix(java_runnable_type),
@@ -133,26 +133,26 @@ class JniGenerator(Generator[JniConfig, JniExternalType]):
         ]
         self.write_header(
             template=Path("header/connection.jinja2.hpp"),
-            filename=self.header_path / header_path,
+            filename=header_path,
             java_type_signature="/".join(java_runnable_type),
             namespace="::".join(self.config.namespace + ["signal"]),
         )
         self.write_source(
             template=Path("source/connection.jinja2.cpp"),
-            filename=self.source_path / "pydjinni" / "signal" / "connection.cpp",
+            filename=Path("pydjinni") / "signal" / "connection.cpp",
             namespace="::".join(self.config.namespace + ["signal"]),
             header_path=header_path,
             jni_prefix=jni_prefix(java_runnable_type),
         )
         self.write_header(
             template=Path("header/on_property_changed_callback.jinja2.hpp"),
-            filename=self.header_path / on_property_changed_header_path,
+            filename=on_property_changed_header_path,
             java_type_signature="/".join(java_on_property_changed_callback_type),
             namespace="::".join(self.config.namespace),
         )
         self.write_source(
             template=Path("source/on_property_changed_callback.jinja2.cpp"),
-            filename=self.source_path / "pydjinni" / "signal" / "on_property_changed_callback.cpp",
+            filename=Path("pydjinni") / "signal" / "on_property_changed_callback.cpp",
             namespace="::".join(self.config.namespace),
             header_path=on_property_changed_header_path,
             jni_prefix=jni_prefix(java_on_property_changed_callback_type),
