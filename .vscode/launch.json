@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Serve Docs",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "mkdocs",
+            "args": [
+                "serve"
+            ]
+        }
+    ]
+}
