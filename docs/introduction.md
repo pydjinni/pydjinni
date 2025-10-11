@@ -1,6 +1,6 @@
 # Introduction
 
-PyDjinni is a toolchain that supports the process of developing, building, packaging and publishing a cross-platform 
+PyDjinni is a toolchain that supports the process of developing, building, packaging and publishing a cross-platform
 library written in C++.
 
 ## Interface Definition
@@ -51,7 +51,6 @@ my_cpp_interface = main interface +cpp {
 }
 ```
 
-
 ## Generating Interfaces
 
 The `generate` subcommand produces glue code in the specified target languages from the PyDjinni IDL.
@@ -80,7 +79,7 @@ pydjinni package nuget windows
 
 Once artifacts are built, they can be published easily with PyDjinni.
 
-It can upload the distribution artifact to a repository or registry, hiding away the underlying process that is 
+It can upload the distribution artifact to a repository or registry, hiding the underlying process that is
 different for every targeted platform:
 
 ```shell
@@ -119,7 +118,7 @@ generate:
       bridging_header: PyDjinniLibrary.h
   cppcli:
     out: generated/cppcli
-    namespace: pydjinni::example::cppcli 
+    namespace: pydjinni::example::cppcli
 package:
   version: 1.1.0
   target: MyLibrary

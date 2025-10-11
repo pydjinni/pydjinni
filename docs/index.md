@@ -44,7 +44,7 @@ database = main interface +cpp { # (2)!
 ```
 
 1. This `record` defines a custom datatype that can be used to transmit data
-   from the host language to C++ und vice-versa.
+   from the host language to C++ and vice-versa.
 2. This `interface` defines a class with methods that will be implemented in C++ and can
    be called from the host language.
 
@@ -71,7 +71,7 @@ generate:
 ```
 
 1. A JSON report is generated that lists all input and output files.
-2. The target directory for both header and source files can be specified separately
+2. The target directory for both header and source files can be specified separately.
 
 </div>
 
@@ -99,7 +99,7 @@ The tool provides additional utilities to help build, package and distribute cro
 
 <h3><span class="feature-icon">🐍</span>Python API</h3>
 
-The tool can also be used through a Python API, in order to seamlessly embed into a custom build process.
+The tool can also be used through a Python API, in order to seamlessly embed it into a custom build process.
 
 </div>
 
@@ -123,8 +123,8 @@ Here is what is planned for the near future:
 - [x] Add project setup wizard
 - [x] Add seamless async (coroutine) interaction
 - [x] Add advanced exception translation
+- [x] Add properties support
 - [ ] Increase test coverage
-- [ ] Add properties support
 - [ ] Add code documentation generator
 - [ ] Release stable version 1.0
 
