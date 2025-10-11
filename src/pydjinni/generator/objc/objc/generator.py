@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
 from pydjinni.generator.filters import quote, headers
 from pydjinni.generator.generator import Generator
 from pydjinni.parser.ast import Interface, Record, Flags, Enum, Parameter, Function, ErrorDomain
@@ -32,10 +33,8 @@ from .type import (
 )
 
 
-class ObjcGenerator(Generator):
+class ObjcGenerator(Generator[ObjcConfig, ObjcExternalType]):
     key = "objc"
-    config_model = ObjcConfig
-    external_type_model = ObjcExternalType
     external_types = external_types
     marshal_models = {
         BaseType: ObjcBaseType,
@@ -54,34 +53,34 @@ class ObjcGenerator(Generator):
     writes_header = True
     writes_source = True
     filters = [quote, headers]
-    comment_start_string = None
-    comment_end_string = None
+    comment_start_string = ""
+    comment_end_string = ""
     comment_line_prefix = "/// "
 
     def generate_enum(self, type_def: Enum):
-        self.write_header("header/enum.jinja2.h", type_def=type_def)
+        self.write_header(Path("header/enum.jinja2.h"), type_def)
 
     def generate_flags(self, type_def: Flags):
-        self.write_header("header/flags.jinja2.h", type_def=type_def)
+        self.write_header(Path("header/flags.jinja2.h"), type_def)
 
     def generate_record(self, type_def: Record):
-        self.write_header("header/record.jinja2.h", type_def=type_def)
-        self.write_source("source/record.jinja2.m", type_def=type_def)
+        self.write_header(Path("header/record.jinja2.h"), type_def)
+        self.write_source(Path("source/record.jinja2.m"), type_def)
 
     def generate_interface(self, type_def: Interface):
-        self.write_header("header/interface.jinja2.h", type_def=type_def)
+        self.write_header(Path("header/interface.jinja2.h"), type_def)
 
     def generate_function(self, type_def: Function):
-        self.write_header("header/function.jinja2.h", type_def=type_def)
+        self.write_header(Path("header/function.jinja2.h"), type_def)
 
     def generate_error_domain(self, type_def: ErrorDomain):
-        self.write_header("header/error_domain.jinja2.h", type_def=type_def)
-        self.write_source("source/error_domain.jinja2.m", type_def=type_def)
+        self.write_header(Path("header/error_domain.jinja2.h"), type_def)
+        self.write_source(Path("source/error_domain.jinja2.m"), type_def)
 
     def generate_bridging_header(self, ast: list[BaseType]):
         if self.config.swift.bridging_header:
             self.write_header(
-                template="header/bridging_header.jinja2.h", filename=self.config.swift.bridging_header, ast=ast
+                template=Path("header/bridging_header.jinja2.h"), filename=self.config.swift.bridging_header, ast=ast
             )
 
     def generate(self, ast: list[BaseType], copy_support_lib_sources: bool = True):

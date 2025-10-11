@@ -20,7 +20,7 @@ from pydjinni.packaging.architecture import Architecture
 from pydjinni.packaging.target import execute
 
 
-class ConanTarget(BuildTarget):
+class ConanTarget(BuildTarget[ConanConfigModel]):
     """
     Conan build target. Uses conan to build the binaries for packaging.
     Expects all library binaries mean for distribution to be in a folder called "dist" in the root of the build folder.
@@ -31,13 +31,22 @@ class ConanTarget(BuildTarget):
 
     key = "conan"
 
-    config_model = ConanConfigModel
-
     def build(self, build_dir: Path, platform: str, build_type: str, architecture: Architecture) -> Path:
-        execute("conan", ['build',
-                          '--output-folder', str(build_dir),
-                          '--profile:host', f'{self.config.profiles / platform}',
-                          '--settings:host', f'build_type={build_type}',
-                          '--settings:host', f'arch={architecture}',
-                          '--build', 'missing', '.'])
+        execute(
+            "conan",
+            [
+                "build",
+                "--output-folder",
+                str(build_dir),
+                "--profile:host",
+                f"{self.config.profiles / platform}",
+                "--settings:host",
+                f"build_type={build_type}",
+                "--settings:host",
+                f"arch={architecture}",
+                "--build",
+                "missing",
+                ".",
+            ],
+        )
         return build_dir / "dist"

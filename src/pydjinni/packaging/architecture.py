@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-try:
-    from enum import StrEnum
-except ImportError:
-    from strenum import StrEnum  # Fallback for python < 3.11
+from enum import StrEnum
 
 
 class Architecture(StrEnum):

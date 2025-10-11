@@ -15,9 +15,8 @@
 import inspect
 import re
 import shutil
-from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Callable, TypeVar
+from typing import Callable, Generic, TypeVar, get_args
 
 from jinja2 import Environment, FileSystemLoader
 from pydantic import BaseModel
@@ -30,17 +29,48 @@ from pydjinni.file.processed_files_model_builder import ProcessedFilesModelBuild
 from pydjinni.parser.base_models import BaseExternalType, BaseType, BaseField
 from pydjinni.parser.type_model_builder import TypeModelBuilder
 from .external_types import ExternalTypesBuilder
-from .metadata import MetadataBase
+from .metadata import MetadataBase, MetadataModelBuilder
 
 ConfigModel = TypeVar("ConfigModel", bound=BaseModel)
-ExternalTypeModel = TypeVar("ExternalTypeModel", bound=BaseModel)
-MetadataModel = TypeVar("MetadataModel", bound=BaseModel)
+ExternalTypeModel = TypeVar("ExternalTypeModel", bound=BaseModel | None, default=None)
+MetadataModel = TypeVar("MetadataModel", bound=BaseModel | None, default=None)
 
-class Generator(ABC):
+
+class Generator(Generic[ConfigModel, ExternalTypeModel, MetadataModel]):
     """
-    Abstract class for defining generators. Each generator can utilize one or more Marshal classes, specified as
+    Base class for defining generators. Each generator can utilize one or more Marshal classes, specified as
     generic arguments.
     """
+
+    __config_model: type
+    """
+        The Pydantic model that defines the configuration options for the generator.
+
+        The model will automatically be registered in the system and is then available in the documentation and as part
+        of the  JSON-Schema for the configuration file.
+        """
+    __external_type_model: type | None
+    """
+    The Pydantic model of the external type specification for the generator. The model should contain all
+    information that is required to reference and use an external type in the generated code.
+
+    The model will automatically be registered in the system and is then available in the documentation and as part
+    of the JSON-Schema for external types.
+    """
+
+    __metadata_model: type | None
+    """
+    Pydantic model specifying a type that contains data which is shared with other generators in the same target
+    """
+
+    def __init_subclass__(cls) -> None:
+        generic_types = get_args(cls.__orig_bases__[0])  # type: ignore
+        assert (
+            len(generic_types) > 0
+        ), "A Generator implementation must at least specify a config model as generic parameter"
+        cls.__config_model = generic_types[0]
+        cls.__external_type_model = generic_types[1] if len(generic_types) > 1 else None
+        cls.__metadata_model = generic_types[2] if len(generic_types) > 2 else None
 
     class GenerationException(ApplicationException, code=160):
         """Generation error"""
@@ -49,63 +79,26 @@ class Generator(ABC):
             super().__init__(message)
             self.input_def = input_def
 
-    @property
-    @abstractmethod
-    def key(self) -> str:
-        """
-        The name of the generator. Will be used as configuration key and for importing/exporting external types.
+    key: str
+    """
+    The name of the generator. Will be used as configuration key and for importing/exporting external types.
 
-        Typically, a target will have one generator with the same name (key) as the target.
-        If additional glue code in C++ is provided, this will usually require a separate generator with a distinct name.
-        """
-        pass
+    Typically, a target will have one generator with the same name (key) as the target.
+    If additional glue code in C++ is provided, this will usually require a separate generator with a distinct name.
+    """
 
-    @property
-    @abstractmethod
-    def config_model(self) -> type[ConfigModel]:
-        """
-        The Pydantic model that defines the configuration options for the generator.
-
-        The model will automatically be registered in the system and is then available in the documentation and as part
-        of the  JSON-Schema for the configuration file.
-        """
-        pass
-
-    @property
-    def template_line_statement_prefix(self) -> str: return "//>"
-
-    @property
-    def template_line_comment_prefix(self) -> str: return "///"
-
-    @property
-    def template_variable_start_string(self) -> str: return "{{"
-
-    @property
-    def template_variable_end_string(self) -> str: return "}}"
-
-    @property
-    def template_block_start_string(self) -> str: return "/*>"
-
-    @property
-    def template_block_end_string(self) -> str: return "*/"
-
-    @property
-    def template_comment_start_string(self) -> str: return "/*#"
-
-    @property
-    def template_comment_end_string(self) -> str: return "*/"
-
-    @property
-    def template_optional_variable_prefix(self) -> str: return "//?"
-
-    @property
-    def comment_start_string(self) -> str: return "/**"
-
-    @property
-    def comment_end_string(self) -> str: return " */"
-
-    @property
-    def comment_line_prefix(self) -> str: return " * "
+    template_line_statement_prefix: str = "//>"
+    template_line_comment_prefix: str = "///"
+    template_variable_start_string: str = "{{"
+    template_variable_end_string: str = "}}"
+    template_block_start_string: str = "/*>"
+    template_block_end_string: str = "*/"
+    template_comment_start_string: str = "/*#"
+    template_comment_end_string: str = "*/"
+    template_optional_variable_prefix: str = "//?"
+    comment_start_string: str = "/**"
+    comment_end_string: str = " */"
+    comment_line_prefix: str = " * "
 
     def template_preprocessing(self, template: Path) -> str:
         def _template_optional_variable_pattern() -> str:
@@ -118,115 +111,93 @@ class Generator(ABC):
                 f"{match.group(1)}{self.template_variable_start_string}{match.group(3)}{self.template_variable_end_string}\n"
                 f"{match.group(1)}{self.template_line_statement_prefix} endif"
             )
+
         template_content = (self._generator_directory / "templates" / template).read_text()
         return re.sub(
             pattern=_template_optional_variable_pattern(),
             repl=_template_preprocessor_optional_variables,
             string=template_content,
-            flags=re.MULTILINE
+            flags=re.MULTILINE,
         )
 
-    @property
-    def external_type_model(self) -> type[ExternalTypeModel] | None:
-        """
-        The Pydantic model of the external type specification for the generator. The model should contain all
-        information that is required to reference and use an external type in the generated code.
+    def _assert_config_exists(self):
+        if not hasattr(self, "config") or self.config is None:
+            raise ConfigurationException(f"Missing configuration for 'generator.{self.key}'!")
 
-        The model will automatically be registered in the system and is then available in the documentation and as part
-        of the JSON-Schema for external types.
-        """
-        return None
+    external_types: dict[str, ExternalTypeModel] = {}
+    """
+    A dictionary of all builtin types that are supported by the generator.
+    If the list is incomplete, an error is thrown when the user tries to use an unsupported type in a project that
+    uses the generator.
 
-    @property
-    def external_types(self) -> dict[str, ExternalTypeModel]:
-        """
-        A dictionary of all builtin types that are supported by the generator.
-        If the list is incomplete, an error is thrown when the user tries to use an unsupported type in a project that
-        uses the generator.
+    A complete list of all builtin types can be found in `pydjinni/generator/external_types.py`
+    """
 
-        A complete list of all builtin types can be found in `pydjinni/generator/external_types.py`
-        """
-        return {}
+    marshal_models: dict[type, type] = {}
+    """
+    A mapping of AST types to the marshalling model required by the generator.
+    For each type in the AST, the generator searches for a matching marshalling model in this dictionary.
+    If no marshalling model is found, an error will be thrown suggesting that the given AST type is not supported
+    by the generator.
 
-    @property
-    def marshal_models(self) -> dict[type, type]:
-        """
-        A mapping of AST types to the marshalling model required by the generator.
-        For each type in the AST, the generator searches for a matching marshalling model in this dictionary.
-        If no marshalling model is found, an error will be thrown suggesting that the given AST type is not supported
-        by the generator.
+    The generator will search for a matching marshalling model by traversing the type hierarchy of the AST type until
+    a matching marshalling model is found.
 
-        The generator will search for a matching marshalling model by traversing the type hierarchy of the AST type until
-        a matching marshalling model is found.
+    A marshalling model must be a Pydantic model with two fields:
+    - `decl` for the type of field declaration and
+    - `config` for the generator configuration
 
-        A marshalling model must be a Pydantic model with two fields:
-        - `decl` for the type of field declaration and
-        - `config` for the generator configuration
+    All marshalling must happen in methods decorated as `@cached_property`, where the declaration and the
+    configuration is used to derive information needed by the generator.
+    Type marshalling properties must at least contain a property for each field in the given external type model.
+    Every property that should be exported as part of the external type YAML definition must be decorated with
+    `@computed_field`.
+    """
 
-        All marshalling must happen in methods decorated as `@cached_property`, where the declaration and the
-        configuration is used to derive information needed by the generator.
-        Type marshalling properties must at least contain a property for each field in the given external type model.
-        Every property that should be exported as part of the external type YAML definition must be decorated with
-        `@computed_field`.
-        """
-        return {}
+    writes_header: bool = False
+    """
+    Whether the generator will generate header files. This information is required for documentation purposes and
+    for providing a valid JSON-Schema for the processed files report.
+    """
 
-    @property
-    def metadata_model(self) -> type[MetadataModel] | None:
-        return None
+    writes_source: bool = False
+    """
+    Whether the generator will generate source files. This information is required for documentation purposes and
+    for providing a valid JSON-Schema for the processed files report.
+    """
 
-    @property
-    def writes_header(self) -> bool:
-        """
-        Whether the generator will generate header files. This information is required for documentation purposes and
-        for providing a valid JSON-Schema for the processed files report.
-        """
-        return False
+    support_lib_commons: bool = False
+    """
+    Whether the code generated by this generator depends on the common support lib code provided by pydjinni.
+    """
 
-    @property
-    def writes_source(self) -> bool:
-        """
-        Whether the generator will generate source files. This information is required for documentation purposes and
-        for providing a valid JSON-Schema for the processed files report.
-        """
-        return False
+    filters: list[Callable] = []
+    """
+    Jinja2 filter functions that are required in the generators Jinja templates
+    """
 
-    @property
-    def support_lib_commons(self) -> bool:
-        """
-        Whether the code generated by this generator depends on the common support lib code provided by pydjinni.
-        """
-        return False
-
-    @property
-    def filters(self) -> list[Callable]:
-        """
-        Jinja2 filter functions that are required in the generators Jinja templates
-        """
-        return []
-
-    @property
-    def tests(self) -> list[Callable]:
-        """
-        Jinja2 test functions that are required in the generators Jinja templates
-        """
-        return []
-
+    tests: list[Callable] = []
+    """
+    Jinja2 test functions that are required in the generators Jinja templates
+    """
 
     def __init__(
-            self,
-            file_writer: FileReaderWriter,
-            config_model_builder: ConfigModelBuilder,
-            external_type_model_builder: TypeModelBuilder,
-            processed_files_model_builder: ProcessedFilesModelBuilder):
+        self,
+        file_writer: FileReaderWriter,
+        config_model_builder: ConfigModelBuilder,
+        metadata_model_builder: MetadataModelBuilder,
+        external_type_model_builder: TypeModelBuilder,
+        processed_files_model_builder: ProcessedFilesModelBuilder,
+    ):
         self._file_writer = file_writer
         self._generator_directory = Path(inspect.getfile(self.__class__)).parent
-        self.config: ConfigModel | None = None
+        self.config: ConfigModel
         self.metadata: MetadataBase | None = None
 
         self._jinja_env = Environment(
             loader=FileSystemLoader(self._generator_directory / "templates"),
-            trim_blocks=True, lstrip_blocks=True,
+            trim_blocks=True,
+            lstrip_blocks=True,
             keep_trailing_newline=True,
             line_statement_prefix=self.template_line_statement_prefix,
             line_comment_prefix=self.template_line_comment_prefix,
@@ -240,12 +211,12 @@ class Generator(ABC):
 
         def comment_filter(content: str):
             output = ""
-            if self.comment_start_string is not None:
-                output += f'{self.comment_start_string}\n'
+            if self.comment_start_string:
+                output += f"{self.comment_start_string}\n"
             output += self.comment_line_prefix
-            output += f'\n{self.comment_line_prefix}'.join(content.split('\n'))
-            if self.comment_end_string is not None:
-                output += f'\n{self.comment_end_string}'
+            output += f"\n{self.comment_line_prefix}".join(content.split("\n"))
+            if self.comment_end_string:
+                output += f"\n{self.comment_end_string}"
             return output
 
         def concat_filter(items: list[str], prefix: str = "", postfix: str = ""):
@@ -258,21 +229,22 @@ class Generator(ABC):
                     output += postfix
             return output
 
-
-
-        self._jinja_env.filters['comment'] = comment_filter
-        self._jinja_env.filters['concat'] = concat_filter
-        self._jinja_env.filters['any'] = any
-        self._jinja_env.filters['all'] = all
+        self._jinja_env.filters["comment"] = comment_filter
+        self._jinja_env.filters["concat"] = concat_filter
+        self._jinja_env.filters["any"] = any
+        self._jinja_env.filters["all"] = all
         for filter_callable in self.filters:
             self._jinja_env.filters[filter_callable.__name__] = filter_callable
         for test_callable in self.tests:
             self._jinja_env.tests[test_callable.__name__] = test_callable
-        processed_files_model_builder.add_generated_field(self.key, header=self.writes_header,
-                                                          source=self.writes_source)
-        config_model_builder.add_generator_config(self.key, self.config_model)
-        if self.external_type_model:
-            external_type_model_builder.add_field(self.key, self.external_type_model)
+        processed_files_model_builder.add_generated_field(
+            self.key, header=self.writes_header, source=self.writes_source
+        )
+        config_model_builder.add_generator_config(self.key, self.__config_model)
+        if self.__external_type_model:
+            external_type_model_builder.add_field(self.key, self.__external_type_model)
+        if self.__metadata_model:
+            metadata_model_builder.add_field(self.key, self.__metadata_model)
 
     def register_external_types(self, external_types_factory: ExternalTypesBuilder):
         if self.external_types:
@@ -318,7 +290,9 @@ class Generator(ABC):
         else:
             return out
 
-    def write_header(self, template: Path, filename: Path = None, **kwargs):
+    def write_header(
+        self, template: Path, type_def: BaseExternalType | None = None, filename: Path | None = None, **kwargs
+    ):
         """
         Method that must be used for any header file that is written by the generator.
 
@@ -326,21 +300,20 @@ class Generator(ABC):
         filename can be derived from the marshalling model, given that a `header` field is provided.
         """
         assert self.writes_header, "Should only be called on generators that do produce header files"
-        assert kwargs.get('type_def') or filename, "If no type_def is given, an explicit filename must be provided"
-        if kwargs.get('type_def') and filename is None:
-            filename = getattr(kwargs['type_def'], self.key).header
+        if type_def is not None and filename is None:
+            filename = getattr(type_def, self.key).header
+        assert filename, "If no type_def is given, an explicit filename must be provided"
         self._file_writer.write_header(
             key=self.key,
             filename=self.header_path / filename,
             content=self._jinja_env.from_string(self.template_preprocessing(template)).render(
-                config=self.config,
-                is_header=True,
-                metadata=self.metadata,
-                **kwargs
-            )
+                metadata=self.metadata, config=self.config, type_def=type_def, is_header=True, **kwargs
+            ),
         )
 
-    def write_source(self, template: Path, filename: Path = None, **kwargs):
+    def write_source(
+        self, template: Path, type_def: BaseExternalType | None = None, filename: Path | None = None, **kwargs
+    ):
         """
         Method that must be used for any source file that is written by the generator.
 
@@ -348,18 +321,15 @@ class Generator(ABC):
         filename can be derived from the marshalling model, given that a `source` field is provided.
         """
         assert self.writes_source, "Should only be called on generators that do produce source files"
-        assert kwargs.get('type_def') or filename, "If no type_def is given, an explicit filename must be provided"
-        if kwargs.get('type_def') and filename is None:
-            filename = getattr(kwargs['type_def'], self.key).source
+        if type_def is not None and filename is None:
+            filename = getattr(type_def, self.key).source
+        assert filename, "If no type_def is given, an explicit filename must be provided"
         self._file_writer.write_source(
             key=self.key,
             filename=self.source_path / filename,
             content=self._jinja_env.from_string(self.template_preprocessing(template)).render(
-                config=self.config,
-                is_header=False,
-                metadata=self.metadata,
-                **kwargs
-            )
+                metadata=self.metadata, config=self.config, type_def=type_def, is_header=False, **kwargs
+            ),
         )
 
     def generate_support_lib(self):
@@ -367,26 +337,18 @@ class Generator(ABC):
         Copies support lib files if they exist. Fails silently if no files can be found in the expected directories.
         """
         self._file_writer.copy_header_directory(
-            key=self.key,
-            header_dir=self._generator_directory / "support_lib" / "include",
-            target_dir=self.header_path
+            key=self.key, header_dir=self._generator_directory / "support_lib" / "include", target_dir=self.header_path
         )
         self._file_writer.copy_source_directory(
-            key=self.key,
-            source_dir=self._generator_directory / "support_lib" / "src",
-            target_dir=self.source_path
+            key=self.key, source_dir=self._generator_directory / "support_lib" / "src", target_dir=self.source_path
         )
         if self.support_lib_commons:
             root = Path(__file__).parent
             self._file_writer.copy_header_directory(
-                key=self.key,
-                header_dir=root / "support_lib" / "include",
-                target_dir=self.header_path
+                key=self.key, header_dir=root / "support_lib" / "include", target_dir=self.header_path
             )
             self._file_writer.copy_source_directory(
-                key=self.key,
-                source_dir=root / "support_lib" / "src",
-                target_dir=self.source_path
+                key=self.key, source_dir=root / "support_lib" / "src", target_dir=self.source_path
             )
 
     def clean(self):
@@ -422,9 +384,9 @@ class Generator(ABC):
                 if def_class == BaseExternalType:
                     raise Generator.GenerationException(
                         definition,
-                        f"The generator '{self.key}' does not support the type '{definition.__class__.__qualname__}'"
+                        f"The generator '{self.key}' does not support the type '{definition.__class__.__qualname__}'",
                     )
-                qualifier = '_'.join([word.lower() for word in re.findall(r'[A-Z][a-z0-9]*', def_class.__qualname__)])
+                qualifier = "_".join([word.lower() for word in re.findall(r"[A-Z][a-z0-9]*", def_class.__qualname__)])
                 method_name = f"generate_{qualifier}"
                 if hasattr(self, method_name):
                     getattr(self, method_name)(definition)
@@ -434,13 +396,11 @@ class Generator(ABC):
 
             traverse_hierarchy(definition.__class__, definition)
 
-        if self.config:
-            if copy_support_lib_sources:
-                self.generate_support_lib()
-            for type_def in ast:
-                call_generate_method(type_def)
-        else:
-            raise ConfigurationException(f"Missing configuration for 'generator.{self.key}'!")
+        self._assert_config_exists()
+        if copy_support_lib_sources:
+            self.generate_support_lib()
+        for type_def in ast:
+            call_generate_method(type_def)
 
     def marshal(self, type_decls: list[BaseType], field_decls: list[BaseField]):
         """
@@ -464,7 +424,7 @@ class Generator(ABC):
             if def_class in [BaseExternalType, BaseModel]:
                 raise Generator.GenerationException(
                     definition,
-                    f"Language feature '{definition.__class__.__qualname__}' is not supported for the target '{self.key}'"
+                    f"Language feature '{definition.__class__.__qualname__}' is not supported for the target '{self.key}'",
                 )
             if self.marshal_models.get(def_class):
                 definition.__setattr__(self.key, self.marshal_models[def_class](decl=definition, config=self.config))
@@ -472,10 +432,8 @@ class Generator(ABC):
                 for base in def_class.__bases__:
                     traverse_hierarchy(base, definition)
 
-        if self.config:
-            if self.marshal_models:
-                for definitions in [type_decls, field_decls]:
-                    for definition in definitions:
-                        traverse_hierarchy(type(definition), definition)
-        else:
-            raise ConfigurationException(f"Missing configuration for 'generator.{self.key}'!")
+        self._assert_config_exists()
+        if self.marshal_models:
+            for definitions in [type_decls, field_decls]:
+                for definition in definitions:
+                    traverse_hierarchy(type(definition), definition)

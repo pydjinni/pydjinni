@@ -36,10 +36,8 @@ from .type import (
 )
 
 
-class CppGenerator(Generator):
+class CppGenerator(Generator[CppConfig, CppExternalType]):
     key = "cpp"
-    config_model = CppConfig
-    external_type_model = CppExternalType
     external_types = external_types
     marshal_models = {
         BaseType: CppBaseType,
@@ -62,32 +60,33 @@ class CppGenerator(Generator):
     filters = [quote, headers, needs_optional]
 
     def generate_enum(self, type_def: Enum):
-        self.write_header(Path("header/enum.jinja2.hpp"), type_def=type_def)
+        self.write_header(Path("header/enum.jinja2.hpp"), type_def)
         if self.config.string_serialization:
-            self.write_source(Path("source/enum.jinja2.cpp"), type_def=type_def)
+            self.write_source(Path("source/enum.jinja2.cpp"), type_def)
 
     def generate_error_domain(self, type_def: ErrorDomain):
-        self.write_header(Path("header/error_domain.jinja2.hpp"), type_def=type_def)
+        self.write_header(Path("header/error_domain.jinja2.hpp"), type_def)
 
     def generate_flags(self, type_def: Flags):
-        self.write_header(Path("header/flags.jinja2.hpp"), type_def=type_def)
+        self.write_header(Path("header/flags.jinja2.hpp"), type_def)
         if self.config.string_serialization:
-            self.write_source(Path("source/flags.jinja2.cpp"), type_def=type_def)
+            self.write_source(Path("source/flags.jinja2.cpp"), type_def)
 
     def generate_record(self, type_def: Record):
-        self.write_header(Path("header/record.jinja2.hpp"), type_def=type_def)
+        self.write_header(Path("header/record.jinja2.hpp"), type_def)
+        has_cpp_base_type = not type_def.cpp.base_type  # type: ignore[attr-defined]
         if (
             Record.Deriving.eq in type_def.deriving
             or Record.Deriving.ord in type_def.deriving
-            or (self.config.string_serialization and not type_def.cpp.base_type)
+            or (self.config.string_serialization and has_cpp_base_type)
             and type_def.fields
         ):
-            self.write_source(Path("source/record.jinja2.cpp"), type_def=type_def)
+            self.write_source(Path("source/record.jinja2.cpp"), type_def)
 
     def generate_interface(self, type_def: Interface):
-        self.write_header(Path("header/interface.jinja2.hpp"), type_def=type_def)
+        self.write_header(Path("header/interface.jinja2.hpp"), type_def)
         if type_def.properties:
-            self.write_source(Path("source/interface.jinja2.cpp"), type_def=type_def)
+            self.write_source(Path("source/interface.jinja2.cpp"), type_def)
 
     def generate_function(self, type_def: Function):
-        self.write_header(Path("header/function.jinja2.hpp"), type_def=type_def)
+        self.write_header(Path("header/function.jinja2.hpp"), type_def)

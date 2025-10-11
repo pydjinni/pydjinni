@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import dataclasses
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 
 from pydantic import BaseModel, Field
@@ -35,7 +35,7 @@ class OutPaths:
 
 
 class IdentifierStyle(BaseModel):
-    class Case(str, Enum):
+    class Case(StrEnum):
         none = 'none'
         camel = 'camelCase'
         pascal = 'PascalCase'
@@ -45,6 +45,6 @@ class IdentifierStyle(BaseModel):
 
     style: Case
     prefix: str = Field(
-        default=None,
+        default="",
         description="Prefix that is added to the beginning of the identifier"
     )

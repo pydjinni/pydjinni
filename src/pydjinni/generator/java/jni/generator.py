@@ -16,6 +16,7 @@ from pathlib import Path
 
 from pydjinni.generator.filters import quote, headers
 from pydjinni.generator.generator import Generator
+from pydjinni.generator.java.java.metadata import JavaMetadata
 from pydjinni.parser.ast import Enum, Flags, Record, Interface, Parameter, Function, ErrorDomain
 from pydjinni.parser.base_models import BaseType, BaseField, SymbolicConstantField, DataField
 from .config import JniConfig
@@ -31,14 +32,12 @@ from .type import (
     JniParameter,
     JniFunction,
     JniErrorDomain,
-    jni_prefix
+    jni_prefix,
 )
 
 
-class JniGenerator(Generator):
+class JniGenerator(Generator[JniConfig, JniExternalType]):
     key = "jni"
-    config_model = JniConfig
-    external_type_model = JniExternalType
     external_types = external_types
     marshal_models = {
         BaseType: JniBaseType,
@@ -51,7 +50,7 @@ class JniGenerator(Generator):
         Record: JniRecord,
         DataField: JniDataField,
         Parameter: JniParameter,
-        ErrorDomain: JniErrorDomain
+        ErrorDomain: JniErrorDomain,
     }
     writes_header = True
     writes_source = True
@@ -59,99 +58,104 @@ class JniGenerator(Generator):
     filters = [quote, headers]
 
     def generate_enum(self, type_def: Enum):
-        self.write_header("header/enum.jinja2.hpp", type_def=type_def)
+        self.write_header(Path("header/enum.jinja2.hpp"), type_def)
 
     def generate_flags(self, type_def: Flags):
-        self.write_header("header/flags.jinja2.hpp", type_def=type_def)
+        self.write_header(Path("header/flags.jinja2.hpp"), type_def)
 
     def generate_record(self, type_def: Record):
-        self.write_header("header/record.jinja2.hpp", type_def=type_def)
-        self.write_source("source/record.jinja2.cpp", type_def=type_def)
+        self.write_header(Path("header/record.jinja2.hpp"), type_def)
+        self.write_source(Path("source/record.jinja2.cpp"), type_def)
 
     def generate_interface(self, type_def: Interface):
-        callback_type = self.metadata.java.support_types_package.split('.') + ["OnPropertyChangedCallback"]
-        connection_type = self.metadata.java.support_types_package.split('.') + ["Connection"]
-        self.write_header("header/interface.jinja2.hpp", type_def=type_def, callback_type="/".join(callback_type), connection_type="/".join(connection_type))
-        self.write_source("source/interface.jinja2.cpp", type_def=type_def, callback_type="/".join(callback_type))
+        java_metadata: JavaMetadata = self.metadata.java # type: ignore
+        callback_type = java_metadata.support_types_package.split(".") + ["OnPropertyChangedCallback"]
+        connection_type = java_metadata.support_types_package.split(".") + ["Connection"]
+        self.write_header(
+            Path("header/interface.jinja2.hpp"),
+            type_def=type_def,
+            callback_type="/".join(callback_type),
+            connection_type="/".join(connection_type),
+        )
+        self.write_source(Path("source/interface.jinja2.cpp"), type_def, callback_type="/".join(callback_type))
 
     def generate_function(self, type_def: Function):
-        self.write_header("header/function.jinja2.hpp", type_def=type_def)
-        self.write_source("source/function.jinja2.cpp", type_def=type_def)
+        self.write_header(Path("header/function.jinja2.hpp"), type_def)
+        self.write_source(Path("source/function.jinja2.cpp"), type_def)
 
     def generate_error_domain(self, type_def: ErrorDomain):
-        self.write_header("header/error_domain.jinja2.hpp", type_def=type_def)
-        self.write_source("source/error_domain.jinja2.cpp", type_def=type_def)
+        self.write_header(Path("header/error_domain.jinja2.hpp"), type_def)
+        self.write_source(Path("source/error_domain.jinja2.cpp"), type_def)
 
     def generate_loader(self):
-        self.write_source(
-            template="source/loader.jinja2.cpp",
-            filename=self.source_path / "loader.cpp"
-        )
+        self.write_source(template=Path("source/loader.jinja2.cpp"), filename=self.source_path / "loader.cpp")
 
     def generate_runnable(self):
         header_path = Path("pydjinni") / "coroutine" / "schedule.hpp"
-        java_runnable_type = self.metadata.java.support_types_package.split('.') + ["NativeRunnable"]
+        java_runnable_type = self.metadata.java.support_types_package.split(".") + ["NativeRunnable"]
         self.write_header(
-            template="header/schedule.jinja2.hpp",
+            template=Path("header/schedule.jinja2.hpp"),
             filename=self.header_path / header_path,
             java_type_signature="/".join(java_runnable_type),
-            namespace='::'.join(self.config.namespace + ["schedule"])
+            namespace="::".join(self.config.namespace + ["schedule"]),
         )
         self.write_source(
-            template="source/schedule.jinja2.cpp",
+            template=Path("source/schedule.jinja2.cpp"),
             filename=self.source_path / "pydjinni" / "coroutine" / "schedule.cpp",
-            namespace='::'.join(self.config.namespace + ["schedule"]),
+            namespace="::".join(self.config.namespace + ["schedule"]),
             header_path=header_path,
-            jni_prefix=jni_prefix(java_runnable_type)
+            jni_prefix=jni_prefix(java_runnable_type),
         )
 
     def generate_completion(self):
         header_path = Path("pydjinni") / "coroutine" / "completion.hpp"
-        java_runnable_type = self.metadata.java.support_types_package.split('.') + ["NativeCompletion"]
+        java_runnable_type = self.metadata.java.support_types_package.split(".") + ["NativeCompletion"]
         self.write_header(
-            template="header/completion.jinja2.hpp",
+            template=Path("header/completion.jinja2.hpp"),
             filename=self.header_path / header_path,
             java_type_signature="/".join(java_runnable_type),
-            namespace='::'.join(self.config.namespace + ["schedule"])
+            namespace="::".join(self.config.namespace + ["schedule"]),
         )
         self.write_source(
-            template="source/completion.jinja2.cpp",
+            template=Path("source/completion.jinja2.cpp"),
             filename=self.source_path / "pydjinni" / "coroutine" / "completion.cpp",
-            namespace='::'.join(self.config.namespace + ["schedule"]),
+            namespace="::".join(self.config.namespace + ["schedule"]),
             header_path=header_path,
-            jni_prefix=jni_prefix(java_runnable_type)
+            jni_prefix=jni_prefix(java_runnable_type),
         )
 
     def generate_property_support_types(self):
         header_path = Path("pydjinni") / "jni" / "connection.hpp"
         on_property_changed_header_path = Path("pydjinni") / "jni" / "on_property_changed_callback.hpp"
-        java_runnable_type = self.metadata.java.support_types_package.split('.') + ["Connection$CppProxy"]
-        java_on_property_changed_callback_type = self.metadata.java.support_types_package.split('.') + ["OnPropertyChangedCallback$CppProxy"]
+        java_runnable_type = self.metadata.java.support_types_package.split(".") + ["Connection$CppProxy"]
+        java_on_property_changed_callback_type = self.metadata.java.support_types_package.split(".") + [
+            "OnPropertyChangedCallback$CppProxy"
+        ]
         self.write_header(
-            template="header/connection.jinja2.hpp",
+            template=Path("header/connection.jinja2.hpp"),
             filename=self.header_path / header_path,
             java_type_signature="/".join(java_runnable_type),
-            namespace='::'.join(self.config.namespace + ["signal"])
+            namespace="::".join(self.config.namespace + ["signal"]),
         )
         self.write_source(
-            template="source/connection.jinja2.cpp",
+            template=Path("source/connection.jinja2.cpp"),
             filename=self.source_path / "pydjinni" / "signal" / "connection.cpp",
-            namespace='::'.join(self.config.namespace + ["signal"]),
+            namespace="::".join(self.config.namespace + ["signal"]),
             header_path=header_path,
-            jni_prefix=jni_prefix(java_runnable_type)
+            jni_prefix=jni_prefix(java_runnable_type),
         )
         self.write_header(
-            template="header/on_property_changed_callback.jinja2.hpp",
+            template=Path("header/on_property_changed_callback.jinja2.hpp"),
             filename=self.header_path / on_property_changed_header_path,
             java_type_signature="/".join(java_on_property_changed_callback_type),
-            namespace='::'.join(self.config.namespace)
+            namespace="::".join(self.config.namespace),
         )
         self.write_source(
-            template="source/on_property_changed_callback.jinja2.cpp",
+            template=Path("source/on_property_changed_callback.jinja2.cpp"),
             filename=self.source_path / "pydjinni" / "signal" / "on_property_changed_callback.cpp",
-            namespace='::'.join(self.config.namespace),
+            namespace="::".join(self.config.namespace),
             header_path=on_property_changed_header_path,
-            jni_prefix=jni_prefix(java_on_property_changed_callback_type)
+            jni_prefix=jni_prefix(java_on_property_changed_callback_type),
         )
 
     def generate(self, ast: list[BaseType], copy_support_lib_sources: bool = True):
@@ -159,12 +163,16 @@ class JniGenerator(Generator):
         if self.config.loader:
             self.generate_loader()
         if any(
-            isinstance(type_def, Interface) and "cpp" in type_def.targets and any(method.asynchronous  for method in type_def.methods)
+            isinstance(type_def, Interface)
+            and "cpp" in type_def.targets
+            and any(method.asynchronous for method in type_def.methods)
             for type_def in ast
         ):
             self.generate_runnable()
         if any(
-            isinstance(type_def, Interface) and "java" in type_def.targets and any(method.asynchronous for method in type_def.methods)
+            isinstance(type_def, Interface)
+            and "java" in type_def.targets
+            and any(method.asynchronous for method in type_def.methods)
             for type_def in ast
         ):
             self.generate_completion()

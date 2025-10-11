@@ -14,7 +14,7 @@
 
 from pathlib import Path
 
-from pydantic import AnyUrl, HttpUrl
+from pydantic import HttpUrl
 from pydjinni.packaging.architecture import Architecture
 from pydjinni.packaging.platform import Platform
 from pydjinni.packaging.swiftpackage.publish_config import SwiftpackagePublishConfig
@@ -42,7 +42,7 @@ def lipo_combine_framework(input: list[Path], output: Path):
     )
 
 
-class SwiftpackageTarget(PackageTarget):
+class SwiftpackageTarget(PackageTarget[SwiftpackagePublishConfig]):
     """
     Swift package
     """
@@ -53,9 +53,8 @@ class SwiftpackageTarget(PackageTarget):
         Platform.ios: [Architecture.armv8],
         Platform.ios_simulator: [Architecture.x86_64, Architecture.armv8],
     }
-    publish_config_model = SwiftpackagePublishConfig
 
-    def after_build(self, target: str, architectures: list[Architecture]):
+    def after_build(self, target: str, architectures: set[Architecture]):
         build_artifacts_folders = self._build_artifacts[target].values()
         if len(build_artifacts_folders) > 1:
             output_arch = "_".join(self._build_artifacts[target].keys())
@@ -106,7 +105,7 @@ class SwiftpackageTarget(PackageTarget):
         copy_directory(src=self.package_build_path, dst=self.package_output_path, clean=True)
 
     def publish(self):
-        repository: HttpUrl | Path = self.config.swiftpackage.publish.repository
+        repository: HttpUrl | Path = self.publish_config.repository
         if isinstance(repository, Path) and not (str(repository).startswith("git@") and repository.suffix == ".git"):
             copy_directory(src=self.package_build_path, dst=repository / self.config.target, clean=True)
         else:
@@ -114,7 +113,7 @@ class SwiftpackageTarget(PackageTarget):
                 self.config.out / self.config.configuration / "build" / self.key / "package_repository"
             )
             if git_repository_path.exists():
-                execute("git", ["checkout", self.config.swiftpackage.publish.branch], working_dir=git_repository_path)
+                execute("git", ["checkout", self.publish_config.branch], working_dir=git_repository_path)
                 execute("git", ["pull"], working_dir=git_repository_path)
             else:
                 if isinstance(repository, Path):
@@ -124,11 +123,11 @@ class SwiftpackageTarget(PackageTarget):
                         "git",
                         [
                             "clone",
-                            f"{repository.scheme}://{self.config.swiftpackage.publish.username}:{self.config.swiftpackage.publish.password}@{repository.host}{f':{repository.port}' if repository.port else ''}{repository.path}",
+                            f"{repository.scheme}://{self.publish_config.username}:{self.publish_config.password}@{repository.host}{f':{repository.port}' if repository.port else ''}{repository.path}",
                             git_repository_path,
                         ],
                     )
-                execute("git", ["checkout", self.config.swiftpackage.publish.branch], working_dir=git_repository_path)
+                execute("git", ["checkout", self.publish_config.branch], working_dir=git_repository_path)
             (git_repository_path / "Package.swift").unlink(missing_ok=True)
             prepare(git_repository_path / "bin", clean=True)
             copy_directory(src=self.package_build_path, dst=git_repository_path)

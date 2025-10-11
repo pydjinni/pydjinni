@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pathlib import Path
 from pydjinni.generator.generator import Generator
 from pydjinni.parser.ast import Interface, Record, Flags, Enum, Function, ErrorDomain
 from pydjinni.parser.base_models import BaseType, BaseField, DataField, SymbolicConstantField, SymbolicConstantType
@@ -31,10 +32,8 @@ from .type import (
 from pydjinni.generator.filters import quote, headers
 
 
-class CppCliGenerator(Generator):
+class CppCliGenerator(Generator[CppCliConfig, CppCliExternalType]):
     key = "cppcli"
-    config_model = CppCliConfig
-    external_type_model = CppCliExternalType
     external_types = external_types
     marshal_models = {
         BaseType: CppCliBaseType,
@@ -55,25 +54,25 @@ class CppCliGenerator(Generator):
     writes_source = True
 
     def generate_enum(self, type_def: Enum):
-        self.write_header("header/enum.jinja2.hpp", type_def=type_def)
-        self.write_source("source/placeholder.jinja2.cpp", type_def=type_def)
+        self.write_header(Path("header/enum.jinja2.hpp"), type_def)
+        self.write_source(Path("source/placeholder.jinja2.cpp"), type_def)
 
     def generate_flags(self, type_def: Flags):
-        self.write_header("header/flags.jinja2.hpp", type_def=type_def)
-        self.write_source("source/placeholder.jinja2.cpp", type_def=type_def)
+        self.write_header(Path("header/flags.jinja2.hpp"), type_def)
+        self.write_source(Path("source/placeholder.jinja2.cpp"), type_def)
 
     def generate_record(self, type_def: Record):
-        self.write_header("header/record.jinja2.hpp", type_def=type_def)
-        self.write_source("source/record.jinja2.cpp", type_def=type_def)
+        self.write_header(Path("header/record.jinja2.hpp"), type_def)
+        self.write_source(Path("source/record.jinja2.cpp"), type_def)
 
     def generate_interface(self, type_def: Interface):
-        self.write_header("header/interface.jinja2.hpp", type_def=type_def)
-        self.write_source("source/interface.jinja2.cpp", type_def=type_def)
+        self.write_header(Path("header/interface.jinja2.hpp"), type_def)
+        self.write_source(Path("source/interface.jinja2.cpp"), type_def)
 
     def generate_function(self, type_def: Function):
-        self.write_header("header/function.jinja2.hpp", type_def=type_def)
-        self.write_source("source/function.jinja2.cpp", type_def=type_def)
+        self.write_header(Path("header/function.jinja2.hpp"), type_def)
+        self.write_source(Path("source/function.jinja2.cpp"), type_def)
 
     def generate_error_domain(self, type_def: ErrorDomain):
-        self.write_header("header/error_domain.jinja2.hpp", type_def=type_def)
-        self.write_source("source/error_domain.jinja2.cpp", type_def=type_def)
+        self.write_header(Path("header/error_domain.jinja2.hpp"), type_def)
+        self.write_source(Path("source/error_domain.jinja2.cpp"), type_def)
