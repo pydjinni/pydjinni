@@ -97,7 +97,7 @@ jobs:
           java-version: '17'
       - name: Setup Gradle
         if: matrix.target == 'android'
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
