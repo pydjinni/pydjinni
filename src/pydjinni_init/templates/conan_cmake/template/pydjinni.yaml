@@ -22,6 +22,7 @@ generate:
   #> endif
   #> if "darwin" in platforms:
   objc:
+    type_prefix: EXM
     out:
       header: lib/generated/objc/include
       source: lib/generated/objc/src
