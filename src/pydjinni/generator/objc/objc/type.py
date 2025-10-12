@@ -30,11 +30,12 @@ from pydjinni.parser.identifier import IdentifierType as Identifier
 class ObjcExternalType(BaseModel):
     typename: str = None
     boxed: str
+    protocol: bool = False
     header: PurePosixPath = None
     pointer: bool = True
 
 
-def type_decl(type_ref: TypeReference, parameter: bool = False, boxed: bool = False) -> str:
+def type_decl(type_ref: TypeReference, boxed: bool = False) -> str:
     if type_ref:
         type_def: BaseExternalType | BaseType = type_ref.type_def
         generic_types = ""
@@ -45,11 +46,10 @@ def type_decl(type_ref: TypeReference, parameter: bool = False, boxed: bool = Fa
             generic_types = (
                 f'<{", ".join([type_decl(parameter_ref, boxed=True) for parameter_ref in type_ref.parameters])}>'
             )
-        if type_def.primitive == BaseExternalType.Primitive.interface:
-            if parameter:
-                typename = f"id<{typename}>"
-                pointer = False
-        if type_def.primitive == BaseExternalType.Primitive.function:
+        if type_def.primitive == BaseExternalType.Primitive.interface and type_def.objc.protocol:
+            typename = f"id<{typename}>"
+            pointer = False
+        elif type_def.primitive == BaseExternalType.Primitive.function:
             typename = typename.replace("(^)", f"(^ {'_Nullable' if type_ref.optional else '_Nonnull'})")
 
         return f"{typename}{generic_types}{' *' if pointer or boxed or (optional and not type_ref.type_def.primitive == BaseExternalType.Primitive.function) else ''}"
@@ -162,7 +162,7 @@ class ObjcFunction(ObjcBaseType):
     def typename(self) -> str:
         return_type_decl = type_decl(self.decl.return_type_ref) if self.decl.return_type_ref else "void"
         parameter_type_decls = [
-            f"{type_decl(parameter.type_ref, parameter=True)} {annotation(parameter.type_ref, macro_style=True)}"
+            f"{type_decl(parameter.type_ref)} {annotation(parameter.type_ref, macro_style=True)}"
             for parameter in self.decl.parameters
         ]
         if not self.decl.cpp.noexcept:
@@ -300,7 +300,7 @@ class ObjcParameter(ObjcBaseField):
 
     @cached_property
     def type_decl(self) -> str:
-        return type_decl(self.decl.type_ref, parameter=True)
+        return type_decl(self.decl.type_ref)
 
     @cached_property
     def annotation(self) -> str:
@@ -329,6 +329,13 @@ class ObjcSymbolicConstantField(ObjcBaseField):
 
 
 class ObjcInterface(ObjcBaseClassType):
+    decl: Interface = Field(exclude=True, repr=False)
+
+    @computed_field
+    @property
+    def protocol(self) -> bool:
+        return "objc" in self.decl.targets
+
     class ObjcMethod(ObjcBaseField):
         decl: Interface.Method = Field(exclude=True, repr=False)
 

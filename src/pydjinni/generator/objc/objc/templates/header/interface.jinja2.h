@@ -18,7 +18,7 @@ See the License for the specific language governing permissions and
 //> block content
 //? type_def.objc.comment : type_def.objc.comment | comment
 //? type_def.objc.attributes : type_def.objc.attributes | join('\n')
-//> if "objc" in type_def.targets:
+//> if type_def.objc.protocol:
 @protocol {{ type_def.objc.name }} {{ "<NSObject>" if config.strict_protocols }}
 //> else:
 @interface {{ type_def.objc.name }} : NSObject
