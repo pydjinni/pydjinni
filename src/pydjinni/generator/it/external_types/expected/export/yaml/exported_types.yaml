@@ -165,6 +165,7 @@ objc:
   boxed: EXTInterfaceType
   header: EXTInterfaceType.h
   pointer: true
+  protocol: false
   typename: EXTInterfaceType
 objcpp:
   header: InterfaceType+Private.h

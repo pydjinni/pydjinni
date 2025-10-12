@@ -18,7 +18,7 @@ limitations under the License.
 //> block global
 //? type_def.objcpp.attributes : type_def.objcpp.attributes | join('\n')
 @interface {{ type_def.objc.typename }}
-    /*>- if "objc" in type_def.targets -*/
+    /*>- if type_def.objc.protocol -*/
         CppProxy : NSObject<{{ type_def.objc.typename }}>
     /*>- else -*/
         ()
@@ -142,7 +142,7 @@ auto {{ type_def.objcpp.translator }}::fromCppOpt(const CppOptType& cpp) -> Objc
 /*> endif */
 @end
 
-//> if "objc" in type_def.targets and type_def.properties:
+//> if type_def.objc.protocol and type_def.properties:
 static void *{{ type_def.objc.typename }}PropertyKVOContext = &{{ type_def.objc.typename }}PropertyKVOContext;
 
 @interface {{ type_def.objc.typename }}PropertyObserver : NSObject
@@ -152,7 +152,7 @@ static void *{{ type_def.objc.typename }}PropertyKVOContext = &{{ type_def.objc.
 //> endblock
 
 //> block content
-//> if "objc" in type_def.targets
+//> if type_def.objc.protocol
 class {{ type_def.objcpp.name }}::ObjcProxy final : public {{ type_def.cpp.typename }}, private ::pydjinni::ObjcProxyBase<ObjcType> {
     friend class {{ type_def.objcpp.translator }};
     //> if type_def.properties:
@@ -259,7 +259,7 @@ auto {{ type_def.objcpp.name }}::fromCppOpt(const CppOptType& cpp) -> ObjcType {
 //> endblock
 
 //> block post_global
-//> if "objc" in type_def.targets and type_def.properties:
+//> if type_def.objc.protocol and type_def.properties:
 @implementation {{ type_def.objc.typename }}PropertyObserver {
     __weak id _target;
     {{ type_def.objcpp.namespace }}::{{ type_def.objcpp.name }}::ObjcProxy* _cppProxy;

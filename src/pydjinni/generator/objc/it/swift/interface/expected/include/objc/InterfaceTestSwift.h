@@ -15,3 +15,5 @@ FOUNDATION_EXPORT const unsigned char bridgingheaderVersionString[];
 #import "SFTDeprecationTest.h"
 #import "SFTDeprecatedMethodTest.h"
 #import "SFTOptionalInterface.h"
+#import "SFTUsingCppInterface.h"
+#import "SFTUsingHostInterface.h"

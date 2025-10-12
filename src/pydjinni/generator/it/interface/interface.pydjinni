@@ -41,3 +41,11 @@ optional_interface = main interface +cpp {
     optional_parameter(param: string?) -> string?;
     optional_null_parameter(param: string?) -> string?;
 }
+
+using_cpp_interface = interface +cpp {
+    method(cpp_interface: using_cpp_interface) -> using_cpp_interface;
+}
+
+using_host_interface = interface -cpp {
+    method(passing_itself_host: using_host_interface) -> using_host_interface;
+}

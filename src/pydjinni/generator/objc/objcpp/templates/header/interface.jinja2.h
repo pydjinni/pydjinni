@@ -16,7 +16,7 @@ limitations under the License.
 /*> extends "base.jinja2" */
 
 //> block global
-{{ ("@protocol " if "objc" in type_def.targets else "@class ") ~ type_def.objc.typename }};
+{{ ("@protocol " if type_def.objc.protocol else "@class ") ~ type_def.objc.typename }};
 //> endblock
 
 //> block content
