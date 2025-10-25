@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from pydantic import create_model, BaseModel
+from pydantic.fields import FieldInfo
 
 
 class TypeModelBuilder:
@@ -22,13 +23,13 @@ class TypeModelBuilder:
 
     def __init__(self, model_base: type[BaseModel]):
         self._model_base = model_base
-        self._models: dict[str, type[BaseModel]] = {}
+        self._models: dict[str, tuple[type[BaseModel], FieldInfo | None]] = {}
 
-    def add_field(self, field_name: str, model: type(BaseModel)):
-        self._models[field_name] = model
+    def add_field(self, field_name: str, model: type[BaseModel], field_info: FieldInfo | None = None):
+        self._models[field_name] = (model, field_info)
 
     def build(self):
-        field_kwargs = {key: (model, None) for key, model in self._models.items()}
+        field_kwargs = {key: value for key, value in self._models.items()}
         return create_model(
             self._model_base.__name__,
             __base__=self._model_base,

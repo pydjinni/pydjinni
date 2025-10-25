@@ -19,63 +19,76 @@ from .type import CppCliExternalType
 external_types: dict[str, CppCliExternalType] = {
     "bool": CppCliExternalType(
         typename="bool",
+        cs_typename="bool",
         translator="::pydjinni::cppcli::translator::Bool",
         header=PurePosixPath("pydjinni/cppcli/Marshal.hpp"),
         reference=False),
     "i8": CppCliExternalType(
         typename="char",
+        cs_typename="char",
         translator="::pydjinni::cppcli::translator::I8",
         header=PurePosixPath("pydjinni/cppcli/Marshal.hpp"),
         reference=False),
     "i16": CppCliExternalType(
         typename="short",
+        cs_typename="short",
         translator="::pydjinni::cppcli::translator::I16",
         header=PurePosixPath("pydjinni/cppcli/Marshal.hpp"),
         reference=False),
     "i32": CppCliExternalType(
         typename="int",
+        cs_typename="int",
         translator="::pydjinni::cppcli::translator::I32",
         header=PurePosixPath("pydjinni/cppcli/Marshal.hpp"),
         reference=False),
     "i64": CppCliExternalType(
         typename="__int64",
+        cs_typename="long",
         translator="::pydjinni::cppcli::translator::I64",
         header=PurePosixPath("pydjinni/cppcli/Marshal.hpp"),
         reference=False),
     "f32": CppCliExternalType(
         typename="float",
+        cs_typename="float",
         translator="::pydjinni::cppcli::translator::F32",
         header=PurePosixPath("pydjinni/cppcli/Marshal.hpp"),
         reference=False),
     "f64": CppCliExternalType(
         typename="double",
+        cs_typename="double",
         translator="::pydjinni::cppcli::translator::F64",
         header=PurePosixPath("pydjinni/cppcli/Marshal.hpp"),
         reference=False),
     "string": CppCliExternalType(
         typename="System::String",
+        cs_typename="string",
         translator="::pydjinni::cppcli::translator::String",
         header=PurePosixPath("pydjinni/cppcli/Marshal.hpp")),
     "binary": CppCliExternalType(
         typename="array<System::Byte>",
+        cs_typename="byte[]",
         translator="::pydjinni::cppcli::translator::Binary",
         header=PurePosixPath("pydjinni/cppcli/Marshal.hpp")),
     "date": CppCliExternalType(
         typename="System::DateTime",
+        cs_typename="System.DateTime",
         translator="::pydjinni::cppcli::translator::Date",
         header=PurePosixPath("pydjinni/cppcli/Marshal.hpp"),
         reference=False
     ),
     "list": CppCliExternalType(
         typename="System::Collections::Generic::List",
+        cs_typename="System.Collections.Generic.List",
         translator="::pydjinni::cppcli::translator::List",
         header=PurePosixPath("pydjinni/cppcli/Marshal.hpp")),
     "set": CppCliExternalType(
         typename="System::Collections::Generic::HashSet",
+        cs_typename="System.Collections.Generic.HashSet",
         translator="::pydjinni::cppcli::translator::Set",
         header=PurePosixPath("pydjinni/cppcli/Marshal.hpp")),
     "map": CppCliExternalType(
         typename="System::Collections::Generic::Dictionary",
+        cs_typename="System.Collections.Generic.Dictionary",
         translator="::pydjinni::cppcli::translator::Map",
         header=PurePosixPath("pydjinni/cppcli/Marshal.hpp"))
 }

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pydjinni.generator.cpp.docs.generator import CppDocumentationGenerator
 from pydjinni.generator.target import Target
 from pydjinni.parser.ast import Record
 from .cpp.generator import CppGenerator
@@ -24,4 +25,5 @@ class CppTarget(Target):
     key = "cpp"
     display_key = "C++"
     generators = [CppGenerator]
+    documentation_generators = [CppDocumentationGenerator]
     supported_deriving = {Record.Deriving.eq, Record.Deriving.ord}

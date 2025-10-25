@@ -13,7 +13,7 @@
 # limitations under the License.
 import uuid
 from pathlib import Path
-from typing import TypeVar
+from typing import TypeVar, cast
 from unittest.mock import MagicMock
 
 import pytest
@@ -21,7 +21,7 @@ import pytest
 from pydjinni.exceptions import FileNotFoundException, ApplicationExceptionList
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.file.processed_files_model_builder import ProcessedFiles
-from pydjinni.parser.ast import Record
+from pydjinni.parser.ast import Namespace, Record
 from pydjinni.parser.base_models import BaseType, BaseExternalType, DataField
 from pydjinni.parser.parser import Parser
 from pydjinni.parser.resolver import Resolver
@@ -324,9 +324,13 @@ def test_namespace(tmp_path: Path):
 
     # THEN the ast should contain two nested namespaces
     assert len(ast) == 1
-    assert ast[0].name == "foo.bar"
-    assert len(ast[0].children) == 2
-    assert ast[0].children[1].name == "baz"
+    outer_namespace = cast(Namespace, ast[0])
+    assert outer_namespace.name == "foo.bar"
+    assert len(outer_namespace.children) == 2
+    assert outer_namespace.namespace == []
+    inner_namespace = cast(Namespace, outer_namespace.children[1])
+    assert inner_namespace.name == "baz"
+    assert inner_namespace.namespace == ["foo", "bar"]
 
 
 def test_generic_parameters_not_allowed(tmp_path: Path):

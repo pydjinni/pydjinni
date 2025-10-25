@@ -14,12 +14,26 @@
 
 from typing import Annotated
 
-from pydantic import AfterValidator
+from pydantic import AfterValidator, BeforeValidator, PlainSerializer, WithJsonSchema
+from pydantic_core import core_schema
 
 from pydjinni.config.types import IdentifierStyle
 
 
 class IdentifierType(str):
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source_type, handler):
+        return core_schema.no_info_after_validator_function(cls, core_schema.str_schema())
+
+    def prepend(self, prefix: str) -> "IdentifierType":
+        return IdentifierType(f"{prefix}_{self}")
+
+    def append(self, postfix: str) -> "IdentifierType":
+        return IdentifierType(f"{self}_{postfix}")
+
+    def wrap(self, prefix: str, postfix: str) -> "IdentifierType":
+        return self.prepend(prefix).append(postfix)
+
     def convert(self, style: IdentifierStyle | IdentifierStyle.Case):
         def convert_token(token: str, style: IdentifierStyle.Case, first: bool = False) -> str:
             match (style, first):
@@ -55,7 +69,9 @@ class IdentifierType(str):
         return f"{identifier_style.prefix}{link.join(converted_tokens)}"
 
 
-Identifier = Annotated[
-    str,
+IdentifierField = Annotated[
+    IdentifierType,
     AfterValidator(lambda x: IdentifierType(x)),
+    PlainSerializer(lambda x: x, return_type=str),
+    WithJsonSchema({"type": "string", "pattern": r"[_\w]+"}, mode="validation"),
 ]

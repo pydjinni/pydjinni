@@ -17,10 +17,11 @@ from re import Match
 from typing import Any, Dict, List, Tuple, Union
 from mistune import BlockState, InlineState, Markdown
 
-from .identifier import Identifier
+from .identifier import IdentifierField
 from pydjinni.position import Cursor, Position
 
 from .base_models import CommentTypeReference, TypeReference
+
 
 @dataclass
 class InlineTypeReference:
@@ -28,18 +29,19 @@ class InlineTypeReference:
     Represents an inline type reference in a markdown comment.
     This is used to parse type references that are defined inline, e.g. ``type_name``.
     """
-    namespace: list[Identifier]
+
+    namespace: list[IdentifierField]
     position: Position
     type_references: list[TypeReference]
 
     @property
     def name(self) -> str:
         return "inline_type_ref"
-    
+
     @property
     def pattern(self) -> str:
         return r"``(?P<type_ref_name>[\w.]+)``"
-    
+
     @property
     def command(self):
         def parse_inline_type_ref(_, match: Match, state: InlineState):
@@ -59,6 +61,7 @@ class InlineTypeReference:
             return match.end()
 
         return parse_inline_type_ref
+
 
 @dataclass
 class MarkdownCommand:
@@ -121,7 +124,7 @@ class TypeReferenceMarkdownCommand(ParameterMarkdownCommand):
     """
 
     position: Position
-    namespace: list[Identifier]
+    namespace: list[IdentifierField]
     type_references: list[TypeReference]
 
     @property
@@ -150,7 +153,9 @@ class MarkdownParser:
     def __init__(self, type_references: list[TypeReference] = []):
         self.type_references = type_references
 
-    def commands(self, namespace: list[Identifier] = [], position: Position | None = None) -> list[MarkdownCommand]:
+    def commands(
+        self, namespace: list[IdentifierField] = [], position: Position | None = None
+    ) -> list[MarkdownCommand]:
         return [
             MarkdownCommand("returns", "documents the return value of a method"),
             MarkdownCommand("deprecated", "marks a type, field or method as deprecated"),
@@ -166,7 +171,7 @@ class MarkdownParser:
         ]
 
     def parse(
-        self, text: str | None, namespace: list[Identifier], position: Position | None = None
+        self, text: str | None, namespace: list[IdentifierField], position: Position | None = None
     ) -> Tuple[Union[str, List[Dict[str, Any]]], BlockState] | None:
         def commands_plugin(md: Markdown):
             for command in self.commands(namespace, position):

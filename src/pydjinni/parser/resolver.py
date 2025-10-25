@@ -82,6 +82,7 @@ class Resolver:
                 f"Unknown type '{type_reference.name}'",
                 position=type_reference.position
             )
+            
         return type_def
 
 

@@ -27,22 +27,19 @@ public:
 //> for method in type_def.methods
     //? method.comment : method.cpp.comment | comment | indent
     //? method.deprecated : method.cpp.deprecated
-    {{ method.cpp.prefix_specifiers() ~ method.cpp.type_spec }} {{ method.cpp.name }}(
-    /*>- for parameter in method.parameters -*/
-        {{ parameter.cpp.type_spec }} {{ parameter.cpp.name ~ (", " if not loop.last) }}
-    /*>- endfor */){{ method.cpp.postfix_specifiers() }};
+    {{ method.cpp.signature }};
 //> endfor
 //> for property in type_def.properties
     //? property.comment : property.cpp.comment | comment | indent
     //? property.deprecated : property.cpp.deprecated
-    [[nodiscard]] {{ property.cpp.return_type_spec }} {{ property.cpp.getter }}() const noexcept;
+    [[nodiscard]] {{ property.cpp.getter_signature }};
     //? property.comment : property.cpp.comment | comment | indent
     //? property.deprecated : property.cpp.deprecated
-    pydjinni::signals::connection {{ property.cpp.notifier }}(const std::function<void({{ property.cpp.type_spec }})>& callback) noexcept;
+    {{ property.cpp.notifier_signature }};
 //? property.readonly : "protected:"
     //? property.comment : property.cpp.comment | comment | indent
     //? property.deprecated : property.cpp.deprecated
-    virtual void {{ property.cpp.setter }}({{ property.cpp.type_spec }} value) noexcept;
+    virtual {{ property.cpp.setter_signature }};
 //? property.readonly : "public:"
 //> endfor
 };

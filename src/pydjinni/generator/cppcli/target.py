@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pydjinni.generator.cppcli.docs.generator import CsharpDocumentationGenerator
 from pydjinni.generator.target import Target
 from pydjinni.parser.ast import Record
 from .cppcli.generator import CppCliGenerator
@@ -24,4 +25,5 @@ class CppCliTarget(Target):
     key = "cppcli"
     display_key = "C++/CLI"
     generators = [CppCliGenerator]
+    documentation_generators = [CsharpDocumentationGenerator]
     supported_deriving = {Record.Deriving.eq, Record.Deriving.ord}

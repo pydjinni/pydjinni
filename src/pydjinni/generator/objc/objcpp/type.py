@@ -24,7 +24,6 @@ from pydjinni.generator.objc.objcpp import external_types
 from pydjinni.generator.objc.objcpp.config import ObjcppConfig
 from pydjinni.parser.ast import Function, Interface, Record
 from pydjinni.parser.base_models import BaseType, BaseField, BaseCommentModel, TypeReference
-from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
 def translator(type_ref: TypeReference) -> str:

@@ -28,7 +28,6 @@ from pydantic import BaseModel, Field, computed_field
 from pydjinni.generator.java.jni.config import JniConfig
 from pydjinni.parser.ast import Interface, Parameter, Function
 from pydjinni.parser.base_models import BaseExternalType, BaseType, BaseField, TypeReference
-from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
 class NativeType(StrEnum):

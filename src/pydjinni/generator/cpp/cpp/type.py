@@ -22,7 +22,7 @@ from pydjinni.generator.cpp.cpp.config import CppConfig
 from pydjinni.generator.cpp.cpp.keywords import keywords
 from pydjinni.generator.filters import headers, quote
 from pydjinni.generator.validator import validate
-from pydjinni.parser.ast import Parameter, Record, Interface, Function, Enum, ErrorDomain, Flags
+from pydjinni.parser.ast import Namespace, Parameter, Record, Interface, Function, Enum, ErrorDomain, Flags
 from pydjinni.parser.base_models import (
     BaseType,
     BaseField,
@@ -32,7 +32,6 @@ from pydjinni.parser.base_models import (
     SymbolicConstantType,
     BaseCommentModel,
 )
-from pydjinni.parser.identifier import IdentifierType as Identifier
 
 
 def append_if(lst: list, item, condition) -> list:
@@ -86,6 +85,12 @@ class CppBaseCommentModel(BaseModel):
     def deprecated(self):
         return deprecated(self.decl, postfix=" ")
 
+class CppNamespace(CppBaseCommentModel):
+    decl: Namespace = Field(exclude=True, repr=False)
+    
+    @cached_property
+    def name(self):
+        return self.decl.name.convert(self.config.identifier.namespace)
 
 class CppBaseType(CppBaseCommentModel):
     decl: BaseType = Field(exclude=True, repr=False)
@@ -196,6 +201,8 @@ class CppInterface(CppBaseType):
         @validate(keywords)
         def name(self) -> str:
             return self.decl.name.convert(self.config.identifier.method)
+        
+        
 
         @cached_property
         def type_spec(self):
@@ -236,6 +243,11 @@ class CppInterface(CppBaseType):
         @property
         def noexcept(self) -> bool:
             return self.decl.throwing is None
+        
+        @property
+        def signature(self) -> str:
+            parameters = ", ".join([f"{ parameter.cpp.type_spec } {parameter.cpp.name}" for parameter in self.decl.parameters])
+            return f"{ self.prefix_specifiers() + self.type_spec } { self.name }({parameters}){self.postfix_specifiers()}"
 
     class CppProperty(CppBaseField):
         decl: Interface.Property = Field(exclude=True, repr=False)
@@ -244,19 +256,31 @@ class CppInterface(CppBaseType):
         @property
         @validate(keywords)
         def getter(self) -> str:
-            return Identifier(f"get_{self.decl.name}").convert(self.config.identifier.method)
+            return self.decl.name.prepend("get").convert(self.config.identifier.method)
+        
+        @property
+        def getter_signature(self) -> str:
+            return f"{self.return_type_spec} {self.getter}() const noexcept"
 
         @computed_field
         @property
         @validate(keywords)
         def setter(self) -> str:
-            return Identifier(f"set_{self.decl.name}").convert(self.config.identifier.method)
+            return self.decl.name.prepend("set").convert(self.config.identifier.method)
+        
+        @property
+        def setter_signature(self) -> str:
+            return f"void { self.setter }({ self.type_spec } value) noexcept"
 
         @computed_field
         @property
         @validate(keywords)
         def notifier(self) -> str:
-            return Identifier(f"on_{self.decl.name}_changed").convert(self.config.identifier.method)
+            return self.decl.name.wrap("on", "changed").convert(self.config.identifier.method)
+        
+        @property
+        def notifier_signature(self) -> str:
+            return f"pydjinni::signals::connection { self.notifier }(const std::function<void({ self.type_spec })>& callback) noexcept"
 
         @cached_property
         def type_spec(self):
@@ -327,12 +351,12 @@ class CppRecord(CppBaseType):
 
     @cached_property
     def derived_name(self) -> str:
-        return Identifier(self.decl.name).convert(self.config.identifier.type)
+        return self.decl.name.convert(self.config.identifier.type)
 
     @cached_property
     def name(self):
         if self.base_type:
-            return Identifier(f"{self.decl.name}_base").convert(self.config.identifier.type)
+            return self.decl.name.append("base").convert(self.config.identifier.type)
         else:
             return super().name
 
@@ -348,7 +372,7 @@ class CppRecord(CppBaseType):
     @cached_property
     def header(self) -> PurePosixPath:
         if self.base_type:
-            filename = Identifier(self.decl.name + "_base").convert(self.config.identifier.file)
+            filename = self.decl.name.append("base").convert(self.config.identifier.file)
             return PurePosixPath(*self.decl.namespace) / f"{filename}.{self.config.header_extension}"
         else:
             return super().header
@@ -357,7 +381,7 @@ class CppRecord(CppBaseType):
     @cached_property
     def source(self) -> PurePosixPath:
         if self.base_type:
-            filename = Identifier(self.decl.name + "_base").convert(self.config.identifier.file)
+            filename = self.decl.name.append("base").convert(self.config.identifier.file)
             return PurePosixPath(*self.decl.namespace) / f"{filename}.{self.config.source_extension}"
         else:
             return super().source

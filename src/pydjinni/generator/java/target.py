@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from pydjinni.generator.java.docs.java.generator import JavaDocumentationGenerator
 from pydjinni.generator.target import Target
 from pydjinni.parser.ast import Record
 from .java.generator import JavaGenerator
@@ -27,4 +28,5 @@ class JavaTarget(Target):
     key = "java"
     display_key = "Java"
     generators = [JavaGenerator, JniGenerator]
+    documentation_generators = [JavaDocumentationGenerator]
     supported_deriving = {Record.Deriving.eq, Record.Deriving.ord}

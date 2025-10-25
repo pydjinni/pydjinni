@@ -21,16 +21,14 @@ from pydantic.fields import FieldInfo
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
 
 from pydjinni.builder.build_config import BuildBaseConfig
+from pydjinni.generator.docs.config import DocumentationBaseConfig
 from pydjinni.generator.generate_config import GenerateBaseConfig
 from pydjinni.packaging.packaging_config import PackageBaseConfig
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        extra='forbid',
-        env_file='.env',
-        env_nested_delimiter='__',
-        env_prefix='pydjinni__'
+        extra="forbid", env_file=".env", env_nested_delimiter="__", env_prefix="pydjinni__"
     )
 
     @classmethod
@@ -42,7 +40,7 @@ class Settings(BaseSettings):
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
-        return env_settings, dotenv_settings,file_secret_settings, init_settings
+        return env_settings, dotenv_settings, file_secret_settings, init_settings
 
 
 class ConfigModelBuilder:
@@ -54,16 +52,19 @@ class ConfigModelBuilder:
         self._generator_config_models: dict[str, type[BaseModel]] = {}
         self._builder_config_models: dict[str, type[BaseModel]] = {}
         self._package_config_models: dict[str, type[BaseModel]] = {}
+        self._documentation_config_models: dict[str, type[BaseModel]] = {}
 
     def add_generator_config(self, name: str, config_model: type[BaseModel]):
         self._generator_config_models[name] = config_model
+
+    def add_documentation_config(self, name: str, config_model: type[BaseModel]):
+        self._documentation_config_models[name] = config_model
 
     def add_builder_config(self, name: str, config_model: type[BaseModel]):
         self._builder_config_models[name] = config_model
 
     def add_package_config(self, name: str, config_model: type[BaseModel]):
         self._package_config_models[name] = config_model
-
 
     def build(self):
         return create_model(
@@ -73,27 +74,35 @@ class ConfigModelBuilder:
                 self._create_config_model("Generate", GenerateBaseConfig, self._generator_config_models) | None,
                 FieldInfo(
                     default=None,
-                    description=inspect.cleandoc(GenerateBaseConfig.__doc__) if GenerateBaseConfig.__doc__ else None
-                )
+                    description=inspect.cleandoc(GenerateBaseConfig.__doc__) if GenerateBaseConfig.__doc__ else None,
+                ),
+            ),
+            documentation=(
+                self._create_config_model("Documentation", DocumentationBaseConfig, self._documentation_config_models)
+                | None,
+                FieldInfo(
+                    default=None,
+                    description=(
+                        inspect.cleandoc(DocumentationBaseConfig.__doc__) if DocumentationBaseConfig.__doc__ else None
+                    ),
+                ),
             ),
             build=(
-                self._create_config_model("Build", BuildBaseConfig, self._builder_config_models) | None, FieldInfo(
+                self._create_config_model("Build", BuildBaseConfig, self._builder_config_models) | None,
+                FieldInfo(
                     default=None,
-                    description=inspect.cleandoc(BuildBaseConfig.__doc__) if BuildBaseConfig.__doc__ else None
-                )
+                    description=inspect.cleandoc(BuildBaseConfig.__doc__) if BuildBaseConfig.__doc__ else None,
+                ),
             ),
             package=(
-                self._create_config_model("Package", PackageBaseConfig, self._package_config_models) | None, FieldInfo(
+                self._create_config_model("Package", PackageBaseConfig, self._package_config_models) | None,
+                FieldInfo(
                     default=None,
-                    description=inspect.cleandoc(PackageBaseConfig.__doc__) if PackageBaseConfig.__doc__ else None
-                )
-            )
+                    description=inspect.cleandoc(PackageBaseConfig.__doc__) if PackageBaseConfig.__doc__ else None,
+                ),
+            ),
         )
 
     def _create_config_model(self, model_name: str, base: type[BaseModel], models: dict[str, type[BaseModel]]):
         field_kwargs = {key: (config_model, None) for key, config_model in models.items()}
-        return create_model(
-            model_name,
-            __base__=base,
-            **field_kwargs
-        )
+        return create_model(model_name, __base__=base, **field_kwargs)  # type: ignore

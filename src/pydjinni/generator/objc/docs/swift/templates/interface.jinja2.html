@@ -1,0 +1,40 @@
+{% extends "base.jinja2.html" %}
+{% block content %}
+    <p class="preheading">{{ "Protocol" if type_def.objc.protocol else "Class" }}</p>
+    {{ heading(1, type_def.objc.swift_typename) }}
+    <p class="postheading">implements <code>NSObject</code></p>
+
+    {{ type_def | comment }}
+
+    {{ heading(2, "Properties", "properties") }}
+    {% for property in type_def.properties %}
+    {{ heading(3, property.cpp.name, "property_" ~ property.name) }}
+    {{ property | comment }}
+
+    <pre>{{ ("void " ~ property.cpp.setter ~ "(" ~ property.cpp.type_spec ~ " value) noexcept") | highlight }}</pre>
+    <pre>connection {{ property.cpp.notifier }}() noexcept</pre>
+    <pre>{{ property.cpp.type_spec }} {{ property.cpp.getter }}() noexcept</pre>
+    {% endfor %}
+
+    {{ heading(2, "Static Methods", "static_methods") }}
+    {% for method in type_def.methods if method.static %}
+    {{ heading(3, method.cpp.name, "static_method_" ~ method.name) }}
+    <pre>{{ method.cpp.type_spec }} {{ method.cpp.name }}()</pre>
+    {{ method | comment }}
+    {% endfor %}
+
+    {{ heading(2, "Methods", "methods") }}
+    {% for method in type_def.methods if not method.static %}
+    {{ heading(3, method.cpp.name, "method_" ~ method.name) }}
+    {% if method.deprecated %}
+    {% endif %}
+    <pre>{{ (method.cpp.type_spec ~ " " ~ method.cpp.name ~ "()") | highlight }}</pre>
+    {{ method | comment }}
+    {{ heading(4, "Parameters") }}
+    <ul>
+    {% for parameter in method.parameters %}
+        <li><code>{{ parameter.cpp.name }}</code>{{ parameter | comment }}</li>
+    {% endfor %}    
+    </ul>
+    {% endfor %}
+{% endblock %}

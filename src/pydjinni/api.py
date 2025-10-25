@@ -22,6 +22,8 @@ from typing import Any
 
 from pydjinni.builder.build_config import BuildBaseConfig
 from pydjinni.file.processed_files_model_builder import ProcessedFilesModelBuilder, ProcessedFiles
+from pydjinni.generator.docs.config import DocumentationBaseConfig
+from pydjinni.generator.docs.registry import DocumentationTargetRegistry
 from pydjinni.packaging.architecture import Architecture
 from pydjinni.packaging.packaging_config import PackageBaseConfig
 from pydjinni.packaging.target import PackageTarget
@@ -98,6 +100,7 @@ class API:
         self._config_model_builder = ConfigModelBuilder()
         self._external_type_model_builder = TypeModelBuilder(BaseExternalType)
         self._processed_files_model_builder = ProcessedFilesModelBuilder()
+        self._documentation_target_registry = DocumentationTargetRegistry()
         # initializing plugins
         self._generate_targets = [
             self._init_generator_plugin(plugin) for plugin in entry_points(group="pydjinni.generator")
@@ -154,6 +157,10 @@ class API:
             dictionary of all available generator targets.
         """
         return {target.key: target for target in self._generate_targets}
+    
+    @cached_property
+    def documentation_generation_targets(self) -> dict[str, Target]:
+        return {target.key: target for target in self._generate_targets if not target.internal}
 
     @cached_property
     def package_targets(self) -> dict[str, PackageTarget]:
@@ -179,6 +186,7 @@ class API:
             config_model_builder=self._config_model_builder,
             external_type_model_builder=self._external_type_model_builder,
             processed_files_model_builder=self._processed_files_model_builder,
+            documentation_target_registry=self._documentation_target_registry
         )
 
     def _init_build_plugin(self, plugin: EntryPoint) -> BuildTarget:
@@ -244,6 +252,7 @@ class API:
                 package_targets=self.package_targets,
                 build_targets=self.build_targets,
                 file_reader_writer=self._file_reader_writer,
+                documentation_targets_registry=self._documentation_target_registry
             )
         except pydantic.ValidationError as e:
             raise ConfigurationException.from_pydantic_error(e)
@@ -260,6 +269,7 @@ class API:
             package_targets: dict[str, PackageTarget],
             build_targets: dict[str, BuildTarget],
             file_reader_writer: FileReaderWriter,
+            documentation_targets_registry: DocumentationTargetRegistry
         ):
             self._config = config
             self._root_path = root_path
@@ -268,9 +278,11 @@ class API:
             self._package_targets = package_targets
             self._build_targets = build_targets
             self._file_reader_writer = file_reader_writer
+            self._documentation_targets_registry = documentation_targets_registry
             self.resolver = Resolver(self._external_types_model)
 
             self._generate_config: GenerateBaseConfig = self._config.generate
+            self._documentation_config: DocumentationBaseConfig = self._config.documentation
             generate_targets: list[str] = list(self._generate_config.model_fields_set) if self._generate_config else []
             self._configured_targets: list[Target] = [
                 target for key, target in self._generate_targets.items() if key in generate_targets
@@ -310,8 +322,7 @@ class API:
 
             for target in self.configured_targets:
                 target.register_external_types(external_types_builder)
-                target.configure(self._generate_config)
-
+                target.configure(self._generate_config, self._documentation_config)
             self.resolver.reset()
             for external_type_def in external_types_builder.build():
                 self.resolver.register(external_type_def)
@@ -341,6 +352,7 @@ class API:
                 ast=ast,
                 config=self._generate_config,
                 resolver=self.resolver,
+                documentation_targets=self._documentation_targets_registry.documentation_targets
             )
 
         def package(self, target: str, configuration: str | None = None) -> PackageContext:
@@ -436,6 +448,7 @@ class API:
                 ast: list[BaseType | Namespace],
                 config: GenerateBaseConfig,
                 resolver: Resolver,
+                documentation_targets: list[DocumentationTargetRegistry.DocumentationTarget]
             ):
                 self._generate_targets = generate_targets
                 self._file_reader_writer = file_writer
@@ -446,6 +459,7 @@ class API:
                 self.ast = ast
                 self._config = config
                 self._resolver = resolver
+                self._documentation_targets = documentation_targets
 
             def generate(self, target_name: str, clean: bool = False) -> API.ConfiguredContext.GenerateContext:
                 """
@@ -460,6 +474,11 @@ class API:
                 """
                 target = self._generate_targets[target_name]
                 target.generate(self.type_defs, clean=clean, copy_support_lib_sources=self._config.support_lib_sources)
+                return self
+
+            def generate_documentation(self, target_name: str, clean: bool = False) -> API.ConfiguredContext.GenerateContext:
+                target = self._generate_targets[target_name]
+                target.generate_documentation(self.ast, self._documentation_targets, clean=clean)
                 return self
 
             @property

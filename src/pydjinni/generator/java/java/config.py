@@ -22,7 +22,7 @@ from typing import Annotated
 from pydantic import BaseModel, Field, AfterValidator, PlainSerializer, WithJsonSchema
 
 from pydjinni.config.types import IdentifierStyle
-from pydjinni.parser.identifier import Identifier
+from pydjinni.parser.identifier import IdentifierField
 
 
 class JavaIdentifierStyle(BaseModel):
@@ -35,9 +35,9 @@ class JavaIdentifierStyle(BaseModel):
 
 Package = Annotated[
     str,
-    AfterValidator(lambda x: x.split('.')),
-    PlainSerializer(lambda x: '.'.join(x), return_type=str),
-    WithJsonSchema({'type': 'string', 'pattern': r"^[a-z][a-z0-9_]*([.][a-z0-9_]+)+[0-9a-z_]$"}, mode='validation')
+    AfterValidator(lambda x: x.split(".")),
+    PlainSerializer(lambda x: ".".join(x), return_type=str),
+    WithJsonSchema({"type": "string", "pattern": r"^[a-z][a-z0-9_]*([.][a-z0-9_]+)+[0-9a-z_]$"}, mode="validation"),
 ]
 
 
@@ -46,25 +46,21 @@ class JavaConfig(BaseModel):
     Java configuration options
     """
 
-    out: Path = Field(
-        description="The output folder for the generated files."
-    )
+    out: Path = Field(description="The output folder for the generated files.")
 
     class ClassAccessModifier(StrEnum):
-        public = 'public'
-        package = 'package'
+        public = "public"
+        package = "package"
 
-    package: Package | list[Identifier] = Field(
+    package: Package | list[IdentifierField] = Field(
         examples=["my.package.name", "other.package.name"],
-        description="The package name to use for generated Java classes"
+        description="The package name to use for generated Java classes",
     )
-    support_types_package: Package | list[Identifier] = Field(
-        default=["pydjinni"],
-        description="The subpackage name where required support types are generated to"
+    support_types_package: Package | list[IdentifierField] = Field(
+        default=["pydjinni"], description="The subpackage name where required support types are generated to"
     )
     interfaces: bool = Field(
-        default=False,
-        description="Whether Java interfaces should be used instead of abstract classes where possible"
+        default=False, description="Whether Java interfaces should be used instead of abstract classes where possible"
     )
     class_access_modifier: ClassAccessModifier = Field(
         default=ClassAccessModifier.public,
@@ -79,7 +75,7 @@ class JavaConfig(BaseModel):
         default=None,
         pattern=r"^@([a-z][a-z0-9_]*(([.][a-z0-9_]+)+[0-9a-z_])?[.])?[a-zA-Z][a-zA-Z0-9_]*$",
         description="Java annotation to place on all generated Java classes",
-        examples=["@Foo"]
+        examples=["@Foo"],
     )
     nullable_annotation: str = Field(
         default=None,
@@ -96,15 +92,9 @@ class JavaConfig(BaseModel):
     native_lib: str = Field(
         default=None,
         description="Name of the native library containing the JNI interface. "
-                    "If this option is set and an interface is marked as `main`, a static block will be "
-                    "added to the interface, that loads the native library."
+        "If this option is set and an interface is marked as `main`, a static block will be "
+        "added to the interface, that loads the native library.",
     )
-    function_prefix: str = Field(
-        default="Functional",
-        description="Prefix for generated functional interfaces."
-    )
-    string_serialization: bool = Field(
-        default=True,
-        description="Whether to generate `toString` overloads for records"
-    )
+    function_prefix: str = Field(default="Functional", description="Prefix for generated functional interfaces.")
+    string_serialization: bool = Field(default=True, description="Whether to generate `toString` overloads for records")
     identifier: JavaIdentifierStyle = JavaIdentifierStyle()

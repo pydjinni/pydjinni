@@ -22,8 +22,7 @@ from pydjinni.generator.java.java.config import JavaConfig
 from pydjinni.generator.java.java.keywords import keywords
 from pydjinni.generator.validator import validate
 from pydjinni.parser.ast import Interface, Record, Function
-from pydjinni.parser.base_models import BaseType, BaseField, BaseExternalType, TypeReference, DataField
-from pydjinni.parser.identifier import IdentifierType as Identifier
+from pydjinni.parser.base_models import BaseType, BaseField, BaseExternalType, TypeReference
 
 
 def filename(package, name):
@@ -167,8 +166,8 @@ class JavaRecord(JavaBaseType):
     def name(self):
         name = self.decl.name
         if self.base_type:
-            name += "_base"
-        return Identifier(name).convert(self.config.identifier.type)
+            name = name.append("base")
+        return name.convert(self.config.identifier.type)
 
     @computed_field
     @cached_property
@@ -187,7 +186,7 @@ class JavaRecord(JavaBaseType):
 class JavaDataField(JavaBaseField):
     @cached_property
     def getter(self):
-        return Identifier(f"get_{self.decl.name}").convert(self.config.identifier.method)
+        return self.decl.name.prepend("get").convert(self.config.identifier.method)
 
     @cached_property
     def field_modifier(self):
@@ -289,25 +288,33 @@ class JavaInterface(JavaBaseType):
         @property
         @validate(keywords)
         def getter(self) -> str:
-            return Identifier(f"get_{self.decl.name}").convert(self.config.identifier.method)
+            return self.decl.name.prepend("get").convert(self.config.identifier.method)
+        
+        @property
+        def getter_signature(self) -> str:
+            return f"{ self.data_type } { self.getter }()"
 
         @computed_field
         @property
         @validate(keywords)
         def setter(self) -> str:
-            return Identifier(f"set_{self.decl.name}").convert(self.config.identifier.method)
+            return self.decl.name.prepend("set").convert(self.config.identifier.method)
+        
+        @property
+        def setter_signature(self) -> str:
+            return f"void { self.setter }({self.data_type} value)"
 
         @computed_field
         @property
         @validate(keywords)
         def notifier(self) -> str:
-            return Identifier(f"on_{self.decl.name}_changed").convert(self.config.identifier.method)
+            return self.decl.name.wrap("on", "changed").convert(self.config.identifier.method)
         
         @computed_field
         @property
         @validate(keywords)
         def functional_interface(self) -> str:
-            return Identifier(f"{self.decl.name}_changed_functional_interface").convert(self.config.identifier.type)
+            return self.decl.name.append("changed_functional_interface").convert(self.config.identifier.type)
         
         @property
         def connection_type(self) -> str:

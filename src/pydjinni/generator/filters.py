@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pathlib import Path
+from pathlib import Path, PurePath
 
 from pydjinni.parser.base_models import TypeReference
 
 
-def quote(header: Path):
+def quote(header: PurePath):
     return str(header) if str(header).startswith("<") and str(header).endswith(">") else f'"{header.as_posix()}"'
 
 

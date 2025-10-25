@@ -14,13 +14,13 @@
 
 from typing import Annotated
 
-from pydantic import AfterValidator, PlainSerializer, WithJsonSchema
+from pydantic import AfterValidator, BeforeValidator, PlainSerializer, WithJsonSchema
 
-from pydjinni.parser.identifier import Identifier
+from pydjinni.parser.identifier import IdentifierType
 
-Namespace = Annotated[
-    str,
-    AfterValidator(lambda x: [Identifier(i) for i in x.split('.')]),
-    PlainSerializer(lambda x: '.'.join(x), return_type=str),
-    WithJsonSchema({'type': 'string', 'pattern': r"[_\.\w]+"}, mode='validation')
+NamespaceField = Annotated[
+    list[IdentifierType],
+    BeforeValidator(lambda x: [IdentifierType(i) for i in x.split(".") if i] if isinstance(x, str) else x),
+    PlainSerializer(lambda x: ".".join(x), return_type=str),
+    WithJsonSchema({"type": "string", "pattern": r"[_\.\w]+"}, mode="validation"),
 ]

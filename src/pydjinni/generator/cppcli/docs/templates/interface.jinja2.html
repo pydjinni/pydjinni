@@ -1,0 +1,42 @@
+{% extends "base.jinja2.html" %}
+{% block content %}
+    <p class="preheading">{{ type_def.cppcli.cs_namespace }}</p>
+    {{ heading(1, type_def.cppcli.name ) }}
+    <p class="postheading">implements <code>System.ComponentModel.INotifyPropertyChanged</code></p>
+
+    {% set header %}using {{ type_def.cppcli.cs_namespace }};{% endset %}
+    {{ codeblock(header) }}
+
+    {{ type_def | comment }}
+
+    {{ heading(2, "Properties", "properties") }}
+    {% set property_changed_handler %}System.ComponentModel.PropertyChangedEventHandler PropertyChanged{% endset %}
+    {{ codeblock(property_changed_handler)}}
+
+    {% for property in type_def.properties %}
+    {{ heading(3, property.cppcli.property, "property_" ~ property.name) }}
+    {{ property | comment }}
+    {% set property_signature %}{{ property.cppcli.cs_typename }} {{ property.cppcli.property }} { get; {{ "set; " if not property.readonly }}}{% endset %}
+    {{ codeblock(property_signature) }}
+    {% endfor %}
+
+    {{ heading(2, "Static Methods", "static_methods") }}
+    {% for method in type_def.methods if method.static %}
+    {{ heading(3, method.java.name, "static_method_" ~ method.name) }}
+    
+    {{ method | comment }}
+    {% endfor %}
+
+    {{ heading(2, "Methods", "methods") }}
+    {% for method in type_def.methods if not method.static %}
+    {{ heading(3, method.java.name, "method_" ~ method.name) }}
+
+    {{ method | comment }}
+    {{ heading(4, "Parameters") }}
+    <ul>
+    {% for parameter in method.parameters %}
+        <li><code>{{ parameter.java.name }}</code>{{ parameter | comment }}</li>
+    {% endfor %}    
+    </ul>
+    {% endfor %}
+{% endblock %}

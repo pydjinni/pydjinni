@@ -15,7 +15,7 @@
 import pytest
 
 from pydjinni.config.types import IdentifierStyle
-from pydjinni.parser.identifier import IdentifierType as Identifier
+from pydjinni.parser.identifier import IdentifierType
 
 testdata = [
     ("foo_bar", IdentifierStyle.Case.none, "foo_bar"),
@@ -48,7 +48,7 @@ testdata = [
 @pytest.mark.parametrize("name,style,output", testdata)
 def test_identifier_conversion(name, style, output):
     # GIVEN an Identifier instance
-    identifier = Identifier(name)
+    identifier = IdentifierType(name)
 
     # WHEN converting the name with the given style
     converted = identifier.convert(style)
@@ -60,7 +60,7 @@ def test_identifier_conversion(name, style, output):
 @pytest.mark.parametrize("name,style,output", testdata)
 def test_identifier_conversion_prefix(name, style, output):
     # GIVEN an Identifier instance
-    identifier = Identifier(name)
+    identifier = IdentifierType(name)
     prefix = "m_"
 
     # WHEN converting the name with the given style and the defined prefix

@@ -17,8 +17,8 @@ from mistune import BlockState
 from mistune.renderers.markdown import MarkdownRenderer
 
 from pydjinni.generator.objc.objc.config import ObjcIdentifierStyle
-from pydjinni.parser.identifier import IdentifierType as Identifier
 from pydjinni.parser.base_models import TypeReference
+from pydjinni.parser.identifier import IdentifierType
 
 
 class DocCCommentRenderer(MarkdownRenderer):
@@ -32,7 +32,7 @@ class DocCCommentRenderer(MarkdownRenderer):
 
     def param(self, token: dict[str, Any], state: BlockState) -> str:
         name = token['attrs']['name']
-        return f"- Parameter {Identifier(name).convert(self.identifier_style.field)}: {self.render_children(token, state)}\n"
+        return f"- Parameter {IdentifierType(name).convert(self.identifier_style.field)}: {self.render_children(token, state)}\n"
 
     def deprecated(self, token: dict[str, Any], state: BlockState) -> str:
         return ""

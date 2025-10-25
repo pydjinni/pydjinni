@@ -80,6 +80,25 @@ class GenerateCli(MultiCommand):
 
         return None if target is None else command
 
+class DocumentationCli(MultiCommand):
+    @click.pass_context
+    def list_commands(self, ctx, generate_documentation_context: click.Context) -> list[str]:
+        api = MultiCommand.get_api(generate_documentation_context)
+        return list(api.documentation_generation_targets.keys())
+
+    @click.pass_context
+    def get_command(self, ctx, generate_context: click.Context, name) -> click.Command | None:
+        api = MultiCommand.get_api(generate_context)
+        target = api.documentation_generation_targets.get(name)
+
+        @click.command(name, help=target.__doc__)
+        @pass_generate_context
+        def command(generate_context: GenerateContext):
+            logger.info(f"generating documentation for target '{name}'")
+            return generate_context.context.generate_documentation(name, clean=generate_context.clean)
+
+        return None if target is None else command
+
 
 class PackageCli(MultiCommand):
 
@@ -245,6 +264,30 @@ def generate(ctx, cli_context: CliContext, idl: Path, clean: bool):
         clean=clean
     )
 
+@cli.group(cls=DocumentationCli, chain=True)
+@pass_cli_context
+@click.pass_context
+@click.option(
+    '--clean',
+    is_flag=True,
+    help="If enabled, deletes all specified output directories before generating new output.")
+@click.argument('idl', type=Path)
+def document(ctx, cli_context: CliContext, idl: Path, clean: bool):
+    """
+    Generate documentation from the provided IDL file.
+
+    COMMAND specifies the target languages.
+    """
+    logger.info("parsing IDL")
+    context = cli_context.context.parse(idl)
+    logger.debug("generated AST:")
+    if logger.level <= logging.DEBUG:
+        logger.debug(pretty_repr(context.ast))
+    ctx.obj = GenerateContext(
+        api=cli_context.api,
+        context=context,
+        clean=clean
+    )
 
 @generate.result_callback()
 def generate_callback(generate_context, idl, clean):

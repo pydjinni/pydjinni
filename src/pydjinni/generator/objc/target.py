@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from .docs.objc.generator import ObjcDocumentationGenerator
+from .docs.swift.generator import SwiftDocumentationGenerator
 from pydjinni.generator.target import Target
 from pydjinni.parser.ast import Record
 from .objc.generator import ObjcGenerator
@@ -28,3 +30,4 @@ class ObjcTarget(Target):
     display_key = "Objective-C"
     generators = [ObjcGenerator, ObjcppGenerator]
     supported_deriving = {Record.Deriving.eq, Record.Deriving.ord}
+    documentation_generators = [SwiftDocumentationGenerator, ObjcDocumentationGenerator]

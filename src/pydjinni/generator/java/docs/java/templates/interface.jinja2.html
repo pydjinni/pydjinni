@@ -1,0 +1,40 @@
+{% extends "base.jinja2.html" %}
+{% block content %}
+    <p class="preheading">{{ type_def.java.package }}</p>
+    {{ heading(1, type_def.java.name ) }}
+
+    {% set header %}import {{ type_def.java.typename }};{% endset %}
+    {{ codeblock(header) }}
+
+    {{ type_def | comment }}
+
+    {{ heading(2, "Properties", "properties") }}
+    {% for property in type_def.properties %}
+    {{ heading(3, property.java.name, "property_" ~ property.name) }}
+    {{ property | comment }}
+    {{ codeblock(property.java.getter_signature) }}
+    {% if not property.readonly %}
+    {{ codeblock(property.java.setter_signature) }}
+    {% endif %}
+    {% endfor %}
+
+    {{ heading(2, "Static Methods", "static_methods") }}
+    {% for method in type_def.methods if method.static %}
+    {{ heading(3, method.java.name, "static_method_" ~ method.name) }}
+    
+    {{ method | comment }}
+    {% endfor %}
+
+    {{ heading(2, "Methods", "methods") }}
+    {% for method in type_def.methods if not method.static %}
+    {{ heading(3, method.java.name, "method_" ~ method.name) }}
+
+    {{ method | comment }}
+    {{ heading(4, "Parameters") }}
+    <ul>
+    {% for parameter in method.parameters %}
+        <li><code>{{ parameter.java.name }}</code>{{ parameter | comment }}</li>
+    {% endfor %}    
+    </ul>
+    {% endfor %}
+{% endblock %}

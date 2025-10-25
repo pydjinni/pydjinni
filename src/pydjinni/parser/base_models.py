@@ -17,13 +17,12 @@ from pathlib import Path
 
 from mistune import BlockState
 from pydantic.json_schema import SkipJsonSchema
-from pydjinni.parser.identifier import Identifier
-from pydjinni.parser.namespace import Namespace
+from pydjinni.parser.identifier import IdentifierField
+from pydjinni.parser.namespace import NamespaceField
 from pydjinni.position import Position
 
 from enum import StrEnum
-from pydantic import BaseModel, Field, PrivateAttr, SkipValidation, computed_field
-
+from pydantic import BaseModel, Field, PrivateAttr
 
 class DocStrEnum(StrEnum):
     def __new__(cls, value, doc=None):
@@ -34,69 +33,59 @@ class DocStrEnum(StrEnum):
 
 
 class BaseCommentModel(BaseModel):
-    comment: str | None = Field(
-        default=None,
-        description="A short description of the type"
-    )
-    deprecated: str | bool = Field(
-        default=False,
-        description="Marks a type as deprecated"
-    )
+    comment: str | None = Field(default=None, description="A short description of the type")
+    deprecated: str | bool = Field(default=False, description="Marks a type as deprecated")
     _parsed_comment: tuple[list, BlockState] | None = PrivateAttr(default=None)
+
+    @property
+    def child_nodes(self): return []
+
 
 class BaseExternalType(BaseCommentModel):
     class Primitive(StrEnum):
-        primitive = 'primitive'
-        collection = 'collection'
-        interface = 'interface'
-        record = 'record'
-        enum = 'enum'
-        flags = 'flags'
-        function = 'function'
-        error = 'error'
+        primitive = "primitive"
+        collection = "collection"
+        interface = "interface"
+        record = "record"
+        enum = "enum"
+        flags = "flags"
+        function = "function"
+        error = "error"
 
-    name: Identifier = Field(
-        description="Name of the type in the IDL"
-    )
-    namespace: list[Identifier] = Field(
-        default=[],
-        description="Namespace that the type lives in"
-    )
-    primitive: str = Field(
-        default=Primitive.primitive,
-        description="The underlying primitive type"
-    )
+    name: IdentifierField = Field(description="Name of the type in the IDL")
+    namespace: NamespaceField = Field(default=[], description="Namespace that the type lives in")
+    primitive: str = Field(default=Primitive.primitive, description="The underlying primitive type")
     params: list[str] = []
     position: SkipJsonSchema[Position | None] = Field(exclude=True, default=None)
     identifier_position: SkipJsonSchema[Position | None] = Field(exclude=True, default=None)
 
 
 class TypeReference(BaseModel):
-    name: Identifier
-    namespace: Namespace | list[Identifier] = []
+    name: IdentifierField
+    namespace: NamespaceField = []
     position: Position | None = None
     identifier_position: Position | None = None
     parameters: list[TypeReference] = []
     optional: bool = False
-    type_def: BaseExternalType | None = Field(
-        default=None,
-        repr=False
-    )
+    type_def: BaseExternalType | None = Field(default=None, repr=False)
+
 
 class CommentTypeReference(TypeReference):
     pass
+
 
 class FileReference(BaseModel):
     path: Path
     position: Position
     identifier_position: Position
 
-class BaseType(BaseExternalType, extra='allow'):
+
+class BaseType(BaseExternalType, extra="allow"):
     dependencies: list[TypeReference] = []
 
 
-class BaseField(BaseCommentModel, extra='allow'):
-    name: Identifier
+class BaseField(BaseCommentModel, extra="allow"):
+    name: IdentifierField
     position: Position = None
     identifier_position: Position
 
@@ -111,6 +100,7 @@ class SymbolicConstantField(BaseField):
 
 class SymbolicConstantType(BaseType):
     pass
+
 
 class DataField(BaseField):
     type_ref: TypeReference

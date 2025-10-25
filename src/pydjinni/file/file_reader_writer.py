@@ -93,7 +93,7 @@ class FileReaderWriter:
 
     def copy_source_directory(self, key: str, source_dir: Path, target_dir: Path, append: bool = True):
         if source_dir.exists():
-            for file_path in source_dir.rglob('*'):
+            for file_path in source_dir.rglob("*"):
                 if file_path.is_file():
                     target_file_path = target_dir / file_path.relative_to(source_dir)
                     absolute_target_filename = self._copy(file_path, target_file_path)
@@ -104,7 +104,7 @@ class FileReaderWriter:
 
     def copy_header_directory(self, key: str, header_dir: Path, target_dir: Path, append: bool = True):
         if header_dir.exists():
-            for file_path in header_dir.rglob('*'):
+            for file_path in header_dir.rglob("*"):
                 if file_path.is_file():
                     target_file_path = target_dir / file_path.relative_to(header_dir)
                     absolute_target_filename = self._copy(file_path, target_file_path)
@@ -114,21 +114,21 @@ class FileReaderWriter:
                         self._used_keys.append(key)
 
     def write_processed_files(self, filename: Path):
-        model_dump = self._processed_files.model_dump(mode='json')
+        model_dump = self._processed_files.model_dump(mode="json")
 
         # remove all target keys from the resulting dict that have not been used during generation.
         # The resulting output file should only contain non-empty items.
         used_keys = set(self._used_keys)
-        for key in list(model_dump['generated'].keys()):
+        for key in list(model_dump["generated"].keys()):
             if key not in used_keys:
-                del model_dump['generated'][key]
+                del model_dump["generated"][key]
 
         match filename.suffix:
-            case '.yaml' | '.yml':
+            case ".yaml" | ".yml":
                 file_content = yaml.dump(model_dump)
-            case '.json':
+            case ".json":
                 file_content = json.dumps(model_dump, indent=2)
-            case '.toml':
+            case ".toml":
                 file_content = tomli_w.dumps(model_dump)
             case _:
                 raise ConfigurationException(f"Unknown out-file extension: '{filename.suffix}'")

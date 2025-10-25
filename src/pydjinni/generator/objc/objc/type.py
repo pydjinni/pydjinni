@@ -24,7 +24,7 @@ from pydjinni.generator.objc.objc.keywords import swift_keywords, keywords
 from pydjinni.generator.validator import validate
 from pydjinni.parser.ast import Record, Interface, Parameter, Function, ErrorDomain
 from pydjinni.parser.base_models import BaseType, BaseExternalType, BaseField, TypeReference, BaseCommentModel
-from pydjinni.parser.identifier import IdentifierType as Identifier
+from pydjinni.parser.identifier import IdentifierType
 
 
 class ObjcExternalType(BaseModel):
@@ -140,7 +140,7 @@ class ObjcBaseType(ObjcBaseCommentModel):
     @validate(keywords)
     @validate(swift_keywords)
     def namespace(self):
-        return Identifier("_".join(self.decl.namespace)).convert(self.config.identifier.type)
+        return IdentifierType("_".join(self.decl.namespace)).convert(self.config.identifier.type)
 
     @cached_property
     def imports(self) -> set[str]:
@@ -199,14 +199,15 @@ class ObjcRecord(ObjcBaseClassType):
     @validate(keywords)
     def name(self) -> str:
         if self.base_type:
-            return f"{self.config.type_prefix}{self.namespace}{Identifier(f'{self.decl.name}_base').convert(self.config.identifier.type)}"
+            return f"{self.config.type_prefix}{self.namespace}{self.decl.name.append("base").convert(self.config.identifier.type)}"
         else:
             return super().name
 
     @cached_property
     @validate(swift_keywords)
     def swift_typename(self) -> str:
-        output = Identifier(self.decl.name + ("_base" if self.base_type else "")).convert(self.config.identifier.type)
+        identifier = self.decl.name if not self.base_type else self.decl.name.append("base")
+        output = identifier.convert(self.config.identifier.type)
         if self.namespace:
             output = f"{self.namespace}.{output}"
         return output
@@ -226,16 +227,16 @@ class ObjcRecord(ObjcBaseClassType):
     @cached_property
     def init(self) -> str:
         return (
-            Identifier(f"init_with_{self.decl.fields[0].name}").convert(self.config.identifier.method)
+            self.decl.fields[0].name.prepend("init_with").convert(self.config.identifier.method)
             if self.decl.fields
             else "init"
         )
 
     @cached_property
     def convenience_init(self) -> str:
-        name = f"{self.decl.name}_base" if self.base_type else self.decl.name
+        name = self.decl.name if not self.base_type else self.decl.name.append("base")
         return (
-            Identifier(f"{name}_with_{self.decl.fields[0].name}").convert(self.config.identifier.method)
+            name.append("with").append(self.decl.fields[0].name).convert(self.config.identifier.method)
             if self.decl.fields
             else self.decl.name.convert(self.config.identifier.method)
         )
@@ -343,8 +344,7 @@ class ObjcInterface(ObjcBaseClassType):
         @cached_property
         @validate(keywords)
         def name(self) -> str:
-            name = self.decl.name
-            return Identifier(name).convert(self.config.identifier.method)
+            return self.decl.name.convert(self.config.identifier.method)
 
         @property
         def parameters(self) -> list[ObjcParameter | CustomObjcParameter]:
@@ -359,7 +359,7 @@ class ObjcInterface(ObjcBaseClassType):
 
         @property
         def _swift_name(self) -> str:
-            name = Identifier(self.decl.name).convert(self.config.identifier.method)
+            name = self.decl.name.convert(self.config.identifier.method)
             parameters = [f"{parameter.objc.name}:" for parameter in self.decl.parameters]
             if self.decl.asynchronous:
                 parameters.append("completion:")
@@ -405,7 +405,7 @@ class ObjcInterface(ObjcBaseClassType):
 
         @property
         def setter(self) -> str:
-            return Identifier(f"set_{self.decl.name}").convert(self.config.identifier.method)
+            return self.decl.name.prepend("get").convert(self.config.identifier.method)
 
         @property
         def annotation(self) -> str:

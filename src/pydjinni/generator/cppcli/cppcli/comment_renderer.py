@@ -16,7 +16,7 @@ from mistune import HTMLRenderer
 
 from pydjinni.generator.cppcli.cppcli.config import CppCliIdentifierStyle
 from pydjinni.parser.base_models import TypeReference
-from pydjinni.parser.identifier import IdentifierType as Identifier
+from pydjinni.parser.identifier import IdentifierType
 
 
 class XmlCommentRenderer(HTMLRenderer):
@@ -59,7 +59,7 @@ class XmlCommentRenderer(HTMLRenderer):
 
     def param(self, text: str, name: str) -> str:
         self.params_doc.append(
-            f'<param name="{Identifier(name).convert(self.identifier_style.local)}">{text}</param>\n'
+            f'<param name="{IdentifierType(name).convert(self.identifier_style.local)}">{text}</param>\n'
         )
         return ""
 

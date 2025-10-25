@@ -1,0 +1,87 @@
+{% macro codeblock(code) %}
+{{ code | highlight }}
+{% endmacro %}
+{% set heading_list = [] %}
+{% macro heading(level, text, id=None) %}
+{% if id %}
+{% do heading_list.append((level, id, text)) %}
+<h{{ level }} id="{{ id }}">{{ text }} <a href="#{{ id }}" class="anchor-link">#</a></h{{ level }}>
+{% else %}
+<h{{ level }}>{{ text }}</h{{ level }}>
+{% endif %}
+{% endmacro %}
+{% macro table_of_contents(max_heading_level=3) %}
+    {% set inital_level = heading_list[0][0] %}
+    {% set ns = namespace(current_level=heading_list[0][0]) %}
+    <ul>
+    {% for heading in heading_list %}
+        {% set level, id, title = heading %}
+        {% if level < ns.current_level %}
+        {% for i in range( ns.current_level - level) %}
+        </ul>
+        {% endfor %}
+        {% endif %}
+        {% if level > ns.current_level %}
+        {% for i in range( level - ns.current_level ) %}
+        <ul>
+        {% endfor %}
+        {% endif %}
+        {% set ns.current_level = level %}
+        <li><a href="#{{ id }}">{{ title }}</a></li>
+    {% endfor %}
+    {% for i in range(ns.current_level - inital_level) %}
+    </ul>
+    {% endfor %}
+    </ul>
+{% endmacro %}
+{% macro navigation(type_defs) %}
+<ul>
+    {% for type_def_list_item in type_defs %}
+    <li {{ "class=\"active\"" if type_def_list_item == type_def }}><a href="{{ type_def_list_item.name }}.html">{{ type_def_list_item.name }}</a></li>
+    {% if type_def_list_item.children %}
+        {{ navigation(type_def_list_item.children) }}
+    {% endif %}
+    {% endfor %}
+</ul>
+{% endmacro %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{{ type_def.name }}</title>
+    <link rel="stylesheet" href="../styles/highlight.css">
+    <link rel="stylesheet" href="../styles/style.css">
+</head>
+<body>
+    <div id="page">
+            <nav id="sidebar">
+                <h2>Reference</h2>
+                {{ navigation(all_type_defs) }}
+            </nav>
+            <nav id="header">
+                <div id="breadcrumbs">
+                    
+                </div>
+                <div id="language-switcher">
+                    <label for="language-select">Language:</label>
+                    <select id="language-select" onchange="window.location.href=this.value">
+                        {% for target in targets %}
+                        <option value="../{{ target.key }}/{{ filename }}" {{ "selected" if target.key == key }}>{{ target.display_key }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </nav>
+            <main>
+                {% block content %}
+
+                {% endblock %}
+            </main>
+            {% if heading_list %}
+            <nav id="toc">
+                <h2>Table of contents</h2>
+                {{ table_of_contents() }}
+            </nav>
+            {% endif %}
+    </div>
+    
+</body>
+</html>

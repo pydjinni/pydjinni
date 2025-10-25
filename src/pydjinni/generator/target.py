@@ -13,12 +13,14 @@
 # limitations under the License.
 from typing import Any
 
-from pydantic import BaseModel
-
 from pydjinni.config.config_model_builder import ConfigModelBuilder
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.file.processed_files_model_builder import ProcessedFilesModelBuilder
-from pydjinni.parser.ast import Record
+from pydjinni.generator.docs.config import DocumentationBaseConfig
+from pydjinni.generator.docs.generator import DocumentationGenerator
+from pydjinni.generator.docs.registry import DocumentationTargetRegistry
+from pydjinni.generator.generate_config import GenerateBaseConfig
+from pydjinni.parser.ast import Namespace, Record
 from pydjinni.parser.base_models import BaseType, BaseField
 from pydjinni.parser.type_model_builder import TypeModelBuilder
 from .external_types import ExternalTypesBuilder
@@ -60,12 +62,18 @@ class Target:
     2. For the glue-code required in C++ to interact with the host language
     """
 
+    documentation_generators: list[type[DocumentationGenerator[Any]]] = []
+    """
+    A list of documentation generators related to the target.
+    """
+
     def __init__(
         self,
         file_reader_writer: FileReaderWriter,
         config_model_builder: ConfigModelBuilder,
         external_type_model_builder: TypeModelBuilder,
         processed_files_model_builder: ProcessedFilesModelBuilder,
+        documentation_target_registry: DocumentationTargetRegistry,
     ):
         self.__metadata_model_builder = MetadataModelBuilder()
         self.generator_instances = [
@@ -78,12 +86,31 @@ class Target:
             )
             for generator in self.generators
         ]
+        self.documentation_generator_instances = [
+            documentation_generator(
+                file_writer=file_reader_writer,
+                config_model_builder=config_model_builder,
+                documentation_target_registry=documentation_target_registry,
+            )
+            for documentation_generator in self.documentation_generators
+        ]
 
     def generate(self, ast: list[BaseType], clean: bool = False, copy_support_lib_sources: bool = True):
         for generator_instance in self.generator_instances:
             if clean:
                 generator_instance.clean()
             generator_instance.generate(ast, copy_support_lib_sources)
+
+    def generate_documentation(
+        self,
+        ast: list[BaseType | Namespace],
+        documentation_targets: list[DocumentationTargetRegistry.DocumentationTarget],
+        clean: bool = False,
+    ):
+        for documentation_generator_instance in self.documentation_generator_instances:
+            if clean:
+                documentation_generator_instance.clean()
+            documentation_generator_instance.generate(ast, documentation_targets)
 
     def marshal(self, type_defs: list[BaseType], field_defs: list[BaseField]):
         for generator in self.generator_instances:
@@ -93,7 +120,19 @@ class Target:
         for generator in self.generator_instances:
             generator.register_external_types(external_types_factory)
 
-    def configure(self, config: BaseModel):
+    def configure(
+        self,
+        config: GenerateBaseConfig | None,
+        documentation_config: DocumentationBaseConfig | None,
+    ):
         metadata_model = self.__metadata_model_builder.build(config)
-        for generator in self.generator_instances:
-            generator.configure(getattr(config, generator.key), metadata_model())
+        if config:
+            for generator in self.generator_instances:
+                generator.configure(getattr(config, generator.key), metadata_model())
+        if documentation_config:
+            for documentation_generator in self.documentation_generator_instances:
+                documentation_generator.configure(
+                    config=getattr(documentation_config, documentation_generator.key, None),
+                    documentation_root=documentation_config.out,
+                    title=documentation_config.title,
+                )

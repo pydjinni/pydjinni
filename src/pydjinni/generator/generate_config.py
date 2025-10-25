@@ -21,7 +21,7 @@ from pydjinni.parser.ast import Record
 
 class GenerateBaseConfig(BaseModel):
     "Configuration options related to language gluecode generation"
-    list_processed_files: Path = Field(
+    list_processed_files: Path | None = Field(
         default=None,
         description="File that reports all the parsed and generated files. "
                     "File format is determined by the file extension. "
@@ -32,7 +32,7 @@ class GenerateBaseConfig(BaseModel):
         description="Include directories that are searched for `@import` and `@extern` directives."
     )
     default_deriving: set[Record.Deriving] = Field(
-        default=[],
+        default=set(),
         description="Deriving functionality that should be added to every record by default."
     )
     support_lib_sources: bool = Field(

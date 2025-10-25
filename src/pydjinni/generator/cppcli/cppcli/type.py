@@ -19,9 +19,8 @@ from pydantic import BaseModel, Field, computed_field
 
 from pydjinni.parser.ast import Interface, Record
 
-from pydjinni.parser.identifier import IdentifierType as Identifier
-
 from pydjinni.parser.ast import Function
+from pydjinni.parser.identifier import IdentifierType
 from .comment_renderer import XmlCommentRenderer
 from .config import CppCliConfig
 from .keywords import keywords
@@ -33,6 +32,7 @@ from pydjinni.generator.filters import headers, quote
 
 class CppCliExternalType(BaseModel):
     typename: str
+    cs_typename: str
     translator: str
     header: PurePosixPath = None
     reference: bool = True
@@ -86,8 +86,13 @@ class CppCliBaseType(CppCliBaseCommentModel):
 
     @cached_property
     @validate(keywords, separator="::")
-    def namespace(self):
+    def namespace(self) -> str:
         return '::'.join(self.config.namespace + [identifier.convert(self.config.identifier.namespace) for
+                                                  identifier in self.decl.namespace])
+    
+    @property
+    def cs_namespace(self) -> str:
+        return '.'.join(self.config.namespace + [identifier.convert(self.config.identifier.namespace) for
                                                   identifier in self.decl.namespace])
 
     @computed_field
@@ -100,7 +105,8 @@ class CppCliBaseType(CppCliBaseCommentModel):
     def translator(self) -> str:
         return self.typename
 
-    @cached_property
+    @computed_field
+    @property
     def cs_typename(self) -> str:
         return '.'.join(
             self.config.namespace +
@@ -153,6 +159,10 @@ class CppCliBaseField(CppCliBaseCommentModel):
     @cached_property
     def typename(self) -> str:
         return typename(self.decl.type_ref)
+    
+    @cached_property
+    def cs_typename(self) -> str:
+        return self.decl.type_ref.type_def.cppcli.cs_typename # TODO nullability, task, ...
 
     @cached_property
     def translator(self) -> str:
@@ -207,7 +217,7 @@ class CppCliInterface(CppCliBaseType):
 
         @cached_property
         def async_proxy_name(self) -> str:
-            return Identifier(self.decl.name + "_proxy").convert(self.config.identifier.method)
+            return IdentifierType(self.decl.name + "_proxy").convert(self.config.identifier.method)
 
         @cached_property
         def nullability_attribute(self) -> str:
@@ -223,11 +233,11 @@ class CppCliInterface(CppCliBaseType):
 class CppCliRecord(CppCliBaseType):
     decl: Record = Field(exclude=True, repr=False)
 
-    def base_name(self) -> Identifier:
+    def base_name(self) -> IdentifierType:
         name = self.decl.name
         if self.base_type:
             name += "_base"
-        return Identifier(name)
+        return IdentifierType(name)
 
     @cached_property
     def base_type(self) -> bool:
@@ -239,7 +249,7 @@ class CppCliRecord(CppCliBaseType):
 
     @cached_property
     def derived_name(self) -> str:
-        return Identifier(self.decl.name).convert(self.config.identifier.type)
+        return IdentifierType(self.decl.name).convert(self.config.identifier.type)
 
     @computed_field
     @cached_property
@@ -346,7 +356,7 @@ class CppCliFunction(CppCliBaseType):
 
     @cached_property
     def delegate_name(self) -> str:
-        return f'_{Identifier(self.decl.name + "_delegate").convert(self.config.identifier.type)}'
+        return f'_{IdentifierType(self.decl.name + "_delegate").convert(self.config.identifier.type)}'
 
     @cached_property
     def delegate_typename(self) -> str:

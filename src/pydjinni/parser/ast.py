@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from pydjinni.parser.base_models import (
     BaseCommentModel,
@@ -23,27 +23,35 @@ from pydjinni.parser.base_models import (
     SymbolicConstantField,
     SymbolicConstantType,
     BaseExternalType,
-    DataField
-
+    DataField,
 )
-from pydjinni.parser.identifier import Identifier
+from pydjinni.parser.identifier import IdentifierField
+from pydjinni.parser.namespace import NamespaceField
 from pydjinni.position import Position
 
 
 class Namespace(BaseCommentModel):
-    name: Identifier
+    name: IdentifierField
+    namespace: NamespaceField = Field(default=[], description="Namespace that the namespace lives in")
     position: Position
     identifier_position: Position
     children: list[BaseModel]
+
+    @property
+    def child_nodes(self):
+        return self.children
 
 
 class Enum(SymbolicConstantType):
     primitive: BaseExternalType.Primitive = BaseExternalType.Primitive.enum
 
-    class Item(SymbolicConstantField):
-        ...
+    class Item(SymbolicConstantField): ...
 
     items: list[Item]
+
+    @property
+    def child_nodes(self):
+        return self.items
 
 
 class Flags(SymbolicConstantType):
@@ -53,6 +61,7 @@ class Flags(SymbolicConstantType):
 
     primitive: BaseExternalType.Primitive = BaseExternalType.Primitive.flags
     flags: list[Flag]
+
 
 
 class Parameter(BaseField):
@@ -89,19 +98,26 @@ class Function(BaseType):
 
 class Record(ClassType):
     class Deriving(DocStrEnum):
-        eq = 'eq', """
+        eq = (
+            "eq",
+            """
         Equality operator. 
         All fields in the record are compared in the order they appear in the record declaration. 
         If you need to add a field later, make sure the order is correct.
-        """
-        ord = 'ord', """
+        """,
+        )
+        ord = (
+            "ord",
+            """
         Ordering comparison.
         Is not supported for collection types, optionals, and booleans.
-        """
+        """,
+        )
 
     primitive: BaseExternalType.Primitive = BaseExternalType.Primitive.record
     fields: list[DataField] = []
     deriving: set[Deriving] = set()
+
 
 class ErrorDomain(BaseType):
     class ErrorCode(BaseType):

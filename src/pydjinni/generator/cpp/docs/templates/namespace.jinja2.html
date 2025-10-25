@@ -1,0 +1,8 @@
+{% extends "base.jinja2.html" %}
+{% block content %}
+    {{ heading(1, type_def.name) }}
+
+
+    {{ type_def | comment }}
+
+{% endblock %}

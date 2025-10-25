@@ -27,6 +27,7 @@ from pydjinni.exceptions import (
 from pydjinni.file.file_reader_writer import FileReaderWriter
 from pydjinni.generator.cpp.cpp.generator import CppGenerator
 from pydjinni.generator.target import Target
+from pydjinni.parser.identifier import IdentifierType
 from pydjinni.position import Position, Cursor
 from .ast import Record, Interface, Enum, Flags, Parameter, Function, ErrorDomain, Namespace
 from .base_models import BaseType, TypeReference, BaseField, BaseExternalType, DataField, FileReference
@@ -34,7 +35,6 @@ from .comment_processor import ParserCommentProcessor
 from .grammar.IdlLexer import IdlLexer
 from .grammar.IdlParser import IdlParser
 from .grammar.IdlVisitor import IdlVisitor
-from .identifier import IdentifierType as Identifier
 from .markdown_parser import MarkdownParser
 from .resolver import Resolver
 
@@ -133,11 +133,11 @@ class Parser(IdlVisitor):
                 )
             )
 
-    def visitIdentifier(self, ctx: IdlParser.IdentifierContext) -> Identifier:
-        return Identifier(ctx.ID().getText())
+    def visitIdentifier(self, ctx: IdlParser.IdentifierContext) -> IdentifierType:
+        return IdentifierType(ctx.ID().getText())
 
-    def visitNsIdentifier(self, ctx: IdlParser.NsIdentifierContext) -> Identifier:
-        return Identifier((ctx.ID() or ctx.NS_ID()).getText())
+    def visitNsIdentifier(self, ctx: IdlParser.NsIdentifierContext) -> IdentifierType:
+        return IdentifierType((ctx.ID() or ctx.NS_ID()).getText())
 
     def visitEnum(self, ctx: IdlParser.EnumContext) -> Enum:
         comment, parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
@@ -353,7 +353,7 @@ class Parser(IdlVisitor):
             + (["throws"] + [ref.name for ref in throwing] if throwing is not None else [])
         )
         return Function(
-            name=Identifier(name),
+            name=IdentifierType(name),
             position=self._position(ctx),
             identifier_position=self._position(ctx),
             parameters=parameters,
@@ -478,15 +478,18 @@ class Parser(IdlVisitor):
 
     def visitNamespace(self, ctx: IdlParser.NamespaceContext):
         comment, parsed_comment = self.visit(ctx.comment()) if ctx.comment() else (None, None)
-        name = Identifier(self.visit(ctx.nsIdentifier()))
-        namespace: list[Identifier] = [Identifier(identifier) for identifier in name.split(".")]
+        name = self.visit(ctx.nsIdentifier())
+
+        namespace: list[IdentifierType] = [IdentifierType(identifier) for identifier in name.split(".")]
+        namespace_namespace = self.current_namespace.copy()
         self.current_namespace += namespace
         self.current_namespace_stack_size.append(len(namespace))
-
+        
         last_namespace_identifier = name.rsplit(".", 1)[-1]
         result = Namespace(
             comment=comment,
             name=name,
+            namespace=namespace_namespace,
             position=self._position(ctx),
             identifier_position=self._position(ctx.nsIdentifier()).with_offset(
                 start=Cursor(col=len(name) - len(last_namespace_identifier))
@@ -494,6 +497,7 @@ class Parser(IdlVisitor):
             children=list(filter(None, [self.visit(content) for content in ctx.namespaceContent()])),
         )
         result._parsed_comment = parsed_comment
+
         for _ in range(self.current_namespace_stack_size.pop()):
             self.current_namespace.pop()
         return result

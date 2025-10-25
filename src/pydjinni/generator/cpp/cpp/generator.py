@@ -13,10 +13,11 @@
 # limitations under the License.
 from pathlib import Path
 
+
 from pydjinni.generator.filters import headers, quote
 from pydjinni.generator.generator import Generator
-from pydjinni.parser.ast import Interface, Record, Flags, Enum, Function, Parameter, ErrorDomain
-from pydjinni.parser.base_models import BaseType, BaseField, DataField, SymbolicConstantField, SymbolicConstantType
+from pydjinni.parser.ast import Interface, Namespace, Record, Flags, Enum, Function, Parameter, ErrorDomain
+from pydjinni.parser.base_models import BaseType, BaseField, DataField, SymbolicConstantField
 from .config import CppConfig
 from .external_types import external_types
 from .filters import needs_optional
@@ -24,6 +25,7 @@ from .type import (
     CppExternalType,
     CppBaseType,
     CppInterface,
+    CppNamespace,
     CppRecord,
     CppFunction,
     CppBaseField,
@@ -41,6 +43,7 @@ class CppGenerator(Generator[CppConfig, CppExternalType]):
     external_types = external_types
     marshal_models = {
         BaseType: CppBaseType,
+        Namespace: CppNamespace,
         Interface: CppInterface,
         Interface.Method: CppInterface.CppMethod,
         Interface.Property: CppInterface.CppProperty,

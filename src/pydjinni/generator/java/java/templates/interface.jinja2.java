@@ -52,7 +52,7 @@ limitations under the License.
     //> for property in type_def.properties:
     //? property.comment : property.java.comment | comment | indent
     //? property.deprecated : "@Deprecated"
-    public {{ property.java.data_type }} {{ property.java.getter }}() {
+    public {{ property.java.getter_signature }} {
         return _{{ property.java.name }};
     }
     //? property.deprecated : "@Deprecated"
@@ -61,7 +61,7 @@ limitations under the License.
     };
     //? property.comment : property.java.comment | comment | indent
     //? property.deprecated : "@Deprecated"
-    {{ "protected" if property.readonly else "public" }} void {{ property.java.setter }}({{ property.java.data_type }} value) {
+    {{ "protected" if property.readonly else "public" }} {{ property.java.setter_signature }} {
         _{{ property.java.name }} = value;
         _{{ property.java.name }}Signal.notify(_{{ property.java.name }});
     };
