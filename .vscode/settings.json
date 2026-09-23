@@ -1,7 +1,16 @@
 {
     "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter"
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit",
+            "source.fixAll.pylance": "explicit"
+        }
     },
+    "python.analysis.importFormat": "absolute",
+    "python.analysis.fixAll": [
+        "source.convertImportFormat",
+        "source.unusedImports",
+    ],
     "python.analysis.typeCheckingMode": "standard",
     "python.testing.pytestArgs": [
         "tests"
@@ -38,4 +47,14 @@
     "cmake.ctest.allowParallelJobs": true,
     "cmake.ctest.parallelJobs": 8,
     "cmake.parallelJobs": 8,
+    "antlr4.generation": {
+        
+        "language": "Python3",
+        "mode": "internal",
+        "listeners": true,
+        "visitors": false
+    },
+    "isort.check": true,
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "isort.importStrategy": "useBundled",
 }

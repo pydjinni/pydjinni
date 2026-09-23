@@ -9,6 +9,8 @@
         "tamasfe.even-better-toml",
         "pydjinni.pydjinni-vscode",
         "editorconfig.editorconfig",
-        "redhat.java"
+        "redhat.java",
+        "mike-lischke.vscode-antlr4",
+        "ms-python.isort"
     ]
 }
