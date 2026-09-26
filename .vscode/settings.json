@@ -1,11 +1,18 @@
 {
+    // General editor settings
+    "editor.formatOnSave": true,
+
+    // Python editor settings
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter",
         "editor.codeActionsOnSave": {
             "source.organizeImports": "explicit",
-            "source.fixAll.pylance": "explicit"
+            "source.fixAll": "explicit"
         }
     },
+
+    // Python analysis and testing
+    "python.languageServer": "Pylance",
     "python.analysis.importFormat": "absolute",
     "python.analysis.fixAll": [
         "source.convertImportFormat",
@@ -13,23 +20,15 @@
     ],
     "python.analysis.typeCheckingMode": "standard",
     "python.testing.pytestArgs": [
-        "tests"
+        "tests",
+        "-vv"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.analysis.autoImportCompletions": true,
-    "editor.formatOnSave": true,
-    "cmake.preferredGenerators": [
-        "Xcode",
-        "Visual Studio 17 2022",
-        "Ninja",
-        "Unix Makefiles"
-    ],
-    "cmake.configureArgs": [
-        //"-DPYDJINNI_LANGUAGE_TARGETS=cpp;java;objc;cppcli",
-        "-DABORT_ON_FAILED_PRECONDITION=OFF",
-        "-DCMAKE_OSX_SYSROOT=macosx"
-    ],
+    "python.useEnvironmentsExtension": true,
+
+    // File explorer
     "files.exclude": {
         ".idea/": true,
         ".fleet/": true,
@@ -37,23 +36,51 @@
         "**/.pytest_cache/": true,
         ".cache/": true,
     },
+
+    // Java
     "java.project.referencedLibraries": [
         "**/*.jar"
     ],
+
+    // C and C++
     "C_Cpp.default.cppStandard": "c++23",
-    "python.useEnvironmentsExtension": true,
+
+    // CMake
     "cmake.ctest.testSuiteDelimiter": "\\.",
     "cmake.ctest.testExplorerIntegrationEnabled": true,
     "cmake.ctest.allowParallelJobs": true,
     "cmake.ctest.parallelJobs": 8,
     "cmake.parallelJobs": 8,
+    "cmake.preferredGenerators": [
+        "Xcode",
+        "Visual Studio 17 2022",
+        "Ninja",
+        "Unix Makefiles"
+    ],
+    "cmake.configureArgs": [
+        "-DPYDJINNI_LANGUAGE_TARGETS=cpp;java;objc",
+        "-DABORT_ON_FAILED_PRECONDITION=OFF",
+        "-DCMAKE_OSX_SYSROOT=macosx",
+        "-DDJINNI_EXECUTABLE=/Users/johannes/Git/github/pydjinni/pydjinni/.venv/bin/pydjinni"
+    ],
+
+    // ANTLR
     "antlr4.generation": {
-        
         "language": "Python3",
         "mode": "internal",
         "listeners": true,
         "visitors": false
     },
+    "antlr4.format": {
+        "useTab": false,
+    },
+
+    // ANTLR editor integration
+    "[antlr]": {
+        "editor.defaultFormatter": "mike-lischke.vscode-antlr4"
+    },
+
+    // Python import sorting
     "isort.check": true,
     "editor.defaultFormatter": "ms-python.black-formatter",
     "isort.importStrategy": "useBundled",
