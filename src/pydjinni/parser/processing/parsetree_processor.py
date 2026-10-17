@@ -11,10 +11,6 @@ class Processor[T: Element](ABC):
     @cached_property
     def _element_type(self) -> type[T]:
         annotation = get_type_hints(self.process)["element"]
-
-        if not isinstance(annotation, type):
-            raise TypeError("Processor.check must annotate a concrete Element implementation")
-
         return cast("type[T]", annotation)
 
     @final

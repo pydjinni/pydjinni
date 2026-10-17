@@ -9,7 +9,7 @@ from pydjinni.parser.model.diagnostic import Diagnostic
 from pydjinni.parser.model.elements import ExternTypeReference, FileReference, ImportReference, ResolvedFileReference
 from pydjinni.parser.model.parse_result import ParseResult
 from pydjinni.parser.processing.parsetree_processor import Processor
-lazy from pydjinni.parser.factories.parser_factory import ParserFactory
+lazy from pydjinni.parser.factories.idl_parser_factory import IdlParserFactory
 lazy from pydjinni.parser.providers.type_registry import TypeRegistry
 lazy from pydjinni.parser.yaml.yaml_type_parser import YamlTypeParser
 lazy from pydjinni.position import Position
@@ -20,7 +20,7 @@ class FileReferenceLoader(Processor[ExternTypeReference | ImportReference]):
         self,
         yaml_type_parser: YamlTypeParser,
         type_registry: TypeRegistry,
-        parser_factory: ParserFactory,
+        parser_factory: IdlParserFactory,
         include_dirs: tuple[Path, ...],
     ) -> None:
         self._yaml_type_parser: Final = yaml_type_parser

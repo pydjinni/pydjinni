@@ -23,23 +23,32 @@ def named_element_factory_mock() -> Mock:
 
 
 @pytest.fixture
-def idl_parser(request: pytest.FixtureRequest, named_element_factory_mock: Mock, tmp_path: Path) -> IdlParserImpl:
-    marker: Final = request.node.get_closest_marker("parser_input")
+def file_reader_writer_mock(request: pytest.FixtureRequest) -> Mock:
+    node: Final = cast("pytest.Item", request.node)  # pyright: ignore[reportUnknownMemberType]
+    marker: Final = node.get_closest_marker("parser_input")
     assert marker is not None, "@pytest.mark.parser_input required"
     content: Final = marker.args[0]
     assert isinstance(content, str), "content parameter must be a string"
+
+    mock = Mock(FileReaderWriter)
+    mock.read_idl.return_value = dedent(content)
+
+    return mock
+
+
+@pytest.fixture
+def idl_parser(
+    request: pytest.FixtureRequest, named_element_factory_mock: Mock, file_reader_writer_mock: Mock, tmp_path: Path
+) -> IdlParserImpl:
 
     path = Path("input.pydjinni")
     absolute_path = tmp_path / path
     absolute_path.touch()
 
-    file_reader_writer_mock = Mock(FileReaderWriter)
-    file_reader_writer_mock.read_idl.return_value = dedent(content)
-
     return IdlParserImpl(
         processor=ParsetreeProcessor(()),
         default_deriving=frozenset(),
         file_reader=file_reader_writer_mock,
-        named_element_factory=cast(NamedElementFactory, named_element_factory_mock),
+        named_element_factory=named_element_factory_mock,
         file_reference=ResolvedFileReference(path=path, resolved_path=absolute_path),
     )

@@ -6,7 +6,7 @@ import pytest
 from more_itertools import one
 
 from pydjinni.exceptions import InputParsingException
-from pydjinni.parser.factories.parser_factory import ParserFactory
+from pydjinni.parser.factories.idl_parser_factory import IdlParserFactory
 from pydjinni.parser.idl_parser import IdlParserImpl
 from pydjinni.parser.model.diagnostic import Diagnostic
 from pydjinni.parser.model.elements import (
@@ -18,9 +18,9 @@ from pydjinni.parser.model.elements import (
 )
 from pydjinni.parser.model.parse_result import ParseResult
 from pydjinni.parser.processing.processors.file_reference_loader import FileReferenceLoader
-from pydjinni.parser.providers.type_registry import TypeRegistry
 from pydjinni.parser.yaml.yaml_type_parser import YamlTypeParser
 from pydjinni.position import Position
+lazy from pydjinni.parser.providers.type_registry import TypeRegistry
 
 
 @pytest.fixture
@@ -30,7 +30,7 @@ def yaml_type_parser_mock() -> Mock:
 
 @pytest.fixture
 def parser_factory_mock() -> Mock:
-    return Mock(ParserFactory)
+    return Mock(IdlParserFactory)
 
 
 @pytest.fixture
@@ -40,9 +40,9 @@ def file_reference_loader(
     parser_factory_mock: Mock,
 ) -> FileReferenceLoader:
     return FileReferenceLoader(
-        yaml_type_parser=cast(YamlTypeParser, yaml_type_parser_mock),
-        type_registry=cast(TypeRegistry, type_registry_mock),
-        parser_factory=cast(ParserFactory, parser_factory_mock),
+        yaml_type_parser=cast("YamlTypeParser", yaml_type_parser_mock),
+        type_registry=cast("TypeRegistry", type_registry_mock),
+        parser_factory=cast("IdlParserFactory", parser_factory_mock),
         include_dirs=(),
     )
 
