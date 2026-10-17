@@ -2,22 +2,16 @@
 
 ## Local development
 
-Install an editable version of the executable:
+Install an editable version of the executable and all development-dependencies:
 
 ```shell
 pip install -e .
+pip install .[dev]
 ```
 
 When running the `pydjinni` command, it will always execute the latest code in the local repository.
 
 ## Testing
-
-### Python Tests
-
-To execute the tests, first make sure that the required dependencies are installed:
-```shell
-pip install .[dev]
-```
 
 The tests can then be executed with `pytest`:
 
@@ -45,4 +39,12 @@ ctest --test-dir build
 pip install -e .
 pip install .[doc]
 python -m mkdocs serve
+```
+
+## VS Code
+
+When developing in a virtual environment, install `antlr-tools` in the base Python environment used by Visual Studio Code to enable automatic generation of ANTLR4 files. This manual installation is not needed when developing outside a virtual environment:
+
+```shell
+pip install antlr-tools
 ```
