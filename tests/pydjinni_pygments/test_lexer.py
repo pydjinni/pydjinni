@@ -17,7 +17,7 @@ def test_lexer():
 
     assert lexed == (
         (Token.Name.Class, "foo"),
-        (Token.Text.Whitespace, " "),
+        (Token.Whitespace, " "),
         (Token.Operator, "="),
         (Token.Text, " "),
         (Token.Keyword.Type, "record"),
