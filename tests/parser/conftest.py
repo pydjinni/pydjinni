@@ -14,7 +14,7 @@ from pydjinni.parser.processing.parsetree_processor import ParsetreeProcessor
 
 @pytest.fixture
 def named_element_factory_mock() -> Mock:
-    mock = Mock(NamedElementFactory)
+    mock: Final = Mock(NamedElementFactory)
     for method_name, method in NamedElementFactory.__dict__.items():
         if method_name.startswith("create_"):
             constructor = get_type_hints(method)["return"]
@@ -30,19 +30,17 @@ def file_reader_writer_mock(request: pytest.FixtureRequest) -> Mock:
     content: Final = marker.args[0]
     assert isinstance(content, str), "content parameter must be a string"
 
-    mock = Mock(FileReaderWriter)
+    mock: Final = Mock(FileReaderWriter)
     mock.read_idl.return_value = dedent(content)
 
     return mock
 
 
 @pytest.fixture
-def idl_parser(
-    request: pytest.FixtureRequest, named_element_factory_mock: Mock, file_reader_writer_mock: Mock, tmp_path: Path
-) -> IdlParserImpl:
+def idl_parser(named_element_factory_mock: Mock, file_reader_writer_mock: Mock, tmp_path: Path) -> IdlParserImpl:
 
-    path = Path("input.pydjinni")
-    absolute_path = tmp_path / path
+    path: Final = Path("input.pydjinni")
+    absolute_path: Final = tmp_path / path
     absolute_path.touch()
 
     return IdlParserImpl(

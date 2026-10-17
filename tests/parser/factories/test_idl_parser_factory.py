@@ -43,5 +43,6 @@ def test_parser_factory(
 
     parse_result = parser.parse()
 
+    file_reader_writer_mock.read_idl.assert_called_once_with(idl_file)
     assert parse_result.elements == IsTuple(IsInstance(Record), IsInstance(Interface))
     assert len(parse_result.diagnostics) == 0

@@ -30,7 +30,7 @@ dependencies = [
     "antlr4-python3-runtime==4.13.2",
     "mistune>=3,<4",
     "pygls>=2.1.1,<3",
-    "pygments>=2.19,<3",
+    "pygments>=2.21,<3",
     "more-itertools>=11.1.0,<12",
     "marko>=2.2.4,<3",
 ]
@@ -75,7 +75,7 @@ Homepage = "https://pydjinni.github.io/pydjinni"
 [tool.pyright]
 include = ["src", "tests"]
 typeCheckingMode = "strict"
-ignore = ["src/pydjinni/parser/grammar"]
+ignore = ["src/pydjinni/parser/grammar", "**/site-packages"]
 
 [tool.ruff]
 line-length = 120
@@ -109,4 +109,4 @@ nuget = 'pydjinni.packaging.nuget:NuGetTarget'
 [project.entry-points.'pydjinni.init']
 conan-cmake = 'pydjinni_init.templates.conan_cmake:ConanCMakeTarget'
 [project.entry-points.'pygments.lexers']
-djinni = 'pydjinni.lexer:PyDjinniLexer'
+djinni = 'pydjinni_pygments:PyDjinniLexer'
