@@ -13,50 +13,101 @@
 # limitations under the License.
 
 from pathlib import Path
-from typing import Self
+from typing import ClassVar, Final, Self
 lazy from re import Match
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class Cursor(BaseModel):
+    """The cursor position inside a file. Both ``line`` and ``col`` are starting from 0."""
+
+    model_config = ConfigDict(frozen=True)
+
     line: int = 0
     col: int = 0
 
     @classmethod
-    def from_position(cls, content: str, position: int) -> Cursor:
-        subcontent = content[:position]
-        line = subcontent.count("\n")
-        col = position - subcontent.rfind("\n") - 1
-        return cls(line=line, col=col)
+    def from_index(cls, content: str, index: int) -> Cursor:
+        r"""Convert a position index on a string to a Cursor with line/col information.
 
-    def relative_to(self, base: Cursor) -> Cursor:
-        return Cursor(line=base.line + self.line, col=base.col + self.col)
+        Every `\n` character inside the ``content` is treated as a new line in the returned Cursor.
+
+        Args:
+            content: the input string
+            index: linear index position inside of the string
+
+        Returns:
+            Cursor: the cursor derived from the index position
+        """
+        assert index >= 0 and index <= len(content), "Index must be in range of given content string"
+        subcontent: Final = content[:index]
+        return cls(
+            line=subcontent.count("\n"),
+            col=index - subcontent.rfind("\n") - 1,
+        )
+
+    def relative_to(self, cursor: Cursor) -> Cursor:
+        """Returns a new Cursor with the ``cursor`` applied as a vector."""
+        return Cursor(
+            line=cursor.line + self.line,
+            col=cursor.col + self.col,
+        )
 
 
 class Position(BaseModel):
+    """Represents a range inside of a file."""
+
+    model_config = ConfigDict(frozen=True)
+
+    null_cursor: ClassVar[Cursor] = Cursor()
+
     file: Path
     start: Cursor
     end: Cursor
 
     @classmethod
     def from_match(cls, file: Path, match: Match[str], group: str | int = 0) -> Self:
+        """Return a new Position object from a RegEx Match object.
+
+        Args:
+            file: source file
+            match: RegEx Match to extract the position from
+            group: the group for which the position should be returned
+        """
         return cls(
             file=file,
-            start=Cursor.from_position(match.string, match.start(group)),
-            end=Cursor.from_position(match.string, match.end(group)),
+            start=Cursor.from_index(match.string, match.start(group)),
+            end=Cursor.from_index(match.string, match.end(group)),
         )
 
     @classmethod
     def from_cursor(cls, file: Path, cursor: Cursor) -> Self:
-        return cls(file=file, start=cursor, end=cursor)
+        """Return a zero-width Position object at ``cursor``."""
+        return cls(
+            file=file,
+            start=cursor,
+            end=cursor,
+        )
+
+    @classmethod
+    def from_file(cls, file: Path) -> Self:
+        """Return a new Position object pointing to a file, without specific Cursor information.
+
+        Args:
+            file: the file location
+        """
+        return cls(
+            file=file,
+            start=cls.null_cursor,
+            end=cls.null_cursor,
+        )
 
     def relative_to(self, cursor: Cursor) -> Position:
-        """
-        Returns a new absolute Position object that is relative to the given base Cursor.
+        """Return a new absolute Position object that is relative to the given base Cursor.
 
-        :param base: the base Position object
-        :param column_offset: additional offset for the column
+        Args:
+            cursor: the vector applied to both start and end positions
         """
         return Position(
             file=self.file,
@@ -64,19 +115,15 @@ class Position(BaseModel):
             end=self.end.relative_to(cursor),
         )
 
-    @classmethod
-    def from_file(cls, file: Path) -> Self:
-        return cls(file=file, start=Cursor(), end=Cursor())
+    def with_offset(self, start: Cursor | None = None, end: Cursor | None = None) -> Position:
+        """Return a new Position object with the given start and/or end offsets.
 
-    def with_offset(self, start: Cursor = Cursor(), end: Cursor = Cursor()) -> Position:
-        """
-        Returns a new Position object with the given start and end offsets.
-
-        :param start: the start offset
-        :param end: the end offset
+        Args:
+            start: the start offset
+            end: the end offset
         """
         return Position(
             file=self.file,
-            start=Cursor(line=self.start.line + start.line, col=self.start.col + start.col),
-            end=Cursor(line=self.end.line + end.line, col=self.end.col + end.col),
+            start=self.start.relative_to(start or self.null_cursor),
+            end=self.end.relative_to(end or self.null_cursor),
         )
