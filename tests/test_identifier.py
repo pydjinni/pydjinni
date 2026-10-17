@@ -13,9 +13,10 @@
 # limitations under the License.
 
 import pytest
+from pydantic import BaseModel
 
 from pydjinni.config.types import IdentifierStyle
-from pydjinni.parser.identifier import IdentifierType
+from pydjinni.parser.model.identifier import Identifier
 
 testdata = [
     ("foo_bar", IdentifierStyle.Case.none, "foo_bar"),
@@ -48,7 +49,7 @@ testdata = [
 @pytest.mark.parametrize("name,style,output", testdata)
 def test_identifier_conversion(name, style, output):
     # GIVEN an Identifier instance
-    identifier = IdentifierType(name)
+    identifier = Identifier(name)
 
     # WHEN converting the name with the given style
     converted = identifier.convert(style)
@@ -60,7 +61,7 @@ def test_identifier_conversion(name, style, output):
 @pytest.mark.parametrize("name,style,output", testdata)
 def test_identifier_conversion_prefix(name, style, output):
     # GIVEN an Identifier instance
-    identifier = IdentifierType(name)
+    identifier = Identifier(name)
     prefix = "m_"
 
     # WHEN converting the name with the given style and the defined prefix
@@ -68,3 +69,20 @@ def test_identifier_conversion_prefix(name, style, output):
 
     # THEN the converted name should be prefixed
     assert converted == f"{prefix}{output}"
+
+
+def test_identifier_pydantic_validation_serialization_and_schema():
+    class IdentifierContainer(BaseModel):
+        identifier: Identifier
+
+    identifier = IdentifierContainer.model_validate({"identifier": "some_name"})
+
+    assert isinstance(identifier.identifier, Identifier)
+    assert identifier.model_dump(mode="json") == {"identifier": "some_name"}
+    assert identifier.model_dump_json() == '{"identifier":"some_name"}'
+    validation_schema = IdentifierContainer.model_json_schema()
+    serialization_schema = IdentifierContainer.model_json_schema(mode="serialization")
+    assert validation_schema["properties"]["identifier"]["pattern"] == r"[_\w]+"
+    assert validation_schema["properties"]["identifier"]["type"] == "string"
+    assert serialization_schema["properties"]["identifier"]["pattern"] == r"[_\w]+"
+    assert serialization_schema["properties"]["identifier"]["type"] == "string"

@@ -4,10 +4,11 @@
 
     // Python editor settings
     "[python]": {
-        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.codeActionsOnSave": {
             "source.organizeImports": "explicit",
-            "source.fixAll": "explicit"
+            "source.fixAll": "explicit",
+            "source.fixAll.ruff": "explicit"
         }
     },
 
@@ -18,7 +19,6 @@
         "source.convertImportFormat",
         "source.unusedImports",
     ],
-    "python.analysis.typeCheckingMode": "standard",
     "python.testing.pytestArgs": [
         "tests",
         "-vv"
@@ -68,20 +68,48 @@
     "antlr4.generation": {
         "language": "Python3",
         "mode": "internal",
-        "listeners": true,
-        "visitors": false
     },
     "antlr4.format": {
+        "alignTrailingComments": false,
+        "allowShortBlocksOnASingleLine": true,
+        "breakBeforeBraces": false,
+        "columnLimit": 300,
+        "continuationIndentWidth": 4,
+        "indentWidth": 4,
+        "keepEmptyLinesAtTheStartOfBlocks": false,
+        "maxEmptyLinesToKeep": 1,
+        "reflowComments": true,
+        "spaceBeforeAssignmentOperators": true,
+        "tabWidth": 4,
         "useTab": false,
+        "alignColons": "trailing",
+        "singleLineOverrulesHangingColon": true,
+        "allowShortRulesOnASingleLine": true,
+        "alignSemicolons": "none",
+        "breakBeforeParens": false,
+        "ruleInternalsOnSingleLine": false,
+        "minEmptyLines": 0,
+        "groupedAlignments": true,
+        "alignFirstTokens": false,
+        "alignLexerCommands": false,
+        "alignActions": false,
+        "alignLabels": true,
+        "alignTrailers": false,
+    },
+
+    // Generate the Python sources with a relative source path in the header
+    "emeraldwalk.runonsave": {
+        "commands": [
+            {
+                "match": "Idl\\.g4$",
+                "cmd": "cd \"${fileDirname}\" && antlr4 -v 4.13.2 -Dlanguage=Python3 -visitor -no-listener Idl.g4",
+                "autoShowOutputPanel": "error"
+            }
+        ]
     },
 
     // ANTLR editor integration
     "[antlr]": {
         "editor.defaultFormatter": "mike-lischke.vscode-antlr4"
     },
-
-    // Python import sorting
-    "isort.check": true,
-    "editor.defaultFormatter": "ms-python.black-formatter",
-    "isort.importStrategy": "useBundled",
 }

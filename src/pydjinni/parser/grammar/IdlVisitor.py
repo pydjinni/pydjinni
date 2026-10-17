@@ -1,4 +1,4 @@
-# Generated from Idl.g4 by ANTLR 4.13.1
+# Generated from Idl.g4 by ANTLR 4.13.2
 from antlr4 import *
 if "." in __name__:
     from .IdlParser import IdlParser
@@ -24,6 +24,11 @@ class IdlVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by IdlParser#commentLine.
+    def visitCommentLine(self, ctx:IdlParser.CommentLineContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by IdlParser#importDef.
     def visitImportDef(self, ctx:IdlParser.ImportDefContext):
         return self.visitChildren(ctx)
@@ -41,6 +46,11 @@ class IdlVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by IdlParser#namespace.
     def visitNamespace(self, ctx:IdlParser.NamespaceContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by IdlParser#namespaceIdentifier.
+    def visitNamespaceIdentifier(self, ctx:IdlParser.NamespaceIdentifierContext):
         return self.visitChildren(ctx)
 
 
@@ -79,6 +89,11 @@ class IdlVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by IdlParser#target.
+    def visitTarget(self, ctx:IdlParser.TargetContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by IdlParser#record.
     def visitRecord(self, ctx:IdlParser.RecordContext):
         return self.visitChildren(ctx)
@@ -89,8 +104,8 @@ class IdlVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by IdlParser#typeRef.
-    def visitTypeRef(self, ctx:IdlParser.TypeRefContext):
+    # Visit a parse tree produced by IdlParser#typeReference.
+    def visitTypeReference(self, ctx:IdlParser.TypeReferenceContext):
         return self.visitChildren(ctx)
 
 
@@ -106,11 +121,6 @@ class IdlVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by IdlParser#throwing.
     def visitThrowing(self, ctx:IdlParser.ThrowingContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by IdlParser#targets.
-    def visitTargets(self, ctx:IdlParser.TargetsContext):
         return self.visitChildren(ctx)
 
 
@@ -161,11 +171,6 @@ class IdlVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by IdlParser#identifier.
     def visitIdentifier(self, ctx:IdlParser.IdentifierContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by IdlParser#nsIdentifier.
-    def visitNsIdentifier(self, ctx:IdlParser.NsIdentifierContext):
         return self.visitChildren(ctx)
 
 

@@ -3,7 +3,7 @@
         "ms-python.python",
         "ms-python.debugpy",
         "ms-python.vscode-pylance",
-        "ms-python.black-formatter",
+        "charliermarsh.ruff",
         "ms-vscode.cpptools-extension-pack",
         "redhat.vscode-yaml",
         "tamasfe.even-better-toml",
@@ -11,6 +11,6 @@
         "editorconfig.editorconfig",
         "redhat.java",
         "mike-lischke.vscode-antlr4",
-        "ms-python.isort"
+        "emeraldwalk.runonsave"
     ]
 }
