@@ -95,6 +95,6 @@ def test_static_method_for_host_target(interface_checks: InterfaceChecks, target
     # THEN a static method target parse issue should be reported
     assert one(parse_result.diagnostics) == Diagnostic(
         position=method_position,
-        description="static methods are only allowed on native or main interfaces",
+        description="static methods are only allowed on native interfaces",
         severity=Diagnostic.Severity.error,
     )

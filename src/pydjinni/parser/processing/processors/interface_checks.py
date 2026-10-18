@@ -2,9 +2,9 @@ from typing import override
 lazy from collections.abc import Iterable
 
 from pydjinni.parser.model.diagnostic import Diagnostic
+from pydjinni.parser.model.elements import Interface
 from pydjinni.parser.model.parse_result import ParseResult
 from pydjinni.parser.processing.parsetree_processor import Processor
-lazy from pydjinni.parser.model.elements import Interface
 
 
 class InterfaceChecks(Processor[Interface]):
@@ -19,6 +19,6 @@ class InterfaceChecks(Processor[Interface]):
             if method.static and interface.host:
                 yield Diagnostic(
                     position=method.position,
-                    description="static methods are only allowed on native or main interfaces",
+                    description="static methods are only allowed on native interfaces",
                     severity=Diagnostic.Severity.error,
                 )
