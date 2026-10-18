@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2026 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ if TYPE_CHECKING:
 
 @dataclass
 class Identifier:
+    """Positional string value with modification helpers and case style conversion utilities."""
+
     value: str
     position: Position | None = None
 
@@ -52,15 +54,40 @@ class Identifier:
         )
 
     def prepend(self, prefix: str) -> Identifier:
+        """Add a prefix in front of an existing Identifier.
+
+        Returns:
+            Identifier: a new Identifier with the prefix prepended to it, connected by an underscore.
+        """
         return Identifier(value=f"{prefix}_{self.value}", position=self.position)
 
     def append(self, postfix: str) -> Identifier:
+        """Add a postfix at the end of an existing Identifier.
+
+        Returns:
+            Identifier: a new Identifier with the postfix appended to it, connected by an underscore.
+        """
         return Identifier(value=f"{self.value}_{postfix}", position=self.position)
 
     def wrap(self, prefix: str, postfix: str) -> Identifier:
+        """Add both a ``prefix`` and ``postfix`` to the current Identifier.
+
+        Returns:
+            Identifier: a new Identifier with both ``prefix`` and ``postfix`` added to it, connected by an underscore.
+        """
         return self.prepend(prefix).append(postfix)
 
     def convert(self, style: IdentifierStyle | IdentifierStyle.Case) -> str:
+        """Convert an Identifier to the specified case style.
+
+        Args:
+            style: ``IdentifierStyle`` or ``IdentifierStyle.Case`` specifying the target case style.
+                   If an ``IdentifierStyle`` is given, a prefix of the output string can be specified.
+
+        Returns:
+            str: the ``value`` of the Identifier, converted to the given case style.
+        """
+
         def convert_token(token: str, style: IdentifierStyle.Case, first: bool = False) -> str:
             match (style, first):
                 case (
@@ -78,7 +105,13 @@ class Identifier:
 
         identifier_style: Final = style if isinstance(style, IdentifierStyle) else IdentifierStyle(style=style)
 
-        tokens: Final = (self.value,) if identifier_style.style == IdentifierStyle.Case.none else self.value.split("_")
+        tokens: Final = (
+            tuple(
+                self.value,
+            )
+            if identifier_style.style == IdentifierStyle.Case.none
+            else tuple(self.value.split("_"))
+        )
 
         match identifier_style.style:
             case IdentifierStyle.Case.train | IdentifierStyle.Case.snake:
