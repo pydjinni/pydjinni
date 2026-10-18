@@ -1,4 +1,4 @@
-# Copyright 2023 - 2025 jothepro
+# Copyright 2023 - 2026 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,9 +16,10 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from itertools import chain
 from pathlib import Path
-from typing import Final, cast, override
+from typing import Final, cast, get_origin, override
 
 from antlr4 import CommonTokenStream, InputStream, ParserRuleContext
+from more_itertools import always_iterable
 
 from pydjinni.parser.grammar.IdlLexer import IdlLexer
 from pydjinni.parser.grammar.IdlParser import IdlParser
@@ -57,6 +58,12 @@ lazy from pydjinni.parser.processing.parsetree_processor import ParsetreeProcess
 
 @dataclass
 class IdlParserImpl(IdlVisitor):
+    """PyDjinni IDL parser.
+
+    This implements the generated ANTRL4 Visitor interface and applies the given ``ParseTreeProcessor``
+    to validate and process the generated abstract syntax tree.
+    """
+
     def __init__(
         self,
         processor: ParsetreeProcessor,
@@ -92,14 +99,22 @@ class IdlParserImpl(IdlVisitor):
 
     def _visit[T](self, ctx: ParserRuleContext | None, element_type: type[T]) -> T:
         assert ctx is not None, "context must not be none in non-optional visit"
-        return cast("T", self.visit(ctx))
+        result = self.visit(ctx)
+        if result is None or not isinstance(result, get_origin(element_type) or element_type):
+            raise ValueError(
+                f"{type(ctx).__name__} visitor returned {type(result).__name__}; expected {element_type!r}"
+            )
+        return result
 
     def _visit_optional[T](self, ctx: ParserRuleContext | None, element_type: type[T]) -> T | None:
-        return cast("T", self.visit(ctx)) if ctx else None
+        if ctx is not None:
+            return self._visit(ctx, element_type)
 
     def _visit_iterable[T](self, ctx: ParserRuleContext | None, element_type: type[T]) -> Iterable[T]:
         assert isinstance(ctx, Iterable), "context must be iterable"
-        return (self._visit(item, element_type) for item in (cast("Iterable[ParserRuleContext]", ctx)))
+        for item in cast("Iterable[object]", ctx):
+            assert isinstance(item, ParserRuleContext), "context iterable result must be ParserRuleContext"
+            yield self._visit(item, element_type)
 
     def _position(
         self,
@@ -174,7 +189,6 @@ class IdlParserImpl(IdlVisitor):
     @override
     def visitNamespace(self, ctx: IdlParser.NamespaceContext) -> Namespace:  # pyright: ignore[reportIncompatibleMethodOverride]
         namespace = self._visit(ctx.namespaceIdentifier(), NamespaceTuple)
-
         self._namespace_stack.push(namespace)
         try:
             named_elements: Final = tuple(self._visit_iterable(ctx.namespaceContent(), NamedElement))
@@ -300,7 +314,7 @@ class IdlParserImpl(IdlVisitor):
         return_type_reference: Final = self._visit_optional(ctx.typeReference(), TypeReference)
         parameters: Final = tuple(self._visit_iterable(ctx.parameter(), Parameter))
         target: Final = self._visit_optional(ctx.target(), ClassType.Target) or ClassType.Target.shared
-        throwing: Final = tuple(self._visit_optional(ctx.throwing(), Iterable[TypeReference]) or ())
+        throwing: Final = tuple(always_iterable(self._visit_optional(ctx.throwing(), Iterable[TypeReference])))
 
         def signature(type_ref: TypeReference, depth: int = 2) -> str:
             generic_signatures: Final = tuple(signature(param, depth + 1) for param in type_ref.parameters)
@@ -389,7 +403,7 @@ class IdlParserImpl(IdlVisitor):
             return_reference=self._visit_optional(ctx.typeReference(), TypeReference),
             asynchronous=ctx.ASYNC() is not None,
             parameters=tuple(self._visit_iterable(ctx.parameter(), Parameter)),
-            throwing=self._visit_optional(ctx.throwing(), tuple[TypeReference, ...]) or (),
+            throwing=tuple(always_iterable(self._visit_optional(ctx.throwing(), Iterable[TypeReference]))),
         )
 
     @override
@@ -428,6 +442,11 @@ class IdlParserImpl(IdlVisitor):
         return Identifier(value=str(ctx.ID()), position=self._position(ctx))
 
     def parse(self) -> ParseResult:
+        """Start parsing the input.
+
+        Returns:
+            ParseResult: all parsed ``Element`` s and validation results from the ``ParseTreeProcessor``
+        """
         return self._processor.process(
             ParseResult(
                 elements=tuple(self._visit(self._parser.idl(), Iterable[Element])),
