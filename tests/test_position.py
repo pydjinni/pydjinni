@@ -82,6 +82,24 @@ def test_position_immutablity():
 
 
 @pytest.mark.parametrize(
+    "cursor_start,cursor_end",
+    (
+        (Cursor(line=-1, col=0), (Cursor(line=0, col=0))),
+        (Cursor(line=0, col=-1), (Cursor(line=0, col=0))),
+        (Cursor(line=0, col=0), (Cursor(line=-1, col=0))),
+        (Cursor(line=0, col=0), (Cursor(line=0, col=-1))),
+    ),
+)
+def test_position_rejects_negative_cursor_coordinates(cursor_start: Cursor, cursor_end: Cursor):
+    with pytest.raises(ValidationError, match="Position cursors must have non-negative line and column values"):
+        Position(
+            file=Path("foo.baz"),
+            start=cursor_start,
+            end=cursor_end,
+        )
+
+
+@pytest.mark.parametrize(
     "text,cursor_start,cursor_end",
     [
         (

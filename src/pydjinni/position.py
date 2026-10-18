@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import ClassVar, Final, Self
 lazy from re import Match
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class Cursor(BaseModel):
@@ -65,6 +65,13 @@ class Position(BaseModel):
     file: Path
     start: Cursor
     end: Cursor
+
+    @field_validator("start", "end")
+    @classmethod
+    def _validate_cursor_coordinates(cls, cursor: Cursor) -> Cursor:
+        if cursor.line < 0 or cursor.col < 0:
+            raise ValueError("Position cursors must have non-negative line and column values")
+        return cursor
 
     @classmethod
     def from_match(cls, file: Path, match: Match[str], group: str | int = 0) -> Self:
