@@ -1,4 +1,4 @@
-# Copyright 2023 jothepro
+# Copyright 2023 - 2026 jothepro
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,39 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import dataclasses
 from enum import StrEnum
 from pathlib import Path
 
 from pydantic import BaseModel, Field
-from pydantic.dataclasses import dataclass
 
 
-@dataclass
-class OutPaths:
-    source: Path = dataclasses.field(
-        metadata=dict(
-            description="The output directory for source files",
-        )
-    )
-    header: Path = dataclasses.field(
-        metadata=dict(
-            description="The output directory for header files",
-        )
-    )
+class OutPaths(BaseModel):
+    source: Path = Field(description="The output directory for source files")
+    header: Path = Field(description="The output directory for header files")
 
 
 class IdentifierStyle(BaseModel):
     class Case(StrEnum):
-        none = 'none'
-        camel = 'camelCase'
-        pascal = 'PascalCase'
-        snake = 'snake_case'
-        kebab = 'kebab-case'
-        train = 'TRAIN_CASE'
+        none = "none"
+        camel = "camelCase"
+        pascal = "PascalCase"
+        snake = "snake_case"
+        kebab = "kebab-case"
+        train = "TRAIN_CASE"
 
     style: Case
-    prefix: str = Field(
-        default="",
-        description="Prefix that is added to the beginning of the identifier"
-    )
+    prefix: str = Field(default="", description="Prefix that is added to the beginning of the identifier")

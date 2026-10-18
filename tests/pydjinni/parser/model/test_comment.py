@@ -19,22 +19,29 @@ class CommentContainer(BaseModel):
 
 
 def test_comment_pydantic_validation_and_serialization():
-    parsed_comment = Comment.internal("first line\nsecond line")
+    comment = "first line\nsecond line"
+    parsed_comment = Comment.from_text(comment)
+    assert parsed_comment.raw == comment
 
     from_comment = CommentContainer(comment=parsed_comment)
-    from_string = CommentContainer.model_validate({"comment": "first line\nsecond line"})
-
     assert from_comment.comment is parsed_comment
-    assert isinstance(from_string.comment, Comment)
-    assert from_string.comment.raw == parsed_comment.raw
-    assert from_comment.model_dump(mode="json") == {"comment": parsed_comment.raw}
+    assert from_comment.model_dump(mode="json") == {"comment": comment}
     assert from_comment.model_dump_json() == '{"comment":"first line\\nsecond line"}'
+
+    from_dict = CommentContainer.model_validate({"comment": comment})
+    assert isinstance(from_dict.comment, Comment)
+    assert from_dict.comment.raw == comment
+
+    from_json = CommentContainer.model_validate_json("""{"comment": "first line\\nsecond line"}""")
+    assert isinstance(from_json.comment, Comment)
+    assert from_json.comment.raw == comment
+
     assert CommentContainer.model_json_schema()["properties"]["comment"]["type"] == "string"
     assert CommentContainer.model_json_schema(mode="serialization")["properties"]["comment"]["type"] == "string"
 
 
 def test_comment_deprecated_description():
-    comment = Comment.internal(
+    comment = Comment.from_text(
         dedent(
             """
             this is some comment
@@ -55,7 +62,7 @@ def test_comment_deprecated_description():
 
 
 def test_comment_deprecated():
-    comment = Comment.internal(
+    comment = Comment.from_text(
         dedent(
             """
             this is some comment
@@ -68,7 +75,7 @@ def test_comment_deprecated():
 
 
 def test_comment_not_deprecated():
-    comment = Comment.internal(
+    comment = Comment.from_text(
         dedent(
             """
             this is some comment
@@ -80,7 +87,7 @@ def test_comment_not_deprecated():
 
 
 def test_comment_parameters():
-    comment = Comment.internal(
+    comment = Comment.from_text(
         dedent(
             """
             this is some comment
@@ -99,7 +106,7 @@ def test_comment_parameters():
 
 
 def test_comment_throws():
-    comment = Comment.internal(
+    comment = Comment.from_text(
         dedent(
             """
             @throws foo
@@ -119,7 +126,7 @@ def test_comment_throws():
 
 
 def test_comment_returns():
-    comment = Comment.internal(
+    comment = Comment.from_text(
         dedent(
             """
             @returns the answer to the life, the universe, and everything
@@ -135,7 +142,7 @@ def test_comment_returns():
 
 
 def test_comment_without_commands():
-    comment = Comment.internal(
+    comment = Comment.from_text(
         dedent(
             """
             some comment with a few commands

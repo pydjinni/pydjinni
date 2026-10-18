@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any, Final, Self
 
 from pydantic_core import core_schema
 
-from pydjinni.config.types import IdentifierStyle
+from pydjinni.config.model.types import IdentifierStyle
 lazy from pydjinni.position import Position
 
 if TYPE_CHECKING:

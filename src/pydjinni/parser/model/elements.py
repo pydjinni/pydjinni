@@ -6,13 +6,12 @@ from itertools import chain
 from pathlib import Path
 from re import Pattern
 from textwrap import dedent
-from typing import TYPE_CHECKING, Any, Literal, Self, override
+from typing import TYPE_CHECKING, Any, Final, Literal, Self, override
 
 from more_itertools import always_iterable
-from pydantic import BaseModel, ConfigDict, GetCoreSchemaHandler, GetJsonSchemaHandler
+from pydantic import BaseModel, ConfigDict, GetCoreSchemaHandler
 from pydantic_core import core_schema
 lazy from marko.block import Document
-lazy from pydantic.json_schema import JsonSchemaValue
 
 from pydjinni.parser.comment.abstract_plugins import Command, ParameterCommand
 from pydjinni.parser.comment.comment_parser import CommentParser
@@ -34,12 +33,18 @@ if TYPE_CHECKING:
 
 
 class Element(BaseModel, ABC):
-    model_config = ConfigDict(frozen=True)
+    """Base class for all parser result elements."""
+
+    model_config = ConfigDict(
+        frozen=True,
+        extra="forbid",
+    )
     position: Internal[Position | None] = None
     namespace: NamespaceTuple = NamespaceTuple()
 
     @property
     def children(self) -> Iterable[Element]:
+        """Iterable of all child-elements. Empty by default. Override to customize the output."""
         return ()
 
 
@@ -119,12 +124,12 @@ class CommentLine(Element):
     def _match_type_reference(
         self, pattern: Pattern[str], group: str | int = 1, multi_match: bool = False
     ) -> Iterable[TypeReference]:
-        segment_pattern = re.compile(r"\w+")
+        segment_pattern: Final = re.compile(r"\w+")
 
         if self.position:
-            stripped_content = self.content.lstrip()
-            leading_whitespace = len(self.content) - len(stripped_content)
-            content_start = self.position.with_offset(start=Cursor(col=leading_whitespace))
+            stripped_content: Final = self.content.lstrip()
+            leading_whitespace: Final = len(self.content) - len(stripped_content)
+            content_start: Final = self.position.with_offset(start=Cursor(col=leading_whitespace))
             if multi_match:
                 full_type_reference_matches = pattern.finditer(stripped_content)
             else:
@@ -134,7 +139,7 @@ class CommentLine(Element):
                 match_start = Cursor(
                     col=full_type_reference_match.start(group) + leading_whitespace,
                 ).relative_to(self.position.start)
-                
+
                 if (full_type_reference := full_type_reference_match.group(group)) is not None:
                     *namespace_values, name = (
                         Identifier(
@@ -170,39 +175,39 @@ class CommentLine(Element):
 class Comment(Element):
     lines: tuple[CommentLine, ...]
 
+    @staticmethod
+    def _serialize(comment: Comment) -> str:
+        return comment.raw
+
+    @override
     @classmethod
     def __get_pydantic_core_schema__(
         cls,
         source: Any,
         handler: GetCoreSchemaHandler,
     ) -> core_schema.CoreSchema:
-        model_schema = handler(source)
-        string_schema = core_schema.no_info_after_validator_function(cls.internal, core_schema.str_schema())
+        string_schema = core_schema.no_info_after_validator_function(cls.from_text, core_schema.str_schema())
         return core_schema.json_or_python_schema(
             json_schema=string_schema,
-            python_schema=core_schema.union_schema(
-                [
-                    core_schema.is_instance_schema(cls),
-                    string_schema,
-                    model_schema,
-                ]
-            ),
+            python_schema=core_schema.union_schema([
+                core_schema.is_instance_schema(cls),
+                string_schema,
+                handler(source),
+            ]),
             serialization=core_schema.plain_serializer_function_ser_schema(
-                lambda comment: comment.raw,
-                return_schema=core_schema.str_schema(),
+                cls._serialize,
             ),
         )
 
     @classmethod
-    def __get_pydantic_json_schema__(
-        cls,
-        _core_schema: core_schema.CoreSchema,
-        handler: GetJsonSchemaHandler,
-    ) -> JsonSchemaValue:
-        return handler(core_schema.str_schema())
+    def from_text(cls, text: str) -> Self:
+        """Create a Comment from a string with newlines.
 
-    @classmethod
-    def internal(cls, text: str) -> Self:
+        Comments constructed this way do not contain position information.
+
+        Returns:
+            Self: a Comment with all lines from the input, split by newline.
+        """
         return cls(
             lines=tuple(CommentLine(content=line) for line in text.split("\n")),
         )
@@ -217,7 +222,7 @@ class Comment(Element):
 
     @cached_property
     def deprecated(self) -> Document | bool:
-        "Searches the parsed comment for the first deprecation block and returns it's value, or `False` otherwise."
+        """Searches the parsed comment for the first deprecation block and returns it's value, or `False` otherwise."""
         for element in self.parsed.children:
             if isinstance(element, DeprecatedCommand):
                 return copy_with_document(self.parsed, element.children) if element.children else True
@@ -231,23 +236,19 @@ class Comment(Element):
 
     @cached_property
     def parameters(self) -> Mapping[str, Document]:
-        return frozendict(
-            {
-                element.parameter: copy_with_document(self.parsed, element.children)
-                for element in self.parsed.children
-                if isinstance(element, ParamCommand)
-            }
-        )
+        return frozendict({
+            element.parameter: copy_with_document(self.parsed, element.children)
+            for element in self.parsed.children
+            if isinstance(element, ParamCommand)
+        })
 
     @cached_property
     def throws(self) -> Mapping[str, Document]:
-        return frozendict(
-            {
-                element.parameter: copy_with_document(self.parsed, element.children)
-                for element in self.parsed.children
-                if isinstance(element, ThrowsCommand)
-            }
-        )
+        return frozendict({
+            element.parameter: copy_with_document(self.parsed, element.children)
+            for element in self.parsed.children
+            if isinstance(element, ThrowsCommand)
+        })
 
     @cached_property
     def without_commands(self) -> Document:
@@ -268,10 +269,10 @@ class NamedElement(Element, ABC):
 
 
 class Type(NamedElement, ABC):
-    "Abstract base class for all types"
+    """Abstract base class for all types"""
 
     class Discriminator(StrEnum):
-        "Discriminator type used in the `kind` discriminator field"
+        """Discriminator type used in the `kind` discriminator field"""
 
         primitive = auto()
         collection = auto()
