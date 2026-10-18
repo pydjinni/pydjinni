@@ -11,6 +11,7 @@
         "editorconfig.editorconfig",
         "redhat.java",
         "mike-lischke.vscode-antlr4",
-        "emeraldwalk.runonsave"
+        "emeraldwalk.runonsave",
+        "twixes.pypi-assistant"
     ]
 }

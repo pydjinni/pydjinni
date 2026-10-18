@@ -6,7 +6,7 @@ Install an editable version of the executable and all development-dependencies:
 
 ```shell
 pip install -e .
-pip install .[dev]
+pip install --group test
 ```
 
 When running the `pydjinni` command, it will always execute the latest code in the local repository.
@@ -37,7 +37,7 @@ ctest --test-dir build
 
 ```shell
 pip install -e .
-pip install .[doc]
+pip install --group doc
 python -m mkdocs serve
 ```
 
