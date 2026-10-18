@@ -18,7 +18,7 @@ import pytest
 from dirty_equals import IsDict
 from pydantic import TypeAdapter, ValidationError
 
-from pydjinni.config.model.types import IdentifierStyle
+from pydjinni.config.model.identifier_style import IdentifierStyle
 from pydjinni.parser.model.identifier import Identifier
 
 

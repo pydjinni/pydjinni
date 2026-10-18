@@ -13,18 +13,16 @@
 # limitations under the License.
 
 from enum import StrEnum
-from pathlib import Path
+from typing import Self
 
 from pydantic import BaseModel, Field
 
 
-class OutPaths(BaseModel):
-    source: Path = Field(description="The output directory for source files")
-    header: Path = Field(description="The output directory for header files")
-
-
 class IdentifierStyle(BaseModel):
+    """Conversion rules for PyDjinni identifiers (snake_case) into other case styles."""
+
     class Case(StrEnum):
+        """The target case style."""
         none = "none"
         camel = "camelCase"
         pascal = "PascalCase"
@@ -32,5 +30,18 @@ class IdentifierStyle(BaseModel):
         kebab = "kebab-case"
         train = "TRAIN_CASE"
 
+        @property
+        def style(self) -> Self:
+            """The case style; a bare ``Case`` is its own style."""
+            return self
+
+        @property
+        def prefix(self) -> str:
+            """A bare ``Case`` has no prefix."""
+            return ""
+
     style: Case
     prefix: str = Field(default="", description="Prefix that is added to the beginning of the identifier")
+
+
+IdentifierStyleLike = IdentifierStyle | IdentifierStyle.Case

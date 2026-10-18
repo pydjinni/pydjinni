@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any, Final, Self
 
 from pydantic_core import core_schema
 
-from pydjinni.config.model.types import IdentifierStyle
+from pydjinni.config.model.identifier_style import IdentifierStyle, IdentifierStyleLike
 lazy from pydjinni.position import Position
 
 if TYPE_CHECKING:
@@ -77,19 +77,19 @@ class Identifier:
         """
         return self.prepend(prefix).append(postfix)
 
-    def convert(self, style: IdentifierStyle | IdentifierStyle.Case) -> str:
+    def convert(self, identifier_style: IdentifierStyleLike) -> str:
         """Convert an Identifier to the specified case style.
 
         Args:
-            style: ``IdentifierStyle`` or ``IdentifierStyle.Case`` specifying the target case style.
+            identifier_style: ``IdentifierStyle`` or ``IdentifierStyle.Case`` specifying the target case style.
                    If an ``IdentifierStyle`` is given, a prefix of the output string can be specified.
 
         Returns:
             str: the ``value`` of the Identifier, converted to the given case style.
         """
 
-        def convert_token(token: str, style: IdentifierStyle.Case, first: bool = False) -> str:
-            match (style, first):
+        def convert_token(token: str, case: IdentifierStyle.Case, first: bool = False) -> str:
+            match (case, first):
                 case (
                     (IdentifierStyle.Case.camel, True)
                     | (IdentifierStyle.Case.snake, True | False)
@@ -102,8 +102,6 @@ class Identifier:
                     return token.upper()
                 case _:
                     return token
-
-        identifier_style: Final = style if isinstance(style, IdentifierStyle) else IdentifierStyle(style=style)
 
         tokens: Final = (
             tuple(
